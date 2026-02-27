@@ -1,29 +1,14 @@
-import { webhooks } from "@repo/webhooks";
-import { notFound } from "next/navigation";
-
 export const metadata = {
   title: "Webhooks",
-  description: "Send webhooks to your users.",
+  description: "Webhooks dashboard is not configured in this starter.",
 };
 
-const WebhooksPage = async () => {
-  const response = await webhooks.getAppPortal();
-
-  if (!response?.url) {
-    notFound();
-  }
-
-  return (
-    <div className="h-full w-full overflow-hidden">
-      <iframe
-        allow="clipboard-write"
-        className="h-full w-full border-none"
-        loading="lazy"
-        src={response.url}
-        title="Webhooks"
-      />
+const WebhooksPage = () => (
+  <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+      Webhooks dashboard is not configured in this starter.
     </div>
-  );
-};
+  </div>
+);
 
 export default WebhooksPage;

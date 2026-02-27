@@ -5,7 +5,6 @@ import BaseHub from "./basehub.svg";
 import BetterStack from "./better-stack.svg";
 import Clerk from "./clerk.svg";
 import Cmdk from "./cmdk.svg";
-import GoogleAnalytics from "./google-analytics.svg";
 import Liveblocks from "./liveblocks.svg";
 import Lucide from "./lucide.svg";
 import Neon from "./neon.svg";
@@ -56,11 +55,6 @@ const rows = [
         label: "BaseHub",
         src: BaseHub,
         className: "[animation-delay:-40s] [animation-duration:40s]",
-      },
-      {
-        label: "Google Analytics",
-        src: GoogleAnalytics,
-        className: "[animation-delay:-20s] [animation-duration:40s]",
       },
       {
         label: "Lucide",

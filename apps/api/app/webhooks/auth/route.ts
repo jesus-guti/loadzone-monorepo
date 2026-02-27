@@ -1,4 +1,3 @@
-import { analytics } from "@repo/analytics/server";
 import type {
   DeletedObjectJSON,
   OrganizationJSON,
@@ -6,141 +5,40 @@ import type {
   UserJSON,
   WebhookEvent,
 } from "@repo/auth/server";
-import { log } from "@repo/observability/log";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { env } from "@/env";
 
 const handleUserCreated = (data: UserJSON) => {
-  analytics.identify({
-    distinctId: data.id,
-    properties: {
-      email: data.email_addresses.at(0)?.email_address,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      createdAt: new Date(data.created_at),
-      avatar: data.image_url,
-      phoneNumber: data.phone_numbers.at(0)?.phone_number,
-    },
-  });
-
-  analytics.capture({
-    event: "User Created",
-    distinctId: data.id,
-  });
-
   return new Response("User created", { status: 201 });
 };
 
 const handleUserUpdated = (data: UserJSON) => {
-  analytics.identify({
-    distinctId: data.id,
-    properties: {
-      email: data.email_addresses.at(0)?.email_address,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      createdAt: new Date(data.created_at),
-      avatar: data.image_url,
-      phoneNumber: data.phone_numbers.at(0)?.phone_number,
-    },
-  });
-
-  analytics.capture({
-    event: "User Updated",
-    distinctId: data.id,
-  });
-
   return new Response("User updated", { status: 201 });
 };
 
-const handleUserDeleted = (data: DeletedObjectJSON) => {
-  if (data.id) {
-    analytics.identify({
-      distinctId: data.id,
-      properties: {
-        deleted: new Date(),
-      },
-    });
-
-    analytics.capture({
-      event: "User Deleted",
-      distinctId: data.id,
-    });
-  }
-
+const handleUserDeleted = (_data: DeletedObjectJSON) => {
   return new Response("User deleted", { status: 201 });
 };
 
-const handleOrganizationCreated = (data: OrganizationJSON) => {
-  analytics.groupIdentify({
-    groupKey: data.id,
-    groupType: "company",
-    distinctId: data.created_by,
-    properties: {
-      name: data.name,
-      avatar: data.image_url,
-    },
-  });
-
-  if (data.created_by) {
-    analytics.capture({
-      event: "Organization Created",
-      distinctId: data.created_by,
-    });
-  }
-
+const handleOrganizationCreated = (_data: OrganizationJSON) => {
   return new Response("Organization created", { status: 201 });
 };
 
-const handleOrganizationUpdated = (data: OrganizationJSON) => {
-  analytics.groupIdentify({
-    groupKey: data.id,
-    groupType: "company",
-    distinctId: data.created_by,
-    properties: {
-      name: data.name,
-      avatar: data.image_url,
-    },
-  });
-
-  if (data.created_by) {
-    analytics.capture({
-      event: "Organization Updated",
-      distinctId: data.created_by,
-    });
-  }
-
+const handleOrganizationUpdated = (_data: OrganizationJSON) => {
   return new Response("Organization updated", { status: 201 });
 };
 
 const handleOrganizationMembershipCreated = (
-  data: OrganizationMembershipJSON
+  _data: OrganizationMembershipJSON
 ) => {
-  analytics.groupIdentify({
-    groupKey: data.organization.id,
-    groupType: "company",
-    distinctId: data.public_user_data.user_id,
-  });
-
-  analytics.capture({
-    event: "Organization Member Created",
-    distinctId: data.public_user_data.user_id,
-  });
-
   return new Response("Organization membership created", { status: 201 });
 };
 
 const handleOrganizationMembershipDeleted = (
-  data: OrganizationMembershipJSON
+  _data: OrganizationMembershipJSON
 ) => {
-  // Need to unlink the user from the group
-
-  analytics.capture({
-    event: "Organization Member Deleted",
-    distinctId: data.public_user_data.user_id,
-  });
-
   return new Response("Organization membership deleted", { status: 201 });
 };
 
@@ -179,17 +77,14 @@ export const POST = async (request: Request): Promise<Response> => {
       "svix-signature": svixSignature,
     }) as WebhookEvent;
   } catch (error) {
-    log.error("Error verifying webhook:", { error });
+    console.error("Error verifying webhook:", error);
     return new Response("Error occured", {
       status: 400,
     });
   }
 
   // Get the ID and type
-  const { id } = event.data;
   const eventType = event.type;
-
-  log.info("Webhook", { id, eventType, body });
 
   let response: Response = new Response("", { status: 201 });
 
@@ -226,8 +121,6 @@ export const POST = async (request: Request): Promise<Response> => {
       break;
     }
   }
-
-  await analytics.shutdown();
 
   return response;
 };

@@ -1,7 +1,4 @@
-import { analytics } from "@repo/analytics/server";
 import { clerkClient } from "@repo/auth/server";
-import { parseError } from "@repo/observability/error";
-import { log } from "@repo/observability/log";
 import type { Stripe } from "@repo/payments";
 import { stripe } from "@repo/payments";
 import { headers } from "next/headers";
@@ -34,10 +31,6 @@ const handleCheckoutSessionCompleted = async (
     return;
   }
 
-  analytics.capture({
-    event: "User Subscribed",
-    distinctId: user.id,
-  });
 };
 
 const handleSubscriptionScheduleCanceled = async (
@@ -55,10 +48,6 @@ const handleSubscriptionScheduleCanceled = async (
     return;
   }
 
-  analytics.capture({
-    event: "User Unsubscribed",
-    distinctId: user.id,
-  });
 };
 
 export const POST = async (request: Request): Promise<Response> => {
@@ -91,23 +80,18 @@ export const POST = async (request: Request): Promise<Response> => {
         break;
       }
       default: {
-        log.warn(`Unhandled event type ${event.type}`);
+        // Unhandled event type
       }
     }
 
-    await analytics.shutdown();
-
     return NextResponse.json({ result: event, ok: true });
   } catch (error) {
-    const message = parseError(error);
-
-    log.error(message);
+    const message =
+      error instanceof Error ? error.message : "something went wrong";
+    console.error("Stripe webhook error:", message);
 
     return NextResponse.json(
-      {
-        message: "something went wrong",
-        ok: false,
-      },
+      { message, ok: false },
       { status: 500 }
     );
   }

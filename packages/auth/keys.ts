@@ -19,7 +19,11 @@ export const keys = () =>
     },
     runtimeEnv: {
       CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-      CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+      CLERK_WEBHOOK_SECRET:
+        process.env.CLERK_WEBHOOK_SECRET &&
+        process.env.CLERK_WEBHOOK_SECRET.length > 0
+          ? process.env.CLERK_WEBHOOK_SECRET
+          : undefined,
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
         process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,

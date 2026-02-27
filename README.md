@@ -53,7 +53,7 @@ next-forge comes with batteries included:
 - **Design System** — Comprehensive component library with dark mode
 - **Payments** — Subscription management via [Stripe](https://stripe.com)
 - **Email** — Transactional emails via [Resend](https://resend.com)
-- **Analytics** — Web ([Google Analytics](https://developers.google.com/analytics)) and product ([Posthog](https://posthog.com))
+- **Analytics** — Product analytics via [Posthog](https://posthog.com)
 - **Observability** — Error tracking ([Sentry](https://sentry.io)), logging, and uptime monitoring ([BetterStack](https://betterstack.com))
 - **Security** — Application security ([Arcjet](https://arcjet.com)), rate limiting, and secure headers
 - **CMS** — Type-safe content management for blogs and documentation
