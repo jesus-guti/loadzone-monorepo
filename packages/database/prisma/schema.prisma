@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client"
   output   = "../generated"
@@ -11,9 +8,120 @@ datasource db {
   relationMode = "prisma"
 }
 
-// This is a stub model.
-// Delete it and add your own Prisma models.
-model Page {
-  id   Int    @id @default(autoincrement())
-  name String
+enum PlayerStatus {
+  AVAILABLE
+  MODIFIED_TRAINING
+  INJURED
+  ILL
+  UNAVAILABLE
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  seasons   Season[]
+  players   Player[]
+  admins    Admin[]
+}
+
+model Season {
+  id           String             @id @default(cuid())
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  preSeasonEnd DateTime?
+  teamId       String
+  team         Team               @relation(fields: [teamId], references: [id])
+  entries      DailyEntry[]
+  stats        PlayerDailyStats[]
+
+  @@index([teamId])
+}
+
+model Admin {
+  id      String @id @default(cuid())
+  clerkId String @unique
+  teamId  String
+  team    Team   @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
+}
+
+model Player {
+  id            String             @id @default(cuid())
+  name          String
+  token         String             @unique @default(cuid())
+  teamId        String
+  team          Team               @relation(fields: [teamId], references: [id])
+  entries       DailyEntry[]
+  subscriptions PushSubscription[]
+  stats         PlayerDailyStats[]
+  status        PlayerStatus       @default(AVAILABLE)
+  isArchived    Boolean            @default(false)
+  currentStreak Int                @default(0)
+  longestStreak Int                @default(0)
+  createdAt     DateTime           @default(now())
+
+  @@index([teamId])
+  @@index([token])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([playerId])
+}
+
+model DailyEntry {
+  id           String    @id @default(cuid())
+  date         DateTime  @db.Date
+  playerId     String
+  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  seasonId     String
+  season       Season    @relation(fields: [seasonId], references: [id])
+  recovery     Int?
+  energy       Int?
+  soreness     Int?
+  sleepHours   Decimal?
+  sleepQuality Int?
+  preFilledAt  DateTime?
+  rpe          Int?
+  duration     Int?
+  postFilledAt DateTime?
+  physioAlert  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([playerId, date])
+  @@index([seasonId, date])
+  @@index([playerId, date])
+}
+
+model PlayerDailyStats {
+  id          String   @id @default(cuid())
+  date        DateTime @db.Date
+  playerId    String
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  seasonId    String
+  season      Season   @relation(fields: [seasonId], references: [id])
+  srpe        Decimal?
+  acuteLoad   Decimal?
+  chronicLoad Decimal?
+  acwr        Decimal?
+  tqrAvg7d    Decimal?
+  rpeAvg7d    Decimal?
+  riskLevel   String?
+  computedAt  DateTime @default(now())
+
+  @@unique([playerId, date])
+  @@index([seasonId, date])
+  @@index([playerId, date])
 }

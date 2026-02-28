@@ -1,7 +1,8 @@
 import { auth, currentUser } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { env } from "@/env";
 import { GlobalSidebar } from "./components/sidebar";
 
 type AppLayoutProperties = {
@@ -9,19 +10,24 @@ type AppLayoutProperties = {
 };
 
 const AppLayout = async ({ children }: AppLayoutProperties) => {
-  if (env.ARCJET_KEY) {
-    await secure(["CATEGORY:PREVIEW"]);
+  const user = await currentUser();
+  const { redirectToSignIn, userId } = await auth();
+  if (!user || !userId) {
+    return redirectToSignIn();
   }
 
-  const user = await currentUser();
-  const { redirectToSignIn } = await auth();
-  if (!user) {
-    return redirectToSignIn();
+  const admin = await database.admin.findUnique({
+    where: { clerkId: userId },
+    select: { team: { select: { name: true } } },
+  });
+
+  if (!admin) {
+    redirect("/onboarding");
   }
 
   return (
     <SidebarProvider>
-      <GlobalSidebar>{children}</GlobalSidebar>
+      <GlobalSidebar teamName={admin.team.name}>{children}</GlobalSidebar>
     </SidebarProvider>
   );
 };

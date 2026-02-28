@@ -1,0 +1,21 @@
+{
+  "name": "@repo/push-notifications",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "server-only": "^0.0.1",
+    "web-push": "^3.6.7",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/web-push": "^3.6.4",
+    "typescript": "^5.9.3"
+  }
+}

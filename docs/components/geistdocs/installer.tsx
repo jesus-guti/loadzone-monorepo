@@ -3,7 +3,7 @@
 import { track } from "@vercel/analytics";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@repo/design-system/components/ui/sonner"esign-system/components/ui/sonner";
 import {
   InputGroup,
   InputGroupAddon,

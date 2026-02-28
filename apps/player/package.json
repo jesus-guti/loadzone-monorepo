@@ -1,0 +1,31 @@
+{
+  "name": "player",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3003",
+    "build": "next build",
+    "start": "next start",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@repo/database": "workspace:*",
+    "@repo/design-system": "workspace:*",
+    "@repo/next-config": "workspace:*",
+    "@t3-oss/env-nextjs": "^0.13.8",
+    "lucide-react": "^0.556.0",
+    "next": "16.0.10",
+    "next-themes": "^0.4.6",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3"
+  }
+}

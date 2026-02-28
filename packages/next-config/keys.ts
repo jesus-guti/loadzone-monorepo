@@ -21,6 +21,7 @@ export const keys = () =>
       NEXT_PUBLIC_WEB_URL: z.url(),
       NEXT_PUBLIC_API_URL: z.url().optional(),
       NEXT_PUBLIC_DOCS_URL: z.url().optional(),
+      NEXT_PUBLIC_PLAYER_URL: z.url().optional(),
     },
     runtimeEnv: {
       ANALYZE: process.env.ANALYZE,
@@ -34,5 +35,6 @@ export const keys = () =>
       NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL,
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+      NEXT_PUBLIC_PLAYER_URL: process.env.NEXT_PUBLIC_PLAYER_URL,
     },
   });

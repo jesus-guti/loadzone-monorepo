@@ -1,7 +1,7 @@
 "use client";
 
 import { CopyIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@repo/design-system/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 
 const command = "npx next-forge@latest init";
