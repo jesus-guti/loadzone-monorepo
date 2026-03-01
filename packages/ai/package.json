@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.77",
+    "@ai-sdk/openai": "^3.0.37",
     "@ai-sdk/react": "^2.0.0",
     "@repo/database": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",
