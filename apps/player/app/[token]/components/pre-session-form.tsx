@@ -29,6 +29,21 @@ import type { ReactNode } from "react";
 type PreSessionFormProperties = {
   readonly token: string;
   readonly date: string;
+  readonly teamSessionId: string | null;
+  readonly template: {
+    id: string;
+    name: string;
+    questions: Array<{
+      id: string;
+      key: string;
+      label: string;
+      type: "SCALE" | "NUMBER" | "BOOLEAN" | "TEXT" | "SINGLE_SELECT";
+      mappingKey: string | null;
+      minValue: number | null;
+      maxValue: number | null;
+      step: number | null;
+    }>;
+  } | null;
   readonly onComplete: () => void;
 };
 
@@ -65,6 +80,8 @@ function sorenessColor(value: number): string {
 export function PreSessionForm({
   token,
   date,
+  teamSessionId,
+  template,
   onComplete,
 }: PreSessionFormProperties) {
   const [recovery, setRecovery] = useState<number | null>(null);
@@ -78,6 +95,20 @@ export function PreSessionForm({
   const [state, action, isPending] = useActionState(savePreSession, {
     success: false,
   });
+
+  const questions = template?.questions ?? [];
+
+  function getQuestion(mappingKey: string) {
+    return (
+      questions.find((question) => question.mappingKey === mappingKey) ?? null
+    );
+  }
+
+  const recoveryQuestion = getQuestion("recovery");
+  const energyQuestion = getQuestion("energy");
+  const sorenessQuestion = getQuestion("soreness");
+  const sleepHoursQuestion = getQuestion("sleepHours");
+  const sleepQualityQuestion = getQuestion("sleepQuality");
 
   useEffect(() => {
     if (state.success) {
@@ -94,14 +125,14 @@ export function PreSessionForm({
   }, [state, onComplete]);
 
   const isValid =
-    recovery !== null &&
-    energy !== null &&
-    soreness !== null &&
-    sleepHours !== "" &&
-    sleepQuality !== null;
+    (!recoveryQuestion || recovery !== null) &&
+    (!energyQuestion || energy !== null) &&
+    (!sorenessQuestion || soreness !== null) &&
+    (!sleepHoursQuestion || sleepHours !== "") &&
+    (!sleepQualityQuestion || sleepQuality !== null);
 
   function handleSubmit() {
-    if (soreness === 5) {
+    if (sorenessQuestion && soreness === 5) {
       setShowPhysioAlert(true);
       return;
     }
@@ -118,86 +149,108 @@ export function PreSessionForm({
       <form ref={formRef} action={action} className="space-y-5">
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="date" value={date} />
-
-        <ScaleInput
-          name="recovery"
-          label="Recuperación (TQR)"
-          min={0}
-          max={10}
-          value={recovery}
-          onChange={setRecovery}
+        <input type="hidden" name="templateId" value={template?.id ?? ""} />
+        <input
+          type="hidden"
+          name="teamSessionId"
+          value={teamSessionId ?? ""}
         />
 
-        <ScaleInput
-          name="energy"
-          label="Nivel de energía"
-          min={1}
-          max={5}
-          value={energy}
-          onChange={setEnergy}
-          renderLabel={(n) => (
-            <span className="flex items-center gap-1">
-              {ENERGY_ICONS[n]} {n}
-            </span>
-          )}
-          getColor={(v) => energyColor(v)}
-        />
+        {recoveryQuestion ? (
+          <ScaleInput
+            name={recoveryQuestion.key}
+            label={recoveryQuestion.label}
+            min={recoveryQuestion.minValue ?? 0}
+            max={recoveryQuestion.maxValue ?? 10}
+            value={recovery}
+            onChange={setRecovery}
+          />
+        ) : null}
 
-        <ScaleInput
-          name="soreness"
-          label="Agujetas / Dolor muscular"
-          min={1}
-          max={5}
-          value={soreness}
-          onChange={setSoreness}
-          getColor={(v) => sorenessColor(v)}
-        />
+        {energyQuestion ? (
+          <ScaleInput
+            name={energyQuestion.key}
+            label={energyQuestion.label}
+            min={energyQuestion.minValue ?? 1}
+            max={energyQuestion.maxValue ?? 5}
+            value={energy}
+            onChange={setEnergy}
+            renderLabel={(n) => (
+              <span className="flex items-center gap-1">
+                {ENERGY_ICONS[n]} {n}
+              </span>
+            )}
+            getColor={(v) => energyColor(v)}
+          />
+        ) : null}
 
-        <div className="space-y-3 rounded-3xl bg-bg-secondary p-4">
-          <label
-            htmlFor="sleepHours"
-            className="text-sm font-medium text-text-primary"
-          >
-            Horas de sueño
-          </label>
-          <div className="flex items-center gap-3 rounded-[1.25rem] bg-bg-primary px-4 py-3">
-            <div className="flex size-9 items-center justify-center rounded-full bg-bg-tertiary">
-              <MoonIcon className="h-4 w-4 text-text-secondary" />
+        {sorenessQuestion ? (
+          <ScaleInput
+            name={sorenessQuestion.key}
+            label={sorenessQuestion.label}
+            min={sorenessQuestion.minValue ?? 1}
+            max={sorenessQuestion.maxValue ?? 5}
+            value={soreness}
+            onChange={setSoreness}
+            getColor={(v) => sorenessColor(v)}
+          />
+        ) : null}
+
+        {sleepHoursQuestion ? (
+          <div className="space-y-3 rounded-3xl bg-bg-secondary p-4">
+            <label
+              htmlFor={sleepHoursQuestion.key}
+              className="text-sm font-medium text-text-primary"
+            >
+              {sleepHoursQuestion.label}
+            </label>
+            <div className="flex items-center gap-3 rounded-[1.25rem] bg-bg-primary px-4 py-3">
+              <div className="flex size-9 items-center justify-center rounded-full bg-bg-tertiary">
+                <MoonIcon className="h-4 w-4 text-text-secondary" />
+              </div>
+              <input
+                id={sleepHoursQuestion.key}
+                name={sleepHoursQuestion.key}
+                type="number"
+                step={String(sleepHoursQuestion.step ?? 0.5)}
+                min={String(sleepHoursQuestion.minValue ?? 0)}
+                max={String(sleepHoursQuestion.maxValue ?? 24)}
+                placeholder="7.5"
+                value={sleepHours}
+                onChange={(e) => setSleepHours(e.target.value)}
+                className="h-12 w-full bg-transparent text-base text-text-primary placeholder:text-text-tertiary focus:outline-none"
+              />
             </div>
-            <input
-              id="sleepHours"
-              name="sleepHours"
-              type="number"
-              step="0.5"
-              min="0"
-              max="24"
-              placeholder="7.5"
-              value={sleepHours}
-              onChange={(e) => setSleepHours(e.target.value)}
-              className="h-12 w-full bg-transparent text-base text-text-primary placeholder:text-text-tertiary focus:outline-none"
-            />
           </div>
-        </div>
+        ) : null}
 
-        <ScaleInput
-          name="sleepQuality"
-          label="Calidad del sueño"
-          min={1}
-          max={5}
-          value={sleepQuality}
-          onChange={setSleepQuality}
-          renderLabel={(n) => (
-            <span className="flex items-center gap-1">
-              <MoonIcon className="h-3 w-3" /> {n}
-            </span>
-          )}
-          getColor={(v) => energyColor(v)}
-        />
+        {sleepQualityQuestion ? (
+          <ScaleInput
+            name={sleepQualityQuestion.key}
+            label={sleepQualityQuestion.label}
+            min={sleepQualityQuestion.minValue ?? 1}
+            max={sleepQualityQuestion.maxValue ?? 5}
+            value={sleepQuality}
+            onChange={setSleepQuality}
+            renderLabel={(n) => (
+              <span className="flex items-center gap-1">
+                <MoonIcon className="h-3 w-3" /> {n}
+              </span>
+            )}
+            getColor={(v) => energyColor(v)}
+          />
+        ) : null}
+
+        {!template ? (
+          <p className="text-sm text-danger">
+            No hay formulario pre-sesión configurado para este equipo.
+          </p>
+        ) : null}
 
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={!isValid || isPending}
+          disabled={!template || !isValid || isPending}
           className="h-14 w-full rounded-full text-lg font-semibold"
           size="lg"
         >

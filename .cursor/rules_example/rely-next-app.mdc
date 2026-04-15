@@ -1,0 +1,45 @@
+---
+description: Next.js App Router conventions and architecture decisions for apps/ui.
+globs: apps/ui/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Rely Next App
+
+## Architecture (Option B — Server Actions + Prisma + TanStack Query)
+
+- Use App Router conventions. Prefer **React Server Components (RSCs)** by default.
+- Mark client files explicitly with `'use client'`.
+- Keep locale-aware routing under `app/[locale]`.
+
+## Data Flow Strategy
+
+- **Read data** directly in RSCs (server components) using Prisma or data-access helpers — no separate `/api` routes for page loads.
+- **Mutate data** through **Server Actions** using `next-safe-action` + Zod for input validation and E2E type safety.
+- Reserve **TanStack Query** (`@tanstack/react-query`) only for client components needing high interactivity: polling, infinite scroll, optimistic updates, or real-time feeds.
+- Do not use tRPC; the project relies on native Next.js primitives instead.
+
+## Server Actions Pattern
+
+- Place colocated actions in `actions.ts` next to the route that uses them.
+- For shared/reusable actions, place them in `src/actions/<domain>.ts`.
+- Always use `"use server"` at file level for action files.
+- Always validate inputs with Zod schemas via `next-safe-action`; never trust raw `FormData` alone.
+
+## Middleware and Auth
+
+- Use middleware only for locale resolution and coarse auth shell redirects.
+- Keep protected admin checks in server layouts as well, not only in middleware.
+- Keep auth provider details behind `apps/ui/src/lib/auth/*`.
+
+## Client Components
+
+- For `konva`, `react-konva`, `@siali/sorolla`, and similar browser-heavy libraries:
+  load them only in client components and use `dynamic(..., { ssr: false })` when needed.
+- Add explicit TypeScript types to props, return values, and exported utilities.
+
+## Error Handling
+
+- Wrap Server Actions in try-catch; return typed result objects `{ success, data?, error? }`.
+- Use `error.tsx` boundaries at route level for unexpected rendering failures.
+- Provide user-facing feedback through `sonner` toasts or inline form errors, not silent failures.

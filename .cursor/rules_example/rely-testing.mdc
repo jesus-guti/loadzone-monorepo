@@ -1,0 +1,40 @@
+---
+description: Testing conventions for apps/ui — Vitest + Testing Library.
+globs: apps/ui/**/*.{test,spec}.{ts,tsx}
+alwaysApply: false
+---
+
+# Testing
+
+## Stack
+
+- **Vitest** as the test runner (`pnpm test` → `vitest run`).
+- **@testing-library/react** for component rendering and interaction.
+- **jsdom** environment via vitest config.
+
+## What to Test (essential coverage)
+
+1. **Pure utility functions** in `src/lib/` — routing helpers, selectors, formatters, validators.
+2. **Zod schemas** for Server Actions — verify valid and invalid inputs.
+3. **Data selectors and transformers** — functions that shape API/mock data for components.
+4. **Critical client components** — components with conditional rendering logic (status badges, permission gates).
+5. **Server Action return types** — verify success/error shapes without hitting real persistence.
+
+## What NOT to Test
+
+- Trivial wrappers that only pass props through.
+- Third-party library internals (Radix, Konva, React Flow).
+- Layout-only server components with no conditional logic.
+
+## File Conventions
+
+- Place test files next to the module they test: `selectors.test.ts` beside `selectors.ts`.
+- Use `describe` blocks to group by feature, `it` blocks for individual behaviors.
+- Import from `vitest` explicitly: `import { describe, expect, it, vi } from "vitest"`.
+
+## Mocking
+
+- Use `vi.mock(...)` for module-level mocks and `vi.fn()` for function stubs.
+- Mock `next/navigation`, `next-intl`, and auth helpers when testing components that depend on them.
+- `server-only` is aliased to `src/test-utils/server-only-mock.ts` in vitest config — no extra setup needed for modules that import it.
+- Keep mocks minimal — prefer testing real logic over mocking everything.

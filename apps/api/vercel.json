@@ -7,6 +7,10 @@
       "schedule": "0 1 * * *"
     },
     {
+      "path": "/cron/reminders",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/cron/stats",
       "schedule": "0 23 * * *"
     }

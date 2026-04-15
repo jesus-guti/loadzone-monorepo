@@ -1,0 +1,17 @@
+---
+description: Mobile-first and security rules for the player PWA.
+globs: apps/player/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# LoadZone Player PWA
+
+- Treat the player app as mobile-first and token-based, not Clerk-based.
+- Keep inputs reachable in the thumb zone and touch targets at least `44x44` (prefer `48x48`).
+- Keep each step fast: no more than 3 questions per screen when possible.
+- Prefer large rounded controls, clean spacing, and frictionless flows over dense UI.
+- Support retries without losing entered data.
+- Preserve offline-friendly behavior and avoid unnecessary dependence on live round-trips.
+- Be careful with public endpoints: validate token access, sanitize input ranges, and avoid leaking
+  token values in logs or UI.
+- Push notification and service worker flows should degrade gracefully when unsupported.

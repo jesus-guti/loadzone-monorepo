@@ -1,7 +1,7 @@
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "./components/header";
 import { TeamOverview } from "./components/team-overview";
 
@@ -11,14 +11,14 @@ export const metadata: Metadata = {
 };
 
 const Dashboard = async () => {
-  const { userId } = await auth();
-  if (!userId) {
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.primaryTeam) {
     notFound();
   }
 
-  const team = await database.team.findFirst({
+  const team = await database.team.findUnique({
     where: {
-      admins: { some: { clerkId: userId } },
+      id: staffContext.primaryTeam.id,
     },
     select: {
       id: true,

@@ -1,4 +1,3 @@
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
@@ -13,6 +12,7 @@ import { Header } from "../../components/header";
 import { PlayerCharts } from "./components/player-charts";
 import { CopyTokenButton } from "../components/copy-token-button";
 import { FlameIcon } from "lucide-react";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: "Detalle jugador | LoadZone",
@@ -32,17 +32,11 @@ const STATUS_LABELS: Record<string, string> = {
 
 const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) notFound();
-
-  const admin = await database.admin.findFirst({
-    where: { clerkId: userId },
-    select: { teamId: true },
-  });
-  if (!admin) notFound();
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.primaryTeam) notFound();
 
   const player = await database.player.findUnique({
-    where: { id, teamId: admin.teamId },
+    where: { id, teamId: staffContext.primaryTeam.id },
     select: {
       id: true,
       name: true,

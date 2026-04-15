@@ -1,0 +1,16 @@
+---
+description: Server Action rules for admin and player mutations.
+globs: apps/{app,player}/**/actions/**/*.ts
+alwaysApply: false
+---
+
+# LoadZone Server Actions
+
+- Put `"use server"` at file level in every action module.
+- Validate and sanitize every input, especially numeric wellness fields and player-facing form data.
+- Wrap action logic in `try/catch` and return user-safe error messages.
+- Never leak internal errors, stack traces, secrets, or player tokens to the client.
+- Keep actions thin: validation, authorization, mutation, revalidation, then return.
+- Put route-specific actions near the route and keep cross-route logic in reusable helpers/packages.
+- After successful mutations, revalidate the affected path or tag.
+- Preserve player-entered form data on failure whenever possible.

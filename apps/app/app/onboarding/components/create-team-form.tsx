@@ -14,15 +14,37 @@ export function CreateTeamForm() {
   return (
     <form action={action} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name">Nombre del equipo</Label>
+        <Label htmlFor="clubName">Nombre del club</Label>
         <Input
-          id="name"
-          name="name"
-          placeholder="Ej: CD Villa Real"
+          id="clubName"
+          name="clubName"
+          placeholder="Ej: Club Deportivo Villa Real"
           required
           minLength={2}
           maxLength={100}
           autoFocus
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="teamName">Nombre del equipo</Label>
+        <Input
+          id="teamName"
+          name="teamName"
+          placeholder="Ej: Juvenil A"
+          required
+          minLength={2}
+          maxLength={100}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="teamCategory">Categoría (opcional)</Label>
+        <Input
+          id="teamCategory"
+          name="teamCategory"
+          placeholder="Ej: Juvenil, Cadete, Senior"
+          maxLength={100}
         />
       </div>
 
@@ -31,7 +53,7 @@ export function CreateTeamForm() {
       )}
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Creando..." : "Crear equipo"}
+        {isPending ? "Creando..." : "Crear club y equipo"}
       </Button>
     </form>
   );

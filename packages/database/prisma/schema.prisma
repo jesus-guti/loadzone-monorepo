@@ -8,6 +8,17 @@ datasource db {
   relationMode = "prisma"
 }
 
+enum PlatformRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum MembershipRole {
+  PLAYER
+  STAFF
+  COORDINATOR
+}
+
 enum PlayerStatus {
   AVAILABLE
   MODIFIED_TRAINING
@@ -16,14 +27,181 @@ enum PlayerStatus {
   UNAVAILABLE
 }
 
+enum TeamSessionType {
+  TRAINING
+  MATCH
+  RECOVERY
+  OTHER
+}
+
+enum TeamSessionVisibility {
+  TEAM_PRIVATE
+  CLUB_SHARED
+}
+
+enum TeamSessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum FormTemplateKind {
+  WELLNESS
+  TQR
+  RPE
+  CUSTOM
+}
+
+enum FormQuestionType {
+  SCALE
+  NUMBER
+  BOOLEAN
+  TEXT
+  SINGLE_SELECT
+}
+
+enum FormFillMoment {
+  PRE_SESSION
+  POST_SESSION
+  INJURY_REPORT
+}
+
+enum InjurySeverity {
+  UNKNOWN
+  MINOR
+  MODERATE
+  MAJOR
+}
+
+enum InjuryStatus {
+  REPORTED
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum AiSuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum PushDispatchKind {
+  PRE_SESSION
+  POST_SESSION
+}
+
+model Club {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  memberships Membership[]
+  teams       Team[]
+  forms       FormTemplate[]
+  sessions    TeamSession[]
+  dispatches  PushDispatch[]
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  platformRole  PlatformRole   @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+  memberships   Membership[]
+  aiSuggestions AiSuggestion[] @relation("AcceptedSuggestions")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Membership {
+  id          String           @id @default(cuid())
+  userId      String
+  clubId      String
+  role        MembershipRole
+  hasAllTeams Boolean          @default(false)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club        Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  teamLinks   MembershipTeam[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([clubId])
+}
+
+model MembershipTeam {
+  membershipId String
+  teamId       String
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([membershipId, teamId])
+  @@index([teamId])
+}
+
 model Team {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  seasons   Season[]
-  players   Player[]
-  admins    Admin[]
+  id                         String           @id @default(cuid())
+  clubId                     String
+  name                       String
+  category                   String?
+  timezone                   String           @default("Europe/Madrid")
+  preSessionReminderMinutes  Int?             @default(120)
+  postSessionReminderMinutes Int?             @default(30)
+  createdAt                  DateTime         @default(now())
+  updatedAt                  DateTime         @updatedAt
+  club                       Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  seasons                    Season[]
+  players                    Player[]
+  memberships                MembershipTeam[]
+  sessions                   TeamSession[]
+  forms                      FormAssignment[]
+  injuries                   InjuryReport[]
+
+  @@index([clubId])
 }
 
 model Season {
@@ -33,36 +211,32 @@ model Season {
   endDate      DateTime
   preSeasonEnd DateTime?
   teamId       String
-  team         Team               @relation(fields: [teamId], references: [id])
+  team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   entries      DailyEntry[]
   stats        PlayerDailyStats[]
 
   @@index([teamId])
 }
 
-model Admin {
-  id      String @id @default(cuid())
-  clerkId String @unique
-  teamId  String
-  team    Team   @relation(fields: [teamId], references: [id])
-
-  @@index([teamId])
-}
-
 model Player {
-  id            String             @id @default(cuid())
-  name          String
-  token         String             @unique @default(cuid())
-  teamId        String
-  team          Team               @relation(fields: [teamId], references: [id])
-  entries       DailyEntry[]
-  subscriptions PushSubscription[]
-  stats         PlayerDailyStats[]
-  status        PlayerStatus       @default(AVAILABLE)
-  isArchived    Boolean            @default(false)
-  currentStreak Int                @default(0)
-  longestStreak Int                @default(0)
-  createdAt     DateTime           @default(now())
+  id             String              @id @default(cuid())
+  name           String
+  token          String              @unique @default(cuid())
+  teamId         String
+  team           Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  entries        DailyEntry[]
+  subscriptions  PushSubscription[]
+  stats          PlayerDailyStats[]
+  formSubmits    FormSubmission[]
+  injuries       InjuryReport[]
+  sessionLinks   TeamSessionPlayer[]
+  suggestions    AiSuggestion[]
+  status         PlayerStatus        @default(AVAILABLE)
+  isArchived     Boolean             @default(false)
+  currentStreak  Int                 @default(0)
+  longestStreak  Int                 @default(0)
+  createdAt      DateTime            @default(now())
+  pushDispatches PushDispatch[]
 
   @@index([teamId])
   @@index([token])
@@ -80,29 +254,50 @@ model PushSubscription {
   @@index([playerId])
 }
 
+model PushDispatch {
+  id            String           @id @default(cuid())
+  teamSessionId String
+  playerId      String
+  kind          PushDispatchKind
+  sentAt        DateTime         @default(now())
+  teamSession   TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player        Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  club          Club?            @relation(fields: [clubId], references: [id])
+  clubId        String?
+
+  @@unique([teamSessionId, playerId, kind])
+  @@index([playerId, kind])
+}
+
 model DailyEntry {
-  id           String    @id @default(cuid())
-  date         DateTime  @db.Date
-  playerId     String
-  player       Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  seasonId     String
-  season       Season    @relation(fields: [seasonId], references: [id])
-  recovery     Int?
-  energy       Int?
-  soreness     Int?
-  sleepHours   Decimal?
-  sleepQuality Int?
-  preFilledAt  DateTime?
-  rpe          Int?
-  duration     Int?
-  postFilledAt DateTime?
-  physioAlert  Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id               String          @id @default(cuid())
+  date             DateTime        @db.Date
+  playerId         String
+  player           Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  seasonId         String
+  season           Season          @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  teamSessionId    String?
+  teamSession      TeamSession?    @relation(fields: [teamSessionId], references: [id], onDelete: SetNull)
+  formSubmissionId String?         @unique
+  formSubmission   FormSubmission? @relation(fields: [formSubmissionId], references: [id], onDelete: SetNull)
+  recovery         Int?
+  energy           Int?
+  soreness         Int?
+  sleepHours       Decimal?
+  sleepQuality     Int?
+  preFilledAt      DateTime?
+  rpe              Int?
+  duration         Int?
+  postFilledAt     DateTime?
+  physioAlert      Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  suggestions      AiSuggestion[]
 
   @@unique([playerId, date])
   @@index([seasonId, date])
   @@index([playerId, date])
+  @@index([teamSessionId])
 }
 
 model PlayerDailyStats {
@@ -111,7 +306,7 @@ model PlayerDailyStats {
   playerId    String
   player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   seasonId    String
-  season      Season   @relation(fields: [seasonId], references: [id])
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   srpe        Decimal?
   acuteLoad   Decimal?
   chronicLoad Decimal?
@@ -124,4 +319,183 @@ model PlayerDailyStats {
   @@unique([playerId, date])
   @@index([seasonId, date])
   @@index([playerId, date])
+}
+
+model TeamSession {
+  id                  String                @id @default(cuid())
+  clubId              String
+  teamId              String
+  title               String
+  description         String?
+  type                TeamSessionType
+  visibility          TeamSessionVisibility @default(TEAM_PRIVATE)
+  status              TeamSessionStatus     @default(SCHEDULED)
+  startsAt            DateTime
+  endsAt              DateTime
+  timezone            String
+  appliesToAllPlayers Boolean               @default(true)
+  preReminderMinutes  Int?
+  postReminderMinutes Int?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  club                Club                  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  team                Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerLinks         TeamSessionPlayer[]
+  formAssignments     FormAssignment[]
+  entries             DailyEntry[]
+  suggestions         AiSuggestion[]
+  dispatches          PushDispatch[]
+  formSubmissions     FormSubmission[]
+
+  @@index([clubId, startsAt])
+  @@index([teamId, startsAt])
+}
+
+model TeamSessionPlayer {
+  teamSessionId String
+  playerId      String
+  teamSession   TeamSession @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player        Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([teamSessionId, playerId])
+  @@index([playerId])
+}
+
+model FormTemplate {
+  id          String           @id @default(cuid())
+  clubId      String?
+  name        String
+  code        String           @unique
+  kind        FormTemplateKind
+  fillMoment  FormFillMoment
+  isSystem    Boolean          @default(false)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  club        Club?            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  questions   FormQuestion[]
+  assignments FormAssignment[]
+  submissions FormSubmission[]
+
+  @@index([clubId])
+}
+
+model FormQuestion {
+  id         String           @id @default(cuid())
+  templateId String
+  key        String
+  label      String
+  type       FormQuestionType
+  helpText   String?
+  required   Boolean          @default(true)
+  order      Int
+  minValue   Decimal?
+  maxValue   Decimal?
+  step       Decimal?
+  options    Json?
+  mappingKey String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  template   FormTemplate     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  answers    FormAnswer[]
+
+  @@unique([templateId, key])
+  @@index([templateId, order])
+}
+
+model FormAssignment {
+  id            String         @id @default(cuid())
+  templateId    String
+  teamId        String?
+  teamSessionId String?
+  fillMoment    FormFillMoment
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  template      FormTemplate   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  team          Team?          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamSession   TeamSession?   @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([teamId, fillMoment])
+  @@index([teamSessionId, fillMoment])
+}
+
+model FormSubmission {
+  id            String       @id @default(cuid())
+  templateId    String
+  playerId      String
+  teamSessionId String?
+  submittedAt   DateTime     @default(now())
+  date          DateTime     @db.Date
+  template      FormTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  player        Player       @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  teamSession   TeamSession? @relation(fields: [teamSessionId], references: [id], onDelete: SetNull)
+  answers       FormAnswer[]
+  dailyEntry    DailyEntry?
+
+  @@index([templateId])
+  @@index([playerId, date])
+  @@index([teamSessionId])
+}
+
+model FormAnswer {
+  id           String         @id @default(cuid())
+  submissionId String
+  questionId   String
+  value        Json
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  submission   FormSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question     FormQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, questionId])
+  @@index([questionId])
+}
+
+model InjuryReport {
+  id               String         @id @default(cuid())
+  playerId         String
+  teamId           String
+  title            String
+  description      String?
+  bodyPart         String?
+  severity         InjurySeverity @default(UNKNOWN)
+  status           InjuryStatus   @default(REPORTED)
+  reportedByPlayer Boolean        @default(false)
+  staffNotes       String?
+  reportedAt       DateTime       @default(now())
+  reviewedAt       DateTime?
+  resolvedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  player           Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  team             Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, status])
+  @@index([teamId, status])
+}
+
+model AiSuggestion {
+  id               String             @id @default(cuid())
+  playerId         String?
+  dailyEntryId     String?
+  teamSessionId    String?
+  type             String
+  payload          Json
+  sourceContext    Json?
+  confidence       Decimal?
+  status           AiSuggestionStatus @default(PENDING)
+  acceptedByUserId String?
+  acceptedAt       DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  player           Player?            @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  dailyEntry       DailyEntry?        @relation(fields: [dailyEntryId], references: [id], onDelete: Cascade)
+  teamSession      TeamSession?       @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  acceptedBy       User?              @relation("AcceptedSuggestions", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([playerId, status])
+  @@index([dailyEntryId])
+  @@index([teamSessionId])
 }

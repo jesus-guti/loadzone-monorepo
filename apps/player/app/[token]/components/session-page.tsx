@@ -3,28 +3,58 @@
 import { useState, useCallback } from "react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { FlameIcon, CalendarIcon } from "lucide-react";
+import { FlameIcon, CalendarIcon, HeartPulseIcon } from "lucide-react";
 import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
+import { InjuryReportForm } from "./injury-report-form";
+
+type PlayerFormTemplate = {
+  readonly id: string;
+  readonly name: string;
+  readonly questions: Array<{
+    readonly id: string;
+    readonly key: string;
+    readonly label: string;
+    readonly type: "SCALE" | "NUMBER" | "BOOLEAN" | "TEXT" | "SINGLE_SELECT";
+    readonly mappingKey: string | null;
+    readonly minValue: number | null;
+    readonly maxValue: number | null;
+    readonly step: number | null;
+  }>;
+};
 
 type SessionPageProperties = {
   readonly token: string;
   readonly playerName: string;
+  readonly teamName: string;
   readonly currentStreak: number;
   readonly apiUrl: string;
   readonly todayEntry: {
     preFilledAt: Date | null;
     postFilledAt: Date | null;
   } | null;
+  readonly todaySession: {
+    id: string;
+    title: string;
+    type: string;
+    startsAt: string;
+    endsAt: string;
+  } | null;
+  readonly preTemplate: PlayerFormTemplate | null;
+  readonly postTemplate: PlayerFormTemplate | null;
 };
 
 export function SessionPage({
   token,
   playerName,
+  teamName,
   currentStreak,
   apiUrl,
   todayEntry,
+  todaySession,
+  preTemplate,
+  postTemplate,
 }: SessionPageProperties) {
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
@@ -56,7 +86,7 @@ export function SessionPage({
                 Hola, {playerName}
               </h1>
               <p className="text-sm text-text-secondary">
-                Completa tu registro antes y después de entrenar.
+                {teamName}: completa tu registro antes y después de entrenar.
               </p>
             </div>
             {currentStreak > 0 && (
@@ -82,6 +112,29 @@ export function SessionPage({
           />
         </div>
         </div>
+
+        {todaySession ? (
+          <div className="rounded-3xl bg-bg-secondary px-4 py-4">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-text-secondary">
+              Sesión de hoy
+            </p>
+            <p className="mt-1 text-base font-semibold text-text-primary">
+              {todaySession.title}
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              {new Date(todaySession.startsAt).toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              -{" "}
+              {new Date(todaySession.endsAt).toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              · {todaySession.type}
+            </p>
+          </div>
+        ) : null}
 
         {preCompleted && postCompleted && (
           <div className="rounded-3xl bg-bg-secondary px-4 py-4 text-center">
@@ -116,7 +169,7 @@ export function SessionPage({
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-2 rounded-[1.75rem] bg-bg-secondary p-1.5">
+          <TabsList className="grid w-full grid-cols-3 rounded-[1.75rem] bg-bg-secondary p-1.5">
             <TabsTrigger value="pre" className="relative">
               Pre-Sesión
               {preCompleted && (
@@ -128,6 +181,10 @@ export function SessionPage({
               {postCompleted && (
                 <span className="ml-2 inline-block h-2 w-2 rounded-full bg-brand" />
               )}
+            </TabsTrigger>
+            <TabsTrigger value="injury" className="relative">
+              <HeartPulseIcon className="mr-1 h-4 w-4" />
+              Lesión
             </TabsTrigger>
           </TabsList>
 
@@ -145,6 +202,8 @@ export function SessionPage({
               <PreSessionForm
                 token={token}
                 date={date}
+                teamSessionId={todaySession?.id ?? null}
+                template={preTemplate}
                 onComplete={handlePreComplete}
               />
             )}
@@ -154,8 +213,14 @@ export function SessionPage({
             <PostSessionForm
               token={token}
               date={date}
+              teamSessionId={todaySession?.id ?? null}
+              template={postTemplate}
               onComplete={handlePostComplete}
             />
+          </TabsContent>
+
+          <TabsContent value="injury" className="mt-0">
+            <InjuryReportForm token={token} />
           </TabsContent>
         </Tabs>
       )}

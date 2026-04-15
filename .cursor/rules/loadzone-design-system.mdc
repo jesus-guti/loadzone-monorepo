@@ -1,0 +1,23 @@
+---
+description: Design system and semantic token rules for shared UI and app styling.
+globs: {packages/design-system,apps/app/app,apps/player/app}/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# LoadZone Design System
+
+- Shared primitives live in `packages/design-system/components/ui` and must stay app-agnostic.
+- Visual identity is injected by each app through `apps/app/app/globals.css` and
+  `apps/player/app/globals.css`.
+- Use semantic tokens, not raw Tailwind colors:
+  `bg-bg-*`, `text-text-*`, `border-border-*`, `brand`, `premium`, `danger`.
+- Do not introduce old shadcn functional tokens like `bg-card`, `bg-muted`, `text-muted-foreground`,
+  or hardcoded colors like `bg-green-500` in shared UI.
+- Reuse existing primitives and `cn()` before creating custom wrappers.
+- Keep structural shadows out of normal cards and containers.
+- Only floating surfaces such as dialogs, popovers, menus, and tooltips should use elevation.
+
+## App split
+
+- `apps/app`: Attio/Squarespace style, denser layout, smaller radius, subtle visible borders.
+- `apps/player`: Airbnb style, invisible design, larger radius, minimal borders, softer surfaces.

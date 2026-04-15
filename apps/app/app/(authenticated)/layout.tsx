@@ -1,8 +1,7 @@
-import { auth, currentUser } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 import { GlobalSidebar } from "./components/sidebar";
 
 type AppLayoutProperties = {
@@ -10,24 +9,23 @@ type AppLayoutProperties = {
 };
 
 const AppLayout = async ({ children }: AppLayoutProperties) => {
-  const user = await currentUser();
-  const { redirectToSignIn, userId } = await auth();
-  if (!user || !userId) {
-    return redirectToSignIn();
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext) {
+    redirect("/sign-in");
   }
 
-  const admin = await database.admin.findUnique({
-    where: { clerkId: userId },
-    select: { team: { select: { name: true } } },
-  });
-
-  if (!admin) {
+  if (staffContext.teams.length === 0 && staffContext.platformRole !== "SUPER_ADMIN") {
     redirect("/onboarding");
   }
 
   return (
     <SidebarProvider>
-      <GlobalSidebar teamName={admin.team.name}>{children}</GlobalSidebar>
+      <GlobalSidebar
+        clubName={staffContext.club.name}
+        teamName={staffContext.primaryTeam?.name}
+      >
+        {children}
+      </GlobalSidebar>
     </SidebarProvider>
   );
 };

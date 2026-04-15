@@ -1,23 +1,16 @@
 "use server";
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { PlayerStatus } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 
 async function getTeamId(): Promise<string> {
-  const { userId } = await auth();
-  if (!userId) throw new Error("No autorizado");
-
-  const admin = await database.admin.findFirst({
-    where: { clerkId: userId },
-    select: { teamId: true },
-  });
-
-  if (!admin) throw new Error("Equipo no encontrado");
-  return admin.teamId;
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.primaryTeam) throw new Error("Equipo no encontrado");
+  return staffContext.primaryTeam.id;
 }
 
 const createPlayerSchema = z.object({

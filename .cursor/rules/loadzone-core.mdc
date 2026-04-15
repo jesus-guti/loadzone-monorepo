@@ -1,0 +1,20 @@
+---
+description: Core guidance for the LoadZone monorepo.
+alwaysApply: true
+---
+
+# LoadZone Core
+
+- LoadZone is a monorepo for amateur football wellness monitoring with two main apps:
+  `apps/app` for staff/admin and `apps/player` for player check-ins.
+- Reuse existing packages before adding code:
+  `@repo/design-system`, `@repo/database`, `@repo/auth`, `@repo/ai`.
+- Keep changes minimal and focused. Do not add docs or tests unless the user asks.
+- Use strict TypeScript with explicit parameter and return types. Avoid `any`.
+- Prefer `@repo/*` imports for shared packages and `@/` for local app imports.
+- Check whether a shared UI primitive already exists in `packages/design-system/components/ui`
+  before creating a new component.
+- Do not run builds by default. In Next.js work, only run build/dev commands if the user asks.
+- Key domain entities: `Team`, `Season`, `Player`, `DailyEntry`, `PlayerDailyStats`,
+  and `PushSubscription`.
+- Never expose or log player tokens. Treat public player flows as security-sensitive.

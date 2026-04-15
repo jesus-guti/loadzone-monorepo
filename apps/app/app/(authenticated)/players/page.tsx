@@ -1,4 +1,3 @@
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -14,6 +13,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FlameIcon, PlusIcon } from "lucide-react";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 import { CopyTokenButton } from "./components/copy-token-button";
 import { ArchiveButton } from "./components/archive-button";
@@ -42,18 +42,11 @@ const STATUS_VARIANTS: Record<
 };
 
 const PlayersPage = async () => {
-  const { userId } = await auth();
-  if (!userId) notFound();
-
-  const admin = await database.admin.findFirst({
-    where: { clerkId: userId },
-    select: { teamId: true },
-  });
-
-  if (!admin) notFound();
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.primaryTeam) notFound();
 
   const players = await database.player.findMany({
-    where: { teamId: admin.teamId, isArchived: false },
+    where: { teamId: staffContext.primaryTeam.id, isArchived: false },
     select: {
       id: true,
       name: true,

@@ -19,9 +19,11 @@ import {
   LayoutDashboardIcon,
   UsersIcon,
   CalendarIcon,
+  CalendarRangeIcon,
   BrainCircuitIcon,
   SettingsIcon,
   ShieldIcon,
+  HeartPulseIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +31,7 @@ import type { ReactNode } from "react";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
+  readonly clubName?: string;
   readonly teamName?: string;
 };
 
@@ -36,12 +39,15 @@ const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboardIcon },
   { title: "Jugadores", url: "/players", icon: UsersIcon },
   { title: "Temporadas", url: "/seasons", icon: CalendarIcon },
+  { title: "Sesiones", url: "/sessions", icon: CalendarRangeIcon },
+  { title: "Lesiones", url: "/injuries", icon: HeartPulseIcon },
   { title: "Análisis IA", url: "/analysis", icon: BrainCircuitIcon },
   { title: "Configuración", url: "/settings", icon: SettingsIcon },
 ];
 
 export const GlobalSidebar = ({
   children,
+  clubName,
   teamName,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
@@ -59,10 +65,10 @@ export const GlobalSidebar = ({
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {teamName ?? "LoadZone"}
+                      {teamName ?? clubName ?? "LoadZone"}
                     </span>
                     <span className="truncate text-xs uppercase tracking-[0.14em] text-text-secondary">
-                      Panel de control
+                      {clubName ?? "Panel de control"}
                     </span>
                   </div>
                 </div>

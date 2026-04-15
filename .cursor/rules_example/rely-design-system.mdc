@@ -1,0 +1,14 @@
+---
+description: Design system conventions for shared/design-system and apps/ui.
+globs: {apps/ui,shared/design-system}/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Rely Design System
+
+- Keep reusable tokens, providers, and UI primitives in `shared/design-system`.
+- Do not couple the design system to a concrete auth provider.
+- App-specific navigation, feature cards, station widgets, and domain UI stay in `apps/ui/src/components`.
+- Reuse `cn()` and shared primitives before creating new one-off UI helpers.
+- Keep theme variables centralized in `shared/design-system/styles/globals.css`.
+- If a component is only for station mode or admin mode, do not promote it to the design system.

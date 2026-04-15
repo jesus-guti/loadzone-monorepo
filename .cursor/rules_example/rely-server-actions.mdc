@@ -1,0 +1,43 @@
+---
+description: Server Action conventions using next-safe-action and Zod.
+globs: apps/ui/src/**/actions.ts
+alwaysApply: false
+---
+
+# Server Actions
+
+## Structure
+
+- Use `"use server"` at the top of every action file.
+- Define a Zod schema for each action's input.
+- Create the action with the `actionClient` from `next-safe-action`.
+- Return a typed result: `{ success: true, data }` or `{ success: false, error }`.
+
+## Example
+
+```typescript
+"use server"
+
+import { z } from "zod"
+import { actionClient } from "@/lib/safe-action"
+
+const schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+})
+
+export const createUser = actionClient
+  .schema(schema)
+  .action(async ({ parsedInput }) => {
+    // persistence logic here
+    return { success: true as const, data: { id: "new-id" } }
+  })
+```
+
+## Rules
+
+- Never bypass Zod validation — every Server Action must declare a schema.
+- Keep action files thin: delegate heavy logic to service helpers in `src/lib/`.
+- For form-bound actions, wire them through `useAction` or native `<form action={...}>`.
+- Colocate route-specific actions in `app/[locale]/.../<route>/actions.ts`.
+- Place cross-route shared actions in `src/actions/<domain>.ts`.

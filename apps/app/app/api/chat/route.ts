@@ -1,4 +1,3 @@
-import { auth } from "@repo/auth/server";
 import { streamText } from "@repo/ai";
 import { models } from "@repo/ai/lib/models";
 import {
@@ -8,49 +7,46 @@ import {
 } from "@repo/ai/tools";
 import { database } from "@repo/database";
 import { convertToModelMessages, stepCountIs, type UIMessage } from "ai";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
-  if (!userId) {
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.primaryTeam) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const admin = await database.admin.findFirst({
-    where: { clerkId: userId },
+  const team = await database.team.findUnique({
+    where: { id: staffContext.primaryTeam.id },
     select: {
-      teamId: true,
-      team: {
-        select: {
-          name: true,
-          seasons: {
-            where: {
-              startDate: { lte: new Date() },
-              endDate: { gte: new Date() },
-            },
-            take: 1,
-            select: { id: true, name: true },
-          },
+      id: true,
+      name: true,
+      seasons: {
+        where: {
+          startDate: { lte: new Date() },
+          endDate: { gte: new Date() },
         },
+        take: 1,
+        select: { id: true, name: true },
       },
     },
   });
 
-  if (!admin) {
+  if (!team) {
     return new Response("Team not found", { status: 404 });
   }
 
-  const activeSeason = admin.team.seasons[0];
+  const activeSeason = team.seasons[0];
 
   const { messages }: { messages: UIMessage[] } = await request.json();
 
   const result = streamText({
     model: models.chat,
-    system: `Eres un asistente de análisis deportivo para el equipo "${admin.team.name}".
+    system: `Eres un asistente de análisis deportivo para el equipo "${team.name}".
 Tu rol es ayudar al cuerpo técnico a entender el estado de bienestar y rendimiento de sus jugadores.
 
 Contexto:
-- Equipo: ${admin.team.name}
-- Team ID: ${admin.teamId}
+- Equipo: ${team.name}
+- Team ID: ${team.id}
 - Temporada activa: ${activeSeason?.name ?? "Sin temporada activa"} (ID: ${activeSeason?.id ?? "N/A"})
 
 Reglas:

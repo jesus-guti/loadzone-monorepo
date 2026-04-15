@@ -1,53 +1,19 @@
-import { clerkClient } from "@repo/auth/server";
 import type { Stripe } from "@repo/payments";
 import { stripe } from "@repo/payments";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
 
-const getUserFromCustomerId = async (customerId: string) => {
-  const clerk = await clerkClient();
-  const users = await clerk.users.getUserList();
-
-  const user = users.data.find(
-    (currentUser) => currentUser.privateMetadata.stripeCustomerId === customerId
-  );
-
-  return user;
-};
-
 const handleCheckoutSessionCompleted = async (
   data: Stripe.Checkout.Session
 ) => {
-  if (!data.customer) {
-    return;
-  }
-
-  const customerId =
-    typeof data.customer === "string" ? data.customer : data.customer.id;
-  const user = await getUserFromCustomerId(customerId);
-
-  if (!user) {
-    return;
-  }
-
+  void data;
 };
 
 const handleSubscriptionScheduleCanceled = async (
   data: Stripe.SubscriptionSchedule
 ) => {
-  if (!data.customer) {
-    return;
-  }
-
-  const customerId =
-    typeof data.customer === "string" ? data.customer : data.customer.id;
-  const user = await getUserFromCustomerId(customerId);
-
-  if (!user) {
-    return;
-  }
-
+  void data;
 };
 
 export const POST = async (request: Request): Promise<Response> => {

@@ -1,7 +1,6 @@
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getCurrentUserState } from "@/lib/auth-context";
 import { CreateTeamForm } from "./components/create-team-form";
 
 export const metadata: Metadata = {
@@ -9,13 +8,9 @@ export const metadata: Metadata = {
 };
 
 const OnboardingPage = async () => {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-
-  const existing = await database.admin.findUnique({
-    where: { clerkId: userId },
-  });
-  if (existing) redirect("/");
+  const user = await getCurrentUserState();
+  if (!user) redirect("/sign-in");
+  if (user.memberships.length > 0) redirect("/");
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -25,7 +20,7 @@ const OnboardingPage = async () => {
             Bienvenido a LoadZone
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Crea tu equipo para empezar a registrar el bienestar de tus
+            Crea tu club y tu primer equipo para empezar a trabajar con tus
             jugadores.
           </p>
         </div>
@@ -35,8 +30,8 @@ const OnboardingPage = async () => {
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Podrás añadir jugadores y temporadas desde el panel después de crear
-          tu equipo.
+          Después podrás añadir jugadores, temporadas, sesiones y formularios
+          desde el panel.
         </p>
       </div>
     </div>
