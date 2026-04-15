@@ -78,18 +78,23 @@ export function PushPrompt({ token, apiUrl }: PushPromptProperties) {
   }
 
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="rounded-3xl bg-bg-secondary p-4">
       <div className="flex items-start gap-3">
-        <BellIcon className="mt-0.5 h-5 w-5 text-primary" />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-bg-primary">
+          <BellIcon className="h-5 w-5 text-text-brand" />
+        </div>
         <div className="flex-1">
-          <p className="text-sm font-medium">Activar notificaciones</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-sm font-medium text-text-primary">
+            Activar notificaciones
+          </p>
+          <p className="mt-1 text-xs text-text-secondary">
             Recibe recordatorios para rellenar tu registro diario.
           </p>
         </div>
         <Button
           size="sm"
           variant="outline"
+          className="rounded-full border-border-secondary bg-bg-primary hover:bg-bg-tertiary"
           onClick={handleSubscribe}
           disabled={loading}
         >

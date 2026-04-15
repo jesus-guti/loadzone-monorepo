@@ -54,14 +54,14 @@ export const GlobalSidebar = ({
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" className="cursor-default" asChild>
                 <div>
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-brand text-brand-foreground">
                     <ShieldIcon className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
                       {teamName ?? "LoadZone"}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-xs uppercase tracking-[0.14em] text-text-secondary">
                       Panel de control
                     </span>
                   </div>
@@ -100,7 +100,7 @@ export const GlobalSidebar = ({
 
         <SidebarFooter>
           <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuItem className="flex items-center gap-2 border-t border-border-secondary pt-2">
               <UserButton
                 appearance={{
                   elements: {

@@ -10,7 +10,7 @@ type RootLayoutProperties = {
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html className={fonts} lang="en" suppressHydrationWarning>
-    <body>
+    <body className="bg-bg-primary text-text-primary antialiased">
       <DesignSystemProvider
         helpUrl={env.NEXT_PUBLIC_DOCS_URL}
         privacyUrl={new URL(

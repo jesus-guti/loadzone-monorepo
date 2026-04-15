@@ -17,11 +17,11 @@ type HeaderProps = {
 };
 
 export const Header = ({ pages, page, children }: HeaderProps) => (
-  <header className="flex h-16 shrink-0 items-center justify-between gap-2">
-    <div className="flex items-center gap-2 px-4">
+  <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border-secondary bg-bg-primary px-4 md:px-6">
+    <div className="flex min-w-0 items-center gap-2">
       <SidebarTrigger className="-ml-1" />
       <Separator className="mr-2 h-4" orientation="vertical" />
-      <Breadcrumb>
+      <Breadcrumb className="min-w-0">
         <BreadcrumbList>
           {pages.map((page, index) => (
             <Fragment key={page}>
@@ -38,6 +38,6 @@ export const Header = ({ pages, page, children }: HeaderProps) => (
         </BreadcrumbList>
       </Breadcrumb>
     </div>
-    {children}
+    <div className="flex items-center gap-2">{children}</div>
   </header>
 );

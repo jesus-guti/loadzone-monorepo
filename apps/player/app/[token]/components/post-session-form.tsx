@@ -22,11 +22,11 @@ const BORG_LABELS: Record<number, string> = {
 };
 
 function borgColor(value: number): string {
-  if (value <= 2) return "bg-green-500 text-white";
-  if (value <= 4) return "bg-lime-500 text-white";
-  if (value <= 6) return "bg-yellow-500 text-white";
-  if (value <= 8) return "bg-orange-500 text-white";
-  return "bg-red-500 text-white";
+  if (value <= 2) return "bg-brand text-brand-foreground";
+  if (value <= 4) return "bg-brand text-brand-foreground";
+  if (value <= 6) return "bg-bg-quaternary text-text-primary";
+  if (value <= 8) return "bg-premium text-premium-foreground";
+  return "bg-danger text-danger-foreground";
 }
 
 type PostSessionFormProperties = {
@@ -61,7 +61,7 @@ export function PostSessionForm({
   const isValid = rpe !== null && duration !== "" && Number(duration) > 0;
 
   return (
-    <form ref={formRef} action={action} className="space-y-6">
+    <form ref={formRef} action={action} className="space-y-5">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="date" value={date} />
 
@@ -81,20 +81,22 @@ export function PostSessionForm({
       />
 
       {rpe !== null && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-text-secondary">
           {BORG_LABELS[rpe]}
         </p>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-3 rounded-3xl bg-bg-secondary p-4">
         <label
           htmlFor="duration"
-          className="text-sm font-medium text-foreground"
+          className="text-sm font-medium text-text-primary"
         >
           Duración de la sesión (minutos)
         </label>
-        <div className="flex items-center gap-2">
-          <TimerIcon className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-3 rounded-[1.25rem] bg-bg-primary px-4 py-3">
+          <div className="flex size-9 items-center justify-center rounded-full bg-bg-tertiary">
+            <TimerIcon className="h-4 w-4 text-text-secondary" />
+          </div>
           <input
             id="duration"
             name="duration"
@@ -104,7 +106,7 @@ export function PostSessionForm({
             placeholder="90"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            className="flex h-12 w-full rounded-xl border border-border bg-card px-4 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="h-12 w-full bg-transparent text-base text-text-primary placeholder:text-text-tertiary focus:outline-none"
           />
         </div>
       </div>
@@ -112,7 +114,7 @@ export function PostSessionForm({
       <Button
         type="submit"
         disabled={!isValid || isPending}
-        className="h-14 w-full rounded-2xl text-lg font-semibold"
+        className="h-14 w-full rounded-full text-lg font-semibold"
         size="lg"
       >
         {isPending ? (

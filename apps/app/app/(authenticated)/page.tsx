@@ -85,12 +85,14 @@ const Dashboard = async () => {
   return (
     <>
       <Header page="Dashboard" pages={["LoadZone"]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:px-6">
         {!team ? (
-          <div className="flex flex-1 items-center justify-center rounded-xl bg-muted/50 p-8 text-center">
-            <div>
-              <h2 className="text-xl font-semibold">Equipo no encontrado</h2>
-              <p className="mt-2 text-muted-foreground">
+          <div className="flex flex-1 items-center justify-center rounded-md border border-border-secondary bg-bg-secondary px-8 py-12 text-center">
+            <div className="max-w-sm">
+              <h2 className="text-xl font-semibold text-text-primary">
+                Equipo no encontrado
+              </h2>
+              <p className="mt-2 text-sm text-text-secondary">
                 No se pudo cargar la información del equipo.
               </p>
             </div>

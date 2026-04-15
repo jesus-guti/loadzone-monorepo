@@ -42,24 +42,24 @@ const ENERGY_ICONS: Record<number, ReactNode> = {
 
 function energyColor(value: number): string {
   const colors: Record<number, string> = {
-    1: "bg-red-500 text-white",
-    2: "bg-orange-500 text-white",
-    3: "bg-yellow-500 text-white",
-    4: "bg-lime-500 text-white",
-    5: "bg-green-500 text-white",
+    1: "bg-danger text-danger-foreground",
+    2: "bg-premium text-premium-foreground",
+    3: "bg-bg-quaternary text-text-primary",
+    4: "bg-brand text-brand-foreground",
+    5: "bg-brand text-brand-foreground",
   };
-  return colors[value] ?? "bg-muted text-muted-foreground";
+  return colors[value] ?? "bg-bg-tertiary text-text-secondary";
 }
 
 function sorenessColor(value: number): string {
   const colors: Record<number, string> = {
-    1: "bg-green-500 text-white",
-    2: "bg-lime-500 text-white",
-    3: "bg-yellow-500 text-white",
-    4: "bg-orange-500 text-white",
-    5: "bg-red-500 text-white",
+    1: "bg-brand text-brand-foreground",
+    2: "bg-brand text-brand-foreground",
+    3: "bg-bg-quaternary text-text-primary",
+    4: "bg-premium text-premium-foreground",
+    5: "bg-danger text-danger-foreground",
   };
-  return colors[value] ?? "bg-muted text-muted-foreground";
+  return colors[value] ?? "bg-bg-tertiary text-text-secondary";
 }
 
 export function PreSessionForm({
@@ -115,7 +115,7 @@ export function PreSessionForm({
 
   return (
     <>
-      <form ref={formRef} action={action} className="space-y-6">
+      <form ref={formRef} action={action} className="space-y-5">
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="date" value={date} />
 
@@ -153,15 +153,17 @@ export function PreSessionForm({
           getColor={(v) => sorenessColor(v)}
         />
 
-        <div className="space-y-2">
+        <div className="space-y-3 rounded-3xl bg-bg-secondary p-4">
           <label
             htmlFor="sleepHours"
-            className="text-sm font-medium text-foreground"
+            className="text-sm font-medium text-text-primary"
           >
             Horas de sueño
           </label>
-          <div className="flex items-center gap-2">
-            <MoonIcon className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-3 rounded-[1.25rem] bg-bg-primary px-4 py-3">
+            <div className="flex size-9 items-center justify-center rounded-full bg-bg-tertiary">
+              <MoonIcon className="h-4 w-4 text-text-secondary" />
+            </div>
             <input
               id="sleepHours"
               name="sleepHours"
@@ -172,7 +174,7 @@ export function PreSessionForm({
               placeholder="7.5"
               value={sleepHours}
               onChange={(e) => setSleepHours(e.target.value)}
-              className="flex h-12 w-full rounded-xl border border-border bg-card px-4 text-base text-foreground shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="h-12 w-full bg-transparent text-base text-text-primary placeholder:text-text-tertiary focus:outline-none"
             />
           </div>
         </div>
@@ -196,7 +198,7 @@ export function PreSessionForm({
           type="button"
           onClick={handleSubmit}
           disabled={!isValid || isPending}
-          className="h-14 w-full rounded-2xl text-lg font-semibold"
+          className="h-14 w-full rounded-full text-lg font-semibold"
           size="lg"
         >
           {isPending ? (

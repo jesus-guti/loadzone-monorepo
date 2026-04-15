@@ -6,10 +6,10 @@ export const Search = () => (
   <form action="/search" className="flex items-center gap-2 px-4">
     <div className="relative">
       <div className="absolute top-px bottom-px left-px flex h-8 w-8 items-center justify-center">
-        <SearchIcon className="text-muted-foreground" size={16} />
+        <SearchIcon className="text-text-tertiary" size={16} />
       </div>
       <Input
-        className="h-auto bg-background py-1.5 pr-3 pl-8 text-xs"
+        className="h-auto rounded-md border-border-secondary bg-bg-primary py-1.5 pr-3 pl-8 text-xs"
         name="q"
         placeholder="Search"
         type="text"
@@ -19,7 +19,7 @@ export const Search = () => (
         size="icon"
         variant="ghost"
       >
-        <ArrowRightIcon className="text-muted-foreground" size={16} />
+        <ArrowRightIcon className="text-text-tertiary" size={16} />
       </Button>
     </div>
   </form>

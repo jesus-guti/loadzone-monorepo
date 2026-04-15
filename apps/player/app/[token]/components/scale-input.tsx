@@ -16,9 +16,9 @@ type ScaleInputProperties = {
 
 function defaultColor(value: number, max: number): string {
   const ratio = value / max;
-  if (ratio <= 0.3) return "bg-red-500 text-white";
-  if (ratio <= 0.6) return "bg-yellow-500 text-white";
-  return "bg-green-500 text-white";
+  if (ratio <= 0.3) return "bg-danger text-danger-foreground";
+  if (ratio <= 0.6) return "bg-premium text-premium-foreground";
+  return "bg-brand text-brand-foreground";
 }
 
 export function ScaleInput({
@@ -34,8 +34,8 @@ export function ScaleInput({
   const options = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">{label}</label>
+    <div className="space-y-3 rounded-3xl bg-bg-secondary p-4">
+      <label className="text-sm font-medium text-text-primary">{label}</label>
       <input type="hidden" name={name} value={value ?? ""} />
       <div className="flex flex-wrap gap-2">
         {options.map((n) => (
@@ -47,10 +47,10 @@ export function ScaleInput({
               if (navigator.vibrate) navigator.vibrate(10);
             }}
             className={cn(
-              "flex min-h-[48px] min-w-[48px] items-center justify-center rounded-xl border-2 text-base font-semibold transition-all active:scale-95",
+              "flex min-h-14 min-w-14 items-center justify-center rounded-[1.25rem] border border-transparent bg-bg-secondary px-3 text-base font-semibold text-text-secondary transition-all active:scale-[0.98]",
               value === n
-                ? `${getColor(n, max)} border-transparent shadow-md`
-                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                ? `${getColor(n, max)} ring-1 ring-ring/15`
+                : "hover:bg-bg-tertiary hover:text-text-primary"
             )}
           >
             {renderLabel ? renderLabel(n) : n}
