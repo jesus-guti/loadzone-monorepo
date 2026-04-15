@@ -74,6 +74,14 @@ const Dashboard = async () => {
       })
     : [];
 
+  const playersForOverview = players.map((player) => ({
+    ...player,
+    stats: player.stats.map((stat) => ({
+      riskLevel: stat.riskLevel,
+      acwr: stat.acwr == null ? null : Number(stat.acwr),
+    })),
+  }));
+
   return (
     <>
       <Header page="Dashboard" pages={["LoadZone"]} />
@@ -91,7 +99,7 @@ const Dashboard = async () => {
           <TeamOverview
             teamName={team.name}
             seasonName={activeSeason?.name}
-            players={players}
+            players={playersForOverview}
           />
         )}
       </div>

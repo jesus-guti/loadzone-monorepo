@@ -13,7 +13,7 @@ type Anomaly = {
 export const detectAnomalies = tool({
   description:
     "Detect anomalies and concerning patterns in team wellness data. Checks for sustained RPE spikes, TQR drops, poor sleep, and ACWR danger zones.",
-  parameters: z.object({
+  inputSchema: z.object({
     teamId: z.string().describe("The team ID to check"),
     seasonId: z.string().describe("The season ID to filter by"),
   }),

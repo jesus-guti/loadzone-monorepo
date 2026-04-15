@@ -5,7 +5,7 @@ import { z } from "zod";
 export const getPlayerRiskProfile = tool({
   description:
     "Get detailed risk profile for a specific player including ACWR trend, training load history, and recovery metrics.",
-  parameters: z.object({
+  inputSchema: z.object({
     playerId: z.string().describe("The player ID to analyze"),
   }),
   execute: async ({ playerId }) => {

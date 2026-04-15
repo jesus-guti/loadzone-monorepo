@@ -44,7 +44,7 @@ export async function createSeason(
 
     if (!parsed.success) {
       const firstError =
-        parsed.error.errors[0]?.message ?? "Datos no válidos.";
+        parsed.error.issues[0]?.message ?? "Datos no válidos.";
       return { success: false, error: firstError };
     }
 

@@ -5,7 +5,7 @@ import { z } from "zod";
 export const analyzeTeamWellness = tool({
   description:
     "Analyze the overall wellness status of a team for a given season. Returns player stats, risk levels, and trends.",
-  parameters: z.object({
+  inputSchema: z.object({
     teamId: z.string().describe("The team ID to analyze"),
     seasonId: z.string().describe("The season ID to filter by"),
   }),

@@ -7,7 +7,7 @@ import {
   detectAnomalies,
 } from "@repo/ai/tools";
 import { database } from "@repo/database";
-import { convertToModelMessages, type UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, type UIMessage } from "ai";
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -66,7 +66,7 @@ Reglas:
       getPlayerRiskProfile,
       detectAnomalies,
     },
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),
   });
 
   return result.toUIMessageStreamResponse();

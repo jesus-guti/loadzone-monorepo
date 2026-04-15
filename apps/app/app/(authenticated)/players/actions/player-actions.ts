@@ -34,7 +34,7 @@ export async function createPlayer(
     });
 
     if (!parsed.success) {
-      return { success: false, error: parsed.error.errors[0]?.message };
+      return { success: false, error: parsed.error.issues[0]?.message };
     }
 
     const teamId = await getTeamId();
@@ -78,7 +78,7 @@ export async function updatePlayer(
     });
 
     if (!parsed.success) {
-      return { success: false, error: parsed.error.errors[0]?.message };
+      return { success: false, error: parsed.error.issues[0]?.message };
     }
 
     const teamId = await getTeamId();

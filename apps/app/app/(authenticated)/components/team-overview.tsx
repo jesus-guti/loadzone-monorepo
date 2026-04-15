@@ -1,7 +1,6 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import type { PlayerStatus } from "@repo/database";
-import type { Decimal } from "@repo/database";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -28,7 +27,7 @@ type PlayerSummary = {
   }[];
   stats: {
     riskLevel: string | null;
-    acwr: Decimal | null;
+    acwr: number | null;
   }[];
 };
 
