@@ -1,6 +1,6 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import type { PlayerStatus } from "@repo/database";
+import type { PlayerStatus, RiskLevel } from "@repo/database";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -27,7 +27,7 @@ type PlayerSummary = {
     physioAlert: boolean;
   }[];
   stats: {
-    riskLevel: string | null;
+    riskLevel: RiskLevel | null;
     acwr: number | null;
   }[];
 };
@@ -38,30 +38,30 @@ type TeamOverviewProperties = {
   readonly players: PlayerSummary[];
 };
 
-function getRiskColor(riskLevel: string | null | undefined): string {
+function getRiskColor(riskLevel: RiskLevel | null | undefined): string {
   switch (riskLevel) {
-    case "critical":
+    case "CRITICAL":
       return "bg-danger";
-    case "high":
+    case "HIGH":
       return "bg-premium";
-    case "moderate":
+    case "MODERATE":
       return "bg-bg-quaternary";
-    case "low":
+    case "LOW":
       return "bg-brand";
     default:
       return "bg-border-tertiary";
   }
 }
 
-function getRiskLabel(riskLevel: string | null | undefined): string {
+function getRiskLabel(riskLevel: RiskLevel | null | undefined): string {
   switch (riskLevel) {
-    case "critical":
+    case "CRITICAL":
       return "Crítico";
-    case "high":
+    case "HIGH":
       return "Alto";
-    case "moderate":
+    case "MODERATE":
       return "Moderado";
-    case "low":
+    case "LOW":
       return "Bajo";
     default:
       return "Sin datos";
@@ -103,8 +103,8 @@ export function TeamOverview({
   ).length;
   const alertCount = players.filter(
     (p) =>
-      p.stats[0]?.riskLevel === "high" ||
-      p.stats[0]?.riskLevel === "critical" ||
+      p.stats[0]?.riskLevel === "HIGH" ||
+      p.stats[0]?.riskLevel === "CRITICAL" ||
       p.entries[0]?.physioAlert
   ).length;
   const registeredToday = players.filter(

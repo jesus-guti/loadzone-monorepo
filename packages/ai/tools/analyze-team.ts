@@ -71,7 +71,7 @@ export const analyzeTeamWellness = tool({
     });
 
     const highRiskCount = summary.filter(
-      (p) => p.riskLevel === "high" || p.riskLevel === "critical"
+      (p) => p.riskLevel === "HIGH" || p.riskLevel === "CRITICAL"
     ).length;
 
     const physioAlerts = summary.filter((p) => p.physioAlert).length;

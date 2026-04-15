@@ -1,5 +1,6 @@
 "use client";
 
+import type { RiskLevel } from "@repo/database";
 import {
   Card,
   CardContent,
@@ -43,7 +44,7 @@ type StatsData = {
   acwr: number | null;
   acuteLoad: number | null;
   chronicLoad: number | null;
-  riskLevel: string | null;
+  riskLevel: RiskLevel | null;
   tqrAvg7d: number | null;
   rpeAvg7d: number | null;
 };
