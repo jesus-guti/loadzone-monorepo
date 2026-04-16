@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { FireIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
@@ -12,7 +13,6 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FlameIcon, PlusIcon } from "lucide-react";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 import { CopyTokenButton } from "./components/copy-token-button";
@@ -43,10 +43,10 @@ const STATUS_VARIANTS: Record<
 
 const PlayersPage = async () => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) notFound();
+  if (!staffContext?.activeTeam) notFound();
 
   const players = await database.player.findMany({
-    where: { teamId: staffContext.primaryTeam.id, isArchived: false },
+    where: { teamId: staffContext.activeTeam.id, isArchived: false },
     select: {
       id: true,
       name: true,
@@ -120,7 +120,7 @@ const PlayersPage = async () => {
                     <TableCell>
                       {player.currentStreak > 0 && (
                         <span className="flex items-center gap-1 text-sm">
-                          <FlameIcon className="h-3 w-3 text-orange-500" />
+                          <FireIcon className="size-3 text-premium" />
                           {player.currentStreak}
                         </span>
                       )}

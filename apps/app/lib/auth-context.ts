@@ -3,11 +3,24 @@ import {
   type CurrentUser,
 } from "@repo/auth/server";
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
+import { cookies } from "next/headers";
+
+export const ACTIVE_TEAM_COOKIE_NAME = "loadzone_active_team";
+export const ACTIVE_SEASON_COOKIE_NAME = "loadzone_active_season";
+
+export type SeasonSummary = {
+  id: string;
+  name: string;
+  label: string;
+  startDate: Date;
+  endDate: Date;
+};
 
 export type TeamSummary = {
   id: string;
   name: string;
   category: string | null;
+  logoUrl: string | null;
   timezone: string;
   preSessionReminderMinutes: number | null;
   postSessionReminderMinutes: number | null;
@@ -18,16 +31,31 @@ export type StaffContext = {
   platformRole: PlatformRole;
   membershipId: string;
   role: MembershipRole;
+  canCreateTeam: boolean;
   club: {
     id: string;
     name: string;
+    logoUrl: string | null;
   };
   teams: TeamSummary[];
+  activeTeam: TeamSummary | null;
+  activeTeamSeasons: SeasonSummary[];
+  activeSeason: SeasonSummary | null;
+  defaultTeam: TeamSummary | null;
   primaryTeam: TeamSummary | null;
 };
 
 export async function getCurrentUserState(): Promise<CurrentUser | null> {
   return currentUser();
+}
+
+function formatSeasonLabel(seasonName: string): string {
+  const match = seasonName.match(/(20\d{2}).*?(20\d{2})/);
+  if (!match) {
+    return seasonName;
+  }
+
+  return `${match[1]?.slice(-2)}/${match[2]?.slice(-2)}`;
 }
 
 export async function getCurrentStaffContext(): Promise<StaffContext | null> {
@@ -47,31 +75,88 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
     return null;
   }
 
-  const teams = await database.team.findMany({
-    where: membership.hasAllTeams
-      ? { clubId: membership.clubId }
-      : { id: { in: membership.teamIds } },
-    select: {
-      id: true,
-      name: true,
-      category: true,
-      timezone: true,
-      preSessionReminderMinutes: true,
-      postSessionReminderMinutes: true,
-    },
-    orderBy: { name: "asc" },
-  });
+  const cookieStore = await cookies();
+  const requestedActiveTeamId =
+    cookieStore.get(ACTIVE_TEAM_COOKIE_NAME)?.value ?? null;
+  const requestedActiveSeasonId =
+    cookieStore.get(ACTIVE_SEASON_COOKIE_NAME)?.value ?? null;
+  const [club, teams] = await Promise.all([
+    database.club.findUnique({
+      where: { id: membership.clubId },
+      select: {
+        id: true,
+        name: true,
+        logoUrl: true,
+      },
+    }),
+    database.team.findMany({
+      where: membership.hasAllTeams
+        ? { clubId: membership.clubId }
+        : { id: { in: membership.teamIds } },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        logoUrl: true,
+        timezone: true,
+        preSessionReminderMinutes: true,
+        postSessionReminderMinutes: true,
+      },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+  const defaultTeam = teams[0] ?? null;
+  const activeTeam =
+    teams.find((team) => team.id === requestedActiveTeamId) ?? defaultTeam;
+  const activeTeamSeasons = activeTeam
+    ? await database.season.findMany({
+        where: {
+          teamId: activeTeam.id,
+        },
+        orderBy: [{ startDate: "desc" }, { name: "desc" }],
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+        },
+      })
+    : [];
+  const currentDate = new Date();
+  const defaultSeason =
+    activeTeamSeasons.find((season) => {
+      return season.startDate <= currentDate && season.endDate >= currentDate;
+    }) ?? activeTeamSeasons[0] ?? null;
+  const activeSeasonRecord =
+    activeTeamSeasons.find((season) => season.id === requestedActiveSeasonId) ??
+    defaultSeason;
+  const seasonSummaries: SeasonSummary[] = activeTeamSeasons.map((season) => ({
+    id: season.id,
+    name: season.name,
+    label: formatSeasonLabel(season.name),
+    startDate: season.startDate,
+    endDate: season.endDate,
+  }));
+  const activeSeason =
+    seasonSummaries.find((season) => season.id === activeSeasonRecord?.id) ?? null;
 
   return {
     user,
     platformRole: user.platformRole,
     membershipId: membership.id,
     role: membership.role,
+    canCreateTeam:
+      membership.role === "COORDINATOR" || user.platformRole === "SUPER_ADMIN",
     club: {
       id: membership.clubId,
-      name: membership.clubName,
+      name: club?.name ?? membership.clubName,
+      logoUrl: club?.logoUrl ?? null,
     },
     teams,
-    primaryTeam: teams[0] ?? null,
+    activeTeam,
+    activeTeamSeasons: seasonSummaries,
+    activeSeason,
+    defaultTeam,
+    primaryTeam: activeTeam,
   };
 }

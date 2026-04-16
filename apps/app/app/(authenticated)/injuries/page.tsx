@@ -17,15 +17,13 @@ export const metadata: Metadata = {
 
 const InjuriesPage = async () => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) {
+  if (!staffContext?.activeTeam) {
     notFound();
   }
 
   const injuries = await database.injuryReport.findMany({
     where: {
-      teamId: {
-        in: staffContext.teams.map((team) => team.id),
-      },
+      teamId: staffContext.activeTeam.id,
     },
     orderBy: {
       reportedAt: "desc",
@@ -42,11 +40,6 @@ const InjuriesPage = async () => {
       reportedAt: true,
       reportedByPlayer: true,
       player: {
-        select: {
-          name: true,
-        },
-      },
-      team: {
         select: {
           name: true,
         },
@@ -72,7 +65,6 @@ const InjuriesPage = async () => {
                   {injury.player.name}: {injury.title}
                 </CardTitle>
                 <p className="text-sm text-text-secondary">
-                  {injury.team.name} ·{" "}
                   {new Date(injury.reportedAt).toLocaleString("es-ES")} ·{" "}
                   {injury.bodyPart ?? "Sin localización"} · {injury.severity} ·{" "}
                   {injury.reportedByPlayer ? "Jugador" : "Staff"}

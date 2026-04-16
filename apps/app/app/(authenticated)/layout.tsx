@@ -19,11 +19,8 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <SidebarProvider>
-      <GlobalSidebar
-        clubName={staffContext.club.name}
-        teamName={staffContext.primaryTeam?.name}
-      >
+    <SidebarProvider defaultOpen={false}>
+      <GlobalSidebar staffContext={staffContext}>
         {children}
       </GlobalSidebar>
     </SidebarProvider>

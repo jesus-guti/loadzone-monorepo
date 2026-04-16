@@ -1,4 +1,5 @@
 import type { DefaultSession } from "next-auth";
+import type { JWT as DefaultJWT } from "next-auth/jwt";
 import type { MembershipRole, PlatformRole } from "@repo/database";
 
 type MembershipSummary = {
@@ -17,5 +18,12 @@ declare module "next-auth" {
       platformRole: PlatformRole;
       memberships: MembershipSummary[];
     };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    platformRole?: PlatformRole;
+    memberships?: MembershipSummary[];
   }
 }

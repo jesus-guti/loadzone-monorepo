@@ -7,7 +7,6 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 
 const createSessionSchema = z
   .object({
-    teamId: z.string(),
     title: z.string().min(2).max(100),
     type: z.enum(["TRAINING", "MATCH", "RECOVERY", "OTHER"]),
     visibility: z.enum(["TEAM_PRIVATE", "CLUB_SHARED"]),
@@ -26,12 +25,11 @@ const createSessionSchema = z
 
 export async function createSession(formData: FormData): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) {
+  if (!staffContext?.activeTeam) {
     throw new Error("Equipo no encontrado");
   }
 
   const parsed = createSessionSchema.safeParse({
-    teamId: formData.get("teamId"),
     title: formData.get("title"),
     type: formData.get("type"),
     visibility: formData.get("visibility"),
@@ -45,28 +43,22 @@ export async function createSession(formData: FormData): Promise<void> {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos no válidos");
   }
 
-  const selectedTeam = staffContext.teams.find(
-    (team) => team.id === parsed.data.teamId
-  );
-
-  if (!selectedTeam) {
-    throw new Error("No tienes acceso a ese equipo.");
-  }
-
   await database.teamSession.create({
     data: {
       clubId: staffContext.club.id,
-      teamId: selectedTeam.id,
+      teamId: staffContext.activeTeam.id,
       title: parsed.data.title,
       type: parsed.data.type,
       visibility: parsed.data.visibility,
       startsAt: new Date(parsed.data.startsAt),
       endsAt: new Date(parsed.data.endsAt),
-      timezone: selectedTeam.timezone,
+      timezone: staffContext.activeTeam.timezone,
       preReminderMinutes:
-        parsed.data.preReminderMinutes ?? selectedTeam.preSessionReminderMinutes,
+        parsed.data.preReminderMinutes ??
+        staffContext.activeTeam.preSessionReminderMinutes,
       postReminderMinutes:
-        parsed.data.postReminderMinutes ?? selectedTeam.postSessionReminderMinutes,
+        parsed.data.postReminderMinutes ??
+        staffContext.activeTeam.postSessionReminderMinutes,
     },
   });
 
@@ -75,16 +67,14 @@ export async function createSession(formData: FormData): Promise<void> {
 
 export async function cancelSession(sessionId: string): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext) {
+  if (!staffContext?.activeTeam) {
     throw new Error("Equipo no encontrado");
   }
 
   const teamSession = await database.teamSession.findFirst({
     where: {
       id: sessionId,
-      teamId: {
-        in: staffContext.teams.map((team) => team.id),
-      },
+      teamId: staffContext.activeTeam.id,
     },
     select: { id: true },
   });

@@ -1,0 +1,16 @@
+---
+description: Team-centric shell guidance for the admin app.
+globs: apps/app/{app/(authenticated),lib}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# LoadZone Admin Shell
+
+- The authenticated admin shell must be centered on a single `activeTeam`.
+- Resolve `activeTeam` from one central server helper and validate it against accessible teams.
+- Do not introduce new daily operational views that mix multiple teams in the same screen.
+- Desktop sidebar and mobile bottom navigation must share the same primary navigation config.
+- Keep `Dashboard`, `Wellness`, `Sesiones`, and `Configuración` as the only primary destinations.
+- Treat `Players`, `Seasons`, `Injuries`, and `Analysis` as secondary surfaces reachable from menus or contextual links.
+- Prefer club/team branding in the shell with `Team.logoUrl` first and `Club.logoUrl` as fallback.
+- Keep shell-specific mobile navigation in `apps/app`; shared primitives in `packages/design-system` must remain app-agnostic.

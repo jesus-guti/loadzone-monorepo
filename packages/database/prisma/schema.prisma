@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider     = "postgresql"
-  relationMode = "prisma"
+  relationMode = "foreignKeys"
 }
 
 enum PlatformRole {

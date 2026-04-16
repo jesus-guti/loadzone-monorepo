@@ -18,6 +18,9 @@
     "boundaries": "turbo boundaries",
     "bump-deps": "npx npm-check-updates --deep -u -x recharts && pnpm install",
     "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
+    "db:reset": "pnpm --filter @repo/database exec prisma format --schema ./prisma/schema.prisma && pnpm --filter @repo/database exec prisma generate --schema ./prisma/schema.prisma && pnpm --filter @repo/database exec prisma db push --force-reset --accept-data-loss --schema ./prisma/schema.prisma",
+    "db:bootstrap": "pnpm --filter @repo/database bootstrap",
+    "db:setup": "pnpm db:reset && pnpm db:bootstrap",
     "migrate": "cd packages/database && npx prisma format && npx prisma generate && npx prisma db push",
     "clean": "git clean -xdf node_modules"
   },

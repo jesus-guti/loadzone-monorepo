@@ -1,8 +1,8 @@
 "use client";
 
+import { CheckIcon, ClipboardDocumentIcon } from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "@repo/design-system/components/ui/sonner";
-import { CopyIcon, CheckIcon } from "lucide-react";
 import { useState } from "react";
 
 type CopyTokenButtonProperties = {
@@ -31,9 +31,9 @@ export function CopyTokenButton({ token }: CopyTokenButtonProperties) {
   return (
     <Button variant="ghost" size="sm" onClick={handleCopy}>
       {copied ? (
-        <CheckIcon className="h-4 w-4 text-green-500" />
+        <CheckIcon className="size-4 text-brand" />
       ) : (
-        <CopyIcon className="h-4 w-4" />
+        <ClipboardDocumentIcon className="size-4" />
       )}
       <span className="sr-only">Copiar enlace</span>
     </Button>

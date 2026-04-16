@@ -1,5 +1,6 @@
 "use client";
 
+import { ArchiveBoxIcon } from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   AlertDialog,
@@ -12,7 +13,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@repo/design-system/components/ui/alert-dialog";
-import { ArchiveIcon } from "lucide-react";
 import { toast } from "@repo/design-system/components/ui/sonner";
 import { archivePlayer } from "../actions/player-actions";
 
@@ -38,7 +38,7 @@ export function ArchiveButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="sm">
-          <ArchiveIcon className="h-4 w-4 text-muted-foreground" />
+          <ArchiveBoxIcon className="size-4 text-text-secondary" />
           <span className="sr-only">Archivar</span>
         </Button>
       </AlertDialogTrigger>

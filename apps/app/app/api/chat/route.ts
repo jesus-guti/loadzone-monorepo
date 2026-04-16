@@ -11,31 +11,22 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export async function POST(request: Request) {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) {
+  if (!staffContext?.activeTeam) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   const team = await database.team.findUnique({
-    where: { id: staffContext.primaryTeam.id },
+    where: { id: staffContext.activeTeam.id },
     select: {
       id: true,
       name: true,
-      seasons: {
-        where: {
-          startDate: { lte: new Date() },
-          endDate: { gte: new Date() },
-        },
-        take: 1,
-        select: { id: true, name: true },
-      },
     },
   });
 
   if (!team) {
     return new Response("Team not found", { status: 404 });
   }
-
-  const activeSeason = team.seasons[0];
+  const activeSeason = staffContext.activeSeason;
 
   const { messages }: { messages: UIMessage[] } = await request.json();
 

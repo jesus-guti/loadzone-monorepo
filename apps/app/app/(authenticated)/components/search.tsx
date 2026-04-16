@@ -1,12 +1,15 @@
+import {
+  ArrowRightIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { ArrowRightIcon, SearchIcon } from "lucide-react";
 
 export const Search = () => (
   <form action="/search" className="flex items-center gap-2 px-4">
     <div className="relative">
       <div className="absolute top-px bottom-px left-px flex h-8 w-8 items-center justify-center">
-        <SearchIcon className="text-text-tertiary" size={16} />
+        <MagnifyingGlassIcon className="size-4 text-text-tertiary" />
       </div>
       <Input
         className="h-auto rounded-md border-border-secondary bg-bg-primary py-1.5 pr-3 pl-8 text-xs"
@@ -19,7 +22,7 @@ export const Search = () => (
         size="icon"
         variant="ghost"
       >
-        <ArrowRightIcon className="text-text-tertiary" size={16} />
+        <ArrowRightIcon className="size-4 text-text-tertiary" />
       </Button>
     </div>
   </form>

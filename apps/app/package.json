@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@prisma/client": "7.1.0",
     "@repo/ai": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",

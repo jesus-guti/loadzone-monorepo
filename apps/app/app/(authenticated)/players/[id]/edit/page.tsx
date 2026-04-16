@@ -16,10 +16,10 @@ type EditPlayerPageProperties = {
 const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
   const { id } = await params;
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) notFound();
+  if (!staffContext?.activeTeam) notFound();
 
   const player = await database.player.findUnique({
-    where: { id, teamId: staffContext.primaryTeam.id },
+    where: { id, teamId: staffContext.activeTeam.id },
     select: { id: true, name: true, status: true },
   });
 

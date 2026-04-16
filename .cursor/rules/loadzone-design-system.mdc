@@ -21,3 +21,11 @@ alwaysApply: false
 
 - `apps/app`: Attio/Squarespace style, denser layout, smaller radius, subtle visible borders.
 - `apps/player`: Airbnb style, invisible design, larger radius, minimal borders, softer surfaces.
+
+## Iconos
+
+- En `apps/app` usa `@heroicons/react/20/solid` por defecto.
+- Solo usa `@heroicons/react/24/outline` si el icono necesita más aire en superficies grandes.
+- No importes `lucide-react` en `apps/app/**`.
+- `lucide-react` queda reservado a los primitivos internos shadcn en `packages/design-system/components/ui/*`.
+- Controla tamaño y densidad de iconos con `className` (`size-4`, `size-5`) sobre `Button`, `Badge` y demás primitivas existentes.

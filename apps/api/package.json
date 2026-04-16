@@ -13,6 +13,7 @@
         "typecheck": "tsc --noEmit --emitDeclarationOnly false"
     },
     "dependencies": {
+        "@prisma/client": "7.1.0",
         "@repo/auth": "workspace:*",
         "@repo/database": "workspace:*",
         "@repo/design-system": "workspace:*",

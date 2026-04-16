@@ -4,6 +4,7 @@ import { compare, hash } from "bcryptjs";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 import { keys } from "./keys";
@@ -75,11 +76,30 @@ async function getMemberships(userId: string): Promise<MembershipSummary[]> {
   }));
 }
 
+async function getSessionClaims(
+  userId: string
+): Promise<{
+  platformRole: PlatformRole;
+  memberships: MembershipSummary[];
+}> {
+  const databaseUser = await database.user.findUnique({
+    where: { id: userId },
+    select: {
+      platformRole: true,
+    },
+  });
+
+  return {
+    platformRole: databaseUser?.platformRole ?? "USER",
+    memberships: await getMemberships(userId),
+  };
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(database),
   secret: keys().AUTH_SECRET,
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
   pages: {
     signIn: "/sign-in",
@@ -120,7 +140,21 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      const userId = user?.id ?? token.sub;
+      if (!userId) {
+        return token;
+      }
+
+      const claims = await getSessionClaims(userId);
+
+      return {
+        ...token,
+        platformRole: claims.platformRole,
+        memberships: claims.memberships,
+      };
+    },
+    async session({ session, token }) {
       if (!session.user) {
         return session;
       }
@@ -131,16 +165,14 @@ export const authOptions: NextAuthOptions = {
         memberships: MembershipSummary[];
       };
 
-      const databaseUser = await database.user.findUnique({
-        where: { id: user.id },
-        select: {
-          platformRole: true,
-        },
-      });
+      const sessionToken = token as JWT & {
+        platformRole?: PlatformRole;
+        memberships?: MembershipSummary[];
+      };
 
-      sessionUser.id = user.id;
-      sessionUser.platformRole = databaseUser?.platformRole ?? "USER";
-      sessionUser.memberships = await getMemberships(user.id);
+      sessionUser.id = token.sub ?? "";
+      sessionUser.platformRole = sessionToken.platformRole ?? "USER";
+      sessionUser.memberships = sessionToken.memberships ?? [];
 
       return session;
     },

@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { CalendarIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -10,7 +11,6 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CalendarIcon, PlusIcon } from "lucide-react";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 
@@ -33,10 +33,10 @@ function isActive(season: { startDate: Date; endDate: Date }): boolean {
 
 const SeasonsPage = async () => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) notFound();
+  if (!staffContext?.activeTeam) notFound();
 
   const seasons = await database.season.findMany({
-    where: { teamId: staffContext.primaryTeam.id },
+    where: { teamId: staffContext.activeTeam.id },
     include: {
       _count: { select: { entries: true } },
     },

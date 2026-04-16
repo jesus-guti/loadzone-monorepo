@@ -9,8 +9,8 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 
 async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) throw new Error("Equipo no encontrado");
-  return staffContext.primaryTeam.id;
+  if (!staffContext?.activeTeam) throw new Error("Equipo no encontrado");
+  return staffContext.activeTeam.id;
 }
 
 const createPlayerSchema = z.object({

@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { FireIcon } from "@heroicons/react/20/solid";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
@@ -10,8 +11,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
 import { PlayerCharts } from "./components/player-charts";
+import { PlayerHistoryTable } from "./components/player-history-table";
 import { CopyTokenButton } from "../components/copy-token-button";
-import { FlameIcon } from "lucide-react";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
@@ -33,10 +34,10 @@ const STATUS_LABELS: Record<string, string> = {
 const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
   const { id } = await params;
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) notFound();
+  if (!staffContext?.activeTeam) notFound();
 
   const player = await database.player.findUnique({
-    where: { id, teamId: staffContext.primaryTeam.id },
+    where: { id, teamId: staffContext.activeTeam.id },
     select: {
       id: true,
       name: true,
@@ -61,6 +62,8 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
       sleepQuality: true,
       rpe: true,
       duration: true,
+      preFilledAt: true,
+      postFilledAt: true,
       physioAlert: true,
     },
   });
@@ -102,6 +105,36 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
     rpeAvg7d: s.rpeAvg7d ? Number(s.rpeAvg7d) : null,
   }));
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todayEntry =
+    entries.find((entry) => entry.date.getTime() === today.getTime()) ?? null;
+  const statsByDate = new Map(
+    stats.map((stat) => [new Date(stat.date).toISOString().split("T")[0], stat])
+  );
+  const historyRows = [...entries]
+    .reverse()
+    .map((entry) => {
+      const dateKey = new Date(entry.date).toISOString().split("T")[0];
+      const stat = statsByDate.get(dateKey);
+
+      return {
+        date: dateKey,
+        preFilledAt: entry.preFilledAt,
+        postFilledAt: entry.postFilledAt,
+        recovery: entry.recovery,
+        energy: entry.energy,
+        soreness: entry.soreness,
+        sleepHours: entry.sleepHours ? Number(entry.sleepHours) : null,
+        sleepQuality: entry.sleepQuality,
+        rpe: entry.rpe,
+        duration: entry.duration,
+        physioAlert: entry.physioAlert,
+        riskLevel: stat?.riskLevel ?? null,
+      };
+    });
+
   return (
     <>
       <Header page={player.name} pages={["LoadZone", "Jugadores"]}>
@@ -113,8 +146,17 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
       <div className="space-y-6 p-4 pt-0">
         <div className="flex flex-wrap items-center gap-3">
           <Badge>{STATUS_LABELS[player.status]}</Badge>
+          <Badge variant={todayEntry?.preFilledAt ? "default" : "outline"}>
+            Pre hoy {todayEntry?.preFilledAt ? "ok" : "pendiente"}
+          </Badge>
+          <Badge variant={todayEntry?.postFilledAt ? "default" : "outline"}>
+            Post hoy {todayEntry?.postFilledAt ? "ok" : "pendiente"}
+          </Badge>
+          {todayEntry?.physioAlert && (
+            <Badge variant="destructive">Alerta</Badge>
+          )}
           <span className="flex items-center gap-1 text-sm text-muted-foreground">
-            <FlameIcon className="h-3 w-3 text-orange-500" />
+            <FireIcon className="size-3 text-premium" />
             Racha: {player.currentStreak} días (máx: {player.longestStreak})
           </span>
         </div>
@@ -157,6 +199,7 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
         </div>
 
         <PlayerCharts entries={chartEntries} stats={chartStats} />
+        <PlayerHistoryTable rows={historyRows} />
       </div>
     </>
   );

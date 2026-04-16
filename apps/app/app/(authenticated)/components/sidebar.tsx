@@ -1,6 +1,5 @@
 "use client";
 
-import { UserButton } from "@repo/auth/client";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import {
   Sidebar,
@@ -15,116 +14,130 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/design-system/components/ui/sidebar";
-import {
-  LayoutDashboardIcon,
-  UsersIcon,
-  CalendarIcon,
-  CalendarRangeIcon,
-  BrainCircuitIcon,
-  SettingsIcon,
-  ShieldIcon,
-  HeartPulseIcon,
-} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import type { StaffContext } from "@/lib/auth-context";
+import {
+  primaryNavigation,
+  secondaryNavigation,
+} from "@/lib/admin-navigation";
+import { AppShellProvider } from "./app-shell-context";
+import { MobileBottomNav } from "./mobile-bottom-nav";
+import { TeamBranding } from "./team-branding";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
-  readonly clubName?: string;
-  readonly teamName?: string;
+  readonly staffContext: Pick<
+    StaffContext,
+    | "activeSeason"
+    | "activeTeam"
+    | "activeTeamSeasons"
+    | "canCreateTeam"
+    | "club"
+    | "role"
+    | "teams"
+  >;
 };
-
-const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboardIcon },
-  { title: "Jugadores", url: "/players", icon: UsersIcon },
-  { title: "Temporadas", url: "/seasons", icon: CalendarIcon },
-  { title: "Sesiones", url: "/sessions", icon: CalendarRangeIcon },
-  { title: "Lesiones", url: "/injuries", icon: HeartPulseIcon },
-  { title: "Análisis IA", url: "/analysis", icon: BrainCircuitIcon },
-  { title: "Configuración", url: "/settings", icon: SettingsIcon },
-];
 
 export const GlobalSidebar = ({
   children,
-  clubName,
-  teamName,
+  staffContext,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
 
   return (
-    <>
-      <Sidebar variant="inset">
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" className="cursor-default" asChild>
-                <div>
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-brand text-brand-foreground">
-                    <ShieldIcon className="size-4" />
+    <AppShellProvider value={staffContext}>
+      <>
+        <Sidebar collapsible="icon" variant="inset">
+          <SidebarHeader>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="cursor-default"
+                  size="lg"
+                  tooltip={staffContext.activeTeam?.name ?? staffContext.club.name}
+                  asChild
+                >
+                  <div>
+                    <TeamBranding
+                      clubLogoUrl={staffContext.club.logoUrl}
+                      clubName={staffContext.club.name}
+                      showClubOnly
+                      teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
+                      teamName={staffContext.activeTeam?.name ?? null}
+                    />
                   </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {teamName ?? clubName ?? "LoadZone"}
-                    </span>
-                    <span className="truncate text-xs uppercase tracking-[0.14em] text-text-secondary">
-                      {clubName ?? "Panel de control"}
-                    </span>
-                  </div>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarHeader>
 
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>LoadZone</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => {
-                  const isActive =
-                    item.url === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.url);
-
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={isActive}>
-                        <Link href={item.url}>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Operación</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {primaryNavigation.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={item.match(pathname)}
+                        tooltip={item.label}
+                      >
+                        <Link href={item.href}>
                           <item.icon />
-                          <span>{item.title}</span>
+                          <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2 border-t border-border-secondary pt-2">
-              <UserButton
-                appearance={{
-                  elements: {
-                    rootBox: "flex overflow-hidden w-full",
-                    userButtonBox: "flex-row-reverse",
-                    userButtonOuterIdentifier: "truncate pl-0",
-                  },
-                }}
-                showName
-              />
-              <div className="flex shrink-0 items-center gap-px">
-                <ModeToggle />
+            <SidebarGroup className="pt-2">
+              <SidebarGroupLabel>Accesos</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {secondaryNavigation.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={item.match(pathname)}
+                        tooltip={item.label}
+                      >
+                        <Link href={item.href}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter>
+            <div className="flex items-center justify-between border-t border-border-secondary px-2 pt-3">
+              <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+                <p className="truncate text-xs uppercase tracking-[0.14em] text-text-secondary">
+                  Equipo activo
+                </p>
+                <p className="truncate text-sm font-medium text-text-primary">
+                  {staffContext.activeTeam?.name ?? "Sin equipo"}
+                </p>
               </div>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
-    </>
+              <ModeToggle />
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset className="min-h-svh pb-20 md:pb-0">
+          {children}
+          <MobileBottomNav />
+        </SidebarInset>
+      </>
+    </AppShellProvider>
   );
 };

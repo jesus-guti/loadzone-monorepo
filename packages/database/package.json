@@ -6,6 +6,8 @@
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
+    "bootstrap": "tsx ./scripts/bootstrap.ts",
+    "seed-wellness-demo": "tsx ./scripts/seed-wellness-demo.ts",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
@@ -15,6 +17,7 @@
     "@prisma/client": "7.1.0",
     "@prisma/client-runtime-utils": "^7.1.0",
     "@t3-oss/env-nextjs": "^0.13.8",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "server-only": "^0.0.1",
     "undici": "^7.16.0",
@@ -27,6 +30,7 @@
     "@types/ws": "^8.18.1",
     "bufferutil": "^4.0.9",
     "prisma": "7.1.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

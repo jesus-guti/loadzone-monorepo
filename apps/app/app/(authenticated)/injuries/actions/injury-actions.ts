@@ -13,7 +13,7 @@ const updateInjurySchema = z.object({
 
 export async function updateInjury(formData: FormData): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext) {
+  if (!staffContext?.activeTeam) {
     throw new Error("Equipo no encontrado");
   }
 
@@ -30,9 +30,7 @@ export async function updateInjury(formData: FormData): Promise<void> {
   const injury = await database.injuryReport.findFirst({
     where: {
       id: parsed.data.injuryId,
-      teamId: {
-        in: staffContext.teams.map((team) => team.id),
-      },
+      teamId: staffContext.activeTeam.id,
     },
     select: { id: true },
   });

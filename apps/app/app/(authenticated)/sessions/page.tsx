@@ -25,15 +25,13 @@ function formatDateTime(value: Date): string {
 
 const SessionsPage = async () => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.primaryTeam) {
+  if (!staffContext?.activeTeam) {
     notFound();
   }
 
   const sessions = await database.teamSession.findMany({
     where: {
-      teamId: {
-        in: staffContext.teams.map((team) => team.id),
-      },
+      teamId: staffContext.activeTeam.id,
     },
     orderBy: {
       startsAt: "asc",
@@ -67,22 +65,8 @@ const SessionsPage = async () => {
           </CardHeader>
           <CardContent>
             <form action={createSession} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="teamId" className="text-sm font-medium">
-                  Equipo
-                </label>
-                <select
-                  id="teamId"
-                  name="teamId"
-                  defaultValue={staffContext.primaryTeam.id}
-                  className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm"
-                >
-                  {staffContext.teams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </select>
+              <div className="rounded-md border border-border-secondary bg-bg-secondary px-3 py-3 text-sm text-text-secondary">
+                Esta sesión se creará para <span className="font-medium text-text-primary">{staffContext.activeTeam.name}</span>.
               </div>
 
               <div className="space-y-2">
@@ -173,7 +157,7 @@ const SessionsPage = async () => {
                     min="0"
                     max="1440"
                     defaultValue={String(
-                      staffContext.primaryTeam.preSessionReminderMinutes ?? 120
+                      staffContext.activeTeam.preSessionReminderMinutes ?? 120
                     )}
                     className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm"
                   />
@@ -193,7 +177,7 @@ const SessionsPage = async () => {
                     min="0"
                     max="1440"
                     defaultValue={String(
-                      staffContext.primaryTeam.postSessionReminderMinutes ?? 30
+                      staffContext.activeTeam.postSessionReminderMinutes ?? 30
                     )}
                     className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm"
                   />
@@ -221,7 +205,6 @@ const SessionsPage = async () => {
                   <div>
                     <CardTitle>{session.title}</CardTitle>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {session.team.name} ·{" "}
                       {formatDateTime(session.startsAt)} -{" "}
                       {formatDateTime(session.endsAt)}
                     </p>

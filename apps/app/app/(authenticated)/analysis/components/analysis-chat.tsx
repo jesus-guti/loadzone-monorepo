@@ -1,5 +1,6 @@
 "use client";
 
+import { CpuChipIcon, PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import { useChat } from "@repo/ai/lib/react";
 import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
@@ -7,7 +8,6 @@ import { Thread } from "@repo/ai/components/thread";
 import { Message } from "@repo/ai/components/message";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { SendIcon, BrainCircuitIcon } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 
 const SUGGESTIONS = [
@@ -46,7 +46,7 @@ export function AnalysisChat() {
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
             <div className="flex flex-col items-center gap-2 text-center">
-              <BrainCircuitIcon className="h-12 w-12 text-muted-foreground" />
+              <CpuChipIcon className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">Asistente de análisis</h3>
               <p className="max-w-sm text-sm text-muted-foreground">
                 Pregunta sobre el estado de tu equipo, jugadores en riesgo,
@@ -90,7 +90,7 @@ export function AnalysisChat() {
             size="icon"
             disabled={isLoading || !input.trim()}
           >
-            <SendIcon className="h-4 w-4" />
+            <PaperAirplaneIcon className="h-4 w-4" />
           </Button>
         </form>
       </div>
