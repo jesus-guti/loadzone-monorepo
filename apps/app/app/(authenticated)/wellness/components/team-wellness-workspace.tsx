@@ -28,9 +28,11 @@ import { cn } from "@repo/design-system/lib/utils";
 import type { PlayerStatus, RiskLevel } from "@repo/database";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { PendingReminderDialog } from "./pending-reminder-dialog";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 
 type TeamWellnessWorkspaceProperties = {
+  readonly evaluatedDate: string;
   readonly players: TeamWellnessPlayer[];
 };
 
@@ -146,6 +148,7 @@ function buildSummary(players: TeamWellnessPlayer[]) {
 }
 
 export function TeamWellnessWorkspace({
+  evaluatedDate,
   players,
 }: TeamWellnessWorkspaceProperties) {
   const [viewMode, setViewMode] = useState<WellnessViewMode>("cards");
@@ -347,6 +350,26 @@ export function TeamWellnessWorkspace({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 px-4 py-4 sm:grid-cols-2">
+            <div className="rounded-lg bg-bg-secondary px-4 py-4 sm:col-span-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
+                    Formularios pendientes
+                  </p>
+                  <p className="mt-1 text-3xl font-semibold text-text-primary">
+                    {summary.preCompletedCount}/{filteredPlayers.length || 0}
+                  </p>
+                  <Badge className="mt-4" variant="destructive">
+                    Faltan {summary.pendingCount}
+                  </Badge>
+                  
+                </div>
+                <PendingReminderDialog
+                  evaluatedDate={evaluatedDate}
+                  pendingCount={summary.pendingCount}
+                />
+              </div>
+            </div>
             {summaryCards.map((card) => (
               <div
                 key={card.title}

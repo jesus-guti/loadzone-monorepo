@@ -45,6 +45,7 @@ export type TeamWellnessWorkspaceData = {
   players: TeamWellnessPlayer[];
   summary: TeamWellnessSummary;
   todayLabel: string;
+  evaluatedDate: string;
 };
 
 function average(values: number[]): number | null {
@@ -56,11 +57,26 @@ function average(values: number[]): number | null {
   return total / values.length;
 }
 
+function getStartOfDay(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0);
+  return normalizedDate;
+}
+
+function formatDateForCookie(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export async function getTeamWellnessWorkspaceData(
   teamId: string,
-  seasonId?: string | null
+  seasonId?: string | null,
+  evaluatedDateInput?: Date | null
 ): Promise<TeamWellnessWorkspaceData | null> {
-  const today = new Date();
+  const today = evaluatedDateInput ? getStartOfDay(evaluatedDateInput) : new Date();
   today.setHours(0, 0, 0, 0);
 
   const team = await database.team.findUnique({
@@ -201,5 +217,6 @@ export async function getTeamWellnessWorkspaceData(
       day: "2-digit",
       month: "long",
     }),
+    evaluatedDate: formatDateForCookie(today),
   };
 }

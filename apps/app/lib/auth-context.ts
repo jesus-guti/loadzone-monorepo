@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 
 export const ACTIVE_TEAM_COOKIE_NAME = "loadzone_active_team";
 export const ACTIVE_SEASON_COOKIE_NAME = "loadzone_active_season";
+export const ACTIVE_WELLNESS_DATE_COOKIE_NAME = "loadzone_active_wellness_date";
 
 export type SeasonSummary = {
   id: string;
