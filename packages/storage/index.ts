@@ -1,7 +1,8 @@
 import "server-only";
 
-import { del, put } from "@vercel/blob";
+import { del, get, put } from "@vercel/blob";
 import { keys } from "./keys";
+import { isPrivateImagePathname, resolveStorageUrl } from "./shared";
 
 const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 const DEFAULT_CACHE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -105,7 +106,7 @@ export async function uploadImage({
   validateImageFile(file);
 
   const result = await put(objectKey, file, {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     cacheControlMaxAge,
     contentType: file.type,
@@ -121,7 +122,7 @@ export async function uploadImage({
 
   return {
     pathname: result.pathname,
-    url: result.url,
+    url: resolveStorageUrl(result.pathname) ?? result.url,
   };
 }
 
@@ -135,4 +136,16 @@ export async function deleteObject(url: string | null | undefined): Promise<void
   await del(url);
 }
 
-export { DEFAULT_CACHE_MAX_AGE, IMAGE_MAX_BYTES };
+export async function getPrivateBlob(
+  pathname: string,
+  ifNoneMatch?: string
+): Promise<Awaited<ReturnType<typeof get>>> {
+  ensureBlobToken();
+
+  return get(pathname, {
+    access: "private",
+    ifNoneMatch,
+  });
+}
+
+export { DEFAULT_CACHE_MAX_AGE, IMAGE_MAX_BYTES, isPrivateImagePathname, resolveStorageUrl };

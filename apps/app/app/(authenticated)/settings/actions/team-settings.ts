@@ -239,7 +239,7 @@ export async function updateClubBranding(
     await database.club.update({
       where: { id: currentClub.id },
       data: {
-        logoUrl: imageUpload.url,
+        logoUrl: imageUpload.pathname,
       },
     });
 

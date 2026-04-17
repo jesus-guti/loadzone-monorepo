@@ -3,6 +3,7 @@ import {
   type CurrentUser,
 } from "@repo/auth/server";
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
+import { resolveStorageUrl } from "@repo/storage/shared";
 import { cookies } from "next/headers";
 
 export const ACTIVE_TEAM_COOKIE_NAME = "loadzone_active_team";
@@ -109,6 +110,14 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
   const defaultTeam = teams[0] ?? null;
   const activeTeam =
     teams.find((team) => team.id === requestedActiveTeamId) ?? defaultTeam;
+  const transformedTeams: TeamSummary[] = teams.map((team) => ({
+    ...team,
+    logoUrl: resolveStorageUrl(team.logoUrl),
+  }));
+  const transformedDefaultTeam =
+    transformedTeams.find((team) => team.id === defaultTeam?.id) ?? null;
+  const transformedActiveTeam =
+    transformedTeams.find((team) => team.id === activeTeam?.id) ?? null;
   const activeTeamSeasons = activeTeam
     ? await database.season.findMany({
         where: {
@@ -151,13 +160,13 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
     club: {
       id: membership.clubId,
       name: club?.name ?? membership.clubName,
-      logoUrl: club?.logoUrl ?? null,
+      logoUrl: resolveStorageUrl(club?.logoUrl ?? null),
     },
-    teams,
-    activeTeam,
+    teams: transformedTeams,
+    activeTeam: transformedActiveTeam,
     activeTeamSeasons: seasonSummaries,
     activeSeason,
-    defaultTeam,
-    primaryTeam: activeTeam,
+    defaultTeam: transformedDefaultTeam,
+    primaryTeam: transformedActiveTeam,
   };
 }

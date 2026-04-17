@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -63,6 +64,10 @@ const PlayersPage = async () => {
     },
     orderBy: { name: "asc" },
   });
+  const playersWithResolvedImages = players.map((player) => ({
+    ...player,
+    imageUrl: resolveStorageUrl(player.imageUrl),
+  }));
 
   return (
     <>
@@ -105,7 +110,7 @@ const PlayersPage = async () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {players.map((player) => (
+                {playersWithResolvedImages.map((player) => (
                   <TableRow key={player.id}>
                     <TableCell className="pl-4">
                       <PlayerPhotoCell

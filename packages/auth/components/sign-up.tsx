@@ -13,6 +13,51 @@ type SignUpState = {
   isSubmitting: boolean;
 };
 
+type CredentialsContainerWithStore = CredentialsContainer & {
+  store?: (credential: Credential) => Promise<Credential | null>;
+};
+
+type PasswordCredentialConstructor = new (data: {
+  id: string;
+  password: string;
+  name?: string;
+}) => Credential;
+
+async function offerBrowserCredentialSave(
+  email: string,
+  password: string,
+  name: string
+): Promise<void> {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const credentialsContainer = navigator.credentials as
+    | CredentialsContainerWithStore
+    | undefined;
+  const PasswordCredentialCtor = (
+    window as unknown as {
+      PasswordCredential?: PasswordCredentialConstructor;
+    }
+  ).PasswordCredential;
+
+  if (!credentialsContainer?.store || !PasswordCredentialCtor) {
+    return;
+  }
+
+  try {
+    const credential = new PasswordCredentialCtor({
+      id: email,
+      password,
+      name: name || email,
+    });
+
+    await credentialsContainer.store(credential);
+  } catch {
+    // Browsers without support or denied permissions just ignore this.
+  }
+}
+
 export const SignUp = () => {
   const router = useRouter();
   const [state, setState] = useState<SignUpState>({
@@ -71,26 +116,37 @@ export const SignUp = () => {
       return;
     }
 
+    await offerBrowserCredentialSave(state.email, state.password, state.name);
+
     router.push(signInResult.url ?? "/onboarding");
     router.refresh();
   }
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-border-secondary bg-bg-primary p-6 shadow-sm">
+    <div className="w-full rounded-2xl border border-border-secondary bg-bg-primary p-6 shadow-sm sm:p-7">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-text-primary">Crear cuenta</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          Crear cuenta
+        </h1>
         <p className="mt-2 text-sm text-text-secondary">
           Registra tu usuario para crear tu club y empezar a trabajar.
         </p>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form
+        className="space-y-5"
+        onSubmit={handleSubmit}
+        method="post"
+        action="/api/auth/register"
+        autoComplete="on"
+      >
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-text-primary">
             Nombre
           </label>
           <input
             id="name"
+            name="name"
             type="text"
             value={state.name}
             onChange={(event) =>
@@ -99,8 +155,9 @@ export const SignUp = () => {
                 name: event.target.value,
               }))
             }
-            className="h-11 w-full rounded-xl border border-border-secondary bg-bg-secondary px-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="Preparador físico"
+            autoComplete="name"
             required
           />
         </div>
@@ -111,6 +168,7 @@ export const SignUp = () => {
           </label>
           <input
             id="email"
+            name="email"
             type="email"
             value={state.email}
             onChange={(event) =>
@@ -119,8 +177,13 @@ export const SignUp = () => {
                 email: event.target.value,
               }))
             }
-            className="h-11 w-full rounded-xl border border-border-secondary bg-bg-secondary px-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            inputMode="email"
+            spellCheck={false}
             required
           />
         </div>
@@ -134,6 +197,7 @@ export const SignUp = () => {
           </label>
           <input
             id="password"
+            name="password"
             type="password"
             value={state.password}
             onChange={(event) =>
@@ -142,8 +206,9 @@ export const SignUp = () => {
                 password: event.target.value,
               }))
             }
-            className="h-11 w-full rounded-xl border border-border-secondary bg-bg-secondary px-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="Mínimo 8 caracteres"
+            autoComplete="new-password"
             required
           />
         </div>
@@ -157,7 +222,7 @@ export const SignUp = () => {
         <button
           type="submit"
           disabled={state.isSubmitting}
-          className="h-11 w-full rounded-xl bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-12 w-full rounded-xl bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {state.isSubmitting ? "Creando..." : "Crear cuenta"}
         </button>

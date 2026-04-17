@@ -3,11 +3,23 @@ import "server-only";
 import { compare, hash } from "bcryptjs";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
-import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
+import { resolveStorageUrl } from "@repo/storage/shared";
+import { cookies } from "next/headers";
+import NextAuth from "next-auth";
+import {
+  getServerSession,
+  type NextAuthOptions,
+  type Session,
+} from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 import { keys } from "./keys";
+import {
+  getSessionMaxAgeSeconds,
+  parseRememberMeValue,
+  REMEMBER_ME_COOKIE_NAME,
+} from "./session-persistence";
 
 type MembershipSummary = {
   id: string;
@@ -39,9 +51,24 @@ type RegisterUserResult = {
   userId?: string;
 };
 
+type AuthorizedUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  rememberMe: boolean;
+};
+
+type SessionToken = JWT & {
+  platformRole?: PlatformRole;
+  memberships?: MembershipSummary[];
+  rememberMe?: boolean;
+};
+
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  rememberMe: z.enum(["true", "false"]).optional(),
 });
 
 const registerSchema = z.object({
@@ -97,104 +124,135 @@ async function getSessionClaims(
 
   return {
     email: databaseUser?.email ?? null,
-    image: databaseUser?.image ?? null,
+    image: resolveStorageUrl(databaseUser?.image ?? null),
     name: databaseUser?.name ?? null,
     platformRole: databaseUser?.platformRole ?? "USER",
     memberships: await getMemberships(userId),
   };
 }
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(database),
-  secret: keys().AUTH_SECRET,
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/sign-in",
-  },
-  providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) {
-          return null;
+export function createAuthOptions(sessionMaxAge: number): NextAuthOptions {
+  return {
+    adapter: PrismaAdapter(database),
+    secret: keys().AUTH_SECRET,
+    session: {
+      strategy: "jwt",
+      maxAge: sessionMaxAge,
+      updateAge: 60 * 60,
+    },
+    pages: {
+      signIn: "/sign-in",
+    },
+    providers: [
+      CredentialsProvider({
+        name: "credentials",
+        credentials: {
+          email: { label: "Email", type: "email" },
+          password: { label: "Password", type: "password" },
+          rememberMe: { label: "Remember me", type: "text" },
+        },
+        async authorize(credentials) {
+          const parsed = credentialsSchema.safeParse(credentials);
+          if (!parsed.success) {
+            return null;
+          }
+
+          const user = await database.user.findUnique({
+            where: { email: parsed.data.email.toLowerCase() },
+          });
+
+          if (!user?.passwordHash) {
+            return null;
+          }
+
+          const isValid = await compare(parsed.data.password, user.passwordHash);
+          if (!isValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            rememberMe: parsed.data.rememberMe === "true",
+          } satisfies AuthorizedUser;
+        },
+      }),
+    ],
+    callbacks: {
+      async jwt({ token, user }) {
+        const authorizedUser = user as AuthorizedUser | undefined;
+        const userId = authorizedUser?.id ?? token.sub;
+        if (!userId) {
+          return token;
         }
 
-        const user = await database.user.findUnique({
-          where: { email: parsed.data.email.toLowerCase() },
-        });
-
-        if (!user?.passwordHash) {
-          return null;
-        }
-
-        const isValid = await compare(parsed.data.password, user.passwordHash);
-        if (!isValid) {
-          return null;
-        }
+        const claims = await getSessionClaims(userId);
 
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
+          ...token,
+          email: claims.email ?? token.email,
+          platformRole: claims.platformRole,
+          memberships: claims.memberships,
+          name: claims.name ?? token.name,
+          picture: claims.image ?? token.picture,
+          rememberMe: authorizedUser?.rememberMe ?? (token as SessionToken).rememberMe,
         };
       },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      const userId = user?.id ?? token.sub;
-      if (!userId) {
-        return token;
-      }
+      async session({ session, token }) {
+        if (!session.user) {
+          return session;
+        }
 
-      const claims = await getSessionClaims(userId);
+        const sessionUser = session.user as typeof session.user & {
+          id: string;
+          platformRole: PlatformRole;
+          memberships: MembershipSummary[];
+        };
 
-      return {
-        ...token,
-        email: claims.email ?? token.email,
-        platformRole: claims.platformRole,
-        memberships: claims.memberships,
-        name: claims.name ?? token.name,
-        picture: claims.image ?? token.picture,
-      };
-    },
-    async session({ session, token }) {
-      if (!session.user) {
+        const sessionToken = token as SessionToken;
+
+        sessionUser.id = token.sub ?? "";
+        sessionUser.platformRole = sessionToken.platformRole ?? "USER";
+        sessionUser.memberships = sessionToken.memberships ?? [];
+
         return session;
-      }
-
-      const sessionUser = session.user as typeof session.user & {
-        id: string;
-        platformRole: PlatformRole;
-        memberships: MembershipSummary[];
-      };
-
-      const sessionToken = token as JWT & {
-        platformRole?: PlatformRole;
-        memberships?: MembershipSummary[];
-      };
-
-      sessionUser.id = token.sub ?? "";
-      sessionUser.platformRole = sessionToken.platformRole ?? "USER";
-      sessionUser.memberships = sessionToken.memberships ?? [];
-
-      return session;
+      },
     },
-  },
+  };
+}
+
+export const authOptions: NextAuthOptions = createAuthOptions(
+  getSessionMaxAgeSeconds(false)
+);
+
+export async function getRequestAuthOptions(): Promise<NextAuthOptions> {
+  const cookieStore = await cookies();
+  const rememberMe = parseRememberMeValue(
+    cookieStore.get(REMEMBER_ME_COOKIE_NAME)?.value
+  );
+
+  return createAuthOptions(getSessionMaxAgeSeconds(rememberMe));
+}
+
+type AuthRouteContext = {
+  params: {
+    nextauth: string[];
+  };
 };
 
-export const authHandler = NextAuth(authOptions);
+export async function authHandler(
+  request: Request,
+  context: AuthRouteContext
+): Promise<Response> {
+  const handler = NextAuth(await getRequestAuthOptions());
 
-export async function auth() {
-  return getServerSession(authOptions);
+  return handler(request, context);
+}
+
+export async function auth(): Promise<Session | null> {
+  return getServerSession(await getRequestAuthOptions());
 }
 
 export async function currentUser(): Promise<CurrentUser | null> {
@@ -219,7 +277,7 @@ export async function currentUser(): Promise<CurrentUser | null> {
     id: sessionUser.id,
     email: sessionUser.email,
     name: sessionUser.name ?? null,
-    image: sessionUser.image ?? null,
+    image: resolveStorageUrl(sessionUser.image ?? null),
     platformRole: sessionUser.platformRole,
     memberships: sessionUser.memberships,
   };

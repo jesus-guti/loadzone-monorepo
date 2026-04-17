@@ -17,11 +17,10 @@ type AskLoadzoneFrameProperties = {
   readonly contentClassName: string;
 };
 
-const goldShineStyle: CSSProperties = {
+const goldMetalStyle: CSSProperties = {
+  backgroundColor: "#c79347",
   backgroundImage:
-    "linear-gradient(180deg, color-mix(in oklab, var(--premium) 34%, white) 0%, color-mix(in oklab, var(--premium) 16%, var(--bg-primary)) 42%, var(--bg-primary) 100%)",
-  boxShadow:
-    "inset 0 1px 0 color-mix(in oklab, var(--premium) 50%, white), inset 0 -1px 0 color-mix(in oklab, var(--premium) 18%, transparent)",
+    "linear-gradient(180deg, #e9c684 0%, #c79347 55%, #97681f 100%)",
 };
 
 function AskLoadzoneFrame({
@@ -33,27 +32,30 @@ function AskLoadzoneFrame({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden p-px shadow-floating transition-transform duration-300 hover:-translate-y-0.5",
+        "group relative overflow-hidden p-px transition-transform duration-300 hover:-translate-y-0.5",
         containerClassName
       )}
-      style={{ borderRadius }}
+      style={{
+        borderRadius,
+        backgroundColor: "#a07327",
+      }}
     >
       <div
         className="absolute inset-0"
         style={{ borderRadius: `calc(${borderRadius} * 0.98)` }}
       >
         <MovingBorder duration={2800} rx="30%" ry="30%">
-          <div className="h-20 w-20 bg-[radial-gradient(circle,rgba(255,236,182,0.95)_8%,rgba(255,196,58,0.9)_34%,rgba(255,196,58,0.08)_62%,transparent_72%)] opacity-95" />
+          <div className="h-24 w-24 bg-[radial-gradient(circle,rgba(255,248,220,1)_4%,rgba(255,210,110,0.95)_30%,rgba(255,180,60,0.55)_55%,transparent_75%)] opacity-100" />
         </MovingBorder>
       </div>
 
       <div
         className={cn(
-          "relative h-full w-full border border-premium/35 bg-bg-primary",
+          "relative h-full w-full overflow-hidden",
           contentClassName
         )}
         style={{
-          ...goldShineStyle,
+          ...goldMetalStyle,
           borderRadius: `calc(${borderRadius} * 0.98)`,
         }}
       >
@@ -75,11 +77,10 @@ export function AskLoadzoneButton({
       >
         <Link
           aria-label="Ask Loadzone"
-          className="relative flex size-14 items-center justify-center rounded-full text-text-primary"
+          className="relative flex size-14 items-center justify-center rounded-full"
           href="/analysis"
         >
-          <span className="pointer-events-none absolute inset-x-3 top-1 h-px rounded-full bg-white/70 blur-[0.5px]" />
-          <SparklesIcon className="relative z-10 size-6 text-premium drop-shadow-[0_0_12px_color-mix(in_oklab,var(--premium)_65%,white)]" />
+          <SparklesIcon className="relative z-10 size-6 text-[#2a1a05]" />
           <span className="sr-only">Ask Loadzone</span>
         </Link>
       </AskLoadzoneFrame>
@@ -93,11 +94,10 @@ export function AskLoadzoneButton({
       contentClassName="rounded-full"
     >
       <Link
-        className="relative inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-text-primary"
+        className="relative inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-semibold text-[#2a1a05]"
         href="/analysis"
       >
-        <span className="pointer-events-none absolute inset-x-4 top-1 h-px rounded-full bg-white/70 blur-[0.5px]" />
-        <SparklesIcon className="relative z-10 size-4 text-premium drop-shadow-[0_0_12px_color-mix(in_oklab,var(--premium)_65%,white)]" />
+        <SparklesIcon className="relative z-10 size-4 text-[#2a1a05]" />
         <span className={cn("relative z-10 hidden sm:inline")}>Ask Loadzone</span>
       </Link>
     </AskLoadzoneFrame>

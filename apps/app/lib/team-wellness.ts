@@ -1,4 +1,5 @@
 import { database, type PlayerStatus, type RiskLevel } from "@repo/database";
+import { resolveStorageUrl } from "@repo/storage/shared";
 
 export type TeamWellnessPlayer = {
   id: string;
@@ -167,6 +168,7 @@ export async function getTeamWellnessWorkspaceData(
 
   const players: TeamWellnessPlayer[] = rawPlayers.map((player) => ({
     ...player,
+    imageUrl: resolveStorageUrl(player.imageUrl),
     stats: player.stats.map((stat) => ({
       riskLevel: stat.riskLevel,
       acwr: stat.acwr == null ? null : Number(stat.acwr),
@@ -188,7 +190,7 @@ export async function getTeamWellnessWorkspaceData(
     team: {
       id: team.id,
       name: team.name,
-      logoUrl: team.logoUrl,
+      logoUrl: resolveStorageUrl(team.logoUrl),
     },
     activeSeason,
     players,

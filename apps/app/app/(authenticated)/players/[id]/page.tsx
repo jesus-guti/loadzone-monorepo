@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon } from "@heroicons/react/20/solid";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
@@ -64,6 +65,7 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
   });
 
   if (!player) notFound();
+  const playerImageUrl = resolveStorageUrl(player.imageUrl);
 
   const entries = await database.dailyEntry.findMany({
     where: { playerId: player.id },
@@ -161,11 +163,11 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
       <div className="space-y-6 p-4 pt-0">
         <div className="flex flex-wrap items-center gap-3">
           <Avatar className="size-12 rounded-2xl border border-border-secondary">
-            {player.imageUrl ? (
+            {playerImageUrl ? (
               <AvatarImage
                 alt={player.name}
                 className="object-cover"
-                src={player.imageUrl}
+                src={playerImageUrl}
               />
             ) : null}
             <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
