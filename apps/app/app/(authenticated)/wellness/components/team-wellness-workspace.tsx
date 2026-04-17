@@ -12,6 +12,7 @@ import {
 import {
   Avatar,
   AvatarFallback,
+  AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -261,6 +262,13 @@ export function TeamWellnessWorkspace({
                   <CardHeader className="flex flex-row items-start justify-between gap-3 px-4 pb-0">
                     <div className="flex min-w-0 items-center gap-3">
                       <Avatar className="size-11 rounded-2xl border border-border-secondary">
+                        {player.imageUrl ? (
+                          <AvatarImage
+                            alt={player.name}
+                            className="object-cover"
+                            src={player.imageUrl}
+                          />
+                        ) : null}
                         <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
                           {getInitials(player.name)}
                         </AvatarFallback>
@@ -567,6 +575,13 @@ function PlayerBubble({
             muted && "opacity-50"
           )}
         >
+          {player.imageUrl ? (
+            <AvatarImage
+              alt={player.name}
+              className="object-cover"
+              src={player.imageUrl}
+            />
+          ) : null}
           <AvatarFallback className="bg-bg-secondary text-sm font-semibold text-text-primary">
             {getInitials(player.name)}
           </AvatarFallback>

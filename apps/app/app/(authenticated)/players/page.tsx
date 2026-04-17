@@ -17,6 +17,7 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 import { CopyTokenButton } from "./components/copy-token-button";
 import { ArchiveButton } from "./components/archive-button";
+import { PlayerPhotoCell } from "./components/player-photo-cell";
 
 export const metadata: Metadata = {
   title: "Jugadores | LoadZone",
@@ -49,6 +50,7 @@ const PlayersPage = async () => {
     where: { teamId: staffContext.activeTeam.id, isArchived: false },
     select: {
       id: true,
+      imageUrl: true,
       name: true,
       token: true,
       status: true,
@@ -94,6 +96,7 @@ const PlayersPage = async () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-14 pl-4">Foto</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Racha</TableHead>
@@ -104,6 +107,13 @@ const PlayersPage = async () => {
               <TableBody>
                 {players.map((player) => (
                   <TableRow key={player.id}>
+                    <TableCell className="pl-4">
+                      <PlayerPhotoCell
+                        imageUrl={player.imageUrl}
+                        playerId={player.id}
+                        playerName={player.name}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link
                         href={`/players/${player.id}`}

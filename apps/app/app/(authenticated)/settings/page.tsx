@@ -9,6 +9,7 @@ import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 import { createTeamFromSettings, updateTeamSettings } from "./actions/team-settings";
+import { ClubBrandingCard } from "./components/club-branding-card";
 
 export const metadata: Metadata = {
   title: "Configuración | LoadZone",
@@ -183,6 +184,11 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
         </form>
 
         <div className="space-y-4">
+          <ClubBrandingCard
+            canEdit={staffContext.canCreateTeam}
+            clubLogoUrl={staffContext.club.logoUrl}
+            clubName={staffContext.club.name}
+          />
           <Card className="rounded-xl border-border-secondary">
             <CardHeader>
               <CardTitle className="text-base text-text-primary">

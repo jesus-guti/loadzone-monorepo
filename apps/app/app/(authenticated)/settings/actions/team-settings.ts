@@ -1,6 +1,7 @@
 "use server";
 
 import { ensureBaseFormTemplates, database } from "@repo/database";
+import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -20,6 +21,12 @@ const createTeamSchema = z.object({
   category: z.string().max(100).optional(),
   timezone: z.string().min(2).max(100),
 });
+
+type ClubBrandingResult = {
+  success: boolean;
+  error?: string;
+  logoUrl?: string | null;
+};
 
 export async function updateTeamSettings(formData: FormData): Promise<void> {
   const staffContext = await getCurrentStaffContext();
@@ -191,4 +198,63 @@ export async function createTeamFromSettings(formData: FormData): Promise<void> 
   revalidatePath("/settings");
   revalidatePath("/");
   redirect("/settings");
+}
+
+export async function updateClubBranding(
+  formData: FormData
+): Promise<ClubBrandingResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext || !staffContext.canCreateTeam) {
+      return { success: false, error: "No tienes permisos para editar el club." };
+    }
+
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) {
+      return { success: false, error: "Selecciona una imagen válida." };
+    }
+
+    const currentClub = await database.club.findUnique({
+      where: { id: staffContext.club.id },
+      select: {
+        id: true,
+        logoUrl: true,
+      },
+    });
+
+    if (!currentClub) {
+      return { success: false, error: "Club no encontrado." };
+    }
+
+    const imageUpload = await uploadImage({
+      file,
+      objectKey: buildObjectKey({
+        target: "club",
+        entityId: currentClub.id,
+        fileName: file.name || `${staffContext.club.name}.webp`,
+      }),
+      previousUrl: currentClub.logoUrl,
+    });
+
+    await database.club.update({
+      where: { id: currentClub.id },
+      data: {
+        logoUrl: imageUpload.url,
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      logoUrl: imageUpload.url,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "No se pudo actualizar el logo del club.",
+    };
+  }
 }

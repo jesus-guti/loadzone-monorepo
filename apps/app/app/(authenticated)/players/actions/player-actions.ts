@@ -2,10 +2,20 @@
 
 import { database } from "@repo/database";
 import type { PlayerStatus } from "@repo/database";
+import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getCurrentStaffContext } from "@/lib/auth-context";
+
+type ActionResult = {
+  success: boolean;
+  error?: string;
+};
+
+type PhotoActionResult = ActionResult & {
+  imageUrl?: string | null;
+};
 
 async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
@@ -18,9 +28,9 @@ const createPlayerSchema = z.object({
 });
 
 export async function createPlayer(
-  _prev: { success: boolean; error?: string },
+  _prev: ActionResult,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult> {
   try {
     const parsed = createPlayerSchema.safeParse({
       name: formData.get("name"),
@@ -60,9 +70,9 @@ const updatePlayerSchema = z.object({
 });
 
 export async function updatePlayer(
-  _prev: { success: boolean; error?: string },
+  _prev: ActionResult,
   formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ActionResult> {
   try {
     const parsed = updatePlayerSchema.safeParse({
       id: formData.get("id"),
@@ -103,4 +113,68 @@ export async function archivePlayer(playerId: string): Promise<void> {
 
   revalidatePath("/players");
   revalidatePath("/");
+}
+
+export async function updatePlayerPhoto(
+  formData: FormData
+): Promise<PhotoActionResult> {
+  try {
+    const playerId = formData.get("playerId");
+    const file = formData.get("file");
+
+    if (typeof playerId !== "string" || playerId.length === 0) {
+      return { success: false, error: "Jugador no válido." };
+    }
+
+    if (!(file instanceof File)) {
+      return { success: false, error: "Selecciona una imagen válida." };
+    }
+
+    const teamId = await getTeamId();
+    const player = await database.player.findUnique({
+      where: { id: playerId, teamId },
+      select: {
+        id: true,
+        imageUrl: true,
+        name: true,
+      },
+    });
+
+    if (!player) {
+      return { success: false, error: "Jugador no encontrado." };
+    }
+
+    const imageUpload = await uploadImage({
+      file,
+      objectKey: buildObjectKey({
+        target: "player",
+        entityId: player.id,
+        fileName: file.name || `${player.name}.webp`,
+        teamId,
+      }),
+      previousUrl: player.imageUrl,
+    });
+
+    await database.player.update({
+      where: { id: player.id, teamId },
+      data: {
+        imageUrl: imageUpload.url,
+      },
+    });
+
+    revalidatePath("/players");
+    revalidatePath(`/players/${player.id}`);
+    revalidatePath("/wellness");
+
+    return {
+      success: true,
+      imageUrl: imageUpload.url,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "No se pudo subir la foto del jugador.",
+    };
+  }
 }

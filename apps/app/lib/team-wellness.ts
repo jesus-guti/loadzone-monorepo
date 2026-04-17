@@ -2,6 +2,7 @@ import { database, type PlayerStatus, type RiskLevel } from "@repo/database";
 
 export type TeamWellnessPlayer = {
   id: string;
+  imageUrl: string | null;
   name: string;
   status: PlayerStatus;
   currentStreak: number;
@@ -129,6 +130,7 @@ export async function getTeamWellnessWorkspaceData(
     where: { teamId: team.id, isArchived: false },
     select: {
       id: true,
+      imageUrl: true,
       name: true,
       status: true,
       currentStreak: true,

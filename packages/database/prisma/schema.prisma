@@ -350,6 +350,7 @@ model Player {
   id             String              @id @default(cuid())
   userId         String?             @unique
   name           String
+  imageUrl       String?
   token          String              @unique @default(cuid())
   teamId         String
   team           Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)

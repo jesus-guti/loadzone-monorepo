@@ -79,17 +79,26 @@ async function getMemberships(userId: string): Promise<MembershipSummary[]> {
 async function getSessionClaims(
   userId: string
 ): Promise<{
+  email: string | null;
+  image: string | null;
+  name: string | null;
   platformRole: PlatformRole;
   memberships: MembershipSummary[];
 }> {
   const databaseUser = await database.user.findUnique({
     where: { id: userId },
     select: {
+      email: true,
+      image: true,
+      name: true,
       platformRole: true,
     },
   });
 
   return {
+    email: databaseUser?.email ?? null,
+    image: databaseUser?.image ?? null,
+    name: databaseUser?.name ?? null,
     platformRole: databaseUser?.platformRole ?? "USER",
     memberships: await getMemberships(userId),
   };
@@ -150,8 +159,11 @@ export const authOptions: NextAuthOptions = {
 
       return {
         ...token,
+        email: claims.email ?? token.email,
         platformRole: claims.platformRole,
         memberships: claims.memberships,
+        name: claims.name ?? token.name,
+        picture: claims.image ?? token.picture,
       };
     },
     async session({ session, token }) {

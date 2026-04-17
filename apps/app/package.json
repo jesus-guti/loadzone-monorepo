@@ -19,6 +19,7 @@
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",
     "@repo/seo": "workspace:*",
+    "@repo/storage": "workspace:*",
     "@sentry/nextjs": "^10.29.0",
     "@t3-oss/env-nextjs": "^0.13.8",
     "ai": "^5.0.107",

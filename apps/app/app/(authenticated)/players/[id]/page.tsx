@@ -2,6 +2,11 @@ import { database } from "@repo/database";
 import { FireIcon } from "@heroicons/react/20/solid";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
+import {
   Card,
   CardContent,
   CardHeader,
@@ -31,6 +36,15 @@ const STATUS_LABELS: Record<string, string> = {
   UNAVAILABLE: "No disponible",
 };
 
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
   const { id } = await params;
   const staffContext = await getCurrentStaffContext();
@@ -40,6 +54,7 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
     where: { id, teamId: staffContext.activeTeam.id },
     select: {
       id: true,
+      imageUrl: true,
       name: true,
       token: true,
       status: true,
@@ -145,6 +160,18 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
 
       <div className="space-y-6 p-4 pt-0">
         <div className="flex flex-wrap items-center gap-3">
+          <Avatar className="size-12 rounded-2xl border border-border-secondary">
+            {player.imageUrl ? (
+              <AvatarImage
+                alt={player.name}
+                className="object-cover"
+                src={player.imageUrl}
+              />
+            ) : null}
+            <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
+              {getInitials(player.name)}
+            </AvatarFallback>
+          </Avatar>
           <Badge>{STATUS_LABELS[player.status]}</Badge>
           <Badge variant={todayEntry?.preFilledAt ? "default" : "outline"}>
             Pre hoy {todayEntry?.preFilledAt ? "ok" : "pendiente"}
