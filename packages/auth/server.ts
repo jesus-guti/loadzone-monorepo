@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { cookies } from "next/headers";
+import type { NextRequest } from "next/server";
 import NextAuth from "next-auth";
 import {
   getServerSession,
@@ -237,18 +238,19 @@ export async function getRequestAuthOptions(): Promise<NextAuthOptions> {
 }
 
 type AuthRouteContext = {
-  params: {
+  params: Promise<{
     nextauth: string[];
-  };
+  }>;
 };
 
 export async function authHandler(
-  request: Request,
+  request: NextRequest,
   context: AuthRouteContext
 ): Promise<Response> {
   const handler = NextAuth(await getRequestAuthOptions());
+  const resolvedParams = await context.params;
 
-  return handler(request, context);
+  return handler(request, { params: resolvedParams });
 }
 
 export async function auth(): Promise<Session | null> {

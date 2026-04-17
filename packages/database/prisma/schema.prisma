@@ -468,6 +468,9 @@ model TeamSession {
   appliesToAllPlayers   Boolean               @default(true)
   preReminderMinutes    Int?
   postReminderMinutes   Int?
+  seriesId              String?
+  recurrenceRule        String?
+  recurrenceUntil       DateTime?
   createdByMembershipId String?
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
@@ -486,6 +489,7 @@ model TeamSession {
   @@index([createdByMembershipId])
   @@index([clubId, startsAt])
   @@index([teamId, startsAt])
+  @@index([seriesId])
 }
 
 model TeamSessionPlayer {
@@ -499,30 +503,33 @@ model TeamSessionPlayer {
 }
 
 model Exercise {
-  id                String              @id @default(cuid())
-  clubId            String?
-  name              String
-  slug              String
-  objectivesText    String
-  explanationText   String
-  durationMinutes   Int
-  spaceWidthMeters  Decimal
-  spaceLengthMeters Decimal
-  minPlayers        Int
-  maxPlayers        Int
-  complexity        ExerciseComplexity
-  strategy          ExerciseStrategy
-  coordinativeSkill CoordinativeSkill
-  tacticalIntention TacticalIntention
-  dynamicType       ExerciseDynamicType
-  gameSituation     GameSituationType
-  coordinationType  CoordinationType
-  isSystem          Boolean             @default(false)
-  isArchived        Boolean             @default(false)
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  club              Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  sessionExercises  SessionExercise[]
+  id                  String              @id @default(cuid())
+  clubId              String?
+  name                String
+  slug                String
+  objectivesText      String
+  explanationText     String
+  durationMinutes     Int
+  spaceWidthMeters    Decimal
+  spaceLengthMeters   Decimal
+  minPlayers          Int
+  maxPlayers          Int
+  complexity          ExerciseComplexity
+  strategy            ExerciseStrategy
+  coordinativeSkill   CoordinativeSkill
+  tacticalIntention   TacticalIntention
+  dynamicType         ExerciseDynamicType
+  gameSituation       GameSituationType
+  coordinationType    CoordinationType
+  diagramData         Json?
+  diagramVersion      Int                 @default(0)
+  diagramThumbnailUrl String?
+  isSystem            Boolean             @default(false)
+  isArchived          Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  club                Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  sessionExercises    SessionExercise[]
 
   @@unique([clubId, slug])
   @@index([clubId, strategy])
@@ -549,16 +556,18 @@ model SessionExercise {
 }
 
 model SessionAttendance {
-  id            String           @id @default(cuid())
-  teamSessionId String
-  playerId      String
-  status        AttendanceStatus @default(PENDING)
-  notes         String?
-  markedAt      DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  teamSession   TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
-  player        Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  id             String           @id @default(cuid())
+  teamSessionId  String
+  playerId       String
+  status         AttendanceStatus @default(PENDING)
+  notes          String?
+  minutesPlayed  Int?
+  startedMinute  Int?
+  markedAt       DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  teamSession    TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player         Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@unique([teamSessionId, playerId])
   @@index([playerId, status])

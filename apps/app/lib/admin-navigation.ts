@@ -1,6 +1,7 @@
 import {
   CalendarDaysIcon,
   CalendarIcon,
+  ClipboardDocumentListIcon,
   Cog6ToothIcon,
   CpuChipIcon,
   HeartIcon,
@@ -64,6 +65,12 @@ export const secondaryNavigation: AdminNavItem[] = [
     icon: UsersIcon,
     label: "Jugadores",
     match: (pathname: string) => matchesPath(pathname, "/players"),
+  },
+  {
+    href: "/exercises",
+    icon: ClipboardDocumentListIcon,
+    label: "Ejercicios",
+    match: (pathname: string) => matchesPath(pathname, "/exercises"),
   },
   {
     href: "/injuries",
