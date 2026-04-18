@@ -11,7 +11,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { toast } from "@repo/design-system/components/ui/sonner";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import {
   createExercise,
   updateExercise,
@@ -81,8 +81,11 @@ export function ExerciseForm({
           <FieldLabel htmlFor="name">Nombre</FieldLabel>
           <Input
             autoFocus
+            className="bg-bg-secondary"
             defaultValue={defaults.name}
             id="name"
+            maxLength={120}
+            minLength={2}
             name="name"
             placeholder="Rondo 4v2 con apoyos"
             required
@@ -92,19 +95,30 @@ export function ExerciseForm({
         <div className="space-y-2">
           <FieldLabel htmlFor="objectivesText">Objetivos</FieldLabel>
           <Textarea
+            className="bg-bg-secondary"
             defaultValue={defaults.objectivesText}
             id="objectivesText"
+            maxLength={2000}
+            minLength={2}
             name="objectivesText"
             placeholder="Mejorar la circulación rápida del balón..."
+            required
             rows={3}
           />
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor="explanationText">Explicación</FieldLabel>
+          <FieldLabel htmlFor="explanationText">
+            Explicación{" "}
+            <span className="font-normal normal-case tracking-normal text-text-tertiary">
+              (opcional)
+            </span>
+          </FieldLabel>
           <Textarea
+            className="bg-bg-secondary"
             defaultValue={defaults.explanationText}
             id="explanationText"
+            maxLength={4000}
             name="explanationText"
             placeholder="Cómo se desarrolla el ejercicio paso a paso..."
             rows={5}
@@ -120,6 +134,7 @@ export function ExerciseForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="durationMinutes">Duración (min)</FieldLabel>
             <Input
+              className="bg-bg-secondary"
               defaultValue={defaults.durationMinutes ?? 15}
               id="durationMinutes"
               max={600}
@@ -132,6 +147,7 @@ export function ExerciseForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="spaceWidthMeters">Ancho (m)</FieldLabel>
             <Input
+              className="bg-bg-secondary"
               defaultValue={defaults.spaceWidthMeters ?? 20}
               id="spaceWidthMeters"
               max={200}
@@ -145,6 +161,7 @@ export function ExerciseForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="spaceLengthMeters">Largo (m)</FieldLabel>
             <Input
+              className="bg-bg-secondary"
               defaultValue={defaults.spaceLengthMeters ?? 30}
               id="spaceLengthMeters"
               max={200}
@@ -158,6 +175,7 @@ export function ExerciseForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="minPlayers">Mín. jugadores</FieldLabel>
             <Input
+              className="bg-bg-secondary"
               defaultValue={defaults.minPlayers ?? 4}
               id="minPlayers"
               max={50}
@@ -170,6 +188,7 @@ export function ExerciseForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="maxPlayers">Máx. jugadores</FieldLabel>
             <Input
+              className="bg-bg-secondary"
               defaultValue={defaults.maxPlayers ?? 12}
               id="maxPlayers"
               max={60}
@@ -265,11 +284,18 @@ function EnumSelect({
   defaultValue,
   options,
 }: EnumSelectProps) {
+  const [value, setValue] = useState<string>(defaultValue);
+
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
+
   return (
     <div className="space-y-2">
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
-      <Select defaultValue={defaultValue} name={name}>
-        <SelectTrigger className="w-full" id={name}>
+      <input name={name} type="hidden" value={value} />
+      <Select onValueChange={setValue} value={value}>
+        <SelectTrigger className="w-full bg-bg-secondary" id={name}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

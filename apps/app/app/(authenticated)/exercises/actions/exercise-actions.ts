@@ -84,9 +84,20 @@ const COORDINATION_TYPE = [
 ] as const;
 
 const baseExerciseSchema = z.object({
-  name: z.string().min(2).max(120),
-  objectivesText: z.string().min(2).max(2000),
-  explanationText: z.string().min(2).max(4000),
+  name: z
+    .string()
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres.")
+    .max(120, "El nombre es demasiado largo."),
+  objectivesText: z
+    .string()
+    .trim()
+    .min(2, "Los objetivos deben tener al menos 2 caracteres.")
+    .max(2000, "Los objetivos son demasiado largos."),
+  explanationText: z
+    .string()
+    .trim()
+    .max(4000, "La explicación es demasiado larga."),
   durationMinutes: z.coerce.number().int().min(1).max(600),
   spaceWidthMeters: z.coerce.number().min(1).max(200),
   spaceLengthMeters: z.coerce.number().min(1).max(200),
@@ -137,11 +148,16 @@ async function buildUniqueSlug(
   }
 }
 
+function readTrimmedString(formData: FormData, key: string): string {
+  const raw = formData.get(key);
+  return typeof raw === "string" ? raw.trim() : "";
+}
+
 function parseFormDataToExerciseInput(formData: FormData): Record<string, unknown> {
   return {
-    name: formData.get("name") ?? "",
-    objectivesText: formData.get("objectivesText") ?? "",
-    explanationText: formData.get("explanationText") ?? "",
+    name: readTrimmedString(formData, "name"),
+    objectivesText: readTrimmedString(formData, "objectivesText"),
+    explanationText: readTrimmedString(formData, "explanationText"),
     durationMinutes: formData.get("durationMinutes") ?? "",
     spaceWidthMeters: formData.get("spaceWidthMeters") ?? "",
     spaceLengthMeters: formData.get("spaceLengthMeters") ?? "",

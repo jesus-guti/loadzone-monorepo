@@ -1,7 +1,7 @@
 ---
 description: Design system and semantic token rules for shared UI and app styling.
 globs: {packages/design-system,apps/app/app,apps/player/app}/**/*.{ts,tsx,css}
-alwaysApply: false
+alwaysApply: true
 ---
 
 # LoadZone Design System
