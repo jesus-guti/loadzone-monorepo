@@ -16,6 +16,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
+import { ExerciseRowActions } from "./components/exercise-row-actions";
 
 export const metadata: Metadata = {
   title: "Ejercicios | LoadZone",
@@ -44,6 +45,8 @@ const ExercisesPage = async (): Promise<ReactElement> => {
     select: {
       id: true,
       name: true,
+      clubId: true,
+      isSystem: true,
       durationMinutes: true,
       complexity: true,
       strategy: true,
@@ -115,9 +118,14 @@ const ExercisesPage = async (): Promise<ReactElement> => {
                       {exercise.strategy.replaceAll("_", " ").toLowerCase()}
                     </TableCell>
                     <TableCell className="pr-4 text-right">
-                      <Button asChild size="sm" variant="ghost">
-                        <Link href={`/exercises/${exercise.id}`}>Editar</Link>
-                      </Button>
+                      <ExerciseRowActions
+                        canDelete={
+                          !exercise.isSystem &&
+                          exercise.clubId === staffContext.club.id
+                        }
+                        exerciseId={exercise.id}
+                        exerciseName={exercise.name}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

@@ -116,7 +116,7 @@ export function ClubBrandingCard({
               {previewUrl || currentLogoUrl ? (
                 <AvatarImage
                   alt={clubName}
-                  className="object-cover"
+                  className="object-contain p-1"
                   src={previewUrl ?? currentLogoUrl ?? undefined}
                 />
               ) : null}

@@ -45,7 +45,13 @@ export function TeamBranding({
   return (
     <div className="flex min-w-0 items-center gap-3">
       <Avatar className={cn("size-9 rounded-xl border border-border-secondary", compact && "size-10")}>
-        {imageUrl ? <AvatarImage alt={primaryLabel} src={imageUrl} /> : null}
+        {imageUrl ? (
+          <AvatarImage
+            alt={primaryLabel}
+            className="object-contain p-1"
+            src={imageUrl}
+          />
+        ) : null}
         <AvatarFallback className="rounded-xl bg-brand/10 text-xs font-semibold text-text-primary">
           {imageUrl ? <ShieldCheckIcon className="size-4" /> : getInitials(primaryLabel)}
         </AvatarFallback>

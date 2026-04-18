@@ -1,6 +1,6 @@
 "use server";
 
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -331,10 +331,92 @@ export async function archiveExercise(exerciseId: string): Promise<void> {
     throw new Error("Club no encontrado");
   }
 
-  await database.exercise.update({
-    where: { id: exerciseId, clubId: staffContext.club.id },
+  const result = await database.exercise.updateMany({
+    where: {
+      id: exerciseId,
+      clubId: staffContext.club.id,
+      isSystem: false,
+    },
     data: { isArchived: true },
   });
 
+  if (result.count === 0) {
+    throw new Error("No se puede archivar este ejercicio.");
+  }
+
   revalidatePath("/exercises");
+}
+
+function buildDuplicateExerciseName(sourceName: string): string {
+  const suffix = " (copia)";
+  const maxBase = 120 - suffix.length;
+  const base =
+    sourceName.length > maxBase
+      ? sourceName.slice(0, maxBase).trimEnd()
+      : sourceName;
+  return `${base}${suffix}`;
+}
+
+export async function duplicateExercise(
+  exerciseId: string
+): Promise<{ ok: true; exerciseId: string } | { ok: false; error: string }> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.club) {
+      return { ok: false, error: "Club no encontrado" };
+    }
+
+    const clubId = staffContext.club.id;
+
+    const source = await database.exercise.findFirst({
+      where: {
+        id: exerciseId,
+        isArchived: false,
+        OR: [{ clubId }, { isSystem: true }],
+      },
+    });
+
+    if (!source) {
+      return { ok: false, error: "Ejercicio no encontrado." };
+    }
+
+    const duplicateName = buildDuplicateExerciseName(source.name);
+    const slug = await buildUniqueSlug(clubId, duplicateName);
+
+    const created = await database.exercise.create({
+      data: {
+        clubId,
+        slug,
+        name: duplicateName,
+        objectivesText: source.objectivesText,
+        explanationText: source.explanationText,
+        durationMinutes: source.durationMinutes,
+        spaceWidthMeters: source.spaceWidthMeters,
+        spaceLengthMeters: source.spaceLengthMeters,
+        minPlayers: source.minPlayers,
+        maxPlayers: source.maxPlayers,
+        complexity: source.complexity,
+        strategy: source.strategy,
+        coordinativeSkill: source.coordinativeSkill,
+        tacticalIntention: source.tacticalIntention,
+        dynamicType: source.dynamicType,
+        gameSituation: source.gameSituation,
+        coordinationType: source.coordinationType,
+        ...(source.diagramData !== null
+          ? {
+              diagramData: source.diagramData as Prisma.InputJsonValue,
+            }
+          : {}),
+        diagramVersion: source.diagramVersion,
+        diagramThumbnailUrl: source.diagramThumbnailUrl,
+        isSystem: false,
+      },
+      select: { id: true },
+    });
+
+    revalidatePath("/exercises");
+    return { ok: true, exerciseId: created.id };
+  } catch {
+    return { ok: false, error: "Error al duplicar el ejercicio." };
+  }
 }
