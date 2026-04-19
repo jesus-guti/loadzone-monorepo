@@ -152,9 +152,9 @@ const SessionsPage = async (): Promise<ReactElement> => {
     <>
       <Header page="Sesiones" pages={["LoadZone"]}>
         <Button asChild size="sm">
-          <Link href="/sessions/new">
-            <PlusIcon className="mr-1 size-4" />
-            Añadir sesión
+          <Link aria-label="Añadir sesión" href="/sessions/new">
+            <PlusIcon className="size-4 md:mr-1" />
+            <span className="hidden md:inline">Añadir sesión</span>
           </Link>
         </Button>
       </Header>
@@ -169,7 +169,7 @@ const SessionsPage = async (): Promise<ReactElement> => {
             endsAt: session.endsAt.toISOString(),
           }))}
         />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 md:gap-5">
           <QuickNewSessionCard />
           <LastSessionCard session={lastSessionData} />
           <RecentExercisesCard exercises={recentExercises} />

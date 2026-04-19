@@ -59,7 +59,7 @@ const WellnessPage = async () => {
           </Button>
         </div>
       </Header>
-      <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:px-6">
+      <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:gap-8 md:px-6">
         <TeamWellnessWorkspace
           evaluatedDate={data.evaluatedDate}
           players={data.players}

@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRightIcon, BellAlertIcon } from "@heroicons/react/20/solid";
+import { BellAlertIcon } from "@heroicons/react/20/solid";
 import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -60,12 +61,15 @@ export function PendingReminderDialog({
       <DialogTrigger asChild>
         <Button
           aria-label="Re-notificar jugadores pendientes"
-          className="size-10 rounded-full"
+          className={cn(
+            "size-10 rounded-full",
+            pendingCount > 0 ? "glass-surface text-text-primary" : null
+          )}
           disabled={pendingCount === 0}
           size="icon"
           variant="ghost"
         >
-          <ArrowRightIcon className="size-5" />
+          <BellAlertIcon className="size-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -77,27 +81,19 @@ export function PendingReminderDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="rounded-lg border border-border-secondary bg-bg-secondary px-4 py-4">
-            <div className="flex items-start gap-3">
-              <div className="rounded-full bg-danger/10 p-2 text-danger">
-                <BellAlertIcon className="size-4" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-text-primary">
-                  Pendientes actuales
-                </p>
-                <p className="text-sm text-text-secondary">
-                  {pendingCount} jugadores siguen sin rellenarlo.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg border border-border-secondary bg-bg-primary px-4 py-4">
+          <div className="space-y-1 border-l-2 border-danger py-2 pl-4">
+            <p className="flex items-center gap-2 text-sm font-medium text-text-primary">
+              <BellAlertIcon className="size-4 text-danger" />
+              Pendientes actuales
+            </p>
             <p className="text-sm text-text-secondary">
-              Recomendación: enviar solo cuando el bloque de pendientes siga alto
-              y evitar más de 1 o 2 recordatorios extra por tramo del día.
+              {pendingCount} jugadores siguen sin rellenarlo.
             </p>
           </div>
+          <p className="text-sm text-text-secondary">
+            Recomendación: enviar solo cuando el bloque de pendientes siga alto
+            y evitar más de 1 o 2 recordatorios extra por tramo del día.
+          </p>
         </div>
         <DialogFooter>
           <Button

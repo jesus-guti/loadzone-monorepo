@@ -36,9 +36,15 @@ const STATUS_VARIANT: Record<
   keyof typeof STATUS_LABEL,
   "default" | "secondary" | "destructive" | "outline"
 > = {
-  SCHEDULED: "secondary",
-  COMPLETED: "default",
+  SCHEDULED: "outline",
+  COMPLETED: "outline",
   CANCELLED: "destructive",
+};
+
+const STATUS_CLASS: Record<keyof typeof STATUS_LABEL, string> = {
+  SCHEDULED: "text-text-secondary",
+  COMPLETED: "border-success/30 text-success",
+  CANCELLED: "",
 };
 
 function formatDateRange(startsAt: Date, endsAt: Date): string {
@@ -55,6 +61,10 @@ function formatDateRange(startsAt: Date, endsAt: Date): string {
   return `${dateFormatter.format(startsAt)} · ${timeFormatter.format(
     startsAt
   )} - ${timeFormatter.format(endsAt)}`;
+}
+
+function formatExerciseIndex(index: number): string {
+  return `${index + 1}`.padStart(2, "0");
 }
 
 type PageProps = {
@@ -161,65 +171,82 @@ const SessionDetailPage = async ({
 
       <div className="grid flex-1 gap-6 p-4 md:p-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resumen</CardTitle>
+          <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+            <CardHeader className="px-0 pb-0">
+              <CardTitle className="text-xl font-semibold tracking-tight text-text-primary">
+                {session.title}
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{TYPE_LABEL[session.type]}</Badge>
-                <Badge variant={STATUS_VARIANT[session.status]}>
+            <CardContent className="space-y-3 px-0 pb-0">
+              <p className="mt-2 text-sm text-text-secondary">
+                {formatDateRange(session.startsAt, session.endsAt)}
+                {session.location ? ` · ${session.location}` : null}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="text-text-secondary" variant="outline">
+                  {TYPE_LABEL[session.type]}
+                </Badge>
+                <Badge
+                  className={STATUS_CLASS[session.status]}
+                  variant={STATUS_VARIANT[session.status]}
+                >
                   {STATUS_LABEL[session.status]}
                 </Badge>
                 {session.seriesId ? (
-                  <Badge variant="outline">Sesión recurrente</Badge>
+                  <Badge
+                    className="border-brand/30 text-brand"
+                    variant="outline"
+                  >
+                    Sesión recurrente
+                  </Badge>
                 ) : null}
               </div>
-              <p className="text-sm text-text-secondary">
-                {formatDateRange(session.startsAt, session.endsAt)}
-              </p>
-              {session.location ? (
-                <p className="text-sm text-text-secondary">
-                  Ubicación: {session.location}
-                </p>
-              ) : null}
               {session.notes ? (
-                <p className="text-sm text-text-primary">{session.notes}</p>
+                <blockquote className="mt-3 border-l-2 border-brand/40 pl-4 text-sm text-text-secondary">
+                  {session.notes}
+                </blockquote>
               ) : null}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Ejercicios</CardTitle>
+          <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+            <CardHeader className="px-0 pb-0">
+              <CardTitle className="text-base font-semibold text-text-primary">
+                Ejercicios
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 pb-0">
               {session.exercises.length === 0 ? (
-                <p className="text-sm text-text-secondary">
+                <p className="mt-4 text-sm text-text-secondary">
                   Esta sesión aún no tiene ejercicios asignados.
                 </p>
               ) : (
-                <ol className="space-y-3">
+                <ol className="mt-4 space-y-3">
                   {session.exercises.map((entry, index) => (
                     <li
-                      className="rounded-md border border-border-secondary bg-bg-secondary/30 p-3"
+                      className="flex items-start justify-between gap-4"
                       key={entry.id}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-medium text-text-primary">
-                          {index + 1}. {entry.exercise.name}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm">
+                          <span className="text-text-tertiary tabular-nums">
+                            {formatExerciseIndex(index)}.{" "}
+                          </span>
+                          <span className="font-medium text-text-primary">
+                            {entry.exercise.name}
+                          </span>
                         </p>
-                        <span className="text-xs text-text-secondary">
-                          {entry.durationMinutesOverride ??
-                            entry.exercise.durationMinutes}{" "}
-                          min
-                        </span>
+                        {entry.notes ? (
+                          <p className="mt-1 text-sm text-text-secondary">
+                            {entry.notes}
+                          </p>
+                        ) : null}
                       </div>
-                      {entry.notes ? (
-                        <p className="mt-1 text-xs text-text-secondary">
-                          {entry.notes}
-                        </p>
-                      ) : null}
+                      <span className="shrink-0 text-sm text-text-secondary tabular-nums">
+                        {entry.durationMinutesOverride ??
+                          entry.exercise.durationMinutes}{" "}
+                        min
+                      </span>
                     </li>
                   ))}
                 </ol>
@@ -227,30 +254,44 @@ const SessionDetailPage = async ({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>
+          <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+            <CardHeader className="px-0 pb-0">
+              <CardTitle className="text-base font-semibold text-text-primary">
                 Asistencia{isMatch ? " y minutos" : ""}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <AttendanceForm
-                initialRows={attendanceRows}
-                isMatch={isMatch}
-                sessionId={session.id}
-              />
+            <CardContent className="px-0 pb-0">
+              <div className="mt-4">
+                <AttendanceForm
+                  initialRows={attendanceRows}
+                  isMatch={isMatch}
+                  sessionId={session.id}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
 
         <aside className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Recordatorios</CardTitle>
+          <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+            <CardHeader className="px-0 pb-0">
+              <CardTitle className="text-base font-semibold text-text-primary">
+                Recordatorios
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm text-text-secondary">
-              <p>Pre: {session.preReminderMinutes ?? 0} min</p>
-              <p>Post: {session.postReminderMinutes ?? 0} min</p>
+            <CardContent className="space-y-2 px-0 pb-0 text-sm">
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-text-secondary">Pre-sesión</span>
+                <span className="text-text-tertiary tabular-nums">
+                  {session.preReminderMinutes ?? 0} min
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-text-secondary">Post-sesión</span>
+                <span className="text-text-tertiary tabular-nums">
+                  {session.postReminderMinutes ?? 0} min
+                </span>
+              </div>
             </CardContent>
           </Card>
         </aside>

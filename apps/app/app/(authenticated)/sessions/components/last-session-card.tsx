@@ -46,9 +46,11 @@ type LastSessionCardProps = {
 
 export function LastSessionCard({ session }: LastSessionCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Última sesión</CardTitle>
+    <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+      <CardHeader className="px-0 pb-0">
+        <CardTitle className="text-base font-semibold text-text-primary">
+          Última sesión
+        </CardTitle>
         {session ? (
           <CardAction>
             <Button asChild size="sm" variant="ghost">
@@ -57,40 +59,44 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
           </CardAction>
         ) : null}
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 pb-0">
         {session ? (
-          <div className="space-y-3">
+          <div className="mt-4 space-y-3">
             <div className="space-y-1">
-              <p className="font-medium text-text-primary">{session.title}</p>
-              <p className="text-xs text-text-secondary">
+              <p className="text-base font-medium text-text-primary">
+                {session.title}
+              </p>
+              <p className="text-sm text-text-secondary">
                 {formatRelative(session.startsAt)}
               </p>
             </div>
-            <Badge variant="secondary">{TYPE_LABEL[session.type]}</Badge>
+            <Badge className="text-text-secondary" variant="outline">
+              {TYPE_LABEL[session.type]}
+            </Badge>
             {session.exercises.length > 0 ? (
-              <ul className="space-y-1.5 border-t border-border-secondary pt-3 text-sm">
+              <ul className="mt-3 space-y-2 text-sm">
                 {session.exercises.slice(0, 5).map((exercise) => (
                   <li
-                    className="flex items-center justify-between gap-3"
+                    className="flex items-center justify-between gap-3 py-1.5"
                     key={exercise.id}
                   >
                     <span className="truncate text-text-primary">
                       {exercise.name}
                     </span>
-                    <span className="shrink-0 text-xs text-text-secondary">
+                    <span className="shrink-0 text-xs text-text-tertiary tabular-nums">
                       {exercise.durationMinutes} min
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="border-t border-border-secondary pt-3 text-sm text-text-secondary">
+              <p className="mt-3 text-sm text-text-secondary">
                 Sin ejercicios registrados.
               </p>
             )}
           </div>
         ) : (
-          <p className="text-sm text-text-secondary">
+          <p className="mt-4 text-sm text-text-secondary">
             Aún no hay sesiones para este equipo.
           </p>
         )}

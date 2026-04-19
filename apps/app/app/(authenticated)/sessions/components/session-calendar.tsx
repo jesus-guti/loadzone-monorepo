@@ -195,7 +195,7 @@ export function SessionCalendar({
     <div
       className={cn(
         "bg-bg-primary max-md:-mx-4 max-md:w-[calc(100%+2rem)] max-md:rounded-none max-md:border-0",
-        "md:rounded-xl md:border md:border-border-primary"
+        "md:rounded-lg md:border md:border-border-tertiary"
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-3 md:px-4">
@@ -216,19 +216,24 @@ export function SessionCalendar({
           >
             <ChevronRightIcon className="size-4" />
           </Button>
-          <Button onClick={goToday} size="sm" variant="outline">
+          <Button
+            className="border-border-tertiary text-text-primary"
+            onClick={goToday}
+            size="sm"
+            variant="outline"
+          >
             Hoy
           </Button>
-          <p className="ml-3 text-sm font-medium text-text-primary">
+          <p className="ml-3 text-base font-semibold tracking-tight text-text-primary">
             {headerLabel}
           </p>
         </div>
-        <div className="inline-flex items-center gap-1 rounded-md border border-border-secondary bg-bg-secondary p-0.5">
+        <div className="inline-flex items-center gap-1 rounded-md border border-border-tertiary bg-bg-primary p-0.5">
           <button
             className={cn(
               "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
               view === "month"
-                ? "bg-bg-primary text-text-primary shadow"
+                ? "bg-bg-secondary text-text-primary"
                 : "text-text-secondary hover:text-text-primary"
             )}
             onClick={() => setView("month")}
@@ -240,7 +245,7 @@ export function SessionCalendar({
             className={cn(
               "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
               view === "week"
-                ? "bg-bg-primary text-text-primary shadow"
+                ? "bg-bg-secondary text-text-primary"
                 : "text-text-secondary hover:text-text-primary"
             )}
             onClick={() => setView("week")}
@@ -251,12 +256,7 @@ export function SessionCalendar({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "grid grid-cols-7 text-center text-[11px] font-medium uppercase tracking-[0.14em] text-text-tertiary",
-          "max-md:border-0 md:border-t md:border-border-secondary/60"
-        )}
-      >
+      <div className="grid grid-cols-7 text-center text-xs font-medium text-text-tertiary">
         {WEEKDAY_LABELS.map((label) => (
           <div className="py-2" key={label}>
             {label}
@@ -280,7 +280,7 @@ export function SessionCalendar({
           return (
             <div
               className={cn(
-                "group relative min-h-[110px] px-1 py-1 md:border-l md:border-t md:border-border-secondary/40 md:px-2 md:py-1.5",
+                "group relative min-h-[96px] px-1 py-1 md:min-h-[120px] md:border-l md:border-t md:border-border-tertiary/60 md:px-2 md:py-1.5",
                 index % 7 === 6 && "md:border-r",
                 index >= days.length - 7 && "md:border-b",
                 !isCurrentMonth && "bg-bg-secondary/40"
@@ -292,9 +292,9 @@ export function SessionCalendar({
                   className={cn(
                     "text-xs font-medium",
                     !isCurrentMonth && "text-text-tertiary",
-                    isCurrentMonth && "text-text-secondary",
+                    isCurrentMonth && !isToday && "text-text-secondary",
                     isToday &&
-                      "rounded-full bg-brand px-1.5 py-0.5 text-brand-foreground"
+                      "glass-surface rounded-full bg-brand/15 px-2 py-0.5 font-semibold text-brand"
                   )}
                 >
                   {day.getDate()}
@@ -306,22 +306,22 @@ export function SessionCalendar({
                   <Link
                     className={cn(
                       TYPE_EVENT_SURFACE[event.type],
-                      "flex w-full min-w-0 flex-col gap-0.5 rounded-[2px] px-2 py-1 text-left transition-opacity hover:opacity-90 md:flex-row md:items-center md:gap-2 md:py-1",
+                      "flex w-full min-w-0 flex-col gap-0.5 rounded-sm px-2 py-1 text-left md:flex-row md:items-center md:gap-2 md:py-1",
                       event.status === "CANCELLED" && "line-through opacity-60"
                     )}
                     href={`/sessions/${event.id}`}
                     key={event.id}
                   >
-                    <span className="min-w-0 line-clamp-2 text-[11px] font-medium leading-snug md:line-clamp-none md:flex-1 md:truncate md:leading-tight">
+                    <span className="min-w-0 line-clamp-2 text-xs font-medium leading-snug hover:underline md:line-clamp-none md:flex-1 md:truncate md:leading-tight">
                       {event.title}
                     </span>
-                    <span className="shrink-0 text-[10px] leading-tight text-text-secondary md:ml-auto md:text-[11px]">
+                    <span className="shrink-0 text-xs leading-tight text-text-secondary md:ml-auto">
                       {formatSessionTime(event.startsAt)}
                     </span>
                   </Link>
                 ))}
                 {dayEvents.length > 3 ? (
-                  <p className="px-0.5 text-[10px] text-text-tertiary md:px-1.5">
+                  <p className="px-0.5 text-xs text-text-tertiary md:px-1.5">
                     +{dayEvents.length - 3} más
                   </p>
                 ) : null}
@@ -329,7 +329,7 @@ export function SessionCalendar({
 
               <Link
                 aria-label={`Crear sesión el ${formatYmd(day)}`}
-                className="absolute inset-x-1 bottom-1.5 hidden items-center justify-center rounded-md border border-dashed border-border-primary py-1 text-xs text-text-tertiary opacity-0 transition-opacity hover:border-brand hover:text-brand group-hover:flex group-hover:opacity-100 md:inset-x-2 md:bottom-2"
+                className="absolute inset-x-1 bottom-1.5 hidden items-center justify-center rounded-md border border-dashed border-border-tertiary py-1 text-xs text-text-tertiary opacity-0 transition-opacity hover:border-brand hover:text-brand group-hover:flex group-hover:opacity-100 md:inset-x-2 md:bottom-2"
                 href={buildHrefForNew(day)}
               >
                 <PlusIcon className="mr-1 size-3" />
@@ -342,12 +342,12 @@ export function SessionCalendar({
 
       <div
         className={cn(
-          "flex flex-wrap items-center gap-3 px-3 py-2 text-[11px] text-text-tertiary md:px-4",
-          "max-md:border-0 md:border-t md:border-border-secondary"
+          "flex flex-wrap items-center gap-3 px-3 py-2 text-xs text-text-tertiary md:px-4",
+          "max-md:border-0 md:border-t md:border-border-tertiary"
         )}
       >
         {(["TRAINING", "MATCH", "RECOVERY", "OTHER"] as const).map((type) => (
-          <span className="inline-flex items-center gap-1.5" key={type}>
+          <span className="inline-flex items-center gap-2" key={type}>
             <span
               aria-hidden
               className={cn(

@@ -15,7 +15,6 @@ import {
   AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import {
   Table,
@@ -164,32 +163,8 @@ export function TeamWellnessWorkspace({
   }, [players, selectedPlayerIds]);
 
   const summary = useMemo(() => buildSummary(filteredPlayers), [filteredPlayers]);
-  const summaryCards = [
-    {
-      detail: "requieren acción",
-      icon: <ExclamationTriangleIcon className="size-4 text-danger" />,
-      title: "Prioridad hoy",
-      value: summary.pendingCount,
-    },
-    {
-      detail: "pre-sesión enviada",
-      icon: <CheckCircleIcon className="size-4 text-brand" />,
-      title: "Pre completada",
-      value: `${summary.preCompletedCount}/${filteredPlayers.length || 0}`,
-    },
-    {
-      detail: "post-sesión enviada",
-      icon: <CheckCircleIcon className="size-4 text-brand" />,
-      title: "Post completada",
-      value: `${summary.postCompletedCount}/${filteredPlayers.length || 0}`,
-    },
-    {
-      detail: "seguimiento inmediato",
-      icon: <ShieldExclamationIcon className="size-4 text-danger" />,
-      title: "Alertas",
-      value: summary.alertCount,
-    },
-  ];
+  const totalPlayers = filteredPlayers.length || 0;
+  const hasPending = summary.pendingCount > 0;
 
   const togglePlayerSelection = (playerId: string) => {
     setSelectedPlayerIds((currentIds) => {
@@ -204,41 +179,50 @@ export function TeamWellnessWorkspace({
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            className="rounded-md"
+        <div className="inline-flex items-center gap-1 self-start rounded-md border border-border-tertiary bg-bg-primary p-0.5">
+          <button
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
+              viewMode === "cards"
+                ? "bg-bg-secondary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
             onClick={() => setViewMode("cards")}
-            size="sm"
-            variant={viewMode === "cards" ? "secondary" : "ghost"}
+            type="button"
           >
             <Squares2X2Icon className="size-4" />
             Tarjetas
-          </Button>
-          <Button
-            className="rounded-md"
+          </button>
+          <button
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
+              viewMode === "bubbles"
+                ? "bg-bg-secondary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
             onClick={() => setViewMode("bubbles")}
-            size="sm"
-            variant={viewMode === "bubbles" ? "secondary" : "ghost"}
+            type="button"
           >
             <SparklesIcon className="size-4" />
             Burbujas
-          </Button>
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            className="rounded-md"
-            onClick={() => setSelectedPlayerIds([])}
-            size="sm"
-            variant="ghost"
-          >
-            Todos
-          </Button>
-          <p className="text-sm text-text-secondary">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <p className="text-sm text-text-tertiary">
             {selectedPlayerIds.length > 0
               ? `${selectedPlayerIds.length} jugadores filtrados`
               : `${players.length} jugadores`}
           </p>
+          {selectedPlayerIds.length > 0 ? (
+            <button
+              className="text-sm text-text-secondary hover:text-text-primary"
+              onClick={() => setSelectedPlayerIds([])}
+              type="button"
+            >
+              Quitar filtros
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -249,40 +233,44 @@ export function TeamWellnessWorkspace({
             const state = getDailyPlayerState(player);
             const injuryLabel = getInjuryLabel(player.status);
             const alertLabel = entry?.physioAlert ? "Fisio" : "Riesgo alto";
-            const isCardMuted = state === "COMPLETED" && !injuryLabel;
+            const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
+            const avatarBadgeIcon = injuryLabel ? (
+              <ShieldExclamationIcon className="size-3 text-premium" />
+            ) : (
+              <ExclamationTriangleIcon className="size-3 text-danger" />
+            );
 
             return (
               <Link key={player.id} href={`/players/${player.id}`}>
-                <Card
-                  className={cn(
-                    "h-full gap-3 rounded-none border-border-secondary py-4 transition-colors hover:bg-bg-secondary",
-                    isCardMuted ? "bg-bg-primary/60" : "bg-bg-primary"
-                  )}
-                >
-                  <CardHeader className="flex flex-row items-start justify-between gap-3 px-4 pb-0">
+                <Card className="bevel-card h-full gap-4 rounded-lg border-border-tertiary bg-bg-primary p-4 transition-colors hover:border-border-secondary">
+                  <CardHeader className="flex flex-row items-start justify-between gap-3 px-0 pb-0">
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="size-11 rounded-2xl border border-border-secondary">
-                        {player.imageUrl ? (
-                          <AvatarImage
-                            alt={player.name}
-                            className="object-cover"
-                            src={player.imageUrl}
-                          />
+                      <div className="relative shrink-0">
+                        <Avatar className="size-11 rounded-2xl border border-border-tertiary">
+                          {player.imageUrl ? (
+                            <AvatarImage
+                              alt={player.name}
+                              className="object-cover"
+                              src={player.imageUrl}
+                            />
+                          ) : null}
+                          <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
+                            {getInitials(player.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {showAvatarBadge ? (
+                          <span className="glass-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
+                            {avatarBadgeIcon}
+                          </span>
                         ) : null}
-                        <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
-                          {getInitials(player.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      </div>
                       <div className="min-w-0">
-                        <CardTitle className="truncate text-base text-text-primary">
-                          {player.name}
+                        <CardTitle className="flex items-center gap-1.5 truncate text-base text-text-primary">
+                          <span className="truncate">{player.name}</span>
+                          {state === "COMPLETED" && !injuryLabel ? (
+                            <CheckCircleIcon className="size-4 shrink-0 text-brand" />
+                          ) : null}
                         </CardTitle>
-                        {state === "COMPLETED" && !injuryLabel ? (
-                          <p className="flex items-center gap-1 text-xs text-text-secondary">
-                            <CheckCircleIcon className="size-3.5 text-text-tertiary" />
-                            Completado
-                          </p>
-                        ) : null}
                       </div>
                     </div>
                     {player.currentStreak > 0 ? (
@@ -292,17 +280,17 @@ export function TeamWellnessWorkspace({
                       </span>
                     ) : null}
                   </CardHeader>
-                  <CardContent className="space-y-3 px-4">
+                  <CardContent className="space-y-4 px-0 pb-0">
                     {state === "ALERT" || state === "NOT_COMPLETED" || injuryLabel ? (
                       <div className="flex flex-wrap items-center gap-2">
                         {state === "ALERT" ? (
-                          <Badge className="rounded-sm" variant="destructive">
+                          <Badge className="rounded-md" variant="destructive">
                             {alertLabel}
                           </Badge>
                         ) : null}
                         {state === "NOT_COMPLETED" ? (
                           <Badge
-                            className="rounded-sm bg-premium/15 text-premium hover:bg-premium/20"
+                            className="rounded-md bg-bg-secondary text-text-secondary"
                             variant="secondary"
                           >
                             Pendiente
@@ -310,7 +298,7 @@ export function TeamWellnessWorkspace({
                         ) : null}
                         {injuryLabel ? (
                           <Badge
-                            className="rounded-sm border-premium/40 text-premium"
+                            className="rounded-md border-premium/40 text-premium"
                             variant="outline"
                           >
                             {injuryLabel}
@@ -318,20 +306,16 @@ export function TeamWellnessWorkspace({
                         ) : null}
                       </div>
                     ) : null}
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-md border border-border-secondary bg-bg-secondary px-3 py-2">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-text-secondary">
-                          Riesgo
-                        </p>
-                        <p className="mt-1 font-medium text-text-primary">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-text-tertiary">Riesgo</p>
+                        <p className="mt-1 text-base font-semibold text-text-primary">
                           {getRiskLabel(player.stats[0]?.riskLevel)}
                         </p>
                       </div>
-                      <div className="rounded-md border border-border-secondary bg-bg-secondary px-3 py-2">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-text-secondary">
-                          RPE
-                        </p>
-                        <p className="mt-1 font-medium text-text-primary">
+                      <div>
+                        <p className="text-xs text-text-tertiary">RPE</p>
+                        <p className="mt-1 text-base font-semibold text-text-primary tabular-nums">
                           {entry?.rpe ?? "—"}
                         </p>
                       </div>
@@ -351,103 +335,132 @@ export function TeamWellnessWorkspace({
       )}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
-        <Card className="gap-0 rounded-xl border-none bg-bg-primary py-0">
-          <CardHeader className="px-4 py-4">
+        <Card className="bevel-card gap-0 rounded-lg border-border-tertiary bg-bg-primary p-5">
+          <CardHeader className="px-0 pb-0">
             <CardTitle className="text-base font-semibold text-text-primary">
               Resumen del equipo
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3 px-4 py-4 sm:grid-cols-2">
-            <div className="rounded-lg bg-bg-secondary px-4 py-4 sm:col-span-2">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
-                    Formularios pendientes
-                  </p>
-                  <p className="mt-1 text-3xl font-semibold text-text-primary">
-                    {summary.preCompletedCount}/{filteredPlayers.length || 0}
-                  </p>
-                  <Badge className="mt-4" variant="destructive">
-                    Faltan {summary.pendingCount}
-                  </Badge>
-                  
-                </div>
-                <PendingReminderDialog
-                  evaluatedDate={evaluatedDate}
-                  pendingCount={summary.pendingCount}
-                />
-              </div>
-            </div>
-            {summaryCards.map((card) => (
-              <div
-                key={card.title}
-                className="rounded-lg bg-bg-secondary px-4 py-3"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
-                    {card.title}
-                  </p>
-                  {card.icon}
-                </div>
-                <p className="mt-2 text-2xl font-semibold text-text-primary">
-                  {card.value}
+          <CardContent className="px-0 pb-0">
+            <div
+              className={cn(
+                "mt-4 flex items-center justify-between gap-4",
+                hasPending ? "border-l-2 border-brand pl-4" : null
+              )}
+            >
+              <div className="min-w-0">
+                <p className="text-base font-medium text-text-primary">
+                  Formularios pendientes
                 </p>
-                <p className="mt-1 text-xs text-text-secondary">{card.detail}</p>
+                <p className="mt-1 text-3xl font-semibold text-text-primary tabular-nums">
+                  {summary.preCompletedCount}/{totalPlayers}
+                </p>
+                {hasPending ? (
+                  <p className="mt-1 text-sm text-danger">
+                    Faltan {summary.pendingCount}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-text-tertiary">Todo al día</p>
+                )}
               </div>
-            ))}
-            <div className="rounded-lg bg-bg-secondary px-4 py-3">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
-                Recuperación media
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-text-primary">
-                {formatAverage(summary.recoveryAverage)}
-              </p>
+              <PendingReminderDialog
+                evaluatedDate={evaluatedDate}
+                pendingCount={summary.pendingCount}
+              />
             </div>
-            <div className="rounded-lg bg-bg-secondary px-4 py-3">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
-                Energía media
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-text-primary">
-                {formatAverage(summary.energyAverage)}
-              </p>
-            </div>
-            <div className="rounded-lg bg-bg-secondary px-4 py-3 sm:col-span-2">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">
-                Dolor muscular medio
-              </p>
-              <p className="mt-2 text-2xl font-semibold text-text-primary">
-                {formatAverage(summary.sorenessAverage)}
-              </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div>
+                <p className="text-xs text-text-tertiary">Prioridad hoy</p>
+                <p className="mt-1 text-2xl font-semibold text-text-primary tabular-nums">
+                  {summary.pendingCount}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-tertiary">Pre completada</p>
+                <p
+                  className={cn(
+                    "mt-1 text-2xl font-semibold tabular-nums",
+                    summary.preCompletedCount === totalPlayers && totalPlayers > 0
+                      ? "text-brand"
+                      : "text-text-primary"
+                  )}
+                >
+                  {summary.preCompletedCount}/{totalPlayers}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-tertiary">Post completada</p>
+                <p
+                  className={cn(
+                    "mt-1 text-2xl font-semibold tabular-nums",
+                    summary.postCompletedCount === totalPlayers && totalPlayers > 0
+                      ? "text-brand"
+                      : "text-text-primary"
+                  )}
+                >
+                  {summary.postCompletedCount}/{totalPlayers}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-tertiary">Alertas</p>
+                <p
+                  className={cn(
+                    "mt-1 text-2xl font-semibold tabular-nums",
+                    summary.alertCount > 0 ? "text-danger" : "text-text-primary"
+                  )}
+                >
+                  {summary.alertCount}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-tertiary">Recuperación media</p>
+                <p className="mt-1 text-2xl font-semibold text-text-primary tabular-nums">
+                  {formatAverage(summary.recoveryAverage)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-text-tertiary">Energía media</p>
+                <p className="mt-1 text-2xl font-semibold text-text-primary tabular-nums">
+                  {formatAverage(summary.energyAverage)}
+                </p>
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-xs text-text-tertiary">Dolor muscular</p>
+                <p className="mt-1 text-2xl font-semibold text-text-primary tabular-nums">
+                  {formatAverage(summary.sorenessAverage)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="gap-0 rounded-xl border-none bg-bg-primary py-0">
-          <CardHeader className="px-4 py-4">
+        <Card className="bevel-card gap-0 rounded-lg border-border-tertiary bg-bg-primary p-5">
+          <CardHeader className="px-0 pb-0">
             <CardTitle className="text-base font-semibold text-text-primary">
               Comparativa rápida
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <Table>
+          <CardContent className="px-0 pb-0">
+            <Table className="mt-4">
               <TableHeader>
-                <TableRow className="border-b-0 border-t">
-                  <TableHead className="pl-0 text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
+                <TableRow className="border-b-0 border-t-0 hover:bg-transparent">
+                  <TableHead className="pl-0 text-xs font-medium text-text-tertiary">
                     Jugador
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
+                  <TableHead className="hidden text-xs font-medium text-text-tertiary md:table-cell">
                     Pre
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
+                  <TableHead className="hidden text-xs font-medium text-text-tertiary md:table-cell">
                     Post
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
-                    Rec
+                  <TableHead className="hidden text-xs font-medium text-text-tertiary md:table-cell">
+                    Recuperación
                   </TableHead>
-                  <TableHead className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
-                    Ene
+                  <TableHead className="hidden text-xs font-medium text-text-tertiary md:table-cell">
+                    Energía
                   </TableHead>
-                  <TableHead className="pr-0 text-[11px] font-medium uppercase tracking-[0.16em] text-text-tertiary">
+                  <TableHead className="pr-0 text-xs font-medium text-text-tertiary">
                     Riesgo
                   </TableHead>
                 </TableRow>
@@ -457,17 +470,31 @@ export function TeamWellnessWorkspace({
                   const entry = player.entries[0];
 
                   return (
-                    <TableRow key={player.id} className="">
-                      <TableCell className="pl-0">
-                        <Link className="font-medium hover:underline" href={`/players/${player.id}`}>
+                    <TableRow
+                      key={player.id}
+                      className="border-t border-border-tertiary"
+                    >
+                      <TableCell className="py-3 pl-0">
+                        <Link
+                          className="font-medium text-text-primary hover:text-brand"
+                          href={`/players/${player.id}`}
+                        >
                           {player.name}
                         </Link>
                       </TableCell>
-                      <TableCell>{entry?.preFilledAt ? "Ok" : "—"}</TableCell>
-                      <TableCell>{entry?.postFilledAt ? "Ok" : "—"}</TableCell>
-                      <TableCell>{entry?.recovery ?? "—"}</TableCell>
-                      <TableCell>{entry?.energy ?? "—"}</TableCell>
-                      <TableCell className="pr-0">
+                      <TableCell className="hidden py-3 tabular-nums text-text-secondary md:table-cell">
+                        {entry?.preFilledAt ? "Ok" : "—"}
+                      </TableCell>
+                      <TableCell className="hidden py-3 tabular-nums text-text-secondary md:table-cell">
+                        {entry?.postFilledAt ? "Ok" : "—"}
+                      </TableCell>
+                      <TableCell className="hidden py-3 tabular-nums text-text-secondary md:table-cell">
+                        {entry?.recovery ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden py-3 tabular-nums text-text-secondary md:table-cell">
+                        {entry?.energy ?? "—"}
+                      </TableCell>
+                      <TableCell className="py-3 pr-0 text-text-secondary">
                         {getRiskLabel(player.stats[0]?.riskLevel)}
                       </TableCell>
                     </TableRow>
@@ -497,7 +524,7 @@ function BubblesView({
   const inactivePlayers = players.filter((player) => !isPlayerActiveToday(player));
 
   return (
-    <div className="space-y-4">
+    <div>
       {activePlayers.length > 0 ? (
         <div className="flex flex-wrap gap-3">
           {activePlayers.map((player) => (
@@ -513,18 +540,18 @@ function BubblesView({
           ))}
         </div>
       ) : (
-        <p className="rounded-md border border-dashed border-border-secondary bg-bg-secondary px-4 py-6 text-center text-sm text-text-secondary">
+        <p className="py-10 text-center text-sm text-text-secondary">
           Aún no hay actividad registrada hoy.
         </p>
       )}
 
       {inactivePlayers.length > 0 ? (
-        <details className="group rounded-lg border border-border-secondary bg-bg-secondary/40">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm text-text-secondary">
+        <details className="group mt-6 border-t border-border-tertiary">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 text-sm text-text-secondary">
             <span>Sin actividad hoy ({inactivePlayers.length})</span>
             <ChevronDownIcon className="size-4 transition-transform group-open:rotate-180" />
           </summary>
-          <div className="flex flex-wrap gap-3 px-4 pb-4">
+          <div className="flex flex-wrap gap-3 pb-4 pt-2">
             {inactivePlayers.map((player) => (
               <PlayerBubble
                 key={player.id}
@@ -568,10 +595,10 @@ function PlayerBubble({
       <div className="relative">
         <Avatar
           className={cn(
-            "size-16 rounded-full border-2 transition-all",
+            "size-16 rounded-full transition-colors",
             isSelected
-              ? "border-brand ring-4 ring-brand/10"
-              : "border-border-secondary opacity-60",
+              ? "ring-2 ring-brand/40"
+              : "border border-border-tertiary opacity-80",
             muted && "opacity-50"
           )}
         >
@@ -587,10 +614,15 @@ function PlayerBubble({
           </AvatarFallback>
         </Avatar>
         {state === "ALERT" ? (
-          <span className="absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-bg-primary bg-danger" />
+          <span className="glass-surface absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-bg-primary bg-danger/90" />
         ) : null}
       </div>
-      <p className="max-w-20 truncate text-xs font-medium text-text-primary">
+      <p
+        className={cn(
+          "max-w-20 truncate text-xs",
+          isSelected ? "font-medium text-text-primary" : "text-text-secondary"
+        )}
+      >
         {player.name}
       </p>
     </button>

@@ -42,7 +42,9 @@ export function AttendanceForm({
   isMatch,
   initialRows,
 }: AttendanceFormProps) {
-  const [rows, setRows] = useState<AttendanceRow[]>(() => initialRows.map((row) => ({ ...row })));
+  const [rows, setRows] = useState<AttendanceRow[]>(() =>
+    initialRows.map((row) => ({ ...row }))
+  );
   const [isPending, startTransition] = useTransition();
 
   function updateRow(playerId: string, patch: Partial<AttendanceRow>): void {
@@ -70,107 +72,176 @@ export function AttendanceForm({
     });
   }
 
+  if (rows.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-text-secondary">
+        No hay jugadores en este equipo.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-md border border-border-secondary">
+      <div className="hidden overflow-hidden rounded-lg border border-border-tertiary md:block">
         <table className="w-full text-sm">
-          <thead className="bg-bg-secondary/50 text-[11px] uppercase tracking-[0.14em] text-text-tertiary">
+          <thead className="bg-bg-secondary text-xs font-medium text-text-tertiary">
             <tr>
-              <th className="px-3 py-2 text-left">Jugador</th>
-              <th className="px-3 py-2 text-left">Estado</th>
+              <th className="px-4 py-3 text-left">Jugador</th>
+              <th className="px-4 py-3 text-left">Estado</th>
               {isMatch ? (
                 <>
-                  <th className="px-3 py-2 text-left">Min. jugados</th>
-                  <th className="px-3 py-2 text-left">Min. entrada</th>
+                  <th className="px-4 py-3 text-left">Min. jugados</th>
+                  <th className="px-4 py-3 text-left">Min. entrada</th>
                 </>
               ) : null}
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  className="px-3 py-6 text-center text-text-secondary"
-                  colSpan={isMatch ? 4 : 2}
-                >
-                  No hay jugadores en este equipo.
+            {rows.map((row) => (
+              <tr
+                className="border-t border-border-tertiary"
+                key={row.playerId}
+              >
+                <td className="px-4 py-3 text-text-primary">{row.playerName}</td>
+                <td className="px-4 py-3">
+                  <Select
+                    onValueChange={(value) =>
+                      updateRow(row.playerId, {
+                        status: value as AttendanceStatus,
+                      })
+                    }
+                    value={row.status}
+                  >
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </td>
+                {isMatch ? (
+                  <>
+                    <td className="px-4 py-3">
+                      <Input
+                        className="w-[100px] tabular-nums"
+                        max={240}
+                        min={0}
+                        onChange={(event) =>
+                          updateRow(row.playerId, {
+                            minutesPlayed: event.target.value
+                              ? Number(event.target.value)
+                              : null,
+                          })
+                        }
+                        type="number"
+                        value={row.minutesPlayed ?? ""}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Input
+                        className="w-[100px] tabular-nums"
+                        max={240}
+                        min={0}
+                        onChange={(event) =>
+                          updateRow(row.playerId, {
+                            startedMinute: event.target.value
+                              ? Number(event.target.value)
+                              : null,
+                          })
+                        }
+                        type="number"
+                        value={row.startedMinute ?? ""}
+                      />
+                    </td>
+                  </>
+                ) : null}
               </tr>
-            ) : (
-              rows.map((row) => (
-                <tr
-                  className="border-t border-border-secondary"
-                  key={row.playerId}
-                >
-                  <td className="px-3 py-2 text-text-primary">
-                    {row.playerName}
-                  </td>
-                  <td className="px-3 py-2">
-                    <Select
-                      onValueChange={(value) =>
-                        updateRow(row.playerId, {
-                          status: value as AttendanceStatus,
-                        })
-                      }
-                      value={row.status}
-                    >
-                      <SelectTrigger className="h-8 w-[160px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  {isMatch ? (
-                    <>
-                      <td className="px-3 py-2">
-                        <Input
-                          className="h-8 w-[100px]"
-                          max={240}
-                          min={0}
-                          onChange={(event) =>
-                            updateRow(row.playerId, {
-                              minutesPlayed: event.target.value
-                                ? Number(event.target.value)
-                                : null,
-                            })
-                          }
-                          type="number"
-                          value={row.minutesPlayed ?? ""}
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <Input
-                          className="h-8 w-[100px]"
-                          max={240}
-                          min={0}
-                          onChange={(event) =>
-                            updateRow(row.playerId, {
-                              startedMinute: event.target.value
-                                ? Number(event.target.value)
-                                : null,
-                            })
-                          }
-                          type="number"
-                          value={row.startedMinute ?? ""}
-                        />
-                      </td>
-                    </>
-                  ) : null}
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
+      <div className="space-y-3 md:hidden">
+        {rows.map((row) => (
+          <div
+            className="space-y-3 rounded-lg border border-border-tertiary bg-bg-primary p-4"
+            key={row.playerId}
+          >
+            <p className="text-base font-medium text-text-primary">
+              {row.playerName}
+            </p>
+            <Select
+              onValueChange={(value) =>
+                updateRow(row.playerId, {
+                  status: value as AttendanceStatus,
+                })
+              }
+              value={row.status}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isMatch ? (
+              <div className="grid grid-cols-2 gap-3">
+                <label className="space-y-1 text-xs text-text-tertiary">
+                  Min. jugados
+                  <Input
+                    className="w-full tabular-nums"
+                    max={240}
+                    min={0}
+                    onChange={(event) =>
+                      updateRow(row.playerId, {
+                        minutesPlayed: event.target.value
+                          ? Number(event.target.value)
+                          : null,
+                      })
+                    }
+                    type="number"
+                    value={row.minutesPlayed ?? ""}
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-text-tertiary">
+                  Min. entrada
+                  <Input
+                    className="w-full tabular-nums"
+                    max={240}
+                    min={0}
+                    onChange={(event) =>
+                      updateRow(row.playerId, {
+                        startedMinute: event.target.value
+                          ? Number(event.target.value)
+                          : null,
+                      })
+                    }
+                    type="number"
+                    value={row.startedMinute ?? ""}
+                  />
+                </label>
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
       <div className="flex justify-end">
-        <Button disabled={isPending || rows.length === 0} onClick={handleSave}>
+        <Button
+          className="w-full md:w-auto"
+          disabled={isPending || rows.length === 0}
+          onClick={handleSave}
+        >
           {isPending ? "Guardando..." : "Guardar asistencia"}
         </Button>
       </div>

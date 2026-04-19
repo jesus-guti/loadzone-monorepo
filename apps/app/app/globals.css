@@ -98,3 +98,60 @@
   --chart-4: oklch(0.76 0.1 145);
   --chart-5: oklch(0.71 0.13 32);
 }
+
+/* ---- Bevel sutil estilo Apple (top-lit) ----
+ * Aporta sensacion de superficie tallada sin shadow estructural.
+ * Uso: cards y bloques contenedores que necesiten un toque premium.
+ */
+@utility bevel-card {
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.04),
+    inset 0 -1px 0 0 oklch(0 0 0 / 0.03);
+}
+.dark .bevel-card {
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.06),
+    inset 0 -1px 0 0 oklch(0 0 0 / 0.18);
+}
+
+/* ---- Bevel teñido sage para signature moments ---- */
+@utility bevel-card-brand {
+  box-shadow:
+    inset 0 1px 0 0 oklch(from var(--brand) l c h / 0.18),
+    inset 0 -1px 0 0 oklch(0 0 0 / 0.04);
+}
+.dark .bevel-card-brand {
+  box-shadow:
+    inset 0 1px 0 0 oklch(from var(--brand) l c h / 0.22),
+    inset 0 -1px 0 0 oklch(0 0 0 / 0.20);
+}
+
+/* ---- Borde con gradiente vertical (top mas claro) ----
+ * Borde de doble color que cae hacia abajo para sensacion de luz.
+ */
+@utility border-gradient-subtle {
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--bg-primary), var(--bg-primary)),
+    linear-gradient(
+      180deg,
+      oklch(from var(--border-secondary) l c h / 0.9),
+      oklch(from var(--border-tertiary) l c h / 0.6)
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* ---- Material Liquid Glass (solo glass moments) ----
+ * Solo para floating overlays puntuales: pill "Hoy", badge alerta sobre avatar,
+ * trigger de re-notificar, dot de alerta sobre burbuja.
+ */
+@utility glass-surface {
+  background-color: oklch(from var(--bg-primary) l c h / 0.65);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid oklch(from var(--border-tertiary) l c h / 0.55);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.08),
+    0 1px 2px 0 oklch(0 0 0 / 0.04);
+}

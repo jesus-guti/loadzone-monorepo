@@ -10,26 +10,33 @@ import Link from "next/link";
 
 export function QuickNewSessionCard() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Atajos</CardTitle>
+    <Card className="bevel-card rounded-lg border-border-tertiary bg-bg-primary p-5">
+      <CardHeader className="px-0 pb-0">
+        <CardTitle className="text-base font-semibold text-text-primary">
+          Acciones rápidas
+        </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <Button asChild size="sm">
+      <CardContent className="space-y-3 px-0 pb-0">
+        <Button asChild className="mt-4 w-full" size="sm">
           <Link href="/sessions/new">
             <PlusIcon className="mr-1 size-4" />
             Crear nueva sesión
           </Link>
         </Button>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/exercises/new">
-            <PlusIcon className="mr-1 size-4" />
+        <div className="flex flex-col gap-2">
+          <Link
+            className="text-sm text-text-secondary hover:text-text-primary"
+            href="/exercises/new"
+          >
             Crear ejercicio
           </Link>
-        </Button>
-        <Button asChild size="sm" variant="ghost">
-          <Link href="/exercises">Ver biblioteca de ejercicios</Link>
-        </Button>
+          <Link
+            className="text-sm text-text-secondary hover:text-text-primary"
+            href="/exercises"
+          >
+            Ver biblioteca de ejercicios
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
