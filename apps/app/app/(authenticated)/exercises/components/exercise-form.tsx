@@ -11,6 +11,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { toast } from "@repo/design-system/components/ui/sonner";
+import dynamic from "next/dynamic";
 import { useActionState, useEffect, useState } from "react";
 import {
   createExercise,
@@ -24,9 +25,18 @@ import {
   GAME_SITUATION_OPTIONS,
   STRATEGY_OPTIONS,
   TACTICAL_INTENTION_OPTIONS,
+  VISIBILITY_OPTIONS,
 } from "./exercise-enums";
 import { DiagramPlaceholder } from "./diagram-placeholder";
 import { FieldLabel, FormSection } from "../../sessions/components/form-section";
+
+const TacticalBoard = dynamic(
+  () => import("./tactical-board").then((module) => module.TacticalBoard),
+  {
+    ssr: false,
+    loading: () => <DiagramPlaceholder />,
+  }
+);
 
 type ExerciseDefaults = {
   id?: string;
@@ -45,6 +55,8 @@ type ExerciseDefaults = {
   dynamicType?: string;
   gameSituation?: string;
   coordinationType?: string;
+  visibility?: string;
+  diagramData?: string;
 };
 
 type ExerciseFormProps = {
@@ -173,27 +185,14 @@ export function ExerciseForm({
             />
           </div>
           <div className="space-y-2">
-            <FieldLabel htmlFor="minPlayers">Mín. jugadores</FieldLabel>
+            <FieldLabel htmlFor="playersCount">Jugadores</FieldLabel>
             <Input
               className="bg-bg-secondary"
               defaultValue={defaults.minPlayers ?? 4}
-              id="minPlayers"
-              max={50}
-              min={1}
-              name="minPlayers"
-              required
-              type="number"
-            />
-          </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="maxPlayers">Máx. jugadores</FieldLabel>
-            <Input
-              className="bg-bg-secondary"
-              defaultValue={defaults.maxPlayers ?? 12}
-              id="maxPlayers"
+              id="playersCount"
               max={60}
               min={1}
-              name="maxPlayers"
+              name="playersCount"
               required
               type="number"
             />
@@ -248,6 +247,12 @@ export function ExerciseForm({
             name="coordinationType"
             options={COORDINATION_TYPE_OPTIONS}
           />
+          <EnumSelect
+            defaultValue={defaults.visibility ?? "CLUB_SHARED"}
+            label="Visibilidad"
+            name="visibility"
+            options={VISIBILITY_OPTIONS}
+          />
         </div>
       </FormSection>
 
@@ -255,7 +260,7 @@ export function ExerciseForm({
         description="Espacio reservado para diseñar el croquis del ejercicio."
         title="Pizarra"
       >
-        <DiagramPlaceholder />
+        <TacticalBoard defaultValue={defaults.diagramData} name="diagramData" />
       </FormSection>
 
       <div className="flex justify-end gap-2">

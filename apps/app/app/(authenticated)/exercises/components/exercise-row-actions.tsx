@@ -2,6 +2,8 @@
 
 import {
   DocumentDuplicateIcon,
+  EyeIcon,
+  EyeSlashIcon,
   PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/20/solid";
@@ -24,22 +26,40 @@ import { useTransition } from "react";
 import {
   archiveExercise,
   duplicateExercise,
+  toggleExerciseVisibility,
 } from "../actions/exercise-actions";
 
 type ExerciseRowActionsProps = {
   readonly exerciseId: string;
   readonly exerciseName: string;
   readonly canDelete: boolean;
+  readonly isPrivate: boolean;
+  readonly canToggleVisibility: boolean;
 };
 
 export function ExerciseRowActions({
   exerciseId,
   exerciseName,
   canDelete,
+  isPrivate,
+  canToggleVisibility,
 }: ExerciseRowActionsProps) {
   const router = useRouter();
   const [isDuplicating, startDuplicate] = useTransition();
   const [isArchiving, startArchive] = useTransition();
+  const [isTogglingVisibility, startToggleVisibility] = useTransition();
+
+  function handleToggleVisibility(): void {
+    startToggleVisibility(async () => {
+      const result = await toggleExerciseVisibility(exerciseId);
+      if (result.ok) {
+        toast.success(`Visibilidad cambiada a ${isPrivate ? "Compartido" : "Privado"}.`);
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
 
   function handleDuplicate(): void {
     startDuplicate(async () => {
@@ -85,6 +105,22 @@ export function ExerciseRowActions({
       >
         <DocumentDuplicateIcon className="size-4 text-text-secondary" />
       </Button>
+      {canToggleVisibility ? (
+        <Button
+          aria-label={`Cambiar visibilidad de ${exerciseName}`}
+          disabled={isTogglingVisibility}
+          onClick={handleToggleVisibility}
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          {isPrivate ? (
+            <EyeSlashIcon className="size-4 text-text-secondary" />
+          ) : (
+            <EyeIcon className="size-4 text-text-secondary" />
+          )}
+        </Button>
+      ) : null}
       {canDelete ? (
         <AlertDialog>
           <AlertDialogTrigger asChild>

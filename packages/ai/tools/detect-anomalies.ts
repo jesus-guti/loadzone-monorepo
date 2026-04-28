@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { database } from "@repo/database";
+import { database, RISK_THRESHOLDS } from "@repo/database";
 import { z } from "zod";
 
 type Anomaly = {
@@ -107,12 +107,12 @@ export const detectAnomalies = tool({
         .filter((s) => s.acwr != null)
         .map((s) => Number(s.acwr));
 
-      if (acwrValues.length > 0 && acwrValues[0] >= 1.5) {
+      if (acwrValues.length > 0 && acwrValues[0] >= RISK_THRESHOLDS.acwr.high) {
         anomalies.push({
           playerId: player.id,
           playerName: player.name,
           type: "ACWR_DANGER",
-          severity: acwrValues[0] >= 2.0 ? "critical" : "warning",
+          severity: acwrValues[0] >= RISK_THRESHOLDS.acwr.critical ? "critical" : "warning",
           description: `ACWR en zona de riesgo: ${acwrValues[0].toFixed(2)}`,
         });
       }

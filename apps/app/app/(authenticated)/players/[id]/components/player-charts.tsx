@@ -1,6 +1,6 @@
 "use client";
 
-import type { RiskLevel } from "@repo/database";
+import { RISK_THRESHOLDS, type RiskLevel } from "@repo/database";
 import {
   Card,
   CardContent,
@@ -157,13 +157,13 @@ export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
                 <YAxis domain={[0, 3]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ReferenceArea
-                  y1={1.5}
+                  y1={RISK_THRESHOLDS.acwr.high}
                   y2={3}
                   fill="hsl(0, 84%, 60%)"
                   fillOpacity={0.08}
                 />
                 <ReferenceLine
-                  y={1.5}
+                  y={RISK_THRESHOLDS.acwr.high}
                   stroke="hsl(0, 84%, 60%)"
                   strokeDasharray="3 3"
                   label="Zona de riesgo"

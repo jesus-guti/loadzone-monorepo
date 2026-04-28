@@ -68,6 +68,18 @@ const NewSessionPage = async ({
     complexity: entry.complexity,
   }));
 
+  const locationRecords = await database.teamSession.findMany({
+    where: {
+      teamId: staffContext.activeTeam.id,
+      location: { not: null },
+    },
+    select: { location: true },
+    distinct: ["location"],
+  });
+  const locations = locationRecords
+    .map((r) => r.location)
+    .filter((loc): loc is string => Boolean(loc));
+
   return (
     <>
       <Header page="Nueva sesión" pages={["LoadZone", "Sesiones"]} />
@@ -76,6 +88,7 @@ const NewSessionPage = async ({
           defaultEndsAt={buildLocalDateTimeValue(end)}
           defaultStartsAt={buildLocalDateTimeValue(start)}
           exercises={exerciseItems}
+          locations={locations}
           postReminderMinutes={
             staffContext.activeTeam.postSessionReminderMinutes ?? 30
           }

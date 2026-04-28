@@ -1,15 +1,7 @@
-import { database, type RiskLevel } from "@repo/database";
+import { database, determineRiskLevel, type RiskLevel } from "@repo/database";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-
-function determineRiskLevel(acwr: number | null): RiskLevel {
-  if (acwr === null) return "LOW";
-  if (acwr >= 2.0) return "CRITICAL";
-  if (acwr >= 1.5) return "HIGH";
-  if (acwr >= 1.3) return "MODERATE";
-  return "LOW";
-}
 
 export async function GET(request: Request): Promise<NextResponse> {
   const authHeader = request.headers.get("authorization");

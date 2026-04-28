@@ -164,6 +164,16 @@ export function PostSessionForm({
         <input type="hidden" name="date" value={date} />
         <input type="hidden" name="templateId" value={template.id} />
         <input type="hidden" name="teamSessionId" value={teamSessionId ?? ""} />
+        {rpeQuestion ? (
+          <input type="hidden" name={rpeQuestion.key} value={rpe ?? ""} />
+        ) : null}
+        {durationQuestion ? (
+          <input
+            type="hidden"
+            name={durationQuestion.key}
+            value={duration ?? ""}
+          />
+        ) : null}
 
         <div className="space-y-3">
           {steps.map((step, index) => {
@@ -248,7 +258,7 @@ export function PostSessionForm({
       </form>
 
       <div className="fixed inset-x-0 bottom-0 z-30 pointer-events-none">
-        <div className="mx-auto max-w-md px-4 pb-4 pt-6 pointer-events-auto bg-gradient-to-t from-bg-primary via-bg-primary to-transparent">
+        <div className="mx-auto max-w-md px-4 pb-4 pt-6 pointer-events-auto bg-linear-to-t from-bg-primary via-bg-primary to-transparent">
           <div className="flex items-center justify-between pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
             <span>
               {answeredCount} / {totalSteps}

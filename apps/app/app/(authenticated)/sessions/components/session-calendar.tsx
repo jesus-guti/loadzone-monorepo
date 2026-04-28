@@ -198,61 +198,65 @@ export function SessionCalendar({
         "md:rounded-lg md:border md:border-border-tertiary"
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-3 md:px-4">
-        <div className="flex items-center gap-1">
-          <Button
-            aria-label="Anterior"
-            onClick={goPrev}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronLeftIcon className="size-4" />
-          </Button>
-          <Button
-            aria-label="Siguiente"
-            onClick={goNext}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronRightIcon className="size-4" />
-          </Button>
-          <Button
-            className="border-border-tertiary text-text-primary"
-            onClick={goToday}
-            size="sm"
-            variant="outline"
-          >
-            Hoy
-          </Button>
-          <p className="ml-3 text-base font-semibold tracking-tight text-text-primary">
+      <div className="flex flex-col gap-3 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
+        <div className="flex items-center justify-between md:justify-start md:gap-1">
+          <div className="flex items-center gap-1">
+            <Button
+              aria-label="Anterior"
+              onClick={goPrev}
+              size="icon"
+              variant="ghost"
+            >
+              <ChevronLeftIcon className="size-4" />
+            </Button>
+            <Button
+              aria-label="Siguiente"
+              onClick={goNext}
+              size="icon"
+              variant="ghost"
+            >
+              <ChevronRightIcon className="size-4" />
+            </Button>
+            <Button
+              className="border-border-tertiary text-text-primary"
+              onClick={goToday}
+              size="sm"
+              variant="outline"
+            >
+              Hoy
+            </Button>
+          </div>
+          <p className="ml-3 text-base font-semibold tracking-tight text-text-primary md:ml-3">
             {headerLabel}
           </p>
         </div>
-        <div className="inline-flex items-center gap-1 rounded-md border border-border-tertiary bg-bg-primary p-0.5">
-          <button
-            className={cn(
-              "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
-              view === "month"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setView("month")}
-            type="button"
-          >
-            Mes
-          </button>
-          <button
-            className={cn(
-              "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
-              view === "week"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setView("week")}
-            type="button"
-          >
-            Semana
-          </button>
+        <div className="flex justify-end">
+          <div className="inline-flex items-center gap-1 rounded-md border border-border-tertiary bg-bg-primary p-0.5">
+            <button
+              className={cn(
+                "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
+                view === "month"
+                  ? "bg-bg-secondary text-text-primary"
+                  : "text-text-secondary hover:text-text-primary"
+              )}
+              onClick={() => setView("month")}
+              type="button"
+            >
+              Mes
+            </button>
+            <button
+              className={cn(
+                "rounded-sm px-3 py-1 text-xs font-medium transition-colors",
+                view === "week"
+                  ? "bg-bg-secondary text-text-primary"
+                  : "text-text-secondary hover:text-text-primary"
+              )}
+              onClick={() => setView("week")}
+              type="button"
+            >
+              Semana
+            </button>
+          </div>
         </div>
       </div>
 
@@ -280,7 +284,7 @@ export function SessionCalendar({
           return (
             <div
               className={cn(
-                "group relative min-h-[96px] px-1 py-1 md:min-h-[120px] md:border-l md:border-t md:border-border-tertiary/60 md:px-2 md:py-1.5",
+                "group relative flex flex-col min-h-[110px] px-1 py-1 md:min-h-[130px] md:border-l md:border-t md:border-border-tertiary/60 md:px-2 md:py-1.5",
                 index % 7 === 6 && "md:border-r",
                 index >= days.length - 7 && "md:border-b",
                 !isCurrentMonth && "bg-bg-secondary/40"
@@ -299,9 +303,16 @@ export function SessionCalendar({
                 >
                   {day.getDate()}
                 </span>
+                <Link
+                  aria-label={`Crear sesión el ${formatYmd(day)}`}
+                  className="text-text-tertiary hover:text-brand md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  href={buildHrefForNew(day)}
+                >
+                  <PlusIcon className="size-4" />
+                </Link>
               </div>
 
-              <div className="mt-1 flex flex-col gap-1">
+              <div className="mt-1 flex flex-col gap-1 flex-1">
                 {dayEvents.slice(0, 3).map((event) => (
                   <Link
                     className={cn(
@@ -312,29 +323,20 @@ export function SessionCalendar({
                     href={`/sessions/${event.id}`}
                     key={event.id}
                   >
-                    <span className="min-w-0 line-clamp-2 text-xs font-medium leading-snug hover:underline md:line-clamp-none md:flex-1 md:truncate md:leading-tight">
+                    <span className="min-w-0 line-clamp-2 text-[11px] font-medium leading-snug hover:underline md:line-clamp-none md:flex-1 md:truncate md:leading-tight">
                       {event.title}
                     </span>
-                    <span className="shrink-0 text-xs leading-tight text-text-secondary md:ml-auto">
+                    <span className="shrink-0 text-[10px] leading-tight text-text-secondary md:ml-auto md:text-[11px]">
                       {formatSessionTime(event.startsAt)}
                     </span>
                   </Link>
                 ))}
                 {dayEvents.length > 3 ? (
-                  <p className="px-0.5 text-xs text-text-tertiary md:px-1.5">
+                  <p className="px-0.5 text-[11px] text-text-tertiary md:px-1.5">
                     +{dayEvents.length - 3} más
                   </p>
                 ) : null}
               </div>
-
-              <Link
-                aria-label={`Crear sesión el ${formatYmd(day)}`}
-                className="absolute inset-x-1 bottom-1.5 hidden items-center justify-center rounded-md border border-dashed border-border-tertiary py-1 text-xs text-text-tertiary opacity-0 transition-opacity hover:border-brand hover:text-brand group-hover:flex group-hover:opacity-100 md:inset-x-2 md:bottom-2"
-                href={buildHrefForNew(day)}
-              >
-                <PlusIcon className="mr-1 size-3" />
-                Nueva
-              </Link>
             </div>
           );
         })}

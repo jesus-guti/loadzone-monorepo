@@ -5,10 +5,29 @@ import { SessionPage } from "./components/session-page";
 
 type PageProperties = {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ date?: string }>;
 };
 
-const PlayerPage = async ({ params }: PageProperties) => {
+function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
+  if (rawDate) {
+    const parsed = new Date(`${rawDate}T00:00:00`);
+    if (!Number.isNaN(parsed.getTime())) {
+      parsed.setHours(0, 0, 0, 0);
+      return { iso: rawDate, value: parsed };
+    }
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return {
+    iso: today.toISOString().split("T")[0] ?? "",
+    value: today,
+  };
+}
+
+const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   const { token } = await params;
+  const { date } = await searchParams;
   await ensureBaseFormTemplates();
 
   const player = await database.player.findUnique({
@@ -58,14 +77,13 @@ const PlayerPage = async ({ params }: PageProperties) => {
     notFound();
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const selectedDate = resolveSelectedDate(date);
+  const nextDay = new Date(selectedDate.value);
+  nextDay.setDate(nextDay.getDate() + 1);
 
-  const todayEntry = await database.dailyEntry.findUnique({
+  const selectedEntry = await database.dailyEntry.findUnique({
     where: {
-      playerId_date: { playerId: player.id, date: today },
+      playerId_date: { playerId: player.id, date: selectedDate.value },
     },
     select: {
       preFilledAt: true,
@@ -73,12 +91,12 @@ const PlayerPage = async ({ params }: PageProperties) => {
     },
   });
 
-  const todaySession = await database.teamSession.findFirst({
+  const selectedSession = await database.teamSession.findFirst({
     where: {
       teamId: player.teamId,
       startsAt: {
-        gte: today,
-        lt: tomorrow,
+        gte: selectedDate.value,
+        lt: nextDay,
       },
       status: "SCHEDULED",
     },
@@ -166,12 +184,12 @@ const PlayerPage = async ({ params }: PageProperties) => {
     }));
 
   const preTemplate =
-    todaySession?.formAssignments.find(
+    selectedSession?.formAssignments.find(
       (assignment) => assignment.fillMoment === "PRE_SESSION"
     )?.template ?? fallbackPreTemplate;
 
   const postTemplate =
-    todaySession?.formAssignments.find(
+    selectedSession?.formAssignments.find(
       (assignment) => assignment.fillMoment === "POST_SESSION"
     )?.template ?? fallbackPostTemplate;
 
@@ -182,15 +200,16 @@ const PlayerPage = async ({ params }: PageProperties) => {
       teamName={player.team.name}
       currentStreak={player.currentStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
-      todayEntry={todayEntry}
-      todaySession={
-        todaySession
+      selectedDate={selectedDate.iso}
+      selectedEntry={selectedEntry}
+      selectedSession={
+        selectedSession
           ? {
-              id: todaySession.id,
-              title: todaySession.title,
-              type: todaySession.type,
-              startsAt: todaySession.startsAt.toISOString(),
-              endsAt: todaySession.endsAt.toISOString(),
+              id: selectedSession.id,
+              title: selectedSession.title,
+              type: selectedSession.type,
+              startsAt: selectedSession.startsAt.toISOString(),
+              endsAt: selectedSession.endsAt.toISOString(),
             }
           : null
       }

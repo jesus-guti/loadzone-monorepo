@@ -6,6 +6,7 @@ import {
   FireIcon,
   ShieldExclamationIcon,
   UsersIcon,
+  ClockIcon,
 } from "@heroicons/react/20/solid";
 import type { PlayerStatus, RiskLevel } from "@repo/database";
 import Link from "next/link";
@@ -135,7 +136,7 @@ function getDailyStateLabel(state: DailyPlayerState): string {
     case "COMPLETED":
       return "Completado";
     default:
-      return "No completado";
+      return "Pendiente";
   }
 }
 
@@ -215,6 +216,18 @@ export function TeamOverview({
     icon: ReactNode;
   }> = [
     {
+      title: "Pendientes hoy",
+      value: summary.pendingCount,
+      detail: "sin completar wellness",
+      icon: <ClockIcon className="size-4 text-brand" />,
+    },
+    {
+      title: "Jugadores en alerta",
+      value: summary.alertCount,
+      detail: "seguimiento inmediato",
+      icon: <ExclamationTriangleIcon className="size-4 text-danger" />,
+    },
+    {
       title: "Plantilla activa",
       value: players.length,
       detail: `${availableCount} disponibles`,
@@ -224,19 +237,7 @@ export function TeamOverview({
       title: "Pre hoy",
       value: `${summary.preCompletedCount}/${players.length}`,
       detail: "jugadores con pre-sesión",
-      icon: <CheckCircleIcon className="size-4 text-brand" />,
-    },
-    {
-      title: "Post hoy",
-      value: `${summary.postCompletedCount}/${players.length}`,
-      detail: "jugadores con post-sesión",
-      icon: <CheckCircleIcon className="size-4 text-brand" />,
-    },
-    {
-      title: "Jugadores en alerta",
-      value: summary.alertCount,
-      detail: "seguimiento inmediato",
-      icon: <ExclamationTriangleIcon className="size-4 text-danger" />,
+      icon: <CheckCircleIcon className="size-4 text-text-secondary" />,
     },
   ];
 

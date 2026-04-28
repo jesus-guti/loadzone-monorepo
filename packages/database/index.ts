@@ -191,3 +191,4 @@ export async function ensureBaseFormTemplates(): Promise<void> {
 
 // biome-ignore lint/performance/noBarrelFile: re-exporting
 export * from "./generated/client";
+export * from "./risk";

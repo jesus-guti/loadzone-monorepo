@@ -34,6 +34,7 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 type TeamWellnessWorkspaceProperties = {
   readonly evaluatedDate: string;
   readonly players: TeamWellnessPlayer[];
+  readonly wellnessLimits?: any;
 };
 
 type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
@@ -79,11 +80,19 @@ function isPlayerActiveToday(player: TeamWellnessPlayer): boolean {
   return Boolean(entry?.preFilledAt || entry?.postFilledAt);
 }
 
-function getDailyPlayerState(player: TeamWellnessPlayer): DailyPlayerState {
+function getDailyPlayerState(player: TeamWellnessPlayer, wellnessLimits?: any): DailyPlayerState {
   const entry = player.entries[0];
   const riskLevel = player.stats[0]?.riskLevel;
 
-  if (entry?.physioAlert || riskLevel === "HIGH" || riskLevel === "CRITICAL") {
+  let hasWellnessAlert = false;
+  if (entry && wellnessLimits) {
+    if (wellnessLimits.recovery != null && entry.recovery != null && entry.recovery <= wellnessLimits.recovery) hasWellnessAlert = true;
+    if (wellnessLimits.energy != null && entry.energy != null && entry.energy <= wellnessLimits.energy) hasWellnessAlert = true;
+    if (wellnessLimits.soreness != null && entry.soreness != null && entry.soreness >= wellnessLimits.soreness) hasWellnessAlert = true;
+    if (wellnessLimits.sleepHours != null && entry.sleepHours != null && Number(entry.sleepHours) < wellnessLimits.sleepHours) hasWellnessAlert = true;
+  }
+
+  if (entry?.physioAlert || riskLevel === "HIGH" || riskLevel === "CRITICAL" || hasWellnessAlert) {
     return "ALERT";
   }
 
@@ -102,7 +111,7 @@ function formatAverage(value: number | null): string {
   return value.toFixed(1);
 }
 
-function buildSummary(players: TeamWellnessPlayer[]) {
+function buildSummary(players: TeamWellnessPlayer[], wellnessLimits?: any) {
   const todayEntries = players.flatMap((player) => player.entries);
   const recoveryValues = todayEntries
     .map((entry) => entry.recovery)
@@ -124,14 +133,8 @@ function buildSummary(players: TeamWellnessPlayer[]) {
 
   return {
     alertCount: players.filter((player) => {
-      const entry = player.entries[0];
-      const riskLevel = player.stats[0]?.riskLevel;
-
-      return (
-        Boolean(entry?.physioAlert) ||
-        riskLevel === "HIGH" ||
-        riskLevel === "CRITICAL"
-      );
+      const state = getDailyPlayerState(player, wellnessLimits);
+      return state === "ALERT";
     }).length,
     energyAverage: average(energyValues),
     pendingCount: players.filter((player) => {
@@ -150,6 +153,7 @@ function buildSummary(players: TeamWellnessPlayer[]) {
 export function TeamWellnessWorkspace({
   evaluatedDate,
   players,
+  wellnessLimits,
 }: TeamWellnessWorkspaceProperties) {
   const [viewMode, setViewMode] = useState<WellnessViewMode>("cards");
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
@@ -162,7 +166,7 @@ export function TeamWellnessWorkspace({
     return players.filter((player) => selectedPlayerIds.includes(player.id));
   }, [players, selectedPlayerIds]);
 
-  const summary = useMemo(() => buildSummary(filteredPlayers), [filteredPlayers]);
+  const summary = useMemo(() => buildSummary(filteredPlayers, wellnessLimits), [filteredPlayers, wellnessLimits]);
   const totalPlayers = filteredPlayers.length || 0;
   const hasPending = summary.pendingCount > 0;
 
@@ -178,162 +182,6 @@ export function TeamWellnessWorkspace({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-1 self-start rounded-md border border-border-tertiary bg-bg-primary p-0.5">
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
-              viewMode === "cards"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setViewMode("cards")}
-            type="button"
-          >
-            <Squares2X2Icon className="size-4" />
-            Tarjetas
-          </button>
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
-              viewMode === "bubbles"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setViewMode("bubbles")}
-            type="button"
-          >
-            <SparklesIcon className="size-4" />
-            Burbujas
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <p className="text-sm text-text-tertiary">
-            {selectedPlayerIds.length > 0
-              ? `${selectedPlayerIds.length} jugadores filtrados`
-              : `${players.length} jugadores`}
-          </p>
-          {selectedPlayerIds.length > 0 ? (
-            <button
-              className="text-sm text-text-secondary hover:text-text-primary"
-              onClick={() => setSelectedPlayerIds([])}
-              type="button"
-            >
-              Quitar filtros
-            </button>
-          ) : null}
-        </div>
-      </div>
-
-      {viewMode === "cards" ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {filteredPlayers.map((player) => {
-            const entry = player.entries[0];
-            const state = getDailyPlayerState(player);
-            const injuryLabel = getInjuryLabel(player.status);
-            const alertLabel = entry?.physioAlert ? "Fisio" : "Riesgo alto";
-            const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
-            const avatarBadgeIcon = injuryLabel ? (
-              <ShieldExclamationIcon className="size-3 text-premium" />
-            ) : (
-              <ExclamationTriangleIcon className="size-3 text-danger" />
-            );
-
-            return (
-              <Link key={player.id} href={`/players/${player.id}`}>
-                <Card className="bevel-card h-full gap-4 rounded-lg border-border-tertiary bg-bg-primary p-4 transition-colors hover:border-border-secondary">
-                  <CardHeader className="flex flex-row items-start justify-between gap-3 px-0 pb-0">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="relative shrink-0">
-                        <Avatar className="size-11 rounded-2xl border border-border-tertiary">
-                          {player.imageUrl ? (
-                            <AvatarImage
-                              alt={player.name}
-                              className="object-cover"
-                              src={player.imageUrl}
-                            />
-                          ) : null}
-                          <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
-                            {getInitials(player.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {showAvatarBadge ? (
-                          <span className="glass-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
-                            {avatarBadgeIcon}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="min-w-0">
-                        <CardTitle className="flex items-center gap-1.5 truncate text-base text-text-primary">
-                          <span className="truncate">{player.name}</span>
-                          {state === "COMPLETED" && !injuryLabel ? (
-                            <CheckCircleIcon className="size-4 shrink-0 text-brand" />
-                          ) : null}
-                        </CardTitle>
-                      </div>
-                    </div>
-                    {player.currentStreak > 0 ? (
-                      <span className="flex items-center gap-1 text-xs font-medium text-text-secondary">
-                        <FireIcon className="size-3 text-premium" />
-                        {player.currentStreak}
-                      </span>
-                    ) : null}
-                  </CardHeader>
-                  <CardContent className="space-y-4 px-0 pb-0">
-                    {state === "ALERT" || state === "NOT_COMPLETED" || injuryLabel ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        {state === "ALERT" ? (
-                          <Badge className="rounded-md" variant="destructive">
-                            {alertLabel}
-                          </Badge>
-                        ) : null}
-                        {state === "NOT_COMPLETED" ? (
-                          <Badge
-                            className="rounded-md bg-bg-secondary text-text-secondary"
-                            variant="secondary"
-                          >
-                            Pendiente
-                          </Badge>
-                        ) : null}
-                        {injuryLabel ? (
-                          <Badge
-                            className="rounded-md border-premium/40 text-premium"
-                            variant="outline"
-                          >
-                            {injuryLabel}
-                          </Badge>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-text-tertiary">Riesgo</p>
-                        <p className="mt-1 text-base font-semibold text-text-primary">
-                          {getRiskLabel(player.stats[0]?.riskLevel)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-text-tertiary">RPE</p>
-                        <p className="mt-1 text-base font-semibold text-text-primary tabular-nums">
-                          {entry?.rpe ?? "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        <BubblesView
-          players={players}
-          selectedPlayerIds={selectedPlayerIds}
-          onToggle={togglePlayerSelection}
-        />
-      )}
-
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
         <Card className="bevel-card gap-0 rounded-lg border-border-tertiary bg-bg-primary p-5">
           <CardHeader className="px-0 pb-0">
@@ -505,6 +353,183 @@ export function TeamWellnessWorkspace({
           </CardContent>
         </Card>
       </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex items-center gap-1 self-start rounded-md border border-border-tertiary bg-bg-primary p-0.5">
+          <button
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
+              viewMode === "cards"
+                ? "bg-bg-secondary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+            onClick={() => setViewMode("cards")}
+            type="button"
+          >
+            <Squares2X2Icon className="size-4" />
+            Tarjetas
+          </button>
+          <button
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
+              viewMode === "bubbles"
+                ? "bg-bg-secondary text-text-primary"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+            onClick={() => setViewMode("bubbles")}
+            type="button"
+          >
+            <SparklesIcon className="size-4" />
+            Burbujas
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <p className="text-sm text-text-tertiary">
+            {selectedPlayerIds.length > 0
+              ? `${selectedPlayerIds.length} jugadores filtrados`
+              : `${players.length} jugadores`}
+          </p>
+          {selectedPlayerIds.length > 0 ? (
+            <button
+              className="text-sm text-text-secondary hover:text-text-primary"
+              onClick={() => setSelectedPlayerIds([])}
+              type="button"
+            >
+              Quitar filtros
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {viewMode === "cards" ? (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {filteredPlayers.map((player) => {
+            const entry = player.entries[0];
+            const state = getDailyPlayerState(player, wellnessLimits);
+            const injuryLabel = getInjuryLabel(player.status);
+            const isCriticalRisk = player.stats[0]?.riskLevel === "CRITICAL" || player.stats[0]?.riskLevel === "HIGH";
+            const hasPhysio = entry?.physioAlert;
+            
+            const wellnessAlerts: string[] = [];
+            if (entry && wellnessLimits) {
+              if (wellnessLimits.recovery != null && entry.recovery != null && entry.recovery <= wellnessLimits.recovery) wellnessAlerts.push("Recuperación");
+              if (wellnessLimits.energy != null && entry.energy != null && entry.energy <= wellnessLimits.energy) wellnessAlerts.push("Energía");
+              if (wellnessLimits.soreness != null && entry.soreness != null && entry.soreness >= wellnessLimits.soreness) wellnessAlerts.push("Agujetas");
+              if (wellnessLimits.sleepHours != null && entry.sleepHours != null && Number(entry.sleepHours) < wellnessLimits.sleepHours) wellnessAlerts.push("Sueño");
+            }
+            
+            const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
+            const avatarBadgeIcon = injuryLabel ? (
+              <ShieldExclamationIcon className="size-3 text-premium" />
+            ) : (
+              <ExclamationTriangleIcon className="size-3 text-danger" />
+            );
+
+            return (
+              <Link key={player.id} href={`/players/${player.id}`}>
+                <Card className="bevel-card h-full gap-4 rounded-lg border-border-tertiary bg-bg-primary p-4 transition-colors hover:border-border-secondary">
+                  <CardHeader className="flex flex-row items-start justify-between gap-3 px-0 pb-0">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="relative shrink-0">
+                        <Avatar className="size-11 rounded-2xl border border-border-tertiary">
+                          {player.imageUrl ? (
+                            <AvatarImage
+                              alt={player.name}
+                              className="object-cover"
+                              src={player.imageUrl}
+                            />
+                          ) : null}
+                          <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
+                            {getInitials(player.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        {showAvatarBadge ? (
+                          <span className="glass-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
+                            {avatarBadgeIcon}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="flex items-center gap-1.5 truncate text-base text-text-primary">
+                          <span className="truncate">{player.name}</span>
+                          {state === "COMPLETED" && !injuryLabel ? (
+                            <CheckCircleIcon className="size-4 shrink-0 text-brand" />
+                          ) : null}
+                        </CardTitle>
+                      </div>
+                    </div>
+                    {player.currentStreak > 0 ? (
+                      <span className="flex items-center gap-1 text-xs font-medium text-text-secondary">
+                        <FireIcon className="size-3 text-premium" />
+                        {player.currentStreak}
+                      </span>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent className="space-y-4 px-0 pb-0">
+                    {state === "ALERT" || state === "NOT_COMPLETED" || injuryLabel ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {hasPhysio ? (
+                          <Badge className="rounded-md" variant="destructive">
+                            Fisio
+                          </Badge>
+                        ) : null}
+                        {isCriticalRisk ? (
+                          <Badge className="rounded-md" variant="destructive">
+                            Riesgo alto
+                          </Badge>
+                        ) : null}
+                        {wellnessAlerts.map(alert => (
+                          <Badge key={alert} className="rounded-md border-danger/40 text-danger" variant="outline">
+                            {alert}
+                          </Badge>
+                        ))}
+                        {state === "NOT_COMPLETED" ? (
+                          <Badge
+                            className="rounded-md bg-bg-secondary text-text-secondary"
+                            variant="secondary"
+                          >
+                            Pendiente
+                          </Badge>
+                        ) : null}
+                        {injuryLabel ? (
+                          <Badge
+                            className="rounded-md border-premium/40 text-premium"
+                            variant="outline"
+                          >
+                            {injuryLabel}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-text-tertiary">Riesgo</p>
+                        <p className="mt-1 text-base font-semibold text-text-primary">
+                          {getRiskLabel(player.stats[0]?.riskLevel)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-text-tertiary">RPE</p>
+                        <p className="mt-1 text-base font-semibold text-text-primary tabular-nums">
+                          {entry?.rpe ?? "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <BubblesView
+          players={players}
+          selectedPlayerIds={selectedPlayerIds}
+          onToggle={togglePlayerSelection}
+          wellnessLimits={wellnessLimits}
+        />
+      )}
     </div>
   );
 }
@@ -513,12 +538,14 @@ type BubblesViewProperties = {
   readonly players: TeamWellnessPlayer[];
   readonly selectedPlayerIds: string[];
   readonly onToggle: (playerId: string) => void;
+  readonly wellnessLimits?: any;
 };
 
 function BubblesView({
   players,
   selectedPlayerIds,
   onToggle,
+  wellnessLimits,
 }: BubblesViewProperties) {
   const activePlayers = players.filter(isPlayerActiveToday);
   const inactivePlayers = players.filter((player) => !isPlayerActiveToday(player));
@@ -536,6 +563,7 @@ function BubblesView({
               }
               onToggle={onToggle}
               player={player}
+              wellnessLimits={wellnessLimits}
             />
           ))}
         </div>
@@ -562,6 +590,7 @@ function BubblesView({
                 muted
                 onToggle={onToggle}
                 player={player}
+                wellnessLimits={wellnessLimits}
               />
             ))}
           </div>
@@ -576,6 +605,7 @@ type PlayerBubbleProperties = {
   readonly isSelected: boolean;
   readonly muted?: boolean;
   readonly onToggle: (playerId: string) => void;
+  readonly wellnessLimits?: any;
 };
 
 function PlayerBubble({
@@ -583,8 +613,9 @@ function PlayerBubble({
   isSelected,
   muted = false,
   onToggle,
+  wellnessLimits,
 }: PlayerBubbleProperties) {
-  const state = getDailyPlayerState(player);
+  const state = getDailyPlayerState(player, wellnessLimits);
 
   return (
     <button

@@ -1,5 +1,8 @@
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { PencilIcon } from "@heroicons/react/20/solid";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -164,7 +167,15 @@ const SessionDetailPage = async ({
         <div className="flex items-center gap-2">
           <PrintButton />
           {session.status !== "CANCELLED" ? (
-            <CancelSessionButton sessionId={session.id} />
+            <>
+              <Button asChild size="icon" variant="outline">
+                <Link href={`/sessions/${session.id}/edit`}>
+                  <PencilIcon className="size-4" />
+                  <span className="sr-only">Editar sesión</span>
+                </Link>
+              </Button>
+              <CancelSessionButton sessionId={session.id} />
+            </>
           ) : null}
         </div>
       </Header>

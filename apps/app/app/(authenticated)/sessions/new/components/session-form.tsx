@@ -43,6 +43,7 @@ type SessionFormProps = {
   readonly preReminderMinutes: number | null;
   readonly postReminderMinutes: number | null;
   readonly exercises: ReadonlyArray<ExerciseLibraryItem>;
+  readonly locations: ReadonlyArray<string>;
 };
 
 const SESSION_TYPES = [
@@ -63,6 +64,7 @@ export function SessionForm({
   preReminderMinutes,
   postReminderMinutes,
   exercises,
+  locations,
 }: SessionFormProps) {
   const router = useRouter();
   const formId = useId();
@@ -84,6 +86,8 @@ export function SessionForm({
     })
   );
 
+  const [redirectTarget, setRedirectTarget] = useState<"session" | "new-exercise">("session");
+
   useEffect(() => {
     if (state.error) {
       toast.error(state.error);
@@ -91,23 +95,27 @@ export function SessionForm({
   }, [state]);
 
   useEffect(() => {
-    if (state.success && state.sessionId && builderItems.length > 0) {
-      void attachExercises({
-        sessionId: state.sessionId,
-        items: builderItems.map((item, index) => ({
-          exerciseId: item.exerciseId,
-          order: index,
-          durationMinutesOverride: item.durationOverride,
-          notes: item.notes ? item.notes : null,
-        })),
-      }).then((result) => {
-        if (!result.success && result.error) {
-          toast.error(result.error);
-        }
-        router.push(`/sessions/${state.sessionId}`);
-      });
+    if (state.success && state.sessionId) {
+      if (builderItems.length > 0) {
+        void attachExercises({
+          sessionId: state.sessionId,
+          items: builderItems.map((item, index) => ({
+            exerciseId: item.exerciseId,
+            order: index,
+            durationMinutesOverride: item.durationOverride,
+            notes: item.notes ? item.notes : null,
+          })),
+        }).then((result) => {
+          if (!result.success && result.error) {
+            toast.error(result.error);
+          }
+          router.push(redirectTarget === "new-exercise" ? "/exercises/new" : `/sessions/${state.sessionId}`);
+        });
+      } else {
+        router.push(redirectTarget === "new-exercise" ? "/exercises/new" : `/sessions/${state.sessionId}`);
+      }
     }
-  }, [state, builderItems, router]);
+  }, [state, builderItems, router, redirectTarget]);
 
   function addExercise(exercise: ExerciseLibraryItem): void {
     setBuilderItems((prev) => [
@@ -246,9 +254,17 @@ export function SessionForm({
               <FieldLabel htmlFor="location">Ubicación</FieldLabel>
               <Input
                 id="location"
+                list="locations-list"
                 name="location"
                 placeholder="Campo principal, Polideportivo..."
               />
+              {locations.length > 0 ? (
+                <datalist id="locations-list">
+                  {locations.map((loc) => (
+                    <option key={loc} value={loc} />
+                  ))}
+                </datalist>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -344,7 +360,19 @@ export function SessionForm({
           </FormSection>
 
           <div className="flex justify-end gap-2">
-            <Button disabled={isPending} type="submit">
+            <Button
+              disabled={isPending}
+              onClick={() => setRedirectTarget("new-exercise")}
+              type="submit"
+              variant="outline"
+            >
+              {isPending ? "Guardando..." : "Guardar y crear ejercicio"}
+            </Button>
+            <Button
+              disabled={isPending}
+              onClick={() => setRedirectTarget("session")}
+              type="submit"
+            >
               {isPending ? "Guardando..." : "Guardar sesión"}
             </Button>
           </div>

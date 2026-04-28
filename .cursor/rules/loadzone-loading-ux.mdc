@@ -1,0 +1,13 @@
+---
+description: Loading UX standards for responsive LoadZone interfaces.
+globs: apps/{app,player}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# LoadZone Loading UX
+
+- Any navigation, async data dependency, or mutation that may take longer than an instant must show immediate pending feedback.
+- Prefer `Skeleton` placeholders for page, panel, list, and card loads so the layout stays stable; use `Spinner` only for compact inline or indeterminate waits.
+- In App Router, add route-level `loading.tsx` for slow segments and `Suspense` fallbacks for smaller async islands.
+- While a request or transition is pending, disable or otherwise guard repeated actions when duplicate taps/clicks would feel broken or trigger duplicate work.
+- Never leave blank areas or unchanged interactive controls during a visible wait state.

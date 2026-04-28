@@ -26,6 +26,7 @@ export type TeamSummary = {
   timezone: string;
   preSessionReminderMinutes: number | null;
   postSessionReminderMinutes: number | null;
+  wellnessLimits: any | null;
 };
 
 export type StaffContext = {
@@ -103,6 +104,7 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
         timezone: true,
         preSessionReminderMinutes: true,
         postSessionReminderMinutes: true,
+        wellnessLimits: true,
       },
       orderBy: { name: "asc" },
     }),

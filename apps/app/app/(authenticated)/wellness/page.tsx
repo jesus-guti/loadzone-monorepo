@@ -63,6 +63,7 @@ const WellnessPage = async () => {
         <TeamWellnessWorkspace
           evaluatedDate={data.evaluatedDate}
           players={data.players}
+          wellnessLimits={staffContext.activeTeam.wellnessLimits}
         />
       </div>
     </>

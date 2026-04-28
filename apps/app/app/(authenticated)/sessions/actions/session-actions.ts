@@ -228,7 +228,7 @@ export async function createSession(
   }
 
   if (createdId) {
-    redirect(`/sessions/${createdId}`);
+    return { success: true, sessionId: createdId };
   }
 
   return { success: true };

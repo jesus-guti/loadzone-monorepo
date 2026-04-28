@@ -206,6 +206,11 @@ enum InjurySide {
   CENTRAL
 }
 
+enum ExerciseVisibility {
+  PRIVATE
+  CLUB_SHARED
+}
+
 model Club {
   id             String         @id @default(cuid())
   name           String
@@ -287,6 +292,7 @@ model Membership {
   club             Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
   teamLinks        MembershipTeam[]
   createdSessions  TeamSession[]    @relation("SessionCreators")
+  createdExercises Exercise[]       @relation("ExerciseCreators")
   reviewedInjuries InjuryReport[]   @relation("ReviewedInjuries")
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
@@ -317,6 +323,7 @@ model Team {
   timezone                   String           @default("Europe/Madrid")
   preSessionReminderMinutes  Int?             @default(120)
   postSessionReminderMinutes Int?             @default(30)
+  wellnessLimits             Json?
   createdAt                  DateTime         @default(now())
   updatedAt                  DateTime         @updatedAt
   club                       Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -523,13 +530,16 @@ model Exercise {
   coordinationType    CoordinationType
   diagramData         Json?
   diagramVersion      Int                 @default(0)
-  diagramThumbnailUrl String?
-  isSystem            Boolean             @default(false)
-  isArchived          Boolean             @default(false)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  club                Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  sessionExercises    SessionExercise[]
+  diagramThumbnailUrl   String?
+  isSystem              Boolean             @default(false)
+  isArchived            Boolean             @default(false)
+  visibility            ExerciseVisibility  @default(CLUB_SHARED)
+  createdByMembershipId String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  club                  Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdBy             Membership?         @relation("ExerciseCreators", fields: [createdByMembershipId], references: [id], onDelete: SetNull)
+  sessionExercises      SessionExercise[]
 
   @@unique([clubId, slug])
   @@index([clubId, strategy])

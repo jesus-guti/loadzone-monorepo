@@ -180,6 +180,60 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             </div>
           </div>
 
+          <div className="pt-6 border-t border-border-secondary">
+            <h3 className="mb-4 text-sm font-semibold text-text-primary">Límites de alertas (Wellness)</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="wellness_recovery">Recuperación (alerta si es menor o igual a)</Label>
+                <Input
+                  id="wellness_recovery"
+                  name="wellness_recovery"
+                  type="number"
+                  min="0"
+                  max="10"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.recovery ?? ""}
+                  placeholder="Ej: 4"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_sleepHours">Horas de sueño (alerta si es menor a)</Label>
+                <Input
+                  id="wellness_sleepHours"
+                  name="wellness_sleepHours"
+                  type="number"
+                  min="0"
+                  max="24"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""}
+                  placeholder="Ej: 6"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_soreness">Agujetas (alerta si es mayor o igual a)</Label>
+                <Input
+                  id="wellness_soreness"
+                  name="wellness_soreness"
+                  type="number"
+                  min="1"
+                  max="5"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.soreness ?? ""}
+                  placeholder="Ej: 4"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_energy">Energía (alerta si es menor o igual a)</Label>
+                <Input
+                  id="wellness_energy"
+                  name="wellness_energy"
+                  type="number"
+                  min="1"
+                  max="5"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.energy ?? ""}
+                  placeholder="Ej: 2"
+                />
+              </div>
+            </div>
+          </div>
+
           <Button type="submit">Guardar configuración</Button>
         </form>
 

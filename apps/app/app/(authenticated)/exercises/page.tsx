@@ -17,16 +17,21 @@ import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "../components/header";
 import { ExerciseRowActions } from "./components/exercise-row-actions";
+import {
+  COMPLEXITY_OPTIONS,
+  STRATEGY_OPTIONS,
+} from "./components/exercise-enums";
 
 export const metadata: Metadata = {
   title: "Ejercicios | LoadZone",
 };
 
-const COMPLEXITY_LABEL: Record<string, string> = {
-  LOW: "Baja",
-  MEDIUM: "Media",
-  HIGH: "Alta",
-  VERY_HIGH: "Muy alta",
+const getComplexityLabel = (value: string) => {
+  return COMPLEXITY_OPTIONS.find((o) => o.value === value)?.label ?? value;
+};
+
+const getStrategyLabel = (value: string) => {
+  return STRATEGY_OPTIONS.find((o) => o.value === value)?.label ?? value;
 };
 
 const ExercisesPage = async (): Promise<ReactElement> => {
@@ -52,6 +57,15 @@ const ExercisesPage = async (): Promise<ReactElement> => {
       strategy: true,
       dynamicType: true,
       tacticalIntention: true,
+      visibility: true,
+      createdByMembershipId: true,
+      createdBy: {
+        select: {
+          user: {
+            select: { name: true }
+          }
+        }
+      }
     },
     orderBy: { name: "asc" },
   });
@@ -89,6 +103,9 @@ const ExercisesPage = async (): Promise<ReactElement> => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="pl-4">Nombre</TableHead>
+                  <TableHead>Origen</TableHead>
+                  <TableHead>Autor</TableHead>
+                  <TableHead>Visibilidad</TableHead>
                   <TableHead>Duración</TableHead>
                   <TableHead>Complejidad</TableHead>
                   <TableHead>Estrategia</TableHead>
@@ -106,16 +123,29 @@ const ExercisesPage = async (): Promise<ReactElement> => {
                         {exercise.name}
                       </Link>
                     </TableCell>
+                    <TableCell>
+                      <Badge variant={exercise.isSystem ? "secondary" : "outline"}>
+                        {exercise.isSystem ? "Sistema" : "Club"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-text-secondary">
+                      {exercise.isSystem ? "LoadZone" : exercise.createdByMembershipId === staffContext.membershipId ? "Tú" : (exercise.createdBy?.user?.name ?? "Desconocido")}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={exercise.visibility === "PRIVATE" ? "secondary" : "outline"}>
+                        {exercise.isSystem ? "Público" : exercise.visibility === "PRIVATE" ? "Privado" : "Club"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-sm text-text-secondary">
                       {exercise.durationMinutes} min
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {COMPLEXITY_LABEL[exercise.complexity] ?? exercise.complexity}
+                        {getComplexityLabel(exercise.complexity)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-text-secondary">
-                      {exercise.strategy.replaceAll("_", " ").toLowerCase()}
+                      {getStrategyLabel(exercise.strategy)}
                     </TableCell>
                     <TableCell className="pr-4 text-right">
                       <ExerciseRowActions
@@ -123,8 +153,13 @@ const ExercisesPage = async (): Promise<ReactElement> => {
                           !exercise.isSystem &&
                           exercise.clubId === staffContext.club.id
                         }
+                        canToggleVisibility={
+                          !exercise.isSystem &&
+                          exercise.createdByMembershipId === staffContext.membershipId
+                        }
                         exerciseId={exercise.id}
                         exerciseName={exercise.name}
+                        isPrivate={exercise.visibility === "PRIVATE"}
                       />
                     </TableCell>
                   </TableRow>

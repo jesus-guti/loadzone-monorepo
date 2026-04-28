@@ -15,6 +15,11 @@ const settingsSchema = z.object({
   postSessionReminderMinutes: z.coerce.number().int().min(0).max(1440),
   preFormTemplateId: z.string().optional(),
   postFormTemplateId: z.string().optional(),
+  wellness_recovery: z.coerce.number().min(0).max(10).optional(),
+  wellness_energy: z.coerce.number().min(1).max(5).optional(),
+  wellness_soreness: z.coerce.number().min(1).max(5).optional(),
+  wellness_sleepHours: z.coerce.number().min(0).max(24).optional(),
+  wellness_sleepQuality: z.coerce.number().min(1).max(5).optional(),
 });
 const createTeamSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
@@ -44,6 +49,11 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     postSessionReminderMinutes: formData.get("postSessionReminderMinutes"),
     preFormTemplateId: formData.get("preFormTemplateId") || undefined,
     postFormTemplateId: formData.get("postFormTemplateId") || undefined,
+    wellness_recovery: formData.get("wellness_recovery") || undefined,
+    wellness_energy: formData.get("wellness_energy") || undefined,
+    wellness_soreness: formData.get("wellness_soreness") || undefined,
+    wellness_sleepHours: formData.get("wellness_sleepHours") || undefined,
+    wellness_sleepQuality: formData.get("wellness_sleepQuality") || undefined,
   });
 
   if (!parsed.success) {
@@ -61,6 +71,13 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
         timezone: parsed.data.timezone,
         preSessionReminderMinutes: parsed.data.preSessionReminderMinutes,
         postSessionReminderMinutes: parsed.data.postSessionReminderMinutes,
+        wellnessLimits: {
+          recovery: parsed.data.wellness_recovery ?? null,
+          energy: parsed.data.wellness_energy ?? null,
+          soreness: parsed.data.wellness_soreness ?? null,
+          sleepHours: parsed.data.wellness_sleepHours ?? null,
+          sleepQuality: parsed.data.wellness_sleepQuality ?? null,
+        },
       },
     });
 

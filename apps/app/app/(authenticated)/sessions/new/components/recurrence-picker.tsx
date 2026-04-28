@@ -68,19 +68,34 @@ export function RecurrencePicker({
     <div className="space-y-4">
       <input name="recurrence" type="hidden" value={recurrenceValue} />
 
-      <label className="flex items-center justify-between gap-4">
-        <div>
+      <label
+        className={cn(
+          "flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-4 transition-colors",
+          enabled
+            ? "border-brand/30 bg-brand/5"
+            : "border-border-secondary hover:bg-bg-secondary/50"
+        )}
+      >
+        <div className="flex flex-col gap-1">
           <p className="text-sm font-medium text-text-primary">Repetir sesión</p>
-          <p className="text-xs text-text-secondary">
-            Crea una serie semanal con los días seleccionados.
-          </p>
+          {!enabled ? (
+            <p className="text-xs text-text-secondary">
+              No se repetirá. Activa para crear una serie semanal.
+            </p>
+          ) : (
+            <p className="text-xs font-medium text-brand">
+              {expectedCount > 0 && until
+                ? `Se crearán ~${expectedCount} sesiones hasta el ${new Date(until).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`
+                : "Configura los días y la fecha de fin"}
+            </p>
+          )}
         </div>
         <Switch checked={enabled} onCheckedChange={setEnabled} />
       </label>
 
       {enabled ? (
-        <div className="space-y-4 rounded-md border border-border-secondary bg-bg-secondary/40 p-4">
-          <div className="space-y-2">
+        <div className="animate-in fade-in slide-in-from-top-2 space-y-5 rounded-lg border border-border-secondary bg-bg-secondary/20 p-4">
+          <div className="space-y-3">
             <FieldLabel>Días de la semana</FieldLabel>
             <div className="flex flex-wrap gap-2">
               {WEEKDAYS.map((day) => {
@@ -90,13 +105,16 @@ export function RecurrencePicker({
                     aria-label={day.label}
                     aria-pressed={active}
                     className={cn(
-                      "size-9 rounded-md border text-sm font-medium transition-colors",
+                      "flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-all",
                       active
-                        ? "border-brand bg-brand text-brand-foreground"
-                        : "border-border-secondary bg-bg-primary text-text-secondary hover:bg-bg-tertiary"
+                        ? "border-brand bg-brand text-brand-foreground shadow-sm"
+                        : "border-border-secondary bg-bg-primary text-text-secondary hover:border-border-tertiary hover:bg-bg-tertiary"
                     )}
                     key={day.id}
-                    onClick={() => toggleDay(day.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleDay(day.id);
+                    }}
                     type="button"
                   >
                     {day.short}
@@ -106,21 +124,16 @@ export function RecurrencePicker({
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <FieldLabel htmlFor="recurrence-until">Repetir hasta</FieldLabel>
             <Input
+              className="w-full sm:max-w-[200px]"
               id="recurrence-until"
               onChange={(event) => setUntil(event.target.value)}
               type="date"
               value={until}
             />
           </div>
-
-          <p className="text-xs text-text-secondary">
-            {expectedCount > 0
-              ? `Se crearán ~${expectedCount} sesiones (máximo 60).`
-              : "Selecciona días y una fecha de fin para previsualizar."}
-          </p>
         </div>
       ) : null}
     </div>

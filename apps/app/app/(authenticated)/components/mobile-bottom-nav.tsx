@@ -25,6 +25,7 @@ export function MobileBottomNav() {
                   isActive && "text-text-primary"
                 )}
                 href={item.href}
+                prefetch
               >
                 <item.icon
                   className={cn(
@@ -53,6 +54,7 @@ export function MobileBottomNav() {
                   isActive && "text-text-primary"
                 )}
                 href={item.href}
+                prefetch
               >
                 <item.icon
                   className={cn(

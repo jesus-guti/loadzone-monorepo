@@ -83,3 +83,8 @@ export const COORDINATION_TYPE_OPTIONS = [
   { value: "SINGLE_PLAYER_COORDINATION", label: "Coordinación individual" },
   { value: "MULTI_PLAYER_COORDINATION", label: "Coordinación entre jugadores" },
 ] as const;
+
+export const VISIBILITY_OPTIONS = [
+  { value: "PRIVATE", label: "Privado" },
+  { value: "CLUB_SHARED", label: "Compartido con el club" },
+] as const;

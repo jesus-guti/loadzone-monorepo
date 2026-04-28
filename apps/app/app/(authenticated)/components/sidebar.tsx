@@ -15,8 +15,8 @@ import {
   SidebarMenuItem,
 } from "@repo/design-system/components/ui/sidebar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 import type { StaffContext } from "@/lib/auth-context";
 import {
   primaryNavigation,
@@ -25,6 +25,12 @@ import {
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { TeamBranding } from "./team-branding";
+
+const sidebarPrefetchHrefs = Array.from(
+  new Set(
+    [...primaryNavigation, ...secondaryNavigation].map((item) => item.href)
+  )
+);
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -45,6 +51,13 @@ export const GlobalSidebar = ({
   staffContext,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    for (const href of sidebarPrefetchHrefs) {
+      router.prefetch(href);
+    }
+  }, [router]);
 
   return (
     <AppShellProvider value={staffContext}>
@@ -85,7 +98,7 @@ export const GlobalSidebar = ({
                         isActive={item.match(pathname)}
                         tooltip={item.label}
                       >
-                        <Link href={item.href}>
+                        <Link href={item.href} prefetch>
                           <item.icon />
                           <span>{item.label}</span>
                         </Link>
@@ -107,7 +120,7 @@ export const GlobalSidebar = ({
                         isActive={item.match(pathname)}
                         tooltip={item.label}
                       >
-                        <Link href={item.href}>
+                        <Link href={item.href} prefetch>
                           <item.icon />
                           <span>{item.label}</span>
                         </Link>

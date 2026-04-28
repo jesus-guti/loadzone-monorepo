@@ -60,6 +60,8 @@ const ExerciseDetailPage = async ({
             dynamicType: exercise.dynamicType,
             gameSituation: exercise.gameSituation,
             coordinationType: exercise.coordinationType,
+            visibility: exercise.visibility,
+            diagramData: exercise.diagramData ? JSON.stringify(exercise.diagramData) : undefined,
           }}
           mode="edit"
         />

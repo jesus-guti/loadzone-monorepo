@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useTransition } from "react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
   HeartPulseIcon,
 } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
@@ -50,11 +51,12 @@ type SessionPageProperties = {
   readonly teamName: string;
   readonly currentStreak: number;
   readonly apiUrl: string;
-  readonly todayEntry: {
+  readonly selectedDate: string;
+  readonly selectedEntry: {
     preFilledAt: Date | null;
     postFilledAt: Date | null;
   } | null;
-  readonly todaySession: {
+  readonly selectedSession: {
     id: string;
     title: string;
     type: string;
@@ -73,38 +75,100 @@ function formatShortDate(value: Date): string {
   }).format(value);
 }
 
+function resolveInitialTab(preCompleted: boolean, postCompleted: boolean): string {
+  return preCompleted && !postCompleted ? "post" : "pre";
+}
+
 export function SessionPage({
   token,
   playerName,
   teamName,
   currentStreak,
   apiUrl,
-  todayEntry,
-  todaySession,
+  selectedDate,
+  selectedEntry,
+  selectedSession,
   preTemplate,
   postTemplate,
 }: SessionPageProperties) {
   const todayIso = new Date().toISOString().split("T")[0];
-  const [date, setDate] = useState<string>(todayIso);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+  const [date, setDate] = useState<string>(selectedDate);
   const [showDateEdit, setShowDateEdit] = useState(false);
-  const [preCompleted, setPreCompleted] = useState(!!todayEntry?.preFilledAt);
-  const [postCompleted, setPostCompleted] = useState(!!todayEntry?.postFilledAt);
+  const [preCompleted, setPreCompleted] = useState(!!selectedEntry?.preFilledAt);
+  const [postCompleted, setPostCompleted] = useState(!!selectedEntry?.postFilledAt);
   const [activeTab, setActiveTab] = useState<string>(
-    preCompleted && !postCompleted ? "post" : "pre"
+    resolveInitialTab(!!selectedEntry?.preFilledAt, !!selectedEntry?.postFilledAt)
   );
+  const [editingPre, setEditingPre] = useState(false);
+  const [editingPost, setEditingPost] = useState(false);
+  const [streakCount, setStreakCount] = useState(currentStreak);
   const [injuryOpen, setInjuryOpen] = useState(false);
 
+  useEffect(() => {
+    const nextPreCompleted = !!selectedEntry?.preFilledAt;
+    const nextPostCompleted = !!selectedEntry?.postFilledAt;
+
+    setDate(selectedDate);
+    setPreCompleted(nextPreCompleted);
+    setPostCompleted(nextPostCompleted);
+    setActiveTab(resolveInitialTab(nextPreCompleted, nextPostCompleted));
+    setEditingPre(false);
+    setEditingPost(false);
+    setStreakCount(currentStreak);
+    setShowDateEdit(false);
+  }, [selectedDate, selectedEntry, currentStreak]);
+
+  const isTodaySelected = date === todayIso;
+
   const handlePreComplete = useCallback(() => {
+    const shouldIncreaseStreak = !preCompleted && isTodaySelected;
     setPreCompleted(true);
+    setEditingPre(false);
     setActiveTab("post");
-  }, []);
+    if (shouldIncreaseStreak) {
+      setStreakCount((previous) => Math.max(previous, currentStreak + 1));
+    }
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [currentStreak, isTodaySelected, preCompleted, router]);
 
   const handlePostComplete = useCallback(() => {
     setPostCompleted(true);
+    setEditingPost(false);
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
+
+  const handleDateChange = useCallback(
+    (nextDate: string) => {
+      setDate(nextDate);
+      startTransition(() => {
+        router.replace(nextDate === todayIso ? pathname : `${pathname}?date=${nextDate}`);
+      });
+    },
+    [pathname, router, todayIso]
+  );
+
+  const handleEditPre = useCallback(() => {
+    setEditingPre(true);
+    setEditingPost(false);
+    setActiveTab("pre");
+  }, []);
+
+  const handleEditPost = useCallback(() => {
+    setEditingPost(true);
+    setEditingPre(false);
+    setActiveTab("post");
   }, []);
 
   const firstName = useMemo(() => playerName.split(" ")[0], [playerName]);
   const allDone = preCompleted && postCompleted;
+  const showCelebration = allDone && !editingPre && !editingPost;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5">
@@ -131,62 +195,92 @@ export function SessionPage({
               <input
                 type="date"
                 value={date}
-                onChange={(event) => setDate(event.target.value)}
+                onChange={(event) => handleDateChange(event.target.value)}
+                disabled={isPending}
                 className="mt-1 rounded-lg bg-bg-secondary px-2 py-1 text-xs text-text-primary focus:outline-none"
               />
             ) : null}
           </div>
 
-          {currentStreak > 0 ? (
+          {streakCount > 0 ? (
             <Badge
               variant="secondary"
               className="h-8 gap-1.5 rounded-full bg-bg-secondary px-3 text-sm font-semibold text-text-primary"
             >
               <FlameIcon className="h-4 w-4 text-premium" />
-              {currentStreak}
+              {streakCount}
             </Badge>
           ) : null}
         </div>
 
-        {todaySession ? (
+        {selectedSession ? (
           <div className="flex items-center justify-between rounded-2xl bg-bg-secondary px-4 py-2.5">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-text-primary">
-                {todaySession.title}
+                {selectedSession.title}
               </p>
               <p className="text-xs text-text-secondary">
-                {new Date(todaySession.startsAt).toLocaleTimeString("es-ES", {
+                {new Date(selectedSession.startsAt).toLocaleTimeString("es-ES", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
                 {" – "}
-                {new Date(todaySession.endsAt).toLocaleTimeString("es-ES", {
+                {new Date(selectedSession.endsAt).toLocaleTimeString("es-ES", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </p>
             </div>
             <span className="rounded-full bg-bg-primary px-2 py-0.5 text-xs font-medium text-text-secondary">
-              {todaySession.type}
+              {selectedSession.type}
             </span>
           </div>
         ) : null}
       </header>
 
-      {allDone ? (
+      {showCelebration ? (
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center gap-3 rounded-[1.75rem] bg-bg-secondary px-6 py-12 text-center">
-            <div className="flex size-20 items-center justify-center rounded-full bg-premium/15">
-              <FlameIcon className="h-10 w-10 text-premium" />
+            <div
+              className={cn(
+                "flex size-20 items-center justify-center rounded-full",
+                isTodaySelected ? "bg-premium/15" : "bg-brand/15"
+              )}
+            >
+              {isTodaySelected ? (
+                <FlameIcon className="h-10 w-10 text-premium" />
+              ) : (
+                <CheckCircle2Icon className="h-10 w-10 text-brand" />
+              )}
             </div>
             <h2 className="text-4xl font-black tracking-tight text-text-primary">
-              {currentStreak + 1} días
+              {isTodaySelected ? `${streakCount} días` : "Sesiones completas"}
             </h2>
             <p className="text-sm text-text-secondary">
-              ¡Racha activa! Nos vemos mañana.
+              {isTodaySelected
+                ? "¡Racha activa! Nos vemos mañana."
+                : "Esta fecha ya tiene pre y post-sesión registradas."}
             </p>
+            <div className="mt-2 flex w-full flex-col gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleEditPre}
+                className="h-11 rounded-full text-sm font-semibold"
+              >
+                Editar pre-sesión
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleEditPost}
+                className="h-11 rounded-full text-sm font-semibold"
+              >
+                Editar post-sesión
+              </Button>
+            </div>
           </div>
-          <PushPrompt token={token} apiUrl={apiUrl} />
+          {isTodaySelected ? <PushPrompt token={token} apiUrl={apiUrl} /> : null}
         </div>
       ) : (
         <Tabs
@@ -220,7 +314,7 @@ export function SessionPage({
           </TabsList>
 
           <TabsContent value="pre" className="mt-0">
-            {preCompleted ? (
+            {preCompleted && !editingPre ? (
               <div className="flex flex-col items-center gap-3 rounded-3xl bg-bg-secondary px-6 py-10 text-center">
                 <div className="flex size-14 items-center justify-center rounded-full bg-brand/15">
                   <CheckCircle2Icon className="h-7 w-7 text-brand" />
@@ -231,19 +325,32 @@ export function SessionPage({
                 <p className="text-sm text-text-secondary">
                   Sigue con la parte post-sesión cuando termines.
                 </p>
-                <Button
-                  type="button"
-                  onClick={() => setActiveTab("post")}
-                  className="mt-2 h-12 rounded-full px-6 text-sm font-semibold"
-                >
-                  Ir a Post-sesión
-                </Button>
+                <div className="mt-2 flex w-full flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleEditPre}
+                    className="h-12 rounded-full px-6 text-sm font-semibold"
+                  >
+                    Editar pre-sesión
+                  </Button>
+                  {!postCompleted ? (
+                    <Button
+                      type="button"
+                      onClick={() => setActiveTab("post")}
+                      className="h-12 rounded-full px-6 text-sm font-semibold"
+                    >
+                      Ir a Post-sesión
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <PreSessionForm
+                key={`${date}-pre`}
                 token={token}
                 date={date}
-                teamSessionId={todaySession?.id ?? null}
+                teamSessionId={selectedSession?.id ?? null}
                 template={preTemplate}
                 onComplete={handlePreComplete}
               />
@@ -251,7 +358,7 @@ export function SessionPage({
           </TabsContent>
 
           <TabsContent value="post" className="mt-0">
-            {postCompleted ? (
+            {postCompleted && !editingPost ? (
               <div className="flex flex-col items-center gap-3 rounded-3xl bg-bg-secondary px-6 py-10 text-center">
                 <div className="flex size-14 items-center justify-center rounded-full bg-brand/15">
                   <CheckCircle2Icon className="h-7 w-7 text-brand" />
@@ -262,12 +369,21 @@ export function SessionPage({
                 <p className="text-sm text-text-secondary">
                   Buen trabajo, {firstName}.
                 </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleEditPost}
+                  className="mt-2 h-12 rounded-full px-6 text-sm font-semibold"
+                >
+                  Editar post-sesión
+                </Button>
               </div>
             ) : (
               <PostSessionForm
+                key={`${date}-post`}
                 token={token}
                 date={date}
-                teamSessionId={todaySession?.id ?? null}
+                teamSessionId={selectedSession?.id ?? null}
                 template={postTemplate}
                 onComplete={handlePostComplete}
               />

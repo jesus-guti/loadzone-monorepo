@@ -101,8 +101,7 @@ const baseExerciseSchema = z.object({
   durationMinutes: z.coerce.number().int().min(1).max(600),
   spaceWidthMeters: z.coerce.number().min(1).max(200),
   spaceLengthMeters: z.coerce.number().min(1).max(200),
-  minPlayers: z.coerce.number().int().min(1).max(50),
-  maxPlayers: z.coerce.number().int().min(1).max(60),
+  playersCount: z.coerce.number().int().min(1).max(60),
   complexity: z.enum(COMPLEXITY),
   strategy: z.enum(STRATEGY),
   coordinativeSkill: z.enum(COORDINATIVE_SKILL),
@@ -110,6 +109,8 @@ const baseExerciseSchema = z.object({
   dynamicType: z.enum(DYNAMIC_TYPE),
   gameSituation: z.enum(GAME_SITUATION),
   coordinationType: z.enum(COORDINATION_TYPE),
+  visibility: z.enum(["PRIVATE", "CLUB_SHARED"]).default("CLUB_SHARED"),
+  diagramData: z.string().optional(),
 });
 
 function slugify(input: string): string {
@@ -161,8 +162,7 @@ function parseFormDataToExerciseInput(formData: FormData): Record<string, unknow
     durationMinutes: formData.get("durationMinutes") ?? "",
     spaceWidthMeters: formData.get("spaceWidthMeters") ?? "",
     spaceLengthMeters: formData.get("spaceLengthMeters") ?? "",
-    minPlayers: formData.get("minPlayers") ?? "",
-    maxPlayers: formData.get("maxPlayers") ?? "",
+    playersCount: formData.get("playersCount") ?? "",
     complexity: formData.get("complexity") ?? "",
     strategy: formData.get("strategy") ?? "",
     coordinativeSkill: formData.get("coordinativeSkill") ?? "",
@@ -170,6 +170,8 @@ function parseFormDataToExerciseInput(formData: FormData): Record<string, unknow
     dynamicType: formData.get("dynamicType") ?? "",
     gameSituation: formData.get("gameSituation") ?? "",
     coordinationType: formData.get("coordinationType") ?? "",
+    visibility: formData.get("visibility") ?? "CLUB_SHARED",
+    diagramData: formData.get("diagramData") ?? "",
   };
 }
 
@@ -196,13 +198,6 @@ export async function createExercise(
       };
     }
 
-    if (parsed.data.maxPlayers < parsed.data.minPlayers) {
-      return {
-        success: false,
-        error: "El máximo de jugadores no puede ser menor al mínimo.",
-      };
-    }
-
     const slug = await buildUniqueSlug(staffContext.club.id, parsed.data.name);
 
     const created = await database.exercise.create({
@@ -215,8 +210,8 @@ export async function createExercise(
         durationMinutes: parsed.data.durationMinutes,
         spaceWidthMeters: parsed.data.spaceWidthMeters,
         spaceLengthMeters: parsed.data.spaceLengthMeters,
-        minPlayers: parsed.data.minPlayers,
-        maxPlayers: parsed.data.maxPlayers,
+        minPlayers: parsed.data.playersCount,
+        maxPlayers: parsed.data.playersCount,
         complexity: parsed.data.complexity,
         strategy: parsed.data.strategy,
         coordinativeSkill: parsed.data.coordinativeSkill,
@@ -224,6 +219,14 @@ export async function createExercise(
         dynamicType: parsed.data.dynamicType,
         gameSituation: parsed.data.gameSituation,
         coordinationType: parsed.data.coordinationType,
+        visibility: parsed.data.visibility as "PRIVATE" | "CLUB_SHARED",
+        createdByMembershipId: staffContext.membershipId,
+        ...(parsed.data.diagramData
+          ? {
+              diagramData: JSON.parse(parsed.data.diagramData) as Prisma.InputJsonValue,
+              diagramVersion: 1,
+            }
+          : {}),
       },
       select: { id: true },
     });
@@ -267,13 +270,6 @@ export async function updateExercise(
       };
     }
 
-    if (parsed.data.maxPlayers < parsed.data.minPlayers) {
-      return {
-        success: false,
-        error: "El máximo de jugadores no puede ser menor al mínimo.",
-      };
-    }
-
     const exercise = await database.exercise.findFirst({
       where: {
         id: parsed.data.id,
@@ -305,8 +301,8 @@ export async function updateExercise(
         durationMinutes: parsed.data.durationMinutes,
         spaceWidthMeters: parsed.data.spaceWidthMeters,
         spaceLengthMeters: parsed.data.spaceLengthMeters,
-        minPlayers: parsed.data.minPlayers,
-        maxPlayers: parsed.data.maxPlayers,
+        minPlayers: parsed.data.playersCount,
+        maxPlayers: parsed.data.playersCount,
         complexity: parsed.data.complexity,
         strategy: parsed.data.strategy,
         coordinativeSkill: parsed.data.coordinativeSkill,
@@ -314,6 +310,13 @@ export async function updateExercise(
         dynamicType: parsed.data.dynamicType,
         gameSituation: parsed.data.gameSituation,
         coordinationType: parsed.data.coordinationType,
+        visibility: parsed.data.visibility as "PRIVATE" | "CLUB_SHARED",
+        ...(parsed.data.diagramData
+          ? {
+              diagramData: JSON.parse(parsed.data.diagramData) as Prisma.InputJsonValue,
+              diagramVersion: { increment: 1 },
+            }
+          : {}),
       },
     });
 
@@ -345,6 +348,44 @@ export async function archiveExercise(exerciseId: string): Promise<void> {
   }
 
   revalidatePath("/exercises");
+}
+
+export async function toggleExerciseVisibility(exerciseId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.club) {
+      return { ok: false, error: "Club no encontrado" };
+    }
+
+    const exercise = await database.exercise.findFirst({
+      where: {
+        id: exerciseId,
+        clubId: staffContext.club.id,
+        isSystem: false,
+      },
+      select: { id: true, visibility: true, createdByMembershipId: true },
+    });
+
+    if (!exercise) {
+      return { ok: false, error: "Ejercicio no encontrado." };
+    }
+
+    if (exercise.createdByMembershipId !== staffContext.membershipId) {
+      return { ok: false, error: "No tienes permiso para cambiar la visibilidad de este ejercicio." };
+    }
+
+    await database.exercise.update({
+      where: { id: exercise.id },
+      data: {
+        visibility: exercise.visibility === "PRIVATE" ? "CLUB_SHARED" : "PRIVATE",
+      },
+    });
+
+    revalidatePath("/exercises");
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Error al cambiar la visibilidad." };
+  }
 }
 
 function buildDuplicateExerciseName(sourceName: string): string {
@@ -402,6 +443,8 @@ export async function duplicateExercise(
         dynamicType: source.dynamicType,
         gameSituation: source.gameSituation,
         coordinationType: source.coordinationType,
+        visibility: source.visibility,
+        createdByMembershipId: staffContext.membershipId,
         ...(source.diagramData !== null
           ? {
               diagramData: source.diagramData as Prisma.InputJsonValue,
