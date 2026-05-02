@@ -1,13 +1,7 @@
 import { type RiskLevel } from "./generated/client";
+import { RISK_THRESHOLDS } from "./risk-thresholds";
 
-// Global risk thresholds for ACWR
-export const RISK_THRESHOLDS = {
-  acwr: {
-    critical: 2.0,
-    high: 1.5,
-    moderate: 1.3,
-  },
-} as const;
+export { RISK_THRESHOLDS } from "./risk-thresholds";
 
 export function determineRiskLevel(acwr: number | null): RiskLevel {
   if (acwr === null) return "LOW";

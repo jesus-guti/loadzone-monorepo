@@ -11,7 +11,6 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { toast } from "@repo/design-system/components/ui/sonner";
-import dynamic from "next/dynamic";
 import { useActionState, useEffect, useState } from "react";
 import {
   createExercise,
@@ -29,14 +28,6 @@ import {
 } from "./exercise-enums";
 import { DiagramPlaceholder } from "./diagram-placeholder";
 import { FieldLabel, FormSection } from "../../sessions/components/form-section";
-
-const TacticalBoard = dynamic(
-  () => import("./tactical-board").then((module) => module.TacticalBoard),
-  {
-    ssr: false,
-    loading: () => <DiagramPlaceholder />,
-  }
-);
 
 type ExerciseDefaults = {
   id?: string;
@@ -260,7 +251,10 @@ export function ExerciseForm({
         description="Espacio reservado para diseñar el croquis del ejercicio."
         title="Pizarra"
       >
-        <TacticalBoard defaultValue={defaults.diagramData} name="diagramData" />
+        {defaults.diagramData ? (
+          <input name="diagramData" type="hidden" value={defaults.diagramData} />
+        ) : null}
+        <DiagramPlaceholder />
       </FormSection>
 
       <div className="flex justify-end gap-2">

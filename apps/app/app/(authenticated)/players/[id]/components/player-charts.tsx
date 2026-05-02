@@ -1,6 +1,9 @@
 "use client";
 
-import { RISK_THRESHOLDS, type RiskLevel } from "@repo/database";
+import {
+  RISK_THRESHOLDS,
+  type RiskLevel,
+} from "@repo/database/risk-thresholds";
 import {
   Card,
   CardContent,

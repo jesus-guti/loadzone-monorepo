@@ -1,5 +1,6 @@
 import { tool } from "ai";
-import { database, RISK_THRESHOLDS } from "@repo/database";
+import { database } from "@repo/database";
+import { RISK_THRESHOLDS } from "@repo/database/risk-thresholds";
 import { z } from "zod";
 
 type Anomaly = {
