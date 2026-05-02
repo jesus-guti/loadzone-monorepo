@@ -1,6 +1,11 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -26,7 +31,8 @@ import {
   TACTICAL_INTENTION_OPTIONS,
   VISIBILITY_OPTIONS,
 } from "./exercise-enums";
-import { DiagramPlaceholder } from "./diagram-placeholder";
+import { TacticsBoard } from "./tactics-board/tactics-board";
+import type { BoardModel } from "./tactics-board/use-board-store";
 import { FieldLabel, FormSection } from "../../sessions/components/form-section";
 
 type ExerciseDefaults = {
@@ -55,6 +61,60 @@ type ExerciseFormProps = {
   readonly defaults?: ExerciseDefaults;
 };
 
+const boardPreviewButtonClassName = [
+  "group",
+  "relative",
+  "flex",
+  "aspect-video",
+  "w-full",
+  "overflow-hidden",
+  "rounded-xl",
+  "border",
+  "border-border-primary",
+  "bg-bg-secondary",
+  "text-left",
+  "transition-colors",
+  "hover:bg-bg-tertiary",
+  "focus-visible:border-ring",
+  "focus-visible:ring-[3px]",
+  "focus-visible:ring-ring/50",
+  "focus-visible:outline-hidden",
+].join(" ");
+
+const previewHalfwayLineClassName = [
+  "absolute",
+  "top-5",
+  "bottom-5",
+  "left-1/2",
+  "w-0.5",
+  "-translate-x-1/2",
+  "bg-white/65",
+].join(" ");
+
+const previewCenterCircleClassName = [
+  "absolute",
+  "top-1/2",
+  "left-1/2",
+  "size-20",
+  "-translate-x-1/2",
+  "-translate-y-1/2",
+  "rounded-full",
+  "border-2",
+  "border-white/65",
+].join(" ");
+
+const previewPassLineClassName = [
+  "absolute",
+  "top-[37%]",
+  "left-[42%]",
+  "h-0.5",
+  "w-28",
+  "rotate-12",
+  "border-t-2",
+  "border-dashed",
+  "border-white/80",
+].join(" ");
+
 export function ExerciseForm({
   mode,
   defaults = {},
@@ -63,6 +123,7 @@ export function ExerciseForm({
   const [state, formAction, isPending] = useActionState(action, {
     success: false,
   });
+  const submitLabel = getSubmitLabel(mode, isPending);
 
   useEffect(() => {
     if (state.error) {
@@ -75,6 +136,8 @@ export function ExerciseForm({
       {mode === "edit" && defaults.id ? (
         <input name="id" type="hidden" value={defaults.id} />
       ) : null}
+
+      <ExerciseBoardSection diagramData={defaults.diagramData} />
 
       <FormSection
         description="Información principal del ejercicio."
@@ -113,7 +176,7 @@ export function ExerciseForm({
         <div className="space-y-2">
           <FieldLabel htmlFor="explanationText">
             Explicación{" "}
-            <span className="font-normal normal-case tracking-normal text-text-tertiary">
+            <span className="font-normal text-text-tertiary">
               (opcional)
             </span>
           </FieldLabel>
@@ -247,27 +310,164 @@ export function ExerciseForm({
         </div>
       </FormSection>
 
-      <FormSection
-        description="Espacio reservado para diseñar el croquis del ejercicio."
-        title="Pizarra"
-      >
-        {defaults.diagramData ? (
-          <input name="diagramData" type="hidden" value={defaults.diagramData} />
-        ) : null}
-        <DiagramPlaceholder />
-      </FormSection>
-
       <div className="flex justify-end gap-2">
         <Button disabled={isPending} type="submit">
-          {isPending
-            ? "Guardando..."
-            : mode === "create"
-              ? "Crear ejercicio"
-              : "Guardar cambios"}
+          {submitLabel}
         </Button>
       </div>
     </form>
   );
+}
+
+function ExerciseBoardSection({
+  diagramData,
+}: {
+  readonly diagramData?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [localData, setLocalData] = useState(diagramData);
+
+  return (
+    <FormSection
+      description="Diseña el croquis del ejercicio antes de completar los detalles."
+      title="Pizarra"
+    >
+      {localData ? (
+        <input name="diagramData" type="hidden" value={localData} />
+      ) : null}
+      <Dialog onOpenChange={setOpen} open={open}>
+        <DialogTrigger asChild>
+          <button
+            className={boardPreviewButtonClassName}
+            type="button"
+          >
+            <BoardPreview data={localData} />
+            <span className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-3 rounded-xl border border-border-primary bg-bg-primary/90 p-3 shadow-floating backdrop-blur">
+              <span>
+                <span className="block font-medium text-sm text-text-primary">
+                  Abrir pizarra táctica
+                </span>
+                <span className="text-text-secondary text-xs">
+                  Diseña jugadores, materiales, flechas y notas del ejercicio.
+                </span>
+              </span>
+              <span className="rounded-full bg-brand px-3 py-1 font-medium text-brand-foreground text-xs transition-transform group-hover:scale-105">
+                Diseñar
+              </span>
+            </span>
+          </button>
+        </DialogTrigger>
+        <DialogContent className="h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] gap-3 overflow-hidden p-3 sm:max-w-[calc(100vw-2rem)] [&>button]:z-50">
+          <div className="min-h-0 overflow-hidden">
+            <TacticsBoard
+              initialData={localData}
+              onSave={(data) => {
+                setLocalData(data);
+                setOpen(false);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </FormSection>
+  );
+}
+
+function BoardPreview({ data }: { readonly data?: string }) {
+  if (!data) {
+    return <EmptyBoardPreview />;
+  }
+
+  try {
+    const model = JSON.parse(data) as BoardModel;
+    const elements = model.frames[0]?.elements ?? [];
+
+    return (
+      <span className="relative block h-full w-full overflow-hidden bg-[#17633a]">
+        <span className="absolute inset-5 rounded-lg border-2 border-white/75" />
+        <span className={previewHalfwayLineClassName} />
+        <span className={previewCenterCircleClassName} />
+        
+        {elements.map((el) => {
+          if (el.type === "player") {
+            const isHome = el.team === "home";
+            const color = isHome ? model.teamColors.home : model.teamColors.away;
+            return (
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 size-4 rounded-full border-2 border-white"
+                key={el.id}
+                style={{
+                  left: `${(el.x / 1200) * 100}%`,
+                  top: `${(el.y / 780) * 100}%`,
+                  backgroundColor: color,
+                }}
+              />
+            );
+          }
+          if (el.type === "ball") {
+            return (
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 size-3 rounded-full border border-text-primary bg-white"
+                key={el.id}
+                style={{
+                  left: `${(el.x / 1200) * 100}%`,
+                  top: `${(el.y / 780) * 100}%`,
+                }}
+              />
+            );
+          }
+          if (el.type === "equipment") {
+            return (
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 size-3 bg-orange-500"
+                key={el.id}
+                style={{
+                  left: `${(el.x / 1200) * 100}%`,
+                  top: `${(el.y / 780) * 100}%`,
+                  borderRadius: el.kind === "cone" ? "50%" : "2px",
+                }}
+              />
+            );
+          }
+          return null;
+        })}
+      </span>
+    );
+  } catch {
+    return <EmptyBoardPreview />;
+  }
+}
+
+function EmptyBoardPreview() {
+  return (
+    <span className="relative block h-full w-full bg-[#17633a]">
+      <span className="absolute inset-5 rounded-lg border-2 border-white/75" />
+      <span className={previewHalfwayLineClassName} />
+      <span className={previewCenterCircleClassName} />
+      <span className="absolute top-[28%] left-[22%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
+      <span className="absolute top-[46%] left-[34%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
+      <span className="absolute top-[62%] left-[24%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
+      <span className="absolute top-[32%] right-[24%] size-5 rounded-full border-2 border-white bg-[#dc2626]" />
+      <span className="absolute top-[56%] right-[34%] size-5 rounded-full border-2 border-white bg-[#dc2626]" />
+      <span className="absolute top-[48%] right-[20%] size-4 rounded-full border-2 border-text-primary bg-white" />
+      <span className={previewPassLineClassName} />
+    </span>
+  );
+}
+
+function getSubmitLabel(
+  mode: ExerciseFormProps["mode"],
+  isPending: boolean
+): string {
+  if (isPending) {
+    return "Guardando...";
+  }
+
+  if (mode === "create") {
+    return "Crear ejercicio";
+  }
+
+  return "Guardar cambios";
 }
 
 type EnumSelectProps = {

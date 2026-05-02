@@ -89,7 +89,7 @@ function getDailyPlayerState(player: TeamWellnessPlayer, wellnessLimits?: any): 
     if (wellnessLimits.recovery != null && entry.recovery != null && entry.recovery <= wellnessLimits.recovery) hasWellnessAlert = true;
     if (wellnessLimits.energy != null && entry.energy != null && entry.energy <= wellnessLimits.energy) hasWellnessAlert = true;
     if (wellnessLimits.soreness != null && entry.soreness != null && entry.soreness >= wellnessLimits.soreness) hasWellnessAlert = true;
-    if (wellnessLimits.sleepHours != null && entry.sleepHours != null && Number(entry.sleepHours) < wellnessLimits.sleepHours) hasWellnessAlert = true;
+    if (wellnessLimits.sleepHours != null && (entry as any).sleepHours != null && Number((entry as any).sleepHours) < wellnessLimits.sleepHours) hasWellnessAlert = true;
   }
 
   if (entry?.physioAlert || riskLevel === "HIGH" || riskLevel === "CRITICAL" || hasWellnessAlert) {
@@ -416,7 +416,7 @@ export function TeamWellnessWorkspace({
               if (wellnessLimits.recovery != null && entry.recovery != null && entry.recovery <= wellnessLimits.recovery) wellnessAlerts.push("Recuperación");
               if (wellnessLimits.energy != null && entry.energy != null && entry.energy <= wellnessLimits.energy) wellnessAlerts.push("Energía");
               if (wellnessLimits.soreness != null && entry.soreness != null && entry.soreness >= wellnessLimits.soreness) wellnessAlerts.push("Agujetas");
-              if (wellnessLimits.sleepHours != null && entry.sleepHours != null && Number(entry.sleepHours) < wellnessLimits.sleepHours) wellnessAlerts.push("Sueño");
+              if (wellnessLimits.sleepHours != null && (entry as any).sleepHours != null && Number((entry as any).sleepHours) < wellnessLimits.sleepHours) wellnessAlerts.push("Sueño");
             }
             
             const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
