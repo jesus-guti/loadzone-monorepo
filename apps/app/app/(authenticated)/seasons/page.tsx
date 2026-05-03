@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
+import { Header } from "@/components/layouts/header";
 
 export const metadata: Metadata = {
   title: "Temporadas | LoadZone",

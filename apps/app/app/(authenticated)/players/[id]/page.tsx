@@ -15,10 +15,12 @@ import {
 } from "@repo/design-system/components/ui/card";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Header } from "../../components/header";
-import { PlayerCharts } from "./components/player-charts";
-import { PlayerHistoryTable } from "./components/player-history-table";
-import { CopyTokenButton } from "../components/copy-token-button";
+import { Header } from "@/components/layouts/header";
+import {
+  CopyTokenButton,
+  PlayerCharts,
+  PlayerHistoryTable,
+} from "@/features/players";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export const metadata: Metadata = {

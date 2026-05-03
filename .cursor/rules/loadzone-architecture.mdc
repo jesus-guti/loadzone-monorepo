@@ -1,0 +1,17 @@
+---
+description: Architecture and data-flow rules for LoadZone Next.js apps.
+globs: apps/{app,player,api}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# LoadZone Architecture
+
+- Use App Router conventions and prefer React Server Components by default.
+- Keep `page.tsx` and route layouts focused on auth, orchestration, server reads, and composition.
+- Put interactive UI, local state, and browser-only logic in `features/*/components/*` or route-local client components.
+- Put mutations in `features/*/actions/*` unless the action is truly cross-feature shell state such as active team, active season, or current profile.
+- Read initial page data on the server with Prisma or server-side helpers. Avoid extra internal API layers unless there is a real integration boundary.
+- Keep feature contracts close to the feature in `types.ts` or `schemas.ts`. Promote a contract only when two real consumers need the same shape.
+- Use API routes only when they are actually needed: public player endpoints, webhooks, chat, push, or external integrations.
+- Revalidate affected paths or tags after writes, and keep the revalidation scope explicit.
+- Add route-level `loading.tsx` or `error.tsx` when a route needs explicit pending or failure UX.

@@ -1,0 +1,2 @@
+export const UI_FEEDBACK_TIMEOUT_MS = 2_000;
+export const TACTICS_HELP_HINT_TIMEOUT_MS = 5_200;

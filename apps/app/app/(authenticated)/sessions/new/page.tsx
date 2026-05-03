@@ -3,9 +3,8 @@ import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../../components/header";
-import { SessionForm } from "./components/session-form";
-import type { ExerciseLibraryItem } from "./components/types";
+import { Header } from "@/components/layouts/header";
+import { SessionForm, type ExerciseLibraryItem } from "@/features/sessions";
 
 export const metadata: Metadata = {
   title: "Nueva sesión | LoadZone",

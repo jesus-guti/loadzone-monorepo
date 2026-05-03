@@ -15,10 +15,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
-import { CopyTokenButton } from "./components/copy-token-button";
-import { ArchiveButton } from "./components/archive-button";
-import { PlayerPhotoCell } from "./components/player-photo-cell";
+import { Header } from "@/components/layouts/header";
+import {
+  ArchiveButton,
+  CopyTokenButton,
+  PlayerPhotoCell,
+} from "@/features/players";
 
 export const metadata: Metadata = {
   title: "Jugadores | LoadZone",

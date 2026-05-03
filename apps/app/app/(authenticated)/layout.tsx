@@ -2,7 +2,7 @@ import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { GlobalSidebar } from "./components/sidebar";
+import { GlobalSidebar } from "@/components/layouts/sidebar";
 
 type AppLayoutProperties = {
   readonly children: ReactNode;

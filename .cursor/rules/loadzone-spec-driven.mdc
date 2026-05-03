@@ -1,0 +1,12 @@
+---
+description: Planning and spec workflow for non-trivial LoadZone changes.
+alwaysApply: false
+---
+
+# LoadZone Spec-Driven Workflow
+
+- For non-trivial features, architectural changes, or multi-file refactors, start with a short spec or plan before implementation.
+- Specs should record scope, affected files, contracts, test strategy, and open questions.
+- Keep specs lightweight and update them when implementation decisions change.
+- Before closing a task, verify that code, docs, and tests still match the intended scope.
+- If follow-up debt remains, record it explicitly instead of hiding it in comments or memory.

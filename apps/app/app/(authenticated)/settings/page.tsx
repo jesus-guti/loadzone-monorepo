@@ -7,9 +7,12 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
-import { createTeamFromSettings, updateTeamSettings } from "./actions/team-settings";
-import { ClubBrandingCard } from "./components/club-branding-card";
+import { Header } from "@/components/layouts/header";
+import {
+  ClubBrandingCard,
+  createTeamFromSettings,
+  updateTeamSettings,
+} from "@/features/settings";
 
 export const metadata: Metadata = {
   title: "Configuración | LoadZone",

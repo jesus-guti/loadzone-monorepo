@@ -6,17 +6,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
-import { SessionCalendar } from "./components/session-calendar";
-import { QuickNewSessionCard } from "./components/quick-new-session-card";
+import { Header } from "@/components/layouts/header";
 import {
   LastSessionCard,
-  type LastSessionData,
-} from "./components/last-session-card";
-import {
+  QuickNewSessionCard,
   RecentExercisesCard,
+  SessionCalendar,
+  type LastSessionData,
   type RecentExerciseEntry,
-} from "./components/recent-exercises-card";
+} from "@/features/sessions";
 
 export const metadata: Metadata = {
   title: "Sesiones | LoadZone",

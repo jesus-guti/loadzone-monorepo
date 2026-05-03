@@ -12,6 +12,7 @@ export type TeamWellnessPlayer = {
     recovery: number | null;
     energy: number | null;
     soreness: number | null;
+    sleepHours: number | null;
     rpe: number | null;
     duration: number | null;
     preFilledAt: Date | null;
@@ -146,6 +147,7 @@ export async function getTeamWellnessWorkspaceData(
           recovery: true,
           energy: true,
           soreness: true,
+          sleepHours: true,
           rpe: true,
           duration: true,
           preFilledAt: true,

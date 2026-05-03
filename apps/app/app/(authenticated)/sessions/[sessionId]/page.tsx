@@ -13,10 +13,12 @@ import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../../components/header";
-import { PrintButton } from "../components/print-button";
-import { AttendanceForm } from "./components/attendance-form";
-import { CancelSessionButton } from "./components/cancel-session-button";
+import { Header } from "@/components/layouts/header";
+import {
+  AttendanceForm,
+  CancelSessionButton,
+  PrintButton,
+} from "@/features/sessions";
 
 export const metadata: Metadata = {
   title: "Sesión | LoadZone",

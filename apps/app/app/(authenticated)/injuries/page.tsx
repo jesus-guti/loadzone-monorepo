@@ -8,8 +8,8 @@ import {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
-import { updateInjury } from "./actions/injury-actions";
+import { Header } from "@/components/layouts/header";
+import { updateInjury } from "@/features/injuries";
 
 export const metadata: Metadata = {
   title: "Lesiones | LoadZone",

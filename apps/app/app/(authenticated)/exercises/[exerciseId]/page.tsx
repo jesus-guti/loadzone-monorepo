@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../../components/header";
-import { ExerciseForm } from "../components/exercise-form";
+import { Header } from "@/components/layouts/header";
+import { ExerciseForm } from "@/features/exercises";
 
 export const metadata: Metadata = {
   title: "Ejercicio | LoadZone",

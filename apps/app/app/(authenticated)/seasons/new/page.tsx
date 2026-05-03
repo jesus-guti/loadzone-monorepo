@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Header } from "../../components/header";
-import { CreateSeasonForm } from "./form";
+import { Header } from "@/components/layouts/header";
+import { CreateSeasonForm } from "@/features/seasons";
 
 export const metadata: Metadata = {
   title: "Nueva temporada | LoadZone",

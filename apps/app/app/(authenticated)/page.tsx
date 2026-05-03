@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { getTeamWellnessWorkspaceData } from "@/lib/team-wellness";
-import { Header } from "./components/header";
+import { Header } from "@/components/layouts/header";
 
 export const metadata: Metadata = {
   title: "Inicio | LoadZone",

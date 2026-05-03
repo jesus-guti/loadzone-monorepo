@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUserState } from "@/lib/auth-context";
-import { CreateTeamForm } from "./components/create-team-form";
+import { CreateTeamForm } from "@/features/teams";
 
 export const metadata: Metadata = {
   title: "Configura tu equipo | LoadZone",

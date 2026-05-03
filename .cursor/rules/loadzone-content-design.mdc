@@ -1,0 +1,16 @@
+---
+description: Content design and UX writing rules for LoadZone interfaces.
+globs: apps/{app,player}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# LoadZone Content Design
+
+- Treat UI copy as product behavior, not filler.
+- Use Spanish user-facing copy in `apps/app` and `apps/player` unless a surface is intentionally English.
+- Prefer concise sentence case labels. Buttons should start with a clear verb.
+- Error messages should explain what happened and what the user can do next.
+- Empty states should explain the purpose of the area and suggest the next step.
+- Placeholder text should use realistic examples, not repeat the field label.
+- Prefer consistent domain terms: `equipo`, `temporada`, `jugador`, `sesión`, `wellness`, `carga`.
+- If copy is repeated across multiple screens, promote it to a shared constant, glossary, or i18n layer instead of duplicating inline text.

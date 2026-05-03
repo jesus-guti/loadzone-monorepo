@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Header } from "../../components/header";
-import { CreatePlayerForm } from "./form";
+import { Header } from "@/components/layouts/header";
+import { CreatePlayerForm } from "@/features/players";
 
 export const metadata: Metadata = {
   title: "Nuevo jugador | LoadZone",

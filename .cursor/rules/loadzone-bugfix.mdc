@@ -1,0 +1,13 @@
+---
+description: Regression-first workflow for diagnosing and fixing bugs in LoadZone.
+alwaysApply: false
+---
+
+# LoadZone Bugfix
+
+- For non-trivial bugs, first capture the failing behavior with a targeted test or a short documented repro.
+- State the hypothesis before changing code: input, wrong behavior, and likely root cause.
+- Reuse the nearest existing test pattern in the same app or package before inventing a new harness.
+- Fix the smallest boundary that resolves the regression without broad refactors.
+- If the bug cannot be automated because it depends on credentials, browser-only flows, or timing, document the bailout reason and the exact manual verification path.
+- After the fix, verify both the regression case and one happy path so the test setup is trustworthy.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Header } from "../components/header";
-import { AnalysisChat } from "./components/analysis-chat";
+import { Header } from "@/components/layouts/header";
+import { AnalysisChat } from "@/features/analysis";
 
 export const metadata: Metadata = {
   title: "Análisis IA | LoadZone",

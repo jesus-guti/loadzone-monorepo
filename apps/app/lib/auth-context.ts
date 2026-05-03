@@ -5,6 +5,7 @@ import {
 import { database, type MembershipRole, type PlatformRole } from "@repo/database";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { cookies } from "next/headers";
+import { parseWellnessLimits, type WellnessLimits } from "./wellness-limits";
 
 export const ACTIVE_TEAM_COOKIE_NAME = "loadzone_active_team";
 export const ACTIVE_SEASON_COOKIE_NAME = "loadzone_active_season";
@@ -26,7 +27,7 @@ export type TeamSummary = {
   timezone: string;
   preSessionReminderMinutes: number | null;
   postSessionReminderMinutes: number | null;
-  wellnessLimits: any | null;
+  wellnessLimits: WellnessLimits | null;
 };
 
 export type StaffContext = {
@@ -115,6 +116,7 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
   const transformedTeams: TeamSummary[] = teams.map((team) => ({
     ...team,
     logoUrl: resolveStorageUrl(team.logoUrl),
+    wellnessLimits: parseWellnessLimits(team.wellnessLimits),
   }));
   const transformedDefaultTeam =
     transformedTeams.find((team) => team.id === defaultTeam?.id) ?? null;

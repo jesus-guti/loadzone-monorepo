@@ -1,0 +1,14 @@
+---
+description: Testing strategy for LoadZone features and regressions.
+globs: {apps,packages}/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# LoadZone Testing
+
+- Use the smallest test layer that proves the behavior: schema/unit first, integration for server actions and data flows, E2E only for golden paths.
+- Add or update tests when changing validation, business rules, auth boundaries, or fixing regressions.
+- Prefer colocated tests near the feature or under the app-level `__tests__` folder when the test exercises route behavior.
+- Mock external services and unstable browser APIs. Keep database-backed tests focused on one contract at a time.
+- A bug fix is not complete until the failure mode is reproducible through a targeted automated check or a documented manual repro when automation is not practical.
+- Avoid low-signal snapshot or smoke tests that do not assert user-visible behavior or business rules.

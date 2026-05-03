@@ -15,12 +15,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../components/header";
-import { ExerciseRowActions } from "./components/exercise-row-actions";
+import { Header } from "@/components/layouts/header";
 import {
   COMPLEXITY_OPTIONS,
+  ExerciseRowActions,
   STRATEGY_OPTIONS,
-} from "./components/exercise-enums";
+} from "@/features/exercises";
 
 export const metadata: Metadata = {
   title: "Ejercicios | LoadZone",

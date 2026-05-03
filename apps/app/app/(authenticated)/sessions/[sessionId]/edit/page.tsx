@@ -3,8 +3,9 @@ import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../../../components/header";
-import { EditSessionForm } from "./components/edit-session-form";
+import { Header } from "@/components/layouts/header";
+import { EditSessionForm } from "@/features/sessions";
+import type { EditableSession } from "@/features/sessions/components/edit-session-form";
 
 export const metadata: Metadata = {
   title: "Editar sesión | LoadZone",
@@ -67,26 +68,25 @@ const EditSessionPage = async ({
     .map((r) => r.location)
     .filter((loc): loc is string => Boolean(loc));
 
+  const editableSession: EditableSession = {
+    id: session.id,
+    title: session.title,
+    type: session.type,
+    visibility: session.visibility,
+    location: session.location ?? "",
+    notes: session.notes ?? "",
+    startsAt: buildLocalDateTimeValue(session.startsAt),
+    endsAt: buildLocalDateTimeValue(session.endsAt),
+    preReminderMinutes: session.preReminderMinutes,
+    postReminderMinutes: session.postReminderMinutes,
+    isRecurring: Boolean(session.seriesId),
+  };
+
   return (
     <>
       <Header page="Editar sesión" pages={["LoadZone", "Sesiones", session.title]} />
       <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 max-w-3xl mx-auto w-full">
-        <EditSessionForm
-          locations={locations}
-          session={{
-            id: session.id,
-            title: session.title,
-            type: session.type as any,
-            visibility: session.visibility as any,
-            location: session.location ?? "",
-            notes: session.notes ?? "",
-            startsAt: buildLocalDateTimeValue(session.startsAt),
-            endsAt: buildLocalDateTimeValue(session.endsAt),
-            preReminderMinutes: session.preReminderMinutes,
-            postReminderMinutes: session.postReminderMinutes,
-            isRecurring: !!session.seriesId,
-          }}
-        />
+        <EditSessionForm locations={locations} session={editableSession} />
       </div>
     </>
   );

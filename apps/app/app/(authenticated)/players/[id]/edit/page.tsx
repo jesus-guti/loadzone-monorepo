@@ -2,8 +2,8 @@ import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { Header } from "../../../components/header";
-import { EditPlayerForm } from "./form";
+import { Header } from "@/components/layouts/header";
+import { EditPlayerForm } from "@/features/players";
 
 export const metadata: Metadata = {
   title: "Editar jugador | LoadZone",
