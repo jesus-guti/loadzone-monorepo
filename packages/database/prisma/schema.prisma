@@ -293,6 +293,7 @@ model Membership {
   teamLinks        MembershipTeam[]
   createdSessions  TeamSession[]    @relation("SessionCreators")
   createdExercises Exercise[]       @relation("ExerciseCreators")
+  exerciseFavorites MembershipExerciseFavorite[]
   reviewedInjuries InjuryReport[]   @relation("ReviewedInjuries")
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
@@ -300,6 +301,18 @@ model Membership {
   @@unique([userId, clubId, role])
   @@index([userId])
   @@index([clubId])
+}
+
+model MembershipExerciseFavorite {
+  membershipId String
+  exerciseId   String
+  createdAt    DateTime   @default(now())
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@id([membershipId, exerciseId])
+  @@index([exerciseId])
+  @@index([membershipId])
 }
 
 model MembershipTeam {
@@ -539,6 +552,7 @@ model Exercise {
   updatedAt             DateTime            @updatedAt
   club                  Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
   createdBy             Membership?         @relation("ExerciseCreators", fields: [createdByMembershipId], references: [id], onDelete: SetNull)
+  membershipFavorites MembershipExerciseFavorite[]
   sessionExercises      SessionExercise[]
 
   @@unique([clubId, slug])

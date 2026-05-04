@@ -12,9 +12,8 @@ type HeaderProps = {
   children?: ReactNode;
 };
 
-export const Header = ({ pages, page, children }: HeaderProps) => {
+export const Header = ({ page, children }: HeaderProps) => {
   const { activeTeam, club } = useAppShell();
-  const pathLabel = pages.length > 0 ? pages.join(" / ") : "LoadZone";
 
   return (
     <header className="sticky top-0 z-20 bg-bg-primary/95 backdrop-blur">
@@ -22,7 +21,7 @@ export const Header = ({ pages, page, children }: HeaderProps) => {
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <div className="relative flex min-w-0 flex-col gap-0.5">
             <p className="absolute -top-2 truncate font-medium text-[11px] text-text-secondary uppercase tracking-[0.16em]">
-              {pathLabel}
+              LoadZone
             </p>
             <h1 className="truncate font-semibold text-2xl text-text-primary tracking-tight">
               {page}
@@ -55,11 +54,11 @@ export const Header = ({ pages, page, children }: HeaderProps) => {
           <div className="min-w-0 flex-1 -ml-3">
             <ActiveTeamSwitcher />
           </div>
-            {children ? (
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {children}
-              </div>
-            ) : null}
+          {children ? (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {children}
+            </div>
+          ) : null}
           <div className="hidden shrink-0 items-center gap-2 md:block ">
             <ActiveSeasonSwitcher />
           </div>

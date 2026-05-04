@@ -1,10 +1,11 @@
 import { database } from "@repo/database";
-import type { ReactElement } from "react";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { getExercisePickerRows } from "@/features/exercises/queries/get-exercise-library";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "@/components/layouts/header";
 import { SessionForm, type ExerciseLibraryItem } from "@/features/sessions";
+import type { ReactElement } from "react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Nueva sesión | LoadZone",
@@ -44,28 +45,9 @@ const NewSessionPage = async ({
   const end = new Date(start);
   end.setMinutes(end.getMinutes() + 90);
 
-  const exercises = await database.exercise.findMany({
-    where: {
-      OR: [
-        { clubId: staffContext.club.id, isArchived: false },
-        { isSystem: true, isArchived: false },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-      durationMinutes: true,
-      complexity: true,
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const exerciseItems: ExerciseLibraryItem[] = exercises.map((entry) => ({
-    id: entry.id,
-    name: entry.name,
-    durationMinutes: entry.durationMinutes,
-    complexity: entry.complexity,
-  }));
+  const exerciseItems: ExerciseLibraryItem[] = await getExercisePickerRows(
+    staffContext.club.id
+  );
 
   const locationRecords = await database.teamSession.findMany({
     where: {

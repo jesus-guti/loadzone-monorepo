@@ -35,6 +35,8 @@ type ExerciseRowActionsProps = {
   readonly canDelete: boolean;
   readonly isPrivate: boolean;
   readonly canToggleVisibility: boolean;
+  /** Tras una mutación correcta (p. ej. invalidar React Query en la biblioteca). */
+  readonly onAfterMutation?: () => void;
 };
 
 export function ExerciseRowActions({
@@ -43,6 +45,7 @@ export function ExerciseRowActions({
   canDelete,
   isPrivate,
   canToggleVisibility,
+  onAfterMutation,
 }: ExerciseRowActionsProps) {
   const router = useRouter();
   const [isDuplicating, startDuplicate] = useTransition();
@@ -54,6 +57,7 @@ export function ExerciseRowActions({
       const result = await toggleExerciseVisibility(exerciseId);
       if (result.ok) {
         toast.success(`Visibilidad cambiada a ${isPrivate ? "Compartido" : "Privado"}.`);
+        onAfterMutation?.();
         router.refresh();
       } else {
         toast.error(result.error);
@@ -66,6 +70,7 @@ export function ExerciseRowActions({
       const result = await duplicateExercise(exerciseId);
       if (result.ok) {
         toast.success("Ejercicio duplicado.");
+        onAfterMutation?.();
         router.push(`/exercises/${result.exerciseId}`);
       } else {
         toast.error(result.error);
@@ -78,6 +83,7 @@ export function ExerciseRowActions({
       try {
         await archiveExercise(exerciseId);
         toast.success(`${exerciseName} archivado.`);
+        onAfterMutation?.();
         router.refresh();
       } catch {
         toast.error("No se pudo archivar el ejercicio.");

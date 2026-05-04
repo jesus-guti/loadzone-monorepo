@@ -36,8 +36,8 @@ import {
   TACTICAL_INTENTION_OPTIONS,
   VISIBILITY_OPTIONS,
 } from "./exercise-enums";
+import { BoardPreview } from "./board-preview";
 import { TacticsBoard } from "./tactics-board/tactics-board";
-import type { BoardModel } from "./tactics-board/use-board-store";
 
 type ExerciseDefaults = {
   id?: string;
@@ -83,40 +83,6 @@ const boardPreviewButtonClassName = [
   "focus-visible:ring-[3px]",
   "focus-visible:ring-ring/50",
   "focus-visible:outline-hidden",
-].join(" ");
-
-const previewHalfwayLineClassName = [
-  "absolute",
-  "top-5",
-  "bottom-5",
-  "left-1/2",
-  "w-0.5",
-  "-translate-x-1/2",
-  "bg-white/65",
-].join(" ");
-
-const previewCenterCircleClassName = [
-  "absolute",
-  "top-1/2",
-  "left-1/2",
-  "size-20",
-  "-translate-x-1/2",
-  "-translate-y-1/2",
-  "rounded-full",
-  "border-2",
-  "border-white/65",
-].join(" ");
-
-const previewPassLineClassName = [
-  "absolute",
-  "top-[37%]",
-  "left-[42%]",
-  "h-0.5",
-  "w-28",
-  "rotate-12",
-  "border-t-2",
-  "border-dashed",
-  "border-white/80",
 ].join(" ");
 
 const EXERCISE_FORM_DEFAULTS = {
@@ -454,7 +420,7 @@ function ExerciseBoardSection({
       <Dialog onOpenChange={setOpen} open={open}>
         <DialogTrigger asChild>
           <button className={boardPreviewButtonClassName} type="button">
-            <BoardPreview data={diagramData} />
+            <BoardPreview data={diagramData} density="comfortable" />
             <span
               className={cn(
                 "absolute inset-x-4 bottom-4  border border-border-primary bg-bg-primary/80 p-3 backdrop-blur",
@@ -504,90 +470,6 @@ function ExerciseBoardSection({
         </DialogContent>
       </Dialog>
     </FormSection>
-  );
-}
-
-function BoardPreview({ data }: { readonly data?: string }) {
-  if (!data) {
-    return <EmptyBoardPreview />;
-  }
-
-  try {
-    const model = JSON.parse(data) as BoardModel;
-    const elements = model.frames[0]?.elements ?? [];
-
-    return (
-      <span className="relative block h-full w-full overflow-hidden bg-[#17633a]">
-        <span className="absolute inset-5 rounded-lg border-2 border-white/75" />
-        <span className={previewHalfwayLineClassName} />
-        <span className={previewCenterCircleClassName} />
-
-        {elements.map((el) => {
-          if (el.type === "player") {
-            const isHome = el.team === "home";
-            const color = isHome
-              ? model.teamColors.home
-              : model.teamColors.away;
-            return (
-              <span
-                className="-translate-x-1/2 -translate-y-1/2 absolute size-4 rounded-full border-2 border-white"
-                key={el.id}
-                style={{
-                  left: `${(el.x / 1200) * 100}%`,
-                  top: `${(el.y / 780) * 100}%`,
-                  backgroundColor: color,
-                }}
-              />
-            );
-          }
-          if (el.type === "ball") {
-            return (
-              <span
-                className="-translate-x-1/2 -translate-y-1/2 absolute size-3 rounded-full border border-text-primary bg-white"
-                key={el.id}
-                style={{
-                  left: `${(el.x / 1200) * 100}%`,
-                  top: `${(el.y / 780) * 100}%`,
-                }}
-              />
-            );
-          }
-          if (el.type === "equipment") {
-            return (
-              <span
-                className="-translate-x-1/2 -translate-y-1/2 absolute size-3 bg-orange-500"
-                key={el.id}
-                style={{
-                  left: `${(el.x / 1200) * 100}%`,
-                  top: `${(el.y / 780) * 100}%`,
-                  borderRadius: el.kind === "cone" ? "50%" : "2px",
-                }}
-              />
-            );
-          }
-          return null;
-        })}
-      </span>
-    );
-  } catch {
-    return <EmptyBoardPreview />;
-  }
-}
-
-function EmptyBoardPreview() {
-  return (
-    <span className="relative block h-full w-full bg-[#17633a]">
-      <span className="absolute inset-5 rounded-lg border-2 border-white/75" />
-      <span className={previewHalfwayLineClassName} />
-      <span className={previewCenterCircleClassName} />
-      <span className="absolute top-[28%] left-[22%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
-      <span className="absolute top-[46%] left-[34%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
-      <span className="absolute top-[62%] left-[24%] size-5 rounded-full border-2 border-white bg-[#2563eb]" />
-      <span className="absolute top-[32%] right-[24%] size-5 rounded-full border-2 border-white bg-[#dc2626]" />
-      <span className="absolute top-[56%] right-[34%] size-5 rounded-full border-2 border-white bg-[#dc2626]" />
-      <span className="absolute top-[48%] right-[20%] size-4 rounded-full border-2 border-text-primary bg-white" />
-      <span className={previewPassLineClassName} />
-    </span>
   );
 }
 

@@ -4,6 +4,7 @@ import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentStaffContext } from "@/lib/auth-context";
+import { exerciseLibraryWhere } from "../queries/exercise-library-where";
 
 type ActionResult = {
   success: boolean;
@@ -389,6 +390,22 @@ function buildDuplicateExerciseName(sourceName: string): string {
   return `${base}${suffix}`;
 }
 
+function isMissingFavoritesTableError(error: unknown): boolean {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("code" in error) ||
+    !("message" in error)
+  ) {
+    return false;
+  }
+
+  const code = typeof error.code === "string" ? error.code : "";
+  const message = typeof error.message === "string" ? error.message : "";
+
+  return code === "P2021" && message.includes("MembershipExerciseFavorite");
+}
+
 export async function duplicateExercise(
   exerciseId: string
 ): Promise<{ ok: true; exerciseId: string } | { ok: false; error: string }> {
@@ -452,5 +469,67 @@ export async function duplicateExercise(
     return { ok: true, exerciseId: created.id };
   } catch {
     return { ok: false, error: "Error al duplicar el ejercicio." };
+  }
+}
+
+export async function toggleExerciseFavorite(
+  exerciseId: string
+): Promise<
+  { ok: true; isFavorite: boolean } | { ok: false; error: string }
+> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.club) {
+      return { ok: false, error: "Club no encontrado" };
+    }
+
+    const exercise = await database.exercise.findFirst({
+      where: {
+        AND: [{ id: exerciseId }, exerciseLibraryWhere(staffContext.club.id)],
+      },
+      select: { id: true },
+    });
+
+    if (!exercise) {
+      return { ok: false, error: "Ejercicio no encontrado." };
+    }
+
+    const favoriteWhere = {
+      membershipId_exerciseId: {
+        membershipId: staffContext.membershipId,
+        exerciseId,
+      },
+    };
+
+    const existing = await database.membershipExerciseFavorite.findUnique({
+      where: favoriteWhere,
+      select: { membershipId: true },
+    });
+
+    if (existing) {
+      await database.membershipExerciseFavorite.delete({
+        where: favoriteWhere,
+      });
+      revalidatePath("/exercises");
+      return { ok: true, isFavorite: false };
+    }
+
+    await database.membershipExerciseFavorite.create({
+      data: {
+        membershipId: staffContext.membershipId,
+        exerciseId,
+      },
+    });
+    revalidatePath("/exercises");
+    return { ok: true, isFavorite: true };
+  } catch (error) {
+    if (isMissingFavoritesTableError(error)) {
+      return {
+        ok: false,
+        error:
+          "Los favoritos todavia no estan disponibles en este entorno. Aplica la migracion de base de datos y vuelve a intentarlo.",
+      };
+    }
+    return { ok: false, error: "No se pudo actualizar el favorito." };
   }
 }

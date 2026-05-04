@@ -1,9 +1,4 @@
-export type ExerciseLibraryItem = {
-  id: string;
-  name: string;
-  durationMinutes: number;
-  complexity: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH";
-};
+export type { ExercisePickerRow as ExerciseLibraryItem } from "@/features/exercises/types";
 
 export type SessionBuilderItem = {
   uid: string;

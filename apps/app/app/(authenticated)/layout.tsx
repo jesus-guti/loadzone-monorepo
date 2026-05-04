@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { GlobalSidebar } from "@/components/layouts/sidebar";
 
@@ -24,7 +25,7 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
       defaultOpen={false}
     >
       <GlobalSidebar staffContext={staffContext}>
-        {children}
+        <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
       </GlobalSidebar>
     </SidebarProvider>
   );
