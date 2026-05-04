@@ -1,7 +1,7 @@
 import {
   CheckCircleIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/20/solid";
+  WarningIcon,
+} from "@phosphor-icons/react/ssr";
 import {
   Table,
   TableBody,
@@ -167,7 +167,7 @@ export function TeamWellnessOverview({
               )}
             >
               {hasPending ? (
-                <ExclamationTriangleIcon className="size-3.5 shrink-0" />
+                <WarningIcon className="size-3.5 shrink-0" />
               ) : (
                 <CheckCircleIcon className="size-3.5 shrink-0" />
               )}

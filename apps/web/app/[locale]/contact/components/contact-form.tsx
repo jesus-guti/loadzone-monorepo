@@ -12,7 +12,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import type { Dictionary } from "@repo/internationalization";
 import { format } from "date-fns";
-import { CalendarIcon, Check, MoveRight } from "lucide-react";
+import { CalendarBlankIcon, CheckIcon, ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
 
 type ContactFormProps = {
@@ -42,7 +42,7 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
                 className="flex flex-row items-start gap-6 text-left"
                 key={index}
               >
-                <Check className="mt-2 h-4 w-4 text-primary" />
+                <CheckIcon className="mt-2 h-4 w-4 text-primary" />
                 <div className="flex flex-col gap-1">
                   <p>{benefit.title}</p>
                   <p className="text-muted-foreground text-sm">
@@ -69,7 +69,7 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
                       )}
                       variant="outline"
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarBlankIcon className="mr-2 h-4 w-4" />
                       {date ? (
                         format(date, "PPP")
                       ) : (
@@ -108,7 +108,7 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
 
               <Button className="w-full gap-4">
                 {dictionary.web.contact.hero.form.cta}{" "}
-                <MoveRight className="h-4 w-4" />
+                <ArrowRightIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>

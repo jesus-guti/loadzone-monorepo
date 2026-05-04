@@ -1,6 +1,6 @@
 "use client";
 
-import { SparklesIcon, Squares2X2Icon } from "@heroicons/react/20/solid";
+import { SparkleIcon, SquaresFourIcon } from "@phosphor-icons/react/ssr";
 import { cn } from "@repo/design-system/lib/utils";
 import { useMemo, useState } from "react";
 import { TeamWellnessBubblesView } from "./team-wellness-bubbles-view";
@@ -70,7 +70,7 @@ export function TeamWellnessWorkspace({
             onClick={() => setViewMode("cards")}
             type="button"
           >
-            <Squares2X2Icon className="size-4" />
+            <SquaresFourIcon className="size-4" />
             Tarjetas
           </button>
           <button
@@ -83,7 +83,7 @@ export function TeamWellnessWorkspace({
             onClick={() => setViewMode("bubbles")}
             type="button"
           >
-            <SparklesIcon className="size-4" />
+            <SparkleIcon className="size-4" />
             Burbujas
           </button>
         </div>

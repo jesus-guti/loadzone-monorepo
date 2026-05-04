@@ -1,6 +1,6 @@
 "use client";
 
-import { CameraIcon, PencilSquareIcon } from "@heroicons/react/20/solid";
+import { CameraIcon, NotePencilIcon } from "@phosphor-icons/react/ssr";
 import { useSession } from "@repo/auth/client";
 import {
   Avatar,
@@ -117,7 +117,7 @@ export function EditProfileDialog({
               type="button"
               variant="outline"
             >
-              <PencilSquareIcon className="size-4" />
+              <NotePencilIcon className="size-4" />
               Cambiar foto
             </Button>
             <input

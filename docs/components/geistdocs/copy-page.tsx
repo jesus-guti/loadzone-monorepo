@@ -1,7 +1,7 @@
 "use client";
 
 import { useCopyButton } from "fumadocs-ui/utils/use-copy-button";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon } from "@phosphor-icons/react/ssr";
 
 type CopyPageProps = {
   text: string;

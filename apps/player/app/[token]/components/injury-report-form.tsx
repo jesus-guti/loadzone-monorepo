@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { useActionState, useEffect } from "react";
 import { toast } from "@repo/design-system/components/ui/sonner";
 import { saveInjuryReport } from "../actions/save-injury";
-import { HeartPulseIcon } from "lucide-react";
+import { HeartbeatIcon } from "@phosphor-icons/react/ssr";
 
 type InjuryReportFormProperties = {
   readonly token: string;
@@ -106,7 +106,7 @@ export function InjuryReportForm({ token }: InjuryReportFormProperties) {
           "Enviando..."
         ) : (
           <span className="flex items-center gap-2">
-            <HeartPulseIcon className="h-5 w-5" />
+            <HeartbeatIcon className="h-5 w-5" />
             Enviar aviso
           </span>
         )}

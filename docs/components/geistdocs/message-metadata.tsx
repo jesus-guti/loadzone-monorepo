@@ -1,5 +1,5 @@
 import { isToolUIPart } from "ai";
-import { BookmarkIcon } from "lucide-react";
+import { BookmarkSimpleIcon } from "@phosphor-icons/react/ssr";
 import type { MyUIMessage } from "@/app/api/chat/types";
 import { Shimmer } from "../ai-elements/shimmer";
 import {
@@ -49,7 +49,7 @@ export const MessageMetadata = ({
     return (
       <Sources>
         <SourcesTrigger count={sources.length}>
-          <BookmarkIcon className="size-4" />
+          <BookmarkSimpleIcon className="size-4" />
           <p>Used {sources.length} sources</p>
         </SourcesTrigger>
         <SourcesContent>

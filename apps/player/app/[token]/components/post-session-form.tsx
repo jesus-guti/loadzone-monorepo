@@ -7,7 +7,7 @@ import { savePostSession } from "../actions/save-entry";
 import { SliderInput } from "./slider-input";
 import { ChipInput } from "./chip-input";
 import { QuestionCard, type QuestionState } from "./question-card";
-import { CheckCircle2Icon, FlameIcon } from "lucide-react";
+import { CheckCircleIcon, FlameIcon } from "@phosphor-icons/react/ssr";
 
 const BORG_LABELS: Record<number, string> = {
   0: "Nada",
@@ -286,7 +286,7 @@ export function PostSessionForm({
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <CheckCircle2Icon className="h-5 w-5 opacity-60" />
+                <CheckCircleIcon className="h-5 w-5 opacity-60" />
                 Falta{totalSteps - answeredCount === 1 ? "" : "n"}{" "}
                 {totalSteps - answeredCount} respuesta
                 {totalSteps - answeredCount === 1 ? "" : "s"}

@@ -11,7 +11,7 @@ import {
   NavigationMenuTrigger,
 } from "@repo/design-system/components/ui/navigation-menu";
 import type { Dictionary } from "@repo/internationalization";
-import { CommandIcon, Menu, MoveRight, X } from "lucide-react";
+import { CommandIcon, ListIcon, ArrowRightIcon, XIcon } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -97,7 +97,7 @@ export const Header = ({ dictionary }: HeaderProps) => {
                                 key={idx}
                               >
                                 <span>{subItem.title}</span>
-                                <MoveRight className="h-4 w-4 text-muted-foreground" />
+                                <ArrowRightIcon className="h-4 w-4 text-muted-foreground" />
                               </NavigationMenuLink>
                             ))}
                           </div>
@@ -150,7 +150,7 @@ export const Header = ({ dictionary }: HeaderProps) => {
         </div>
         <div className="flex w-12 shrink items-end justify-end lg:hidden">
           <Button onClick={() => setOpen(!isOpen)} variant="ghost">
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isOpen ? <XIcon className="h-5 w-5" /> : <ListIcon className="h-5 w-5" />}
           </Button>
           {isOpen && (
             <div className="container absolute top-20 right-0 flex w-full flex-col gap-8 border-t bg-background py-4 shadow-lg">
@@ -171,7 +171,7 @@ export const Header = ({ dictionary }: HeaderProps) => {
                         }
                       >
                         <span className="text-lg">{item.title}</span>
-                        <MoveRight className="h-4 w-4 stroke-1 text-muted-foreground" />
+                        <ArrowRightIcon className="h-4 w-4 stroke-1 text-muted-foreground" />
                       </Link>
                     ) : (
                       <p className="text-lg">{item.title}</p>
@@ -185,7 +185,7 @@ export const Header = ({ dictionary }: HeaderProps) => {
                         <span className="text-muted-foreground">
                           {subItem.title}
                         </span>
-                        <MoveRight className="h-4 w-4 stroke-1" />
+                        <ArrowRightIcon className="h-4 w-4 stroke-1" />
                       </Link>
                     ))}
                   </div>

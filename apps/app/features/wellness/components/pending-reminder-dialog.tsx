@@ -1,6 +1,6 @@
 "use client";
 
-import { BellAlertIcon } from "@heroicons/react/20/solid";
+import { BellRingingIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import {
@@ -69,7 +69,7 @@ export function PendingReminderDialog({
           size="icon"
           variant="ghost"
         >
-          <BellAlertIcon className="size-5" />
+          <BellRingingIcon className="size-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -83,7 +83,7 @@ export function PendingReminderDialog({
         <div className="space-y-4">
           <div className="space-y-1 border-l-2 border-danger py-2 pl-4">
             <p className="flex items-center gap-2 text-sm font-medium text-text-primary">
-              <BellAlertIcon className="size-4 text-danger" />
+              <BellRingingIcon className="size-4 text-danger" />
               Pendientes actuales
             </p>
             <p className="text-sm text-text-secondary">

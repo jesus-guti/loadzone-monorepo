@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Button } from "@repo/design-system/components/ui/button";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 
 export function QuickNewSessionCard() {

@@ -1,5 +1,5 @@
 import { database } from "@repo/database";
-import { CalendarIcon, PlusIcon } from "@heroicons/react/20/solid";
+import { CalendarBlankIcon, PlusIcon } from "@phosphor-icons/react/ssr";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -59,7 +59,7 @@ const SeasonsPage = async () => {
       <div className="p-4 pt-0">
         {seasons.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl bg-muted/50 p-12 text-center">
-            <CalendarIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+            <CalendarBlankIcon className="mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="text-lg font-semibold">No hay temporadas</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Crea tu primera temporada para empezar a registrar datos.

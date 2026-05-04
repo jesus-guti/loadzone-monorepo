@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ClipboardDocumentIcon } from "@heroicons/react/20/solid";
+import { CheckIcon, ClipboardTextIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "@repo/design-system/components/ui/sonner";
 import { useState } from "react";
@@ -34,7 +34,7 @@ export function CopyTokenButton({ token }: CopyTokenButtonProperties) {
       {copied ? (
         <CheckIcon className="size-4 text-brand" />
       ) : (
-        <ClipboardDocumentIcon className="size-4" />
+        <ClipboardTextIcon className="size-4" />
       )}
       <span className="sr-only">Copiar enlace</span>
     </Button>

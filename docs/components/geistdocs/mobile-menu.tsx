@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuIcon } from "lucide-react";
+import { ListIcon } from "@phosphor-icons/react/ssr";
 import { useSidebarContext } from "@/hooks/geistdocs/use-sidebar";
 import { Button } from "../ui/button";
 
@@ -14,7 +14,7 @@ export const MobileMenu = () => {
       size="icon-sm"
       variant="ghost"
     >
-      <MenuIcon className="size-4" />
+      <ListIcon className="size-4" />
     </Button>
   );
 };

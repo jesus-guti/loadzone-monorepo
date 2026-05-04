@@ -1,7 +1,7 @@
 import { database } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { PencilIcon } from "@heroicons/react/20/solid";
+import { PencilSimpleIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import {
   Card,
@@ -172,7 +172,7 @@ const SessionDetailPage = async ({
             <>
               <Button asChild size="icon" variant="outline">
                 <Link href={`/sessions/${session.id}/edit`}>
-                  <PencilIcon className="size-4" />
+                  <PencilSimpleIcon className="size-4" />
                   <span className="sr-only">Editar sesión</span>
                 </Link>
               </Button>

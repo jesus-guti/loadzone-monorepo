@@ -19,7 +19,10 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider
+      className="h-svh min-h-0 overflow-hidden"
+      defaultOpen={false}
+    >
       <GlobalSidebar staffContext={staffContext}>
         {children}
       </GlobalSidebar>

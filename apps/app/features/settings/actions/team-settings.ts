@@ -1,7 +1,7 @@
 "use server";
 
 import { ensureBaseFormTemplates, database, Prisma } from "@repo/database";
-import { buildObjectKey, uploadImage } from "@repo/storage";
+import { buildObjectKey, deleteObject, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -34,16 +34,8 @@ type ClubBrandingResult = {
   logoUrl?: string | null;
 };
 
-export async function updateTeamSettings(formData: FormData): Promise<void> {
-  const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
-    throw new Error("Equipo no encontrado");
-  }
-  const activeTeamId = staffContext.activeTeam.id;
-
-  await ensureBaseFormTemplates();
-
-  const parsed = settingsSchema.safeParse({
+function getTeamSettingsFormPayload(formData: FormData) {
+  return {
     category: formData.get("category") || undefined,
     timezone: formData.get("timezone"),
     preSessionReminderMinutes: formData.get("preSessionReminderMinutes"),
@@ -55,7 +47,19 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     wellness_soreness: formData.get("wellness_soreness") || undefined,
     wellness_sleepHours: formData.get("wellness_sleepHours") || undefined,
     wellness_sleepQuality: formData.get("wellness_sleepQuality") || undefined,
-  });
+  };
+}
+
+export async function updateTeamSettings(formData: FormData): Promise<void> {
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext?.activeTeam) {
+    throw new Error("Equipo no encontrado");
+  }
+  const activeTeamId = staffContext.activeTeam.id;
+
+  await ensureBaseFormTemplates();
+
+  const parsed = settingsSchema.safeParse(getTeamSettingsFormPayload(formData));
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos no válidos");
@@ -228,12 +232,20 @@ export async function updateClubBranding(
 ): Promise<ClubBrandingResult> {
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext || !staffContext.canCreateTeam) {
+    if (!staffContext) {
+      return { success: false, error: "No tienes permisos para editar el club." };
+    }
+
+    if (!staffContext.canCreateTeam) {
       return { success: false, error: "No tienes permisos para editar el club." };
     }
 
     const file = formData.get("file");
-    if (!(file instanceof File) || file.size === 0) {
+    if (!(file instanceof File)) {
+      return { success: false, error: "Selecciona una imagen válida." };
+    }
+
+    if (file.size === 0) {
       return { success: false, error: "Selecciona una imagen válida." };
     }
 
@@ -278,6 +290,60 @@ export async function updateClubBranding(
       success: false,
       error:
         error instanceof Error ? error.message : "No se pudo actualizar el logo del club.",
+    };
+  }
+}
+
+export async function clearClubBrandingLogo(): Promise<ClubBrandingResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext) {
+      return { success: false, error: "No tienes permisos para editar el club." };
+    }
+
+    if (!staffContext.canCreateTeam) {
+      return { success: false, error: "No tienes permisos para editar el club." };
+    }
+
+    const currentClub = await database.club.findUnique({
+      where: { id: staffContext.club.id },
+      select: {
+        id: true,
+        logoUrl: true,
+      },
+    });
+
+    if (!currentClub) {
+      return { success: false, error: "Club no encontrado." };
+    }
+
+    if (currentClub.logoUrl) {
+      try {
+        await deleteObject(currentClub.logoUrl);
+      } catch {
+        // Ignore blob cleanup errors so we can still clear the DB pointer.
+      }
+    }
+
+    await database.club.update({
+      where: { id: currentClub.id },
+      data: {
+        logoUrl: null,
+      },
+    });
+
+    revalidatePath("/settings");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      logoUrl: null,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "No se pudo quitar el logo del club.",
     };
   }
 }

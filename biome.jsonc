@@ -11,5 +11,12 @@
       "!docs/lib",
       "!docs/hooks"
     ]
+  },
+  "linter": {
+    "rules": {
+      "nursery": {
+        "useSortedClasses": "off"
+      }
+    }
   }
 }

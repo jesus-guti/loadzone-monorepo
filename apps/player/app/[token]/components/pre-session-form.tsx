@@ -24,10 +24,10 @@ import {
   BatteryMediumIcon,
   BatteryLowIcon,
   BatteryWarningIcon,
-  BatteryIcon,
-  CheckCircle2Icon,
+  BatteryHighIcon,
+  CheckCircleIcon,
   FlameIcon,
-} from "lucide-react";
+} from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 type PreSessionFormProperties = {
@@ -52,7 +52,7 @@ type PreSessionFormProperties = {
 };
 
 const ENERGY_ICONS: Record<number, ReactNode> = {
-  1: <BatteryIcon className="h-5 w-5" />,
+  1: <BatteryHighIcon className="h-5 w-5" />,
   2: <BatteryWarningIcon className="h-5 w-5" />,
   3: <BatteryLowIcon className="h-5 w-5" />,
   4: <BatteryMediumIcon className="h-5 w-5" />,
@@ -554,7 +554,7 @@ export function PreSessionForm({
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <CheckCircle2Icon className="h-5 w-5 opacity-60" />
+                <CheckCircleIcon className="h-5 w-5 opacity-60" />
                 Falta{totalSteps - answeredCount === 1 ? "" : "n"}{" "}
                 {totalSteps - answeredCount} respuesta
                 {totalSteps - answeredCount === 1 ? "" : "s"}

@@ -1,5 +1,6 @@
 import { currentUser } from "@repo/auth/server";
-import { getPrivateBlob, isPrivateImagePathname } from "@repo/storage";
+import { getPrivateBlob } from "@repo/storage";
+import { isPrivateImagePathname } from "@repo/storage/shared";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -9,7 +10,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const pathname = request.nextUrl.searchParams.get("pathname");
-  if (!pathname || !isPrivateImagePathname(pathname)) {
+  if (!pathname) {
+    return NextResponse.json({ error: "Ruta de blob no válida." }, { status: 400 });
+  }
+
+  if (!isPrivateImagePathname(pathname)) {
     return NextResponse.json({ error: "Ruta de blob no válida." }, { status: 400 });
   }
 

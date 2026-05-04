@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  ArrowUpTrayIcon,
-  PhotoIcon,
-} from "@heroicons/react/20/solid";
+  UploadSimpleIcon,
+  ImageIcon,
+} from "@phosphor-icons/react/ssr";
 import {
   Avatar,
   AvatarFallback,
@@ -126,9 +126,9 @@ export function PlayerPhotoCell({
         </Avatar>
         <span className="absolute -right-1 -bottom-1 rounded-full border border-border-secondary bg-bg-primary p-1 text-text-secondary shadow-sm transition-colors group-hover:text-text-primary">
           {currentImageUrl || previewUrl ? (
-            <ArrowUpTrayIcon className="size-3" />
+            <UploadSimpleIcon className="size-3" />
           ) : (
-            <PhotoIcon className="size-3" />
+            <ImageIcon className="size-3" />
           )}
         </span>
       </button>

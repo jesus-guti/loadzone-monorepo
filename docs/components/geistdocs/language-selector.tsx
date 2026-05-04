@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "fumadocs-ui/contexts/i18n";
-import { CheckIcon, LanguagesIcon } from "lucide-react";
+import { CheckIcon, TranslateIcon } from "@phosphor-icons/react/ssr";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ export const LanguageSelector = () => {
         aria-label="Select language"
         className="flex items-center justify-center rounded-md p-2 hover:bg-muted"
       >
-        <LanguagesIcon className="size-4.5" />
+        <TranslateIcon className="size-4.5" />
         <span className="sr-only">Select language</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

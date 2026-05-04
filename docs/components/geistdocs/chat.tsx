@@ -3,7 +3,11 @@
 import type { UIMessage } from "@ai-sdk/react";
 import { useChat } from "@ai-sdk/react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ChevronRightIcon, MessagesSquareIcon, Trash } from "lucide-react";
+import {
+  CaretRightIcon,
+  ChatsCircleIcon,
+  TrashIcon,
+} from "@phosphor-icons/react/ssr";
 import { Portal } from "radix-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { harden } from "rehype-harden";
@@ -211,7 +215,7 @@ const ChatInner = () => {
                   size="icon-sm"
                   variant="ghost"
                 >
-                  <Trash className="size-3.5" />
+                  <TrashIcon className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Clear chat</TooltipContent>
@@ -223,7 +227,7 @@ const ChatInner = () => {
                   size="icon-sm"
                   variant="ghost"
                 >
-                  <ChevronRightIcon className="size-3.5" />
+                  <CaretRightIcon className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Close chat</TooltipContent>
@@ -362,7 +366,7 @@ export const Chat = () => {
         size="sm"
         variant="outline"
       >
-        <MessagesSquareIcon className="size-3.5 text-muted-foreground" />
+        <ChatsCircleIcon className="size-3.5 text-muted-foreground" />
         <span>Ask AI</span>
       </Button>
 
@@ -385,7 +389,7 @@ export const Chat = () => {
         >
           <DrawerTrigger asChild>
             <Button className="shadow-none" size="sm" variant="outline">
-              <MessagesSquareIcon className="size-3.5 text-muted-foreground" />
+              <ChatsCircleIcon className="size-3.5 text-muted-foreground" />
               Ask AI
             </Button>
           </DrawerTrigger>

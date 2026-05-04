@@ -1,9 +1,9 @@
 "use client";
 
 import { track } from "@vercel/analytics";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner"esign-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/ui/sonner";
 import {
   InputGroup,
   InputGroupAddon,

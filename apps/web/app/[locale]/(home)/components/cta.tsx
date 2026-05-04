@@ -1,6 +1,6 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import type { Dictionary } from "@repo/internationalization";
-import { MoveRight, PhoneCall } from "lucide-react";
+import { ArrowRightIcon, PhoneCallIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { env } from "@/env";
 
@@ -24,13 +24,13 @@ export const CTA = ({ dictionary }: CTAProps) => (
           <Button asChild className="gap-4" variant="outline">
             <Link href="/contact">
               {dictionary.web.global.primaryCta}{" "}
-              <PhoneCall className="h-4 w-4" />
+              <PhoneCallIcon className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild className="gap-4">
             <Link href={env.NEXT_PUBLIC_APP_URL}>
               {dictionary.web.global.secondaryCta}{" "}
-              <MoveRight className="h-4 w-4" />
+              <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from "lucide-react";
+import { ArrowSquareOutIcon } from "@phosphor-icons/react/ssr";
 import {
   OpenIn,
   OpenInChatGPT,
@@ -31,7 +31,7 @@ export const OpenInChat = ({ href }: OpenInChatProps) => {
           className="flex items-center gap-1.5 text-muted-foreground text-sm transition-colors hover:text-foreground"
           type="button"
         >
-          <ExternalLinkIcon className="size-4" />
+          <ArrowSquareOutIcon className="size-4" />
           Open in chat
         </button>
       </OpenInTrigger>

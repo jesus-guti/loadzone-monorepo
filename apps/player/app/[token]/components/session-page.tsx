@@ -18,11 +18,11 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  CalendarIcon,
-  CheckCircle2Icon,
+  CalendarBlankIcon,
+  CheckCircleIcon,
   FlameIcon,
-  HeartPulseIcon,
-} from "lucide-react";
+  HeartbeatIcon,
+} from "@phosphor-icons/react/ssr";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";
@@ -184,7 +184,7 @@ export function SessionPage({
               className="flex items-center gap-1.5 text-xs font-medium text-text-secondary transition hover:text-text-primary"
               aria-label="Cambiar fecha"
             >
-              <CalendarIcon className="h-3.5 w-3.5" />
+              <CalendarBlankIcon className="h-3.5 w-3.5" />
               <span className="capitalize">
                 {date === todayIso
                   ? `Hoy · ${formatShortDate(new Date())}`
@@ -250,7 +250,7 @@ export function SessionPage({
               {isTodaySelected ? (
                 <FlameIcon className="h-10 w-10 text-premium" />
               ) : (
-                <CheckCircle2Icon className="h-10 w-10 text-brand" />
+                <CheckCircleIcon className="h-10 w-10 text-brand" />
               )}
             </div>
             <h2 className="text-4xl font-black tracking-tight text-text-primary">
@@ -296,7 +296,7 @@ export function SessionPage({
               )}
             >
               {preCompleted ? (
-                <CheckCircle2Icon className="h-4 w-4 text-brand" />
+                <CheckCircleIcon className="h-4 w-4 text-brand" />
               ) : null}
               Pre-sesión
             </TabsTrigger>
@@ -307,7 +307,7 @@ export function SessionPage({
               )}
             >
               {postCompleted ? (
-                <CheckCircle2Icon className="h-4 w-4 text-brand" />
+                <CheckCircleIcon className="h-4 w-4 text-brand" />
               ) : null}
               Post-sesión
             </TabsTrigger>
@@ -317,7 +317,7 @@ export function SessionPage({
             {preCompleted && !editingPre ? (
               <div className="flex flex-col items-center gap-3 rounded-3xl bg-bg-secondary px-6 py-10 text-center">
                 <div className="flex size-14 items-center justify-center rounded-full bg-brand/15">
-                  <CheckCircle2Icon className="h-7 w-7 text-brand" />
+                  <CheckCircleIcon className="h-7 w-7 text-brand" />
                 </div>
                 <p className="text-base font-semibold text-text-primary">
                   Pre-sesión registrada
@@ -361,7 +361,7 @@ export function SessionPage({
             {postCompleted && !editingPost ? (
               <div className="flex flex-col items-center gap-3 rounded-3xl bg-bg-secondary px-6 py-10 text-center">
                 <div className="flex size-14 items-center justify-center rounded-full bg-brand/15">
-                  <CheckCircle2Icon className="h-7 w-7 text-brand" />
+                  <CheckCircleIcon className="h-7 w-7 text-brand" />
                 </div>
                 <p className="text-base font-semibold text-text-primary">
                   Post-sesión registrada
@@ -399,7 +399,7 @@ export function SessionPage({
               type="button"
               className="inline-flex items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
             >
-              <HeartPulseIcon className="h-3.5 w-3.5" />
+              <HeartbeatIcon className="h-3.5 w-3.5" />
               ¿Tienes una molestia? Reportar lesión
             </button>
           </SheetTrigger>

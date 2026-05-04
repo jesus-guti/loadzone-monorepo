@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
 import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";

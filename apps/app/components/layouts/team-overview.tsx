@@ -2,12 +2,12 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import {
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  WarningIcon,
   FireIcon,
-  ShieldExclamationIcon,
+  ShieldWarningIcon,
   UsersIcon,
   ClockIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import type { PlayerStatus, RiskLevel } from "@repo/database";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -225,7 +225,7 @@ export function TeamOverview({
       title: "Jugadores en alerta",
       value: summary.alertCount,
       detail: "seguimiento inmediato",
-      icon: <ExclamationTriangleIcon className="size-4 text-danger" />,
+      icon: <WarningIcon className="size-4 text-danger" />,
     },
     {
       title: "Plantilla activa",
@@ -281,7 +281,7 @@ export function TeamOverview({
                   variant="destructive"
                   className="gap-1 rounded-sm"
                 >
-                  <ShieldExclamationIcon className="size-3" />
+                  <ShieldWarningIcon className="size-3" />
                   Fisio
                 </Badge>
               )}

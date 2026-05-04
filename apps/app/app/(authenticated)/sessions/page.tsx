@@ -1,6 +1,6 @@
 import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
 import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";

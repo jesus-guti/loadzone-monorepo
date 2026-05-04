@@ -1,7 +1,7 @@
 import {
   ArrowRightIcon,
   MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 

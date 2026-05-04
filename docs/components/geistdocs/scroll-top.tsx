@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpCircleIcon } from "lucide-react";
+import { ArrowCircleUpIcon } from "@phosphor-icons/react/ssr";
 import { useCallback } from "react";
 
 export const ScrollTop = () => {
@@ -14,7 +14,7 @@ export const ScrollTop = () => {
       onClick={handleScrollToTop}
       type="button"
     >
-      <ArrowUpCircleIcon className="size-3.5" />
+      <ArrowCircleUpIcon className="size-3.5" />
       <span>Scroll to top</span>
     </button>
   );

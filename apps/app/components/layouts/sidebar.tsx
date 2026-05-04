@@ -1,6 +1,8 @@
 "use client";
 
+import { BellIcon, ListIcon } from "@phosphor-icons/react/ssr";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +15,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
+import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
@@ -22,13 +26,8 @@ import type { StaffContext } from "@/lib/auth-context";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { MobileSidebarFab } from "./mobile-sidebar-fab";
+import { SidebarUserMenu } from "./sidebar-user-menu";
 import { TeamBranding } from "./team-branding";
-
-const sidebarPrefetchHrefs = Array.from(
-  new Set(
-    [...primaryNavigation, ...secondaryNavigation].map((item) => item.href)
-  )
-);
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -43,6 +42,68 @@ type GlobalSidebarProperties = {
     | "teams"
   >;
 };
+
+const sidebarPrefetchHrefs = Array.from(
+  new Set(
+    [...primaryNavigation, ...secondaryNavigation].map((item) => item.href)
+  )
+);
+
+function DesktopSidebarOpener() {
+  const { toggleSidebar, state } = useSidebar();
+  const tooltip =
+    state === "collapsed" ? "Expandir barra lateral" : "Contraer barra lateral";
+
+  return (
+    <div className="shrink-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            aria-label={tooltip}
+            className="w-fit"
+            onClick={() => {
+              toggleSidebar();
+            }}
+            tooltip={tooltip}
+            type="button"
+          >
+            <ListIcon className="size-4 shrink-0 text-text-secondary" />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </div>
+  );
+}
+
+function SidebarBrandingHeader({
+  staffContext,
+}: {
+  readonly staffContext: GlobalSidebarProperties["staffContext"];
+}) {
+  return (
+    <SidebarHeader className="gap-2 p-2">
+      <div
+        className={cn(
+          "flex flex-row items-center justify-between gap-2",
+          "group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-1"
+        )}
+      >
+        <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center">
+          <TeamBranding
+            clubLogoUrl={staffContext.club.logoUrl}
+            clubName={staffContext.club.name}
+            detailsClassName="group-data-[collapsible=icon]:hidden"
+            logoTreatment="ambient"
+            showClubOnly
+            teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
+            teamName={staffContext.activeTeam?.name ?? null}
+          />
+        </div>
+        <DesktopSidebarOpener />
+      </div>
+    </SidebarHeader>
+  );
+}
 
 export const GlobalSidebar = ({
   children,
@@ -60,30 +121,7 @@ export const GlobalSidebar = ({
   return (
     <AppShellProvider value={staffContext}>
       <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                className="cursor-default"
-                size="lg"
-                tooltip={
-                  staffContext.activeTeam?.name ?? staffContext.club.name
-                }
-              >
-                <div>
-                  <TeamBranding
-                    clubLogoUrl={staffContext.club.logoUrl}
-                    clubName={staffContext.club.name}
-                    showClubOnly
-                    teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
-                    teamName={staffContext.activeTeam?.name ?? null}
-                  />
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
+        <SidebarBrandingHeader staffContext={staffContext} />
 
         <SidebarContent>
           <SidebarGroup>
@@ -131,22 +169,20 @@ export const GlobalSidebar = ({
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
-          <div className="flex items-center justify-between border-border-secondary border-t px-2 pt-3">
-            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <p className="truncate text-text-secondary text-xs uppercase tracking-[0.14em]">
-                Equipo activo
-              </p>
-              <p className="truncate font-medium text-sm text-text-primary">
-                {staffContext.activeTeam?.name ?? "Sin equipo"}
-              </p>
-            </div>
+        <SidebarFooter className="gap-2">
+          <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center">
+            <Button aria-label="Notificaciones" size="icon" variant="ghost">
+              <BellIcon className="size-5" weight="fill" />
+            </Button>
             <ModeToggle />
           </div>
+          <SidebarUserMenu />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="min-h-svh pb-20 md:pb-0">
-        {children}
+      <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-20 md:pb-0">
+        <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain">
+          {children}
+        </div>
         <MobileBottomNav />
         <MobileSidebarFab />
       </SidebarInset>

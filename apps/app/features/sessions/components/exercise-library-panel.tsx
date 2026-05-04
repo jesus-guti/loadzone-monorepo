@@ -6,7 +6,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
 import { useMemo, useState } from "react";
 import type { ExerciseLibraryItem } from "./types";
 

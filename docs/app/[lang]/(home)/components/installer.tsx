@@ -1,6 +1,6 @@
 "use client";
 
-import { CopyIcon } from "lucide-react";
+import { CopyIcon } from "@phosphor-icons/react/ssr";
 import { toast } from "@repo/design-system/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 

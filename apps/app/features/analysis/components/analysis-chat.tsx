@@ -1,6 +1,6 @@
 "use client";
 
-import { CpuChipIcon, PaperAirplaneIcon } from "@heroicons/react/20/solid";
+import { CpuIcon, PaperPlaneRightIcon } from "@phosphor-icons/react/ssr";
 import { useChat } from "@repo/ai/lib/react";
 import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
@@ -46,7 +46,7 @@ export function AnalysisChat() {
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-6 p-8">
             <div className="flex flex-col items-center gap-2 text-center">
-              <CpuChipIcon className="h-12 w-12 text-text-tertiary" />
+              <CpuIcon className="h-12 w-12 text-text-tertiary" />
               <h3 className="text-lg font-semibold text-text-primary">
                 Asistente de análisis
               </h3>
@@ -92,7 +92,7 @@ export function AnalysisChat() {
             size="icon"
             disabled={isLoading || !input.trim()}
           >
-            <PaperAirplaneIcon className="h-4 w-4" />
+            <PaperPlaneRightIcon className="h-4 w-4" />
           </Button>
         </form>
       </div>

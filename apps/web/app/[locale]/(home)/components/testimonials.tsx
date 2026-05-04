@@ -12,7 +12,7 @@ import {
   CarouselItem,
 } from "@repo/design-system/components/ui/carousel";
 import type { Dictionary } from "@repo/internationalization";
-import { User } from "lucide-react";
+import { UserIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useState } from "react";
 
 type TestimonialsProps = {
@@ -51,7 +51,7 @@ export const Testimonials = ({ dictionary }: TestimonialsProps) => {
               {dictionary.web.home.testimonials.items.map((item, index) => (
                 <CarouselItem className="lg:basis-1/2" key={index}>
                   <div className="flex aspect-video h-full flex-col justify-between rounded-md bg-muted p-6 lg:col-span-2">
-                    <User className="h-8 w-8 stroke-1" />
+                    <UserIcon className="h-8 w-8 stroke-1" />
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col">
                         <h3 className="text-xl tracking-tight">{item.title}</h3>

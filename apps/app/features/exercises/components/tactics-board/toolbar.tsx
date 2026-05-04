@@ -1,15 +1,15 @@
 "use client";
 
 import {
-  ArrowDownTrayIcon,
-  ArrowPathIcon,
-  ArrowUturnLeftIcon,
-  ArrowUturnRightIcon,
-  Cog6ToothIcon,
-  CursorArrowRaysIcon,
-  PencilIcon,
+  DownloadSimpleIcon,
+  ArrowsClockwiseIcon,
+  ArrowArcLeftIcon,
+  ArrowArcRightIcon,
+  GearSixIcon,
+  CursorClickIcon,
+  PencilSimpleIcon,
   TrashIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Sheet,
@@ -81,7 +81,7 @@ const tools: readonly ToolDefinition[] = [
     tool: "select",
     label: "Seleccionar",
     shortcut: "V",
-    icon: <CursorArrowRaysIcon className="size-4" />,
+    icon: <CursorClickIcon className="size-4" />,
   },
   {
     tool: "home-player",
@@ -151,7 +151,7 @@ const tools: readonly ToolDefinition[] = [
     tool: "free-draw",
     label: "Dibujo libre",
     shortcut: "7",
-    icon: <PencilIcon className="size-4" />,
+    icon: <PencilSimpleIcon className="size-4" />,
   },
   {
     tool: "pass-arrow",
@@ -475,7 +475,7 @@ export function Toolbar({ className, onExportPng }: ToolbarProps) {
           onClick={undo}
           title="Deshacer"
         >
-          <ArrowUturnLeftIcon className="size-4" />
+          <ArrowArcLeftIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           ariaLabel="Rehacer"
@@ -483,7 +483,7 @@ export function Toolbar({ className, onExportPng }: ToolbarProps) {
           onClick={redo}
           title="Rehacer"
         >
-          <ArrowUturnRightIcon className="size-4" />
+          <ArrowArcRightIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           ariaLabel="Rotar selección 90 grados"
@@ -491,7 +491,7 @@ export function Toolbar({ className, onExportPng }: ToolbarProps) {
           onClick={rotateSelectedElements}
           title="Rotar selección 90 grados (R)"
         >
-          <ArrowPathIcon className="size-4" />
+          <ArrowsClockwiseIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           ariaLabel="Borrar selección"
@@ -506,7 +506,7 @@ export function Toolbar({ className, onExportPng }: ToolbarProps) {
           onClick={onExportPng}
           title="Exportar PNG"
         >
-          <ArrowDownTrayIcon className="size-4" />
+          <DownloadSimpleIcon className="size-4" />
         </ToolbarButton>
 
         <ToolbarSettingsSheet
@@ -524,7 +524,7 @@ export function Toolbar({ className, onExportPng }: ToolbarProps) {
           teamColors={teamColors}
         >
           <ToolbarButton ariaLabel="Configuracion" title="Configuracion">
-            <Cog6ToothIcon className="size-4" />
+            <GearSixIcon className="size-4" />
           </ToolbarButton>
         </ToolbarSettingsSheet>
       </div>

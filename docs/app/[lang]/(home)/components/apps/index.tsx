@@ -1,12 +1,12 @@
 import {
   BookIcon,
-  CurlyBracesIcon,
+  BracketsCurlyIcon,
   DatabaseIcon,
   GlobeIcon,
   LaptopIcon,
-  MailIcon,
-  ServerIcon,
-} from "lucide-react";
+  EnvelopeSimpleIcon,
+  ComputerTowerIcon,
+} from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import ApiImage from "./api.png";
@@ -27,7 +27,7 @@ const apps = [
     image: AppImage,
   },
   {
-    icon: ServerIcon,
+    icon: ComputerTowerIcon,
     name: "api",
     title: "Cross-platform API",
     description:
@@ -35,7 +35,7 @@ const apps = [
     image: ApiImage,
   },
   {
-    icon: MailIcon,
+    icon: EnvelopeSimpleIcon,
     name: "email",
     title: "React-based email templates",
     description:
@@ -67,7 +67,7 @@ const apps = [
     image: StudioImage,
   },
   {
-    icon: CurlyBracesIcon,
+    icon: BracketsCurlyIcon,
     name: "storybook",
     title: "A frontend workshop",
     description:

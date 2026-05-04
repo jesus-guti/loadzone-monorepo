@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Dialog as SheetPrimitive } from "radix-ui"
-import { XIcon } from "lucide-react"
+import { XIcon } from "@phosphor-icons/react/ssr"
 
 import { cn } from "@repo/design-system/lib/utils"
 

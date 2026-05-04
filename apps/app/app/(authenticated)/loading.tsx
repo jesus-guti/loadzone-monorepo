@@ -3,24 +3,6 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 const Loading = () => {
   return (
     <div className="flex min-h-svh bg-bg-secondary">
-      <aside className="hidden w-16 shrink-0 border-r border-border-secondary bg-bg-secondary md:block xl:w-64">
-        <div className="space-y-3 p-3">
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <div className="space-y-2 pt-3">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-          <div className="space-y-2 pt-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        </div>
-      </aside>
 
       <main className="flex min-h-svh flex-1 flex-col bg-bg-primary">
         <div className="border-b border-border-secondary px-4 py-4 md:px-6">

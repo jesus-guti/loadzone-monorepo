@@ -12,6 +12,7 @@ description: Review LoadZone UI changes against design-system rules. Use when ed
 - Evita sombras estructurales en superficies normales.
 - Revisa densidad, radio, borde y consistencia con el shell correcto.
 - Busca valores de motion y timing que deberian vivir en constantes compartidas.
+- **Iconografia**: solo `@phosphor-icons/react`; peso coherente con la superficie (`fill` en densidad alta, mas ligero en player/marketing); sin mezclar Heroicons/Lucide/Radix icons en UI propia.
 
 ## Flujo
 

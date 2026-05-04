@@ -14,7 +14,7 @@ import {
 import { Button } from "@repo/design-system/components/ui/button";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { XIcon } from "@phosphor-icons/react/ssr";
 import type Konva from "konva";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -1031,7 +1031,7 @@ export function TacticsBoard({
                 type="button"
                 variant="outline"
               >
-                <XMarkIcon className="size-4" />
+                <XIcon className="size-4" />
               </Button>
             ) : null}
           </div>

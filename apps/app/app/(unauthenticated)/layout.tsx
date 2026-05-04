@@ -1,4 +1,4 @@
-import { ShieldCheckIcon } from "@heroicons/react/20/solid";
+import { ShieldCheckIcon } from "@phosphor-icons/react/ssr";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import type { ReactNode } from "react";
 

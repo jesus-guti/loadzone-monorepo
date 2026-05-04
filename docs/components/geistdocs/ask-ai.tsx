@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircleIcon } from "lucide-react";
+import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
 import { useChatContext } from "@/hooks/geistdocs/use-chat";
 
 type AskAIProps = {
@@ -26,7 +26,7 @@ export const AskAI = ({ href }: AskAIProps) => {
       }}
       type="button"
     >
-      <MessageCircleIcon className="size-3.5" />
+      <ChatCircleIcon className="size-3.5" />
       <span>Ask AI about this page</span>
     </button>
   );

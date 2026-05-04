@@ -1,4 +1,4 @@
-import { TerminalIcon } from "lucide-react";
+import { TerminalIcon } from "@phosphor-icons/react/ssr";
 import { Video } from "./video";
 
 export const Demo = () => (

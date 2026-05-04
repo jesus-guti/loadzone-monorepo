@@ -1,6 +1,6 @@
 "use client";
 
-import { ArchiveBoxIcon } from "@heroicons/react/20/solid";
+import { ArchiveIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   AlertDialog,
@@ -38,7 +38,7 @@ export function ArchiveButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="sm">
-          <ArchiveBoxIcon className="size-4 text-text-secondary" />
+          <ArchiveIcon className="size-4 text-text-secondary" />
           <span className="sr-only">Archivar</span>
         </Button>
       </AlertDialogTrigger>

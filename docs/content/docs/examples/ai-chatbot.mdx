@@ -33,7 +33,7 @@ Create a new file called `Chatbot` in the `app/components` directory. We're goin
 - `Button` and `Input` components from our Design System to render the form.
 - `Thread` and `Message` components from our AI package to render the chat history.
 - `handleError` from our Design System to handle errors.
-- `SendIcon` from `lucide-react` to create a send icon.
+- `PaperPlaneRightIcon` from `@phosphor-icons/react/ssr` to create a send icon.
 
 ```tsx title="apps/app/app/(authenticated)/components/chatbot.tsx"
 'use client';
@@ -44,7 +44,7 @@ import { useChat } from '@repo/ai/lib/react';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Input } from '@repo/design-system/components/ui/input';
 import { handleError } from '@repo/design-system/lib/utils';
-import { SendIcon } from 'lucide-react';
+import { PaperPlaneRightIcon } from '@phosphor-icons/react/ssr';
 
 export const Chatbot = () => {
   const { messages, input, handleInputChange, isLoading, handleSubmit } =
@@ -71,7 +71,7 @@ export const Chatbot = () => {
           onChange={handleInputChange}
         />
         <Button type="submit" size="icon" disabled={isLoading}>
-          <SendIcon className="h-4 w-4" />
+          <PaperPlaneRightIcon className="h-4 w-4" />
         </Button>
       </form>
     </div>

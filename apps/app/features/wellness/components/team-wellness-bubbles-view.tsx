@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import {
   Avatar,
   AvatarFallback,
@@ -56,7 +56,7 @@ export function TeamWellnessBubblesView({
         <details className="group mt-6 border-t border-border-tertiary">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 text-sm text-text-secondary">
             <span>Sin actividad hoy ({inactivePlayers.length})</span>
-            <ChevronDownIcon className="size-4 transition-transform group-open:rotate-180" />
+            <CaretDownIcon className="size-4 transition-transform group-open:rotate-180" />
           </summary>
           <div className="flex flex-wrap gap-3 pb-4 pt-2">
             {inactivePlayers.map((player) => (

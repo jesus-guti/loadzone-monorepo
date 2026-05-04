@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
-import { CircleIcon } from "lucide-react"
+import { CircleIcon } from "@phosphor-icons/react/ssr"
 
 import { cn } from "@repo/design-system/lib/utils"
 

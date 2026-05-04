@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  DocumentDuplicateIcon,
+  CopyIcon,
   EyeIcon,
   EyeSlashIcon,
-  PencilSquareIcon,
+  NotePencilIcon,
   TrashIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   AlertDialog,
@@ -92,7 +92,7 @@ export function ExerciseRowActions({
           aria-label={`Editar ${exerciseName}`}
           href={`/exercises/${exerciseId}`}
         >
-          <PencilSquareIcon className="size-4 text-text-secondary" />
+          <NotePencilIcon className="size-4 text-text-secondary" />
         </Link>
       </Button>
       <Button
@@ -103,7 +103,7 @@ export function ExerciseRowActions({
         type="button"
         variant="ghost"
       >
-        <DocumentDuplicateIcon className="size-4 text-text-secondary" />
+        <CopyIcon className="size-4 text-text-secondary" />
       </Button>
       {canToggleVisibility ? (
         <Button

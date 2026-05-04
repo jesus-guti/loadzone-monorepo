@@ -8,9 +8,9 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Bars3Icon,
+  ListIcon,
   TrashIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import type { SessionBuilderItem } from "./types";
 
 type SessionBuilderProps = {
@@ -104,7 +104,7 @@ function SortableExerciseRow({
           {...attributes}
           {...listeners}
         >
-          <Bars3Icon className="size-4" />
+          <ListIcon className="size-4" />
         </button>
 
         <div className="flex-1 space-y-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
-import { BellIcon } from "lucide-react";
+import { BellIcon } from "@phosphor-icons/react/ssr";
 import { useState, useEffect } from "react";
 
 type PushPromptProperties = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDaysIcon } from "@heroicons/react/20/solid";
+import { CalendarDotsIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Calendar } from "@repo/design-system/components/ui/calendar";
 import {
@@ -101,7 +101,7 @@ export function WellnessDateFilter({
           size="sm"
           variant="outline"
         >
-          <CalendarDaysIcon className="size-4" />
+          <CalendarDotsIcon className="size-4" />
           {buttonLabel}
         </Button>
       </PopoverTrigger>

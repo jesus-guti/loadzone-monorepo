@@ -1,7 +1,7 @@
 "use client";
 
 import { SiMarkdown } from "@icons-pack/react-simple-icons";
-import { ThumbsUpIcon } from "lucide-react";
+import { ThumbsUpIcon } from "@phosphor-icons/react/ssr";
 import { usePathname } from "next/navigation";
 import {
   type FormEventHandler,

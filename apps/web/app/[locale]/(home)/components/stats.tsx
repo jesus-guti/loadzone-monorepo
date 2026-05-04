@@ -1,5 +1,5 @@
 import type { Dictionary } from "@repo/internationalization";
-import { MoveDownLeft, MoveUpRight } from "lucide-react";
+import { ArrowDownLeftIcon, ArrowUpRightIcon } from "@phosphor-icons/react/ssr";
 
 type StatsProps = {
   dictionary: Dictionary;
@@ -27,9 +27,9 @@ export const Stats = ({ dictionary }: StatsProps) => (
                 key={index}
               >
                 {Number.parseFloat(item.delta) > 0 ? (
-                  <MoveUpRight className="mb-10 h-4 w-4 text-primary" />
+                  <ArrowUpRightIcon className="mb-10 h-4 w-4 text-primary" />
                 ) : (
-                  <MoveDownLeft className="mb-10 h-4 w-4 text-destructive" />
+                  <ArrowDownLeftIcon className="mb-10 h-4 w-4 text-destructive" />
                 )}
                 <h2 className="flex max-w-xl flex-row items-end gap-4 text-left font-regular text-4xl tracking-tighter">
                   {item.type === "currency" && "$"}

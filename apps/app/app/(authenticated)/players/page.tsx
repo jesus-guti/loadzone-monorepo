@@ -1,6 +1,6 @@
 import { database } from "@repo/database";
 import { resolveStorageUrl } from "@repo/storage/shared";
-import { FireIcon, PlusIcon } from "@heroicons/react/20/solid";
+import { FireIcon, PlusIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {

@@ -3,10 +3,10 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
   PlusIcon,
-} from "@heroicons/react/20/solid";
+} from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -207,7 +207,7 @@ export function SessionCalendar({
               size="icon"
               variant="ghost"
             >
-              <ChevronLeftIcon className="size-4" />
+              <CaretLeftIcon className="size-4" />
             </Button>
             <Button
               aria-label="Siguiente"
@@ -215,7 +215,7 @@ export function SessionCalendar({
               size="icon"
               variant="ghost"
             >
-              <ChevronRightIcon className="size-4" />
+              <CaretRightIcon className="size-4" />
             </Button>
             <Button
               className="border-border-tertiary text-text-primary"

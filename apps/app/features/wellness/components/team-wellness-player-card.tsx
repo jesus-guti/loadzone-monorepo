@@ -1,9 +1,9 @@
 import {
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  WarningIcon,
   FireIcon,
-  ShieldExclamationIcon,
-} from "@heroicons/react/20/solid";
+  ShieldWarningIcon,
+} from "@phosphor-icons/react/ssr";
 import {
   Avatar,
   AvatarFallback,
@@ -41,9 +41,9 @@ export function TeamWellnessPlayerCard({
   const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
   const wellnessAlerts = getWellnessAlerts(entry, wellnessLimits);
   const avatarBadgeIcon = injuryLabel ? (
-    <ShieldExclamationIcon className="size-3 text-premium" />
+    <ShieldWarningIcon className="size-3 text-premium" />
   ) : (
-    <ExclamationTriangleIcon className="size-3 text-danger" />
+    <WarningIcon className="size-3 text-danger" />
   );
 
   return (

@@ -1,5 +1,5 @@
 import type { UIMessage } from "ai";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
 import { toast } from "@repo/design-system/components/ui/sonner";
 import { Button } from "@/components/ui/button";

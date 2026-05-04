@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Select,
@@ -27,7 +27,7 @@ export function ActiveTeamSwitcher() {
   const activeValue = activeTeam?.id ?? "";
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2 ">
       <Select
         disabled={isPending || teams.length === 0}
         value={activeValue}
@@ -45,10 +45,13 @@ export function ActiveTeamSwitcher() {
       >
         <SelectTrigger
           aria-label="Equipo activo"
-          className="w-auto min-w-0 max-w-[min(65vw,20rem)] bg-bg-secondary md:max-w-[24rem]"
+          className={cn(
+            // biome-ignore lint/nursery/useSortedClasses: composición ghost + motion del trigger de equipo
+            "group h-auto min-h-9 data-[size=default]:h-auto data-[size=default]:min-h-9 w-auto min-w-0 max-w-[min(65vw,20rem)] md:max-w-[24rem] border-0 bg-transparent px-3 py-1.5 shadow-none transition-transform duration-200 ease-out active:scale-[0.98] hover:-translate-y-0.5 hover:bg-transparent data-[state=open]:bg-transparent focus-visible:bg-transparent focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-ring/45 motion-reduce:transition-none motion-reduce:active:scale-100 motion-reduce:hover:translate-y-0 [&_svg]:shrink-0 [&_svg]:duration-200 [&_svg]:ease-out [&_svg]:transition-transform [&_svg]:group-hover:translate-y-px motion-reduce:[&_svg]:transition-none motion-reduce:[&_svg]:group-hover:translate-y-0"
+          )}
         >
           <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium text-text-primary">
+            <span className="truncate font-semibold text-sm text-text-primary font-mono">
               {activeTeam?.name ?? "Selecciona equipo"}
             </span>
             {activeTeam?.category ? (
@@ -70,9 +73,8 @@ export function ActiveTeamSwitcher() {
                   <span className="truncate">{team.name}</span>
                   {team.category ? (
                     <span
-                      className={cn(
-                        "rounded-sm border border-border-secondary px-1.5 py-0 text-[10px] uppercase tracking-[0.12em] text-text-secondary"
-                      )}
+                      // biome-ignore lint/nursery/useSortedClasses: chip categoría en SelectItem
+                      className="border border-border-secondary px-1.5 py-0 rounded-sm text-[10px] text-text-secondary uppercase tracking-[0.12em]"
                     >
                       {team.category}
                     </span>

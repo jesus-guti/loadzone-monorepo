@@ -1,17 +1,11 @@
 import "server-only";
 
 import { del, get, put } from "@vercel/blob";
+import { validateImageFile } from "./image-validation";
 import { keys } from "./keys";
-import { isPrivateImagePathname, resolveStorageUrl } from "./shared";
+import { resolveStorageUrl } from "./shared";
 
-const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
-const DEFAULT_CACHE_MAX_AGE = 60 * 60 * 24 * 30;
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/avif",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+export const DEFAULT_CACHE_MAX_AGE = 60 * 60 * 24 * 30;
 
 type ImageTarget = "club" | "player" | "user";
 
@@ -82,20 +76,6 @@ export function buildObjectKey({
   }
 }
 
-export function validateImageFile(file: File): void {
-  if (!file || file.size === 0) {
-    throw new Error("Selecciona una imagen válida.");
-  }
-
-  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-    throw new Error("Formato no permitido. Usa JPG, PNG, WebP o AVIF.");
-  }
-
-  if (file.size > IMAGE_MAX_BYTES) {
-    throw new Error("La imagen no puede superar 2 MB.");
-  }
-}
-
 export async function uploadImage({
   file,
   objectKey,
@@ -103,7 +83,7 @@ export async function uploadImage({
   cacheControlMaxAge = DEFAULT_CACHE_MAX_AGE,
 }: UploadImageInput): Promise<UploadImageResult> {
   ensureBlobToken();
-  validateImageFile(file);
+  await validateImageFile(file);
 
   const result = await put(objectKey, file, {
     access: "private",
@@ -136,7 +116,7 @@ export async function deleteObject(url: string | null | undefined): Promise<void
   await del(url);
 }
 
-export async function getPrivateBlob(
+export function getPrivateBlob(
   pathname: string,
   ifNoneMatch?: string
 ): Promise<Awaited<ReturnType<typeof get>>> {
@@ -148,4 +128,5 @@ export async function getPrivateBlob(
   });
 }
 
-export { DEFAULT_CACHE_MAX_AGE, IMAGE_MAX_BYTES, isPrivateImagePathname, resolveStorageUrl };
+// biome-ignore lint/performance/noBarrelFile: re-exporting
+export { isPrivateImagePathname, resolveStorageUrl } from "./shared";

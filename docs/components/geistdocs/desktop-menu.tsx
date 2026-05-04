@@ -1,7 +1,7 @@
 "use client";
 
 import DynamicLink from "fumadocs-core/dynamic-link";
-import { ExternalLinkIcon } from "lucide-react";
+import { ArrowSquareOutIcon } from "@phosphor-icons/react/ssr";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -36,7 +36,7 @@ export const DesktopMenu = ({ items, className }: DesktopMenuProps) => {
                   target="_blank"
                 >
                   {item.label}
-                  <ExternalLinkIcon className="size-3.5" />
+                  <ArrowSquareOutIcon className="size-3.5" />
                 </a>
               ) : (
                 <DynamicLink href={`/[lang]${item.href}`}>

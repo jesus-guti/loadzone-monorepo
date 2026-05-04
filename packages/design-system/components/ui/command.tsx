@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
-import { SearchIcon } from "lucide-react"
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/ssr"
 
 import { cn } from "@repo/design-system/lib/utils"
 import {
@@ -69,7 +69,7 @@ function CommandInput({
       data-slot="command-input-wrapper"
       className="flex h-9 items-center gap-2 border-b border-border-secondary px-3"
     >
-      <SearchIcon className="text-text-tertiary size-4 shrink-0" />
+      <MagnifyingGlassIcon className="text-text-tertiary size-4 shrink-0" />
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(

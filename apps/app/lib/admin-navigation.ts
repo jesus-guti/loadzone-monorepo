@@ -1,25 +1,18 @@
+import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
-  CalendarDaysIcon,
-  CalendarIcon,
-  ClipboardDocumentListIcon,
-  Cog6ToothIcon,
-  CpuChipIcon,
+  CalendarBlankIcon,
+  CalendarDotsIcon,
+  ClipboardTextIcon,
+  CpuIcon,
+  GearSixIcon,
   HeartIcon,
-  HomeIcon,
+  HouseIcon,
   UsersIcon,
-} from "@heroicons/react/20/solid";
-import type { ComponentType, SVGProps } from "react";
-
-type HeroIcon = ComponentType<
-  SVGProps<SVGSVGElement> & {
-    title?: string;
-    titleId?: string;
-  }
->;
+} from "@phosphor-icons/react/ssr";
 
 export type AdminNavItem = {
   href: string;
-  icon: HeroIcon;
+  icon: Icon;
   label: string;
   match: (pathname: string) => boolean;
 };
@@ -35,7 +28,7 @@ function matchesPath(pathname: string, href: string): boolean {
 export const primaryNavigation: AdminNavItem[] = [
   {
     href: "/",
-    icon: HomeIcon,
+    icon: HouseIcon,
     label: "Inicio",
     match: (pathname: string) => matchesPath(pathname, "/"),
   },
@@ -47,13 +40,13 @@ export const primaryNavigation: AdminNavItem[] = [
   },
   {
     href: "/sessions",
-    icon: CalendarDaysIcon,
+    icon: CalendarDotsIcon,
     label: "Sesiones",
     match: (pathname: string) => matchesPath(pathname, "/sessions"),
   },
   {
     href: "/settings",
-    icon: Cog6ToothIcon,
+    icon: GearSixIcon,
     label: "Configuración",
     match: (pathname: string) => matchesPath(pathname, "/settings"),
   },
@@ -68,7 +61,7 @@ export const secondaryNavigation: AdminNavItem[] = [
   },
   {
     href: "/exercises",
-    icon: ClipboardDocumentListIcon,
+    icon: ClipboardTextIcon,
     label: "Ejercicios",
     match: (pathname: string) => matchesPath(pathname, "/exercises"),
   },
@@ -80,13 +73,13 @@ export const secondaryNavigation: AdminNavItem[] = [
   },
   {
     href: "/seasons",
-    icon: CalendarIcon,
+    icon: CalendarBlankIcon,
     label: "Temporadas",
     match: (pathname: string) => matchesPath(pathname, "/seasons"),
   },
   {
     href: "/analysis",
-    icon: CpuChipIcon,
+    icon: CpuIcon,
     label: "Análisis IA",
     match: (pathname: string) => matchesPath(pathname, "/analysis"),
   },

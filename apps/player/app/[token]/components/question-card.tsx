@@ -2,7 +2,7 @@
 
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2Icon } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
 import type { ReactNode } from "react";
 
 export type QuestionState = "upcoming" | "active" | "completed";
@@ -41,7 +41,7 @@ export function QuestionCard({
         transition={{ duration: 0.2, ease: easeOut }}
       >
         <span className="flex min-w-0 items-center gap-3">
-          <CheckCircle2Icon className="size-5 shrink-0 text-brand" />
+          <CheckCircleIcon className="size-5 shrink-0 text-brand" />
           <span className="truncate text-sm font-medium text-text-secondary">
             {label}
           </span>

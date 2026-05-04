@@ -14,11 +14,11 @@ import {
 import { cn } from "@/lib/utils";
 import type { FileUIPart, UIMessage } from "ai";
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
   PaperclipIcon,
   XIcon,
-} from "lucide-react";
+} from "@phosphor-icons/react/ssr";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
 import { createContext, memo, useContext, useEffect, useState } from "react";
 import { Streamdown } from "streamdown";
@@ -254,7 +254,7 @@ export const MessageBranchPrevious = ({
       variant="ghost"
       {...props}
     >
-      {children ?? <ChevronLeftIcon size={14} />}
+      {children ?? <CaretLeftIcon size={14} />}
     </Button>
   );
 };
@@ -278,7 +278,7 @@ export const MessageBranchNext = ({
       variant="ghost"
       {...props}
     >
-      {children ?? <ChevronRightIcon size={14} />}
+      {children ?? <CaretRightIcon size={14} />}
     </Button>
   );
 };
