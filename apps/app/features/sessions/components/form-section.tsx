@@ -22,7 +22,7 @@ export function FormSection({
           <p className="text-xs text-text-secondary">{description}</p>
         ) : null}
       </header>
-      <div className="rounded-lg border border-border-secondary bg-bg-primary p-4 md:p-5">
+      <div className=" border border-border-secondary bg-bg-primary p-4 md:p-5">
         <div className="space-y-5">{children}</div>
       </div>
     </section>

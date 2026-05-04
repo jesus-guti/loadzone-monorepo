@@ -31,7 +31,7 @@ const Dashboard = async () => {
       <Header page="Inicio" pages={["LoadZone"]} />
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:px-6">
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-          <Card className="rounded-xl border-border-secondary">
+          <Card className=" border-border-secondary">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-text-primary">
                 {data.team.name}
@@ -59,7 +59,7 @@ const Dashboard = async () => {
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl border-border-secondary">
+          <Card className=" border-border-secondary">
             <CardHeader>
               <CardTitle className="text-base font-semibold text-text-primary">
                 Resumen de hoy

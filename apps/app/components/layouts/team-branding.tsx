@@ -560,7 +560,7 @@ export function TeamBranding({
         <div className={avatarAnchorClassName}>
           <Avatar
             className={cn(
-              "relative rounded-xl",
+              "relative ",
               avatarSizeClass,
               avatarClassName
             )}
@@ -574,7 +574,7 @@ export function TeamBranding({
             ) : null}
             <AvatarFallback
               className={cn(
-                "rounded-xl font-semibold text-text-primary text-xs",
+                " font-semibold text-text-primary text-xs",
                 avatarFallbackClassName
               )}
             >

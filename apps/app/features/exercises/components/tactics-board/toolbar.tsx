@@ -310,7 +310,7 @@ function ToolbarSettingsSheet({
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-border-primary bg-bg-secondary p-3">
+            <div className="flex items-center justify-between  border border-border-primary bg-bg-secondary p-3">
               <span>
                 <span className="block font-medium text-sm text-text-primary">
                   Rejilla magnetica
@@ -326,7 +326,7 @@ function ToolbarSettingsSheet({
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-border-primary bg-bg-secondary p-3">
+            <div className="flex items-center justify-between  border border-border-primary bg-bg-secondary p-3">
               <span>
                 <span className="block font-medium text-sm text-text-primary">
                   Mantener herramienta activa

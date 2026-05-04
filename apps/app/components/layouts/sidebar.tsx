@@ -179,7 +179,7 @@ export const GlobalSidebar = ({
           <SidebarUserMenu />
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-20 md:pb-0">
+      <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-0 md:pb-0">
         <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain">
           {children}
         </div>

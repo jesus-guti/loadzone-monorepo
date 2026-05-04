@@ -99,7 +99,7 @@ export function PlayerPhotoCell({
     <div className="flex items-center">
       <button
         className={cn(
-          "group relative rounded-xl transition-opacity",
+          "group relative  transition-opacity",
           isPending && "pointer-events-none opacity-70"
         )}
         onClick={() => inputReference.current?.click()}
@@ -112,7 +112,7 @@ export function PlayerPhotoCell({
         }}
         type="button"
       >
-        <Avatar className="size-10 rounded-xl border border-border-secondary">
+        <Avatar className="size-10  border border-border-secondary">
           {previewUrl || currentImageUrl ? (
             <AvatarImage
               alt={playerName}
@@ -120,7 +120,7 @@ export function PlayerPhotoCell({
               src={previewUrl ?? currentImageUrl ?? undefined}
             />
           ) : null}
-          <AvatarFallback className="rounded-xl bg-bg-secondary text-xs font-semibold text-text-primary">
+          <AvatarFallback className=" bg-bg-secondary text-xs font-semibold text-text-primary">
             {getInitials(playerName)}
           </AvatarFallback>
         </Avatar>

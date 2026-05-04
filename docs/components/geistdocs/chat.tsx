@@ -194,7 +194,7 @@ const ChatInner = () => {
   // Show loading state while initial messages are being loaded
   if (isLoading) {
     return (
-      <div className="flex size-full w-full flex-col items-center justify-center overflow-hidden whitespace-nowrap rounded-xl xl:max-w-md xl:border xl:bg-background">
+      <div className="flex size-full w-full flex-col items-center justify-center overflow-hidden whitespace-nowrap  xl:max-w-md xl:border xl:bg-background">
         <Spinner />
       </div>
     );

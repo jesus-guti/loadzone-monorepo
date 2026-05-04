@@ -77,7 +77,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
     <>
       <Header page="Configuración" pages={["LoadZone"]} />
       <div className="mx-auto grid max-w-5xl gap-6 p-4 pt-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <form action={updateTeamSettings} className="space-y-6 rounded-xl border p-6">
+        <form action={updateTeamSettings} className="space-y-6  border p-6">
           <div>
             <h2 className="text-lg font-semibold text-text-primary">
               Equipo activo
@@ -246,7 +246,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             clubLogoUrl={staffContext.club.logoUrl}
             clubName={staffContext.club.name}
           />
-          <Card className="rounded-xl border-border-secondary">
+          <Card className=" border-border-secondary">
             <CardHeader>
               <CardTitle className="text-base text-text-primary">
                 Superficie secundaria
@@ -273,7 +273,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
           </Card>
 
           {staffContext.canCreateTeam || resolvedSearchParams?.createTeam ? (
-            <Card className="rounded-xl border-border-secondary">
+            <Card className=" border-border-secondary">
               <CardHeader>
                 <CardTitle className="text-base text-text-primary">
                   Crear equipo

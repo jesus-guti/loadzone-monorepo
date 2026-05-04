@@ -86,7 +86,7 @@ const PlayersPage = async () => {
 
       <div className="p-4 pt-0">
         {players.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl bg-muted/50 p-12 text-center">
+          <div className="flex flex-col items-center justify-center  bg-muted/50 p-12 text-center">
             <h3 className="text-lg font-semibold">No hay jugadores</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Añade tu primer jugador para comenzar.
@@ -99,7 +99,7 @@ const PlayersPage = async () => {
             </Button>
           </div>
         ) : (
-          <div className="rounded-xl border">
+          <div className=" border">
             <Table>
               <TableHeader>
                 <TableRow>

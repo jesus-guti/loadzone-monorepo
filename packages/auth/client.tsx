@@ -30,7 +30,7 @@ export function UserButton({
 
   if (status === "loading") {
     return (
-      <div className="flex w-full items-center justify-between gap-3 rounded-xl px-2 py-1.5">
+      <div className="flex w-full items-center justify-between gap-3  px-2 py-1.5">
         <div className="h-10 w-full animate-pulse rounded-lg bg-muted/50" />
       </div>
     );
@@ -50,7 +50,7 @@ export function UserButton({
   const displayName = session.user.name ?? session.user.email ?? "Usuario";
 
   return (
-    <div className="flex w-full items-center justify-between gap-3 rounded-xl px-2 py-1.5">
+    <div className="flex w-full items-center justify-between gap-3  px-2 py-1.5">
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg-tertiary text-xs font-semibold text-text-primary">
           {getInitials(session.user.name, session.user.email ?? null)}

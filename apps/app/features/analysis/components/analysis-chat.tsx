@@ -41,7 +41,7 @@ export function AnalysisChat() {
   };
 
   return (
-    <div className="flex flex-1 flex-col rounded-xl border border-border-secondary bg-bg-primary">
+    <div className="flex flex-1 flex-col  border border-border-secondary bg-bg-primary">
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-6 p-8">

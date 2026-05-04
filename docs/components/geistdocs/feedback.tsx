@@ -78,7 +78,7 @@ export const Feedback = () => {
       <PopoverContent className="overflow-hidden p-0">
         <div className="overflow-visible">
           {submitted ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl bg-sidebar px-3 py-6 text-center text-sm">
+            <div className="flex flex-col items-center gap-3  bg-sidebar px-3 py-6 text-center text-sm">
               <p>Thank you for your feedback!</p>
             </div>
           ) : (

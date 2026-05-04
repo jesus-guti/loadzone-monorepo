@@ -25,7 +25,7 @@ const OnboardingPage = async () => {
           </p>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className=" border bg-card p-6 shadow-sm">
           <CreateTeamForm />
         </div>
 

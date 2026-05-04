@@ -81,11 +81,11 @@ export function PlayerHistoryTable({
       </CardHeader>
       <CardContent>
         {rows.length === 0 ? (
-          <div className="rounded-xl bg-muted/50 p-8 text-center text-muted-foreground">
+          <div className=" bg-muted/50 p-8 text-center text-muted-foreground">
             No hay historial suficiente para mostrar en tabla.
           </div>
         ) : (
-          <div className="rounded-xl border">
+          <div className=" border">
             <Table>
               <TableHeader>
                 <TableRow>

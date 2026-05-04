@@ -137,7 +137,7 @@ export function ClubBrandingCard({
   };
 
   return (
-    <Card className="rounded-xl border-border-secondary">
+    <Card className=" border-border-secondary">
       <CardHeader>
         <CardTitle className="text-base text-text-primary">
           Branding del club

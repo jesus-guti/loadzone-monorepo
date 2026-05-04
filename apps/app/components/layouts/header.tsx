@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import { ActiveSeasonSwitcher } from "./active-season-switcher";
 import { ActiveTeamSwitcher } from "./active-team-switcher";
+import { useAppShell } from "./app-shell-context";
+import { TeamBranding } from "./team-branding";
 
 type HeaderProps = {
   pages: string[];
@@ -11,6 +13,7 @@ type HeaderProps = {
 };
 
 export const Header = ({ pages, page, children }: HeaderProps) => {
+  const { activeTeam, club } = useAppShell();
   const pathLabel = pages.length > 0 ? pages.join(" / ") : "LoadZone";
 
   return (
@@ -38,19 +41,29 @@ export const Header = ({ pages, page, children }: HeaderProps) => {
       </div>
 
       <div className="flex flex-col gap-2 px-4 py-3 md:hidden">
-        <div className="flex items-center justify-between gap-2 pl-3">
-          <div className="min-w-0 flex-1">
+        <div className="flex min-h-10 items-center gap-2">
+          <div className="shrink-0">
+            <TeamBranding
+              clubLogoUrl={club.logoUrl}
+              clubName={club.name}
+              compact
+              logoTreatment="ambient"
+              teamLogoUrl={activeTeam?.logoUrl ?? null}
+              teamName={activeTeam?.name ?? null}
+            />
+          </div>
+          <div className="min-w-0 flex-1 -ml-3">
             <ActiveTeamSwitcher />
           </div>
-          <div className="shrink-0">
+            {children ? (
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {children}
+              </div>
+            ) : null}
+          <div className="hidden shrink-0 items-center gap-2 md:block ">
             <ActiveSeasonSwitcher />
           </div>
         </div>
-        {children ? (
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {children}
-          </div>
-        ) : null}
       </div>
     </header>
   );

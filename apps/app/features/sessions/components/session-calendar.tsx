@@ -195,7 +195,7 @@ export function SessionCalendar({
     <div
       className={cn(
         "bg-bg-primary max-md:-mx-4 max-md:w-[calc(100%+2rem)] max-md:rounded-none max-md:border-0",
-        "md:rounded-lg md:border md:border-border-tertiary"
+        "md:rounded-lg md:border-0 md:border-border-tertiary"
       )}
     >
       <div className="flex flex-col gap-3 px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">

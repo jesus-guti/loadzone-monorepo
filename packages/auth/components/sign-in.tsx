@@ -199,7 +199,7 @@ export const SignIn = () => {
                 email: event.target.value,
               }))
             }
-            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
             autoComplete="email"
             autoCapitalize="none"
@@ -228,7 +228,7 @@ export const SignIn = () => {
                 password: event.target.value,
               }))
             }
-            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
             placeholder="********"
             autoComplete="current-password"
             required
@@ -259,7 +259,7 @@ export const SignIn = () => {
         </label>
 
         {state.error ? (
-          <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm text-danger">
+          <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">
             {state.error}
           </p>
         ) : null}
@@ -267,7 +267,7 @@ export const SignIn = () => {
         <button
           type="submit"
           disabled={state.isSubmitting}
-          className="h-12 w-full rounded-xl bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-12 w-full  bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {state.isSubmitting ? "Entrando..." : "Entrar"}
         </button>

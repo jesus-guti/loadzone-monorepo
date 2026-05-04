@@ -72,7 +72,7 @@ const boardPreviewButtonClassName = [
   "aspect-video",
   "w-full",
   "overflow-hidden",
-  "rounded-xl",
+  "",
   "border",
   "border-border-primary",
   "bg-bg-secondary",
@@ -457,7 +457,7 @@ function ExerciseBoardSection({
             <BoardPreview data={diagramData} />
             <span
               className={cn(
-                "absolute inset-x-4 bottom-4 rounded-xl border border-border-primary bg-bg-primary/92 p-3 backdrop-blur",
+                "absolute inset-x-4 bottom-4  border border-border-primary bg-bg-primary/80 p-3 backdrop-blur",
                 compactBoardLayout
                   ? "space-y-3 shadow-floating"
                   : "flex items-center justify-between gap-3 shadow-floating"

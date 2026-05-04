@@ -155,7 +155,7 @@ export const SignUp = () => {
                 name: event.target.value,
               }))
             }
-            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="Preparador físico"
             autoComplete="name"
             required
@@ -177,7 +177,7 @@ export const SignUp = () => {
                 email: event.target.value,
               }))
             }
-            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
             autoComplete="email"
             autoCapitalize="none"
@@ -206,7 +206,7 @@ export const SignUp = () => {
                 password: event.target.value,
               }))
             }
-            className="h-12 w-full rounded-xl border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
+            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="Mínimo 8 caracteres"
             autoComplete="new-password"
             required
@@ -214,7 +214,7 @@ export const SignUp = () => {
         </div>
 
         {state.error ? (
-          <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm text-danger">
+          <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">
             {state.error}
           </p>
         ) : null}
@@ -222,7 +222,7 @@ export const SignUp = () => {
         <button
           type="submit"
           disabled={state.isSubmitting}
-          className="h-12 w-full rounded-xl bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-12 w-full  bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {state.isSubmitting ? "Creando..." : "Crear cuenta"}
         </button>

@@ -79,7 +79,7 @@ const sleepConfig: ChartConfig = {
 export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-xl bg-muted/50 p-8 text-center text-muted-foreground">
+      <div className=" bg-muted/50 p-8 text-center text-muted-foreground">
         No hay datos suficientes para mostrar gráficos.
       </div>
     );

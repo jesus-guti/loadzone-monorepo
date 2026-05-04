@@ -83,7 +83,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
 
       <div className="p-4 md:p-6">
         {exercises.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border-secondary bg-bg-secondary/30 p-12 text-center">
+          <div className="flex flex-col items-center justify-center  border border-dashed border-border-secondary bg-bg-secondary/30 p-12 text-center">
             <h3 className="text-lg font-semibold text-text-primary">
               No hay ejercicios
             </h3>
@@ -98,7 +98,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
             </Button>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-border-secondary">
+          <div className="overflow-hidden  border border-border-secondary">
             <Table>
               <TableHeader>
                 <TableRow>

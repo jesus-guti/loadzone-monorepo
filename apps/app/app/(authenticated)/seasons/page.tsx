@@ -58,7 +58,7 @@ const SeasonsPage = async () => {
 
       <div className="p-4 pt-0">
         {seasons.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl bg-muted/50 p-12 text-center">
+          <div className="flex flex-col items-center justify-center  bg-muted/50 p-12 text-center">
             <CalendarBlankIcon className="mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="text-lg font-semibold">No hay temporadas</h3>
             <p className="mt-1 text-sm text-muted-foreground">
