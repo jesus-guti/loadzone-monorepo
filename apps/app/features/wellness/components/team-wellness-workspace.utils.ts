@@ -2,6 +2,8 @@ import type { PlayerStatus, RiskLevel } from "@repo/database";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 
+const NAME_WORD_SPLIT_PATTERN = /\s+/;
+
 export type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
 
 export type TeamWellnessWorkspaceSummary = {
@@ -23,15 +25,13 @@ export function getLatestEntry(
 export function getInitials(name: string): string {
   return name
     .trim()
-    .split(/\s+/)
+    .split(NAME_WORD_SPLIT_PATTERN)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
 }
 
-export function getRiskLabel(
-  riskLevel: RiskLevel | null | undefined
-): string {
+export function getRiskLabel(riskLevel: RiskLevel | null | undefined): string {
   switch (riskLevel) {
     case "CRITICAL":
       return "Crítico";
@@ -44,6 +44,169 @@ export function getRiskLabel(
     default:
       return "Sin datos";
   }
+}
+
+/** Clases Tailwind para semáforo de riesgo (tabla resumen / chips). */
+export function getRiskValueClassName(
+  riskLevel: RiskLevel | null | undefined
+): string {
+  switch (riskLevel) {
+    case "CRITICAL":
+    case "HIGH":
+      return "font-semibold text-danger";
+    case "MODERATE":
+      return "font-medium text-premium";
+    case "LOW":
+      return "text-success";
+    default:
+      return "text-text-tertiary";
+  }
+}
+
+export type WellnessTrafficTone = "bad" | "good" | "neutral" | "watch";
+
+/** Clase de valor numérico wellness (semáforo). */
+export function wellnessValueClass(tone: WellnessTrafficTone): string {
+  switch (tone) {
+    case "good":
+      return "text-success";
+    case "watch":
+      return "text-premium";
+    case "bad":
+      return "text-danger";
+    case "neutral":
+      return "text-text-primary";
+    default:
+      return "text-text-primary";
+  }
+}
+
+/** Clase de etiqueta pequeña acoplada al mismo estado. */
+export function wellnessLabelClass(tone: WellnessTrafficTone): string {
+  switch (tone) {
+    case "good":
+      return "text-success/90";
+    case "watch":
+      return "text-premium/90";
+    case "bad":
+      return "text-danger/90";
+    case "neutral":
+      return "text-text-tertiary";
+    default:
+      return "text-text-tertiary";
+  }
+}
+
+/** Alerta si el valor es bajo (recuperación, energía). */
+export function toneForLowerIsBetter(
+  value: number | null | undefined,
+  alertAtOrBelow: number | null | undefined
+): WellnessTrafficTone {
+  if (
+    value === undefined ||
+    value === null ||
+    alertAtOrBelow === undefined ||
+    alertAtOrBelow === null
+  ) {
+    return "neutral";
+  }
+
+  if (value <= alertAtOrBelow) {
+    return "bad";
+  }
+
+  if (value <= alertAtOrBelow + 1) {
+    return "watch";
+  }
+
+  return "good";
+}
+
+/** Alerta si el valor es alto (agujetas). */
+export function toneForHigherIsWorse(
+  value: number | null | undefined,
+  alertAtOrAbove: number | null | undefined
+): WellnessTrafficTone {
+  if (
+    value === undefined ||
+    value === null ||
+    alertAtOrAbove === undefined ||
+    alertAtOrAbove === null
+  ) {
+    return "neutral";
+  }
+
+  if (value >= alertAtOrAbove) {
+    return "bad";
+  }
+
+  if (value >= alertAtOrAbove - 1) {
+    return "watch";
+  }
+
+  return "good";
+}
+
+/** Ratio completados / plantilla (pre o post). */
+export function toneCompletionRatio(
+  completed: number,
+  total: number
+): WellnessTrafficTone {
+  if (total === 0) {
+    return "neutral";
+  }
+
+  if (completed === total) {
+    return "good";
+  }
+
+  if (completed === 0) {
+    return "bad";
+  }
+
+  return "watch";
+}
+
+/** Formularios aún sin cerrar (pre + post). */
+export function tonePendingWorkload(
+  pending: number,
+  total: number
+): WellnessTrafficTone {
+  if (total === 0) {
+    return "neutral";
+  }
+
+  if (pending === 0) {
+    return "good";
+  }
+
+  if (pending <= Math.ceil(total / 2)) {
+    return "watch";
+  }
+
+  return "bad";
+}
+
+/** Densidad de alertas en plantilla (resumen agregado). */
+export function toneAlertDensity(
+  alertCount: number,
+  totalPlayers: number
+): WellnessTrafficTone {
+  if (totalPlayers === 0) {
+    return "neutral";
+  }
+
+  if (alertCount === 0) {
+    return "good";
+  }
+
+  const heavyThreshold = Math.max(1, Math.ceil(totalPlayers / 3));
+
+  if (alertCount >= heavyThreshold) {
+    return "bad";
+  }
+
+  return "watch";
 }
 
 export function hasCriticalRisk(
@@ -72,39 +235,39 @@ export function getWellnessAlerts(
   entry: TeamWellnessPlayer["entries"][number] | undefined,
   wellnessLimits?: WellnessLimits | null
 ): string[] {
-  if (!entry || !wellnessLimits) {
+  if (!(entry && wellnessLimits)) {
     return [];
   }
 
   const alerts: string[] = [];
 
   if (
-    wellnessLimits.recovery != null &&
-    entry.recovery != null &&
+    typeof wellnessLimits.recovery === "number" &&
+    entry.recovery !== null &&
     entry.recovery <= wellnessLimits.recovery
   ) {
     alerts.push("Recuperación");
   }
 
   if (
-    wellnessLimits.energy != null &&
-    entry.energy != null &&
+    typeof wellnessLimits.energy === "number" &&
+    entry.energy !== null &&
     entry.energy <= wellnessLimits.energy
   ) {
     alerts.push("Energía");
   }
 
   if (
-    wellnessLimits.soreness != null &&
-    entry.soreness != null &&
+    typeof wellnessLimits.soreness === "number" &&
+    entry.soreness !== null &&
     entry.soreness >= wellnessLimits.soreness
   ) {
     alerts.push("Agujetas");
   }
 
   if (
-    wellnessLimits.sleepHours != null &&
-    entry.sleepHours != null &&
+    typeof wellnessLimits.sleepHours === "number" &&
+    entry.sleepHours !== null &&
     Number(entry.sleepHours) < wellnessLimits.sleepHours
   ) {
     alerts.push("Sueño");
@@ -138,7 +301,7 @@ export function getDailyPlayerState(
 }
 
 export function formatAverage(value: number | null): string {
-  if (value == null) {
+  if (value === null) {
     return "—";
   }
 
@@ -150,7 +313,10 @@ function average(values: number[]): number | null {
     return null;
   }
 
-  return values.reduce((sum: number, value: number) => sum + value, 0) / values.length;
+  return (
+    values.reduce((sum: number, value: number) => sum + value, 0) /
+    values.length
+  );
 }
 
 export function buildWellnessSummary(
@@ -160,13 +326,13 @@ export function buildWellnessSummary(
   const todayEntries = players.flatMap((player) => player.entries);
   const recoveryValues = todayEntries
     .map((entry) => entry.recovery)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
   const energyValues = todayEntries
     .map((entry) => entry.energy)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
   const sorenessValues = todayEntries
     .map((entry) => entry.soreness)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
 
   return {
     alertCount: players.filter((player) => {
@@ -176,7 +342,7 @@ export function buildWellnessSummary(
     energyAverage: average(energyValues),
     pendingCount: players.filter((player) => {
       const entry = getLatestEntry(player);
-      return !entry?.preFilledAt || !entry?.postFilledAt;
+      return !(entry?.preFilledAt && entry?.postFilledAt);
     }).length,
     postCompletedCount: players.filter((player) =>
       Boolean(getLatestEntry(player)?.postFilledAt)

@@ -55,6 +55,7 @@ export function TeamWellnessWorkspace({
         evaluatedDate={evaluatedDate}
         players={filteredPlayers}
         summary={summary}
+        wellnessLimits={wellnessLimits}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

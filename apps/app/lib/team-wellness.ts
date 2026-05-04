@@ -169,24 +169,42 @@ export async function getTeamWellnessWorkspaceData(
   });
 
   const players: TeamWellnessPlayer[] = rawPlayers.map((player) => ({
-    ...player,
+    id: player.id,
     imageUrl: resolveStorageUrl(player.imageUrl),
+    name: player.name,
+    status: player.status,
+    currentStreak: player.currentStreak,
+    entries: player.entries.map((entry) => ({
+      date: entry.date,
+      recovery: entry.recovery,
+      energy: entry.energy,
+      soreness: entry.soreness,
+      sleepHours:
+        entry.sleepHours === null || entry.sleepHours === undefined
+          ? null
+          : Number(entry.sleepHours),
+      rpe: entry.rpe,
+      duration: entry.duration,
+      preFilledAt: entry.preFilledAt,
+      postFilledAt: entry.postFilledAt,
+      physioAlert: entry.physioAlert,
+    })),
     stats: player.stats.map((stat) => ({
       riskLevel: stat.riskLevel,
-      acwr: stat.acwr == null ? null : Number(stat.acwr),
+      acwr: stat.acwr === null || stat.acwr === undefined ? null : Number(stat.acwr),
     })),
   }));
 
   const todayEntries = players.flatMap((player) => player.entries);
   const recoveryValues = todayEntries
     .map((entry) => entry.recovery)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
   const energyValues = todayEntries
     .map((entry) => entry.energy)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
   const sorenessValues = todayEntries
     .map((entry) => entry.soreness)
-    .filter((value): value is number => value != null);
+    .filter((value): value is number => typeof value === "number");
 
   return {
     team: {
@@ -216,7 +234,7 @@ export async function getTeamWellnessWorkspaceData(
       }).length,
       pendingCount: players.filter((player) => {
         const entry = player.entries[0];
-        return !entry?.preFilledAt || !entry?.postFilledAt;
+        return !(entry?.preFilledAt && entry?.postFilledAt);
       }).length,
     },
     todayLabel: today.toLocaleDateString("es-ES", {

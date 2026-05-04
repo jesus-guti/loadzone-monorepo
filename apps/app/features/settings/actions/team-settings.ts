@@ -1,6 +1,6 @@
 "use server";
 
-import { ensureBaseFormTemplates, database } from "@repo/database";
+import { ensureBaseFormTemplates, database, Prisma } from "@repo/database";
 import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
@@ -61,6 +61,14 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos no válidos");
   }
 
+  const wellnessLimitsPayload = parseWellnessLimits({
+    recovery: parsed.data.wellness_recovery ?? null,
+    energy: parsed.data.wellness_energy ?? null,
+    soreness: parsed.data.wellness_soreness ?? null,
+    sleepHours: parsed.data.wellness_sleepHours ?? null,
+    sleepQuality: parsed.data.wellness_sleepQuality ?? null,
+  });
+
   await database.$transaction(async (transaction) => {
     await transaction.team.update({
       where: { id: activeTeamId },
@@ -72,13 +80,10 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
         timezone: parsed.data.timezone,
         preSessionReminderMinutes: parsed.data.preSessionReminderMinutes,
         postSessionReminderMinutes: parsed.data.postSessionReminderMinutes,
-        wellnessLimits: parseWellnessLimits({
-          recovery: parsed.data.wellness_recovery ?? null,
-          energy: parsed.data.wellness_energy ?? null,
-          soreness: parsed.data.wellness_soreness ?? null,
-          sleepHours: parsed.data.wellness_sleepHours ?? null,
-          sleepQuality: parsed.data.wellness_sleepQuality ?? null,
-        }),
+        wellnessLimits:
+          wellnessLimitsPayload === null
+            ? Prisma.DbNull
+            : (wellnessLimitsPayload as Prisma.InputJsonValue),
       },
     });
 
