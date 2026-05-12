@@ -419,9 +419,7 @@ export async function duplicateExercise(
 
     const source = await database.exercise.findFirst({
       where: {
-        id: exerciseId,
-        isArchived: false,
-        OR: [{ clubId }, { isSystem: true }],
+        AND: [{ id: exerciseId }, exerciseLibraryWhere(clubId)],
       },
     });
 
