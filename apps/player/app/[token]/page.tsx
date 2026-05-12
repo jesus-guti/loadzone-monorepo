@@ -1,4 +1,5 @@
-import { database, ensureBaseFormTemplates } from "@repo/database";
+import { database } from "@repo/database";
+import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";

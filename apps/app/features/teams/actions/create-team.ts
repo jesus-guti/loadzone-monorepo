@@ -1,7 +1,8 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, ensureBaseFormTemplates } from "@repo/database";
+import { database } from "@repo/database";
+import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 

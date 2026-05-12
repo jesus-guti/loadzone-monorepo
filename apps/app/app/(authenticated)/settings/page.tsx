@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { ensureBaseFormTemplates, database } from "@repo/database";
+import { database } from "@repo/database";
+import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";

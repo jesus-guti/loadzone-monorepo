@@ -1,6 +1,7 @@
 "use server";
 
-import { ensureBaseFormTemplates, database, Prisma } from "@repo/database";
+import { database, Prisma } from "@repo/database";
+import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { buildObjectKey, deleteObject, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";

@@ -5,7 +5,10 @@
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./risk-thresholds": "./risk-thresholds.ts"
+    "./client": "./client.ts",
+    "./bootstrap": "./bootstrap.ts",
+    "./risk-thresholds": "./risk-thresholds.ts",
+    "./keys": "./keys.ts"
   },
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
@@ -13,7 +16,8 @@
     "bootstrap": "tsx ./scripts/bootstrap.ts",
     "seed-wellness-demo": "tsx ./scripts/seed-wellness-demo.ts",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "NODE_ENV=test vitest run"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -32,6 +36,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.10.1",
     "@types/ws": "^8.18.1",
+    "vitest": "^4.0.15",
     "bufferutil": "^4.0.9",
     "prisma": "7.1.0",
     "tsx": "^4.21.0",
