@@ -186,7 +186,7 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
           {todayEntry?.physioAlert && (
             <Badge variant="destructive">Alerta</Badge>
           )}
-          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1 text-sm text-text-secondary">
             <FireIcon className="size-3 text-premium" />
             Racha: {player.currentStreak} días (máx: {player.longestStreak})
           </span>

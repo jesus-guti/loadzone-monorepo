@@ -40,7 +40,7 @@ function visibilityLabel(item: ExerciseLibraryListItem): string {
   if (item.visibility === "PRIVATE") {
     return "Privado";
   }
-  return "Club";
+  return "Compartido";
 }
 
 function authorLabel(
@@ -73,7 +73,7 @@ export function ExerciseLibraryItemRow({
 
   return (
     <Item
-      className="w-full rounded-none border-0 border-border-secondary border-b bg-transparent px-3 py-3 last:border-b-0 hover:bg-bg-tertiary/40"
+      className="w-full rounded-none border-0 border-border-secondary last:border-y bg-transparent px-3 py-3 hover:bg-bg-tertiary/40 border-t"
       size="sm"
       variant="default"
     >

@@ -2,12 +2,6 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -68,83 +62,98 @@ function getRiskLabel(riskLevel: RiskLevel | null): string {
 }
 
 function formatMetric(value: number | null): string {
-  return value == null ? "—" : String(value);
+  if (value === null) {
+    return "—";
+  }
+  return String(value);
+}
+
+function formatSleepSummary(row: PlayerHistoryRow): string {
+  if (row.sleepHours === null && row.sleepQuality === null) {
+    return "—";
+  }
+  return `${row.sleepHours ?? "—"} h / ${row.sleepQuality ?? "—"}`;
+}
+
+const headClass =
+  "text-xs font-medium uppercase tracking-wide text-text-secondary";
+
+type HistoryRowProps = {
+  readonly row: PlayerHistoryRow;
+};
+
+function PlayerHistoryTableRow({ row }: HistoryRowProps) {
+  return (
+    <TableRow>
+      <TableCell className="font-medium">
+        {new Date(row.date).toLocaleDateString("es-ES")}
+      </TableCell>
+      <TableCell>
+        <Badge variant={row.preFilledAt ? "default" : "outline"}>
+          {row.preFilledAt ? "Sí" : "No"}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <Badge variant={row.postFilledAt ? "default" : "outline"}>
+          {row.postFilledAt ? "Sí" : "No"}
+        </Badge>
+      </TableCell>
+      <TableCell>{formatMetric(row.recovery)}</TableCell>
+      <TableCell>{formatMetric(row.energy)}</TableCell>
+      <TableCell>{formatMetric(row.soreness)}</TableCell>
+      <TableCell>{formatSleepSummary(row)}</TableCell>
+      <TableCell>{formatMetric(row.rpe)}</TableCell>
+      <TableCell>{formatMetric(row.duration)}</TableCell>
+      <TableCell>
+        <Badge variant={row.physioAlert ? "destructive" : "outline"}>
+          {row.physioAlert ? "Sí" : "No"}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <Badge variant={getRiskVariant(row.riskLevel)}>
+          {getRiskLabel(row.riskLevel)}
+        </Badge>
+      </TableCell>
+    </TableRow>
+  );
 }
 
 export function PlayerHistoryTable({
   rows,
 }: PlayerHistoryTableProperties) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Historial diario</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {rows.length === 0 ? (
-          <div className=" bg-muted/50 p-8 text-center text-muted-foreground">
-            No hay historial suficiente para mostrar en tabla.
-          </div>
-        ) : (
-          <div className=" border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Pre</TableHead>
-                  <TableHead>Post</TableHead>
-                  <TableHead>Recovery</TableHead>
-                  <TableHead>Energía</TableHead>
-                  <TableHead>Agujetas</TableHead>
-                  <TableHead>Sueño</TableHead>
-                  <TableHead>RPE</TableHead>
-                  <TableHead>Duración</TableHead>
-                  <TableHead>Alerta</TableHead>
-                  <TableHead>Riesgo</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.date}>
-                    <TableCell className="font-medium">
-                      {new Date(row.date).toLocaleDateString("es-ES")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={row.preFilledAt ? "default" : "outline"}>
-                        {row.preFilledAt ? "Sí" : "No"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={row.postFilledAt ? "default" : "outline"}>
-                        {row.postFilledAt ? "Sí" : "No"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatMetric(row.recovery)}</TableCell>
-                    <TableCell>{formatMetric(row.energy)}</TableCell>
-                    <TableCell>{formatMetric(row.soreness)}</TableCell>
-                    <TableCell>
-                      {row.sleepHours == null && row.sleepQuality == null
-                        ? "—"
-                        : `${row.sleepHours ?? "—"} h / ${row.sleepQuality ?? "—"}`}
-                    </TableCell>
-                    <TableCell>{formatMetric(row.rpe)}</TableCell>
-                    <TableCell>{formatMetric(row.duration)}</TableCell>
-                    <TableCell>
-                      <Badge variant={row.physioAlert ? "destructive" : "outline"}>
-                        {row.physioAlert ? "Sí" : "No"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getRiskVariant(row.riskLevel)}>
-                        {getRiskLabel(row.riskLevel)}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <section className="space-y-2">
+      <h2 className="px-1 text-xs font-medium uppercase tracking-wide text-text-secondary">
+        Historial diario
+      </h2>
+      {rows.length === 0 ? (
+        <p className="text-sm text-text-secondary">
+          Todavía no hay registros diarios en tabla.
+        </p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className={headClass}>Fecha</TableHead>
+              <TableHead className={headClass}>Pre sesión</TableHead>
+              <TableHead className={headClass}>Post sesión</TableHead>
+              <TableHead className={headClass}>Recuperación</TableHead>
+              <TableHead className={headClass}>Energía</TableHead>
+              <TableHead className={headClass}>Agujetas</TableHead>
+              <TableHead className={headClass}>Sueño</TableHead>
+              <TableHead className={headClass}>RPE</TableHead>
+              <TableHead className={headClass}>Duración</TableHead>
+              <TableHead className={headClass}>Alerta</TableHead>
+              <TableHead className={headClass}>Riesgo</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <PlayerHistoryTableRow key={row.date} row={row} />
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </section>
   );
 }

@@ -25,7 +25,7 @@ export function CopyTokenButton({ token }: CopyTokenButtonProperties) {
       toast.success("Enlace copiado al portapapeles");
       setTimeout(() => setCopied(false), UI_FEEDBACK_TIMEOUT_MS);
     } catch {
-      toast.error("No se pudo copiar el enlace");
+      toast.error("No se pudo copiar el enlace. Inténtalo de nuevo.");
     }
   }
 

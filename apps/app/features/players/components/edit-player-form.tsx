@@ -52,6 +52,7 @@ export function EditPlayerForm({ player }: EditPlayerFormProperties) {
           id="name"
           name="name"
           defaultValue={player.name}
+          placeholder="Ej: Carlos García"
           required
           autoFocus
         />

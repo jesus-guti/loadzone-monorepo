@@ -79,8 +79,9 @@ const sleepConfig: ChartConfig = {
 export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
   if (entries.length === 0) {
     return (
-      <div className=" bg-muted/50 p-8 text-center text-muted-foreground">
-        No hay datos suficientes para mostrar gráficos.
+      <div className="border border-dashed border-border-secondary bg-bg-secondary/30 p-8 text-center text-sm text-text-secondary">
+        No hay registros diarios todavía. Cuando el jugador envíe wellness,
+        verás aquí RPE, sueño y carga.
       </div>
     );
   }

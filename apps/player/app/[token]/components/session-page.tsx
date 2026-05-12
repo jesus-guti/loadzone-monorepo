@@ -288,7 +288,10 @@ export function SessionPage({
           onValueChange={setActiveTab}
           className="flex-1 space-y-4"
         >
-          <TabsList className="grid h-12 w-full grid-cols-2 rounded-full bg-bg-secondary p-1">
+          <TabsList
+            variant="segmented"
+            className="grid h-12 w-full grid-cols-2 rounded-full bg-bg-secondary p-1"
+          >
             <TabsTrigger
               value="pre"
               className={cn(

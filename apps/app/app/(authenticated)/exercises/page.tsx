@@ -50,7 +50,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
             <Button asChild className="mt-4" size="sm">
               <Link href="/exercises/new">
                 <PlusIcon className="mr-1 size-4" />
-                Crear ejercicio
+                Añadir ejercicio
               </Link>
             </Button>
           </div>

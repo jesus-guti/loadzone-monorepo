@@ -10,6 +10,20 @@ import {
 } from "./components/exercise-enums";
 import type { ExerciseLibraryListItem, ExerciseLibrarySortKey } from "./types";
 
+/** Pestaña de la biblioteca: catálogo + ajenos vs. solo creaciones del usuario actual. */
+export type ExerciseLibraryScope = "club" | "mine";
+
+export function isExerciseInLibraryScope(
+  item: ExerciseLibraryListItem,
+  membershipId: string,
+  scope: ExerciseLibraryScope
+): boolean {
+  if (scope === "mine") {
+    return item.createdByMembershipId === membershipId;
+  }
+  return item.isSystem || item.createdByMembershipId !== membershipId;
+}
+
 /** Dimensión del filtro (alineada con campos del modelo `Exercise` en Prisma). */
 export type ExerciseLibraryFilterDimension =
   | "complexity"
@@ -33,21 +47,6 @@ export type ExerciseLibraryFilter =
 
 /** Valor del select de dimensión cuando no hay filtro (evita `value=""` en Radix Select). */
 export const EXERCISE_LIBRARY_FILTER_NONE = "__none__" as const;
-
-export const EXERCISE_LIBRARY_FILTER_DIMENSIONS: ReadonlyArray<{
-  readonly value: ExerciseLibraryFilterDimension;
-  readonly label: string;
-}> = [
-  { value: "complexity", label: "Complejidad" },
-  { value: "strategy", label: "Estrategia" },
-  { value: "tacticalIntention", label: "Intención táctica" },
-  { value: "dynamicType", label: "Tipo dinámico" },
-  { value: "coordinativeSkill", label: "Habilidad coordinativa" },
-  { value: "gameSituation", label: "Situación de juego" },
-  { value: "coordinationType", label: "Tipo de coordinación" },
-  { value: "visibility", label: "Visibilidad" },
-  { value: "origin", label: "Origen" },
-] as const;
 
 const ORIGIN_FILTER_OPTIONS = [
   { value: "SYSTEM", label: "Catálogo" },
@@ -385,6 +384,10 @@ export const EXERCISE_LIBRARY_SORT_OPTIONS: readonly ExerciseLibrarySortOption[]
       group: "Por atributo",
     },
   ] as const;
+
+/** Opciones de orden mostradas en la biblioteca (solo criterios generales). */
+export const EXERCISE_LIBRARY_GENERAL_SORT_OPTIONS: readonly ExerciseLibrarySortOption[] =
+  EXERCISE_LIBRARY_SORT_OPTIONS.filter((o) => o.group === "General");
 
 export function isExerciseLibrarySortKey(
   value: string

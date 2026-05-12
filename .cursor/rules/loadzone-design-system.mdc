@@ -20,8 +20,18 @@ alwaysApply: true
 
 ## App split
 
-- `apps/app`: Attio/Squarespace style, denser layout, smaller radius, subtle visible borders.
-- `apps/player`: Airbnb style, invisible design, larger radius, minimal borders, softer surfaces.
+- `apps/app`: Attio/Squarespace style — layout denso, radio pequeño, tipografía y ritmo de productividad. Las **superficies de datos** (listas, tablas, bibliotecas) siguen **diseño invisible**: división casi solo horizontal, sin enmarcar bloques enteros en un rectángulo con borde.
+- `apps/player`: Airbnb style — más aire, radio mayor, superficies más suaves; bordes mínimos en flujos del jugador.
+
+## Superficies de datos en `apps/app` (patrón biblioteca de ejercicios)
+
+Referencia canónica: listado de ejercicios (`ExerciseLibraryList`, `ExerciseLibraryListToolbar`, `ExerciseLibraryGroup` / filas). Objetivo: lectura clara sin “cajas” que rodeen toda la tabla o lista.
+
+- **Listas por filas** (`Item` + `ItemGroup` u equivalente): sin borde envolvente en el grupo; filas con separación horizontal (`border-t` entre filas, borde inferior en la última fila si cierra el bloque). No añadir bordes verticales al contenedor de la lista.
+- **Tablas** (`Table` en `packages/design-system`): el primitivo ya separa filas con líneas horizontales. **No** envolver la tabla en un `div` con `border` en los cuatro lados. Empty states puntuales pueden usar borde discontinuo (`border-dashed`) como en pantallas vacías de ejercicios.
+- **Cabeceras de sección o columnas**: mismo registro que los títulos de grupo en ejercicios — texto pequeño, `uppercase`, `tracking-wide`, `text-text-secondary` para etiquetas de agrupación. En `<th>`, replicar ese registro visual en código nuevo; evitar `text-muted-foreground` y tokens legacy en estas vistas.
+- **Toolbar** (búsqueda, filtros, ordenación): línea base inferior alineada al lenguaje de **tabs underline** (`border-b border-border-secondary`), controles sin sombra de tarjeta (`shadow-none`), sin tratar el bloque como Card.
+- **Filas vs. contenedor**: el patrón mínimo aplica al **marco** de la lista/tabla. Las filas pueden seguir llevando contenido rico (media, badges, acciones) sin copiar el layout interno de otra pantalla.
 
 ## Iconos
 

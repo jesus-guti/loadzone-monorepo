@@ -19,7 +19,9 @@ type PhotoActionResult = ActionResult & {
 
 async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) throw new Error("Equipo no encontrado");
+  if (!staffContext?.activeTeam) {
+    throw new Error("Equipo no encontrado");
+  }
   return staffContext.activeTeam.id;
 }
 
@@ -51,7 +53,7 @@ export async function createPlayer(
 
     revalidatePath("/players");
   } catch {
-    return { success: false, error: "Error al crear jugador." };
+    return { success: false, error: "No se pudo crear el jugador. Inténtalo de nuevo." };
   }
 
   redirect("/players");
@@ -97,7 +99,7 @@ export async function updatePlayer(
     revalidatePath("/players");
     revalidatePath(`/players/${parsed.data.id}`);
   } catch {
-    return { success: false, error: "Error al actualizar jugador." };
+    return { success: false, error: "No se pudo guardar el jugador. Inténtalo de nuevo." };
   }
 
   redirect("/players");

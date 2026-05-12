@@ -30,7 +30,9 @@ export function ArchiveButton({
       await archivePlayer(playerId);
       toast.success(`${playerName} archivado correctamente.`);
     } catch {
-      toast.error("Error al archivar jugador.");
+      toast.error(
+        "No se pudo archivar al jugador. Comprueba la conexión e inténtalo de nuevo."
+      );
     }
   }
 
