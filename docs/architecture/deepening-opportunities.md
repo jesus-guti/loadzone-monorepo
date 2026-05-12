@@ -4,6 +4,15 @@ Document produced from an architecture review pass (vocabulary: **module**, **in
 
 **Context:** at review time there was no root `CONTEXT.md` or ADRs under `docs/adr/`; the domain used entity names already present in the monorepo (Team, Season, Player, DailyEntry, etc.). The canonical glossary now lives in [`CONTEXT.md`](../../CONTEXT.md) at the repository root.
 
+## Tracked programme (PRD + issues)
+
+Recommendations in this note are implemented as **numbered vertical slices** with acceptance criteria:
+
+- **PRD:** [`.scratch/architecture-deepening/PRD.md`](../../.scratch/architecture-deepening/PRD.md) — scope, implementation decisions, out-of-scope boundary.
+- **Issues (index):** [`.scratch/architecture-deepening/issues/README.md`](../../.scratch/architecture-deepening/issues/README.md) — dependency order and links to `01-…` through `09-…` issue files.
+
+**Where “staff exercise library visibility” lives in code:** Prisma predicate `exerciseLibraryWhere` in [`apps/app/features/exercises/queries/exercise-library-where.ts`](../../apps/app/features/exercises/queries/exercise-library-where.ts); observable contract tests in [`apps/app/__tests__/exercise-library-visibility-contract.test.ts`](../../apps/app/__tests__/exercise-library-visibility-contract.test.ts) (see issue `01-exercise-library-visibility-contract.md` in the folder above).
+
 ---
 
 ## Candidate summary
@@ -79,5 +88,6 @@ Do not treat the file as disposable pass-through: it is a **common adapter** fro
 
 ## Suggested next steps
 
-- Pick another row from the table to deepen or implement (e.g. tests for `exerciseLibraryWhere`, or tackle #4 / #7 per product priority).
+- For **tracked execution**, start from the [PRD](../../.scratch/architecture-deepening/PRD.md) and [issues index](../../.scratch/architecture-deepening/issues/README.md); use this document for background and the candidate table.
+- For **ad hoc exploration**, pick another row from the table to deepen (remaining gaps will often map to an open issue in that index).
 - When deepening exercise candidates, align wording with [`CONTEXT.md`](../../CONTEXT.md) (e.g. exercise library vs system catalog) and extend the glossary there if new load-related terms stabilise.

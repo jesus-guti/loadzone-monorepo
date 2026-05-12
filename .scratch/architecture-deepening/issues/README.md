@@ -1,5 +1,7 @@
 # Issues — architecture-deepening
 
+**Cómo retomar trabajo:** abre un `.md` en esta carpeta con `Status: ready-for-agent` en el frontmatter, implementa el slice, y al cerrar actualiza ese mismo archivo (`Status`, checkboxes y `## Comments`) sin moverlo a otra carpeta.
+
 Orden sugerido (dependencias):
 
 | # | Archivo | Bloqueado por |

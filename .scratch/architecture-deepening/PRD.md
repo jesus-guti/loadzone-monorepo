@@ -13,6 +13,10 @@ Engineering and agents working in the LoadZone monorepo (staff and player apps, 
 
 Run an incremental **deepening** programme: consolidate rules where several real consumers already exist; add tests at the **interface** the product uses (shared predicates, critical actions where appropriate); decouple layers where leakage blocks reuse or reasoning (design vs auth, database package vs bootstrap); and move “ensure system data” effects off the player’s critical read request. Prioritise changes with strong **locality** (one place to fix) and **leverage** (same rule, many call sites) without a big-bang rewrite. Record decisions in this PRD and, when warranted, in future ADRs; extend `CONTEXT.md` when domain terms stabilise.
 
+## How to pick up work
+
+Open the [issues index](issues/README.md), choose an issue whose YAML has `Status: ready-for-agent`, implement the slice, then update that same issue file in place (checkboxes and `## Comments`); do not rely on moving files to a `done/` folder.
+
 ## User Stories
 
 1. As a staff maintainer, I want the rule for which Exercises appear in the club library to live in one well-tested place, so that list views and server actions never disagree on scope.
@@ -91,4 +95,4 @@ Run an incremental **deepening** programme: consolidate rules where several real
 
 - This PRD synthesizes a prior architecture review and the deep-dive on **exercise library visibility**: that predicate should be **retained** as the single source of truth (multiple real consumers), strengthened with tests rather than deleted as a “thin pass-through.”
 - Coordinate with whoever owns CI: new tests should run on the existing `pnpm` test workflow for the affected app or package.
-- After implementation slices land, consider linking from the deepening opportunities document to this PRD path for traceability.
+- The architecture note [`docs/architecture/deepening-opportunities.md`](../../docs/architecture/deepening-opportunities.md) links here and to the issues index for traceability from prose to trackable work.
