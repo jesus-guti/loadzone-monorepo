@@ -6,6 +6,11 @@ import type {
   ExerciseLibrarySortKey,
   ExercisePickerRow,
 } from "../types";
+import {
+  exerciseLibraryListRowBaseSelect,
+  exerciseLibraryListRowSelectWithMembership,
+  type ExerciseLibraryListDbRow,
+} from "./exercise-library-list-select";
 import { exerciseLibraryWhere } from "./exercise-library-where";
 
 function isMissingFavoritesTableError(error: unknown): boolean {
@@ -56,66 +61,11 @@ export async function getExerciseLibraryPayload(input: {
 }): Promise<ExerciseLibraryPayload> {
   const sort: ExerciseLibrarySortKey = input.sort ?? "updated_desc";
 
-  let rows: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    clubId: string | null;
-    isSystem: boolean;
-    durationMinutes: number;
-    complexity: string;
-    strategy: string;
-    tacticalIntention: string;
-    dynamicType: string;
-    coordinativeSkill: string;
-    gameSituation: string;
-    coordinationType: string;
-    visibility: "PRIVATE" | "CLUB_SHARED";
-    createdByMembershipId: string | null;
-    updatedAt: Date;
-    diagramData: unknown;
-    diagramThumbnailUrl: string | null;
-    createdBy: {
-      user: {
-        name: string | null;
-      } | null;
-    } | null;
-    membershipFavorites: Array<{
-      membershipId: string;
-    }>;
-  }>;
+  let rows: ExerciseLibraryListDbRow[];
   try {
     rows = await database.exercise.findMany({
       where: exerciseLibraryWhere(input.clubId),
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        clubId: true,
-        isSystem: true,
-        durationMinutes: true,
-        complexity: true,
-        strategy: true,
-        tacticalIntention: true,
-        dynamicType: true,
-        coordinativeSkill: true,
-        gameSituation: true,
-        coordinationType: true,
-        visibility: true,
-        createdByMembershipId: true,
-        updatedAt: true,
-        diagramData: true,
-        diagramThumbnailUrl: true,
-        createdBy: {
-          select: {
-            user: { select: { name: true } },
-          },
-        },
-        membershipFavorites: {
-          where: { membershipId: input.membershipId },
-          select: { membershipId: true },
-        },
-      },
+      select: exerciseLibraryListRowSelectWithMembership(input.membershipId),
     });
   } catch (error) {
     if (!isMissingFavoritesTableError(error)) {
@@ -124,31 +74,7 @@ export async function getExerciseLibraryPayload(input: {
 
     const fallbackRows = await database.exercise.findMany({
       where: exerciseLibraryWhere(input.clubId),
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        clubId: true,
-        isSystem: true,
-        durationMinutes: true,
-        complexity: true,
-        strategy: true,
-        tacticalIntention: true,
-        dynamicType: true,
-        coordinativeSkill: true,
-        gameSituation: true,
-        coordinationType: true,
-        visibility: true,
-        createdByMembershipId: true,
-        updatedAt: true,
-        diagramData: true,
-        diagramThumbnailUrl: true,
-        createdBy: {
-          select: {
-            user: { select: { name: true } },
-          },
-        },
-      },
+      select: exerciseLibraryListRowBaseSelect,
     });
 
     rows = fallbackRows.map((row) => ({

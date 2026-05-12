@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: done
 Labels: ready-for-agent
 ---
 
@@ -15,10 +15,16 @@ Remove copy-paste between the primary Exercise library query and the compatibili
 
 ## Acceptance criteria
 
-- [ ] A single shared definition drives the duplicated query shapes so fields cannot silently diverge between branches.
-- [ ] Existing error handling for the “missing favorites relation” scenario still behaves the same from the staff user’s perspective.
-- [ ] Automated tests cover or document the invariant that both branches return the same projection for core list fields.
+- [x] A single shared definition drives the duplicated query shapes so fields cannot silently diverge between branches.
+- [x] Existing error handling for the “missing favorites relation” scenario still behaves the same from the staff user’s perspective.
+- [x] Automated tests cover or document the invariant that both branches return the same projection for core list fields.
 - [ ] Staff library and favorite display still work in dev after migration scenarios described in code comments (if any).
+
+## Comments
+
+**Implementación:** `exerciseLibraryListRowBaseSelect` y `exerciseLibraryListRowSelectWithMembership` viven en `apps/app/features/exercises/queries/exercise-library-list-select.ts`. El camino feliz y el fallback P2021 reutilizan el mismo objeto base (`select`), y el fallback sigue mapeando `membershipFavorites: []`. Los tipos exportados (`ExerciseLibraryListDbRow*` alineados con `Prisma.ExerciseGetPayload`) evitan repetir una interfaz grande en `get-exercise-library.ts`. El retorno del builder de select **no** se anota como `Prisma.ExerciseSelect` para no ensanchar los argumentos de `findMany`. Tests del invariante superficial de proyección: `apps/app/__tests__/exercise-library-list-select-contract.test.ts`.
+
+**Smoke manual pendiente:** listado biblioteca + favoritos tras escenarios de migración / relación ausente cuando aplique — para revisores/humanos si quieren corroborarlo en dev.
 
 ## Blocked by
 
