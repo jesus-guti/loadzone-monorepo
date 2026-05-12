@@ -1,5 +1,4 @@
 import { database } from "@repo/database";
-import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { notFound } from "next/navigation";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
@@ -29,7 +28,6 @@ function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
 const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   const { token } = await params;
   const { date } = await searchParams;
-  await ensureBaseFormTemplates();
 
   const player = await database.player.findUnique({
     where: { token, isArchived: false },

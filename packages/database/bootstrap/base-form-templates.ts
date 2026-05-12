@@ -1,3 +1,5 @@
+/** Definitions shared with prisma migration `20260512183000_seed_base_form_templates`; keep wording and limits aligned. */
+
 import type { PrismaClient } from "../generated/client";
 
 type BaseFormTemplateDefinition = {
