@@ -1,5 +1,6 @@
 import { env } from "@/env";
 import "./styles.css";
+import { AuthProvider } from "@repo/auth/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
 import type { ReactNode } from "react";
@@ -11,15 +12,17 @@ type RootLayoutProperties = {
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html className={fonts} lang="es" suppressHydrationWarning>
     <body className="bg-bg-primary text-text-primary antialiased">
-      <DesignSystemProvider
-        helpUrl={env.NEXT_PUBLIC_DOCS_URL}
-        privacyUrl={new URL(
-          "/legal/privacy",
-          env.NEXT_PUBLIC_WEB_URL
-        ).toString()}
-        termsUrl={new URL("/legal/terms", env.NEXT_PUBLIC_WEB_URL).toString()}
-      >
-        {children}
+      <DesignSystemProvider>
+        <AuthProvider
+          helpUrl={env.NEXT_PUBLIC_DOCS_URL}
+          privacyUrl={new URL(
+            "/legal/privacy",
+            env.NEXT_PUBLIC_WEB_URL
+          ).toString()}
+          termsUrl={new URL("/legal/terms", env.NEXT_PUBLIC_WEB_URL).toString()}
+        >
+          {children}
+        </AuthProvider>
       </DesignSystemProvider>
     </body>
   </html>
