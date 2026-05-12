@@ -1,3 +1,5 @@
+import type { ExerciseComplexityValue } from "./exercise-attribute-vocabulary";
+
 /** Contrato serializable para la biblioteca de ejercicios (API y cliente). */
 export type ExerciseLibraryListItem = {
   readonly id: string;
@@ -28,7 +30,7 @@ export type ExercisePickerRow = {
   readonly id: string;
   readonly name: string;
   readonly durationMinutes: number;
-  readonly complexity: "LOW" | "MEDIUM" | "HIGH" | "VERY_HIGH";
+  readonly complexity: ExerciseComplexityValue;
 };
 
 export type ExerciseLibraryPayload = {

@@ -8,18 +8,12 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusIcon } from "@phosphor-icons/react/ssr";
 import { useMemo, useState } from "react";
+import { staffLabelForExerciseComplexity } from "@/features/exercises/exercise-attribute-vocabulary";
 import type { ExerciseLibraryItem } from "./types";
 
 type ExerciseLibraryPanelProps = {
   readonly exercises: ReadonlyArray<ExerciseLibraryItem>;
   readonly onAdd: (exercise: ExerciseLibraryItem) => void;
-};
-
-const COMPLEXITY_LABEL: Record<ExerciseLibraryItem["complexity"], string> = {
-  LOW: "Baja",
-  MEDIUM: "Media",
-  HIGH: "Alta",
-  VERY_HIGH: "Muy alta",
 };
 
 export function ExerciseLibraryPanel({
@@ -103,7 +97,7 @@ function DraggableExerciseCard({
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-text-secondary">
           <Badge variant="secondary">{exercise.durationMinutes} min</Badge>
           <Badge variant="outline">
-            {COMPLEXITY_LABEL[exercise.complexity]}
+            {staffLabelForExerciseComplexity(exercise.complexity)}
           </Badge>
         </div>
       </div>

@@ -2,8 +2,11 @@
 
 import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { getCurrentStaffContext } from "@/lib/auth-context";
+import {
+  baseExerciseSchema,
+  updateExerciseSchema,
+} from "../exercise-form-schema";
 import { exerciseLibraryWhere } from "../queries/exercise-library-where";
 
 type ActionResult = {
@@ -11,107 +14,6 @@ type ActionResult = {
   error?: string;
   exerciseId?: string;
 };
-
-const COMPLEXITY = ["LOW", "MEDIUM", "HIGH", "VERY_HIGH"] as const;
-const STRATEGY = [
-  "SET_PIECES",
-  "COMBINED_ACTIONS",
-  "CIRCUITS",
-  "CONSERVATION",
-  "FOOTBALL_ADAPTED_GAME",
-  "POSITIONAL_PLAY",
-  "SPECIFIC_POSITIONAL_PLAY",
-  "WAVES",
-  "MATCHES",
-  "POSSESSION",
-  "PASSING_WHEEL",
-  "SMALL_SIDED_SITUATIONS",
-  "LINE_WORK",
-] as const;
-const COORDINATIVE_SKILL = [
-  "STARTING",
-  "BRAKING",
-  "CHANGE_OF_DIRECTION",
-  "DRIBBLING_CARRY",
-  "BALL_CONTROL",
-  "CLEARANCES",
-  "MOVEMENT_PATTERNS",
-  "SHOOTING",
-  "TACKLING",
-  "BALANCING",
-  "TURNING",
-  "INTERCEPTION",
-  "PASSING",
-  "PROTECTION",
-  "DRIBBLING_1V1",
-  "JUMPING",
-] as const;
-const TACTICAL_INTENTION = [
-  "ONE_VS_ONE",
-  "TWO_VS_ONE",
-  "TWO_VS_TWO",
-  "THREE_VS_THREE",
-  "FOUR_VS_FOUR",
-  "DEFENSIVE_SET_PIECES",
-  "OFFENSIVE_SET_PIECES",
-  "WIDTH",
-  "SUPPORTS",
-  "ORGANIZED_ATTACK",
-  "COVER",
-  "KEEP_POSSESSION",
-  "COUNTERATTACK",
-  "BUILD_UP_DEFENSE",
-  "DIRECT_PLAY_DEFENSE",
-  "ORGANIZED_DEFENSE",
-  "RUNS_OFF_THE_BALL",
-  "SPLIT_LINES",
-  "PREVENT_PROGRESSION",
-] as const;
-const DYNAMIC_TYPE = [
-  "EXTENSIVE",
-  "STRENGTH",
-  "INTENSIVE_ACTION",
-  "INTENSIVE_INTERACTION",
-  "RECOVERY",
-  "ENDURANCE",
-  "SPEED",
-] as const;
-const GAME_SITUATION = ["FULL_STRUCTURE", "INTERSECTORAL", "SECTORAL"] as const;
-const COORDINATION_TYPE = [
-  "TEAM_COORDINATION",
-  "SINGLE_PLAYER_COORDINATION",
-  "MULTI_PLAYER_COORDINATION",
-] as const;
-
-const baseExerciseSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "El nombre debe tener al menos 2 caracteres.")
-    .max(120, "El nombre es demasiado largo."),
-  objectivesText: z
-    .string()
-    .trim()
-    .min(2, "Los objetivos deben tener al menos 2 caracteres.")
-    .max(2000, "Los objetivos son demasiado largos."),
-  explanationText: z
-    .string()
-    .trim()
-    .max(4000, "La explicación es demasiado larga."),
-  durationMinutes: z.coerce.number().int().min(1).max(600),
-  spaceWidthMeters: z.coerce.number().min(1).max(200),
-  spaceLengthMeters: z.coerce.number().min(1).max(200),
-  playersCount: z.coerce.number().int().min(1).max(60),
-  complexity: z.enum(COMPLEXITY),
-  strategy: z.enum(STRATEGY),
-  coordinativeSkill: z.enum(COORDINATIVE_SKILL),
-  tacticalIntention: z.enum(TACTICAL_INTENTION),
-  dynamicType: z.enum(DYNAMIC_TYPE),
-  gameSituation: z.enum(GAME_SITUATION),
-  coordinationType: z.enum(COORDINATION_TYPE),
-  visibility: z.enum(["PRIVATE", "CLUB_SHARED"]).default("CLUB_SHARED"),
-  diagramData: z.string().optional(),
-});
 
 function slugify(input: string): string {
   return input
@@ -235,10 +137,6 @@ export async function createExercise(
     return { success: false, error: "Error al crear el ejercicio." };
   }
 }
-
-const updateExerciseSchema = baseExerciseSchema.extend({
-  id: z.string().min(1),
-});
 
 export async function updateExercise(
   _prev: ActionResult,
