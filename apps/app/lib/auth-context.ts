@@ -6,6 +6,14 @@ import { database, type MembershipRole, type PlatformRole } from "@repo/database
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { cookies } from "next/headers";
 import { parseWellnessLimits, type WellnessLimits } from "./wellness-limits";
+import {
+  formatSeasonLabel,
+  pickDefaultSeasonForDate,
+  pickPreferredStaffMembership,
+  resolveActiveTeamSnapshot,
+  resolveSeasonFromCookie,
+  staffCanCreateTeam,
+} from "./staff-workspace-rules";
 
 export const ACTIVE_TEAM_COOKIE_NAME = "loadzone_active_team";
 export const ACTIVE_SEASON_COOKIE_NAME = "loadzone_active_season";
@@ -53,27 +61,13 @@ export async function getCurrentUserState(): Promise<CurrentUser | null> {
   return currentUser();
 }
 
-function formatSeasonLabel(seasonName: string): string {
-  const match = seasonName.match(/(20\d{2}).*?(20\d{2})/);
-  if (!match) {
-    return seasonName;
-  }
-
-  return `${match[1]?.slice(-2)}/${match[2]?.slice(-2)}`;
-}
-
 export async function getCurrentStaffContext(): Promise<StaffContext | null> {
   const user = await currentUser();
   if (!user) {
     return null;
   }
 
-  const membership =
-    user.memberships.find(
-      (currentMembership) =>
-        currentMembership.role === "COORDINATOR" ||
-        currentMembership.role === "STAFF"
-    ) ?? user.memberships[0];
+  const membership = pickPreferredStaffMembership(user.memberships);
 
   if (!membership) {
     return null;
@@ -111,8 +105,10 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
     }),
   ]);
   const defaultTeam = teams[0] ?? null;
-  const activeTeam =
-    teams.find((team) => team.id === requestedActiveTeamId) ?? defaultTeam;
+  const activeTeam = resolveActiveTeamSnapshot(
+    teams,
+    requestedActiveTeamId,
+  );
   const transformedTeams: TeamSummary[] = teams.map((team) => ({
     ...team,
     logoUrl: resolveStorageUrl(team.logoUrl),
@@ -137,13 +133,15 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
       })
     : [];
   const currentDate = new Date();
-  const defaultSeason =
-    activeTeamSeasons.find((season) => {
-      return season.startDate <= currentDate && season.endDate >= currentDate;
-    }) ?? activeTeamSeasons[0] ?? null;
-  const activeSeasonRecord =
-    activeTeamSeasons.find((season) => season.id === requestedActiveSeasonId) ??
-    defaultSeason;
+  const defaultSeason = pickDefaultSeasonForDate(
+    activeTeamSeasons,
+    currentDate,
+  );
+  const activeSeasonRecord = resolveSeasonFromCookie(
+    activeTeamSeasons,
+    requestedActiveSeasonId,
+    defaultSeason,
+  );
   const seasonSummaries: SeasonSummary[] = activeTeamSeasons.map((season) => ({
     id: season.id,
     name: season.name,
@@ -159,8 +157,7 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
     platformRole: user.platformRole,
     membershipId: membership.id,
     role: membership.role,
-    canCreateTeam:
-      membership.role === "COORDINATOR" || user.platformRole === "SUPER_ADMIN",
+    canCreateTeam: staffCanCreateTeam(membership.role, user.platformRole),
     club: {
       id: membership.clubId,
       name: club?.name ?? membership.clubName,

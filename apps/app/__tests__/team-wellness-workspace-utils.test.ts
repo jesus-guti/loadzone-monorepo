@@ -14,7 +14,7 @@ function createPlayer(
     id: "player_1",
     imageUrl: null,
     name: "Jugador Uno",
-    status: "ACTIVE",
+    status: "AVAILABLE",
     currentStreak: 0,
     entries: [],
     stats: [],
