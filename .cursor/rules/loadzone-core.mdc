@@ -18,11 +18,12 @@ alwaysApply: true
   before creating a new component.
 - Do not run builds by default. In Next.js work, only run build/dev commands if the user asks.
 - Add or update docs when they prevent repeated prompt context, clarify project conventions,
-  or support future agent work.
+  or support future agent work. **Language:** write repo docs, PRDs, ADRs, and `CONTEXT.md`
+  updates in **English**; product UI copy in **Spanish**; see [`AGENTS.md`](../../AGENTS.md)
+  (*Language convention*) for grill sessions (Spanish questions OK, persisted answers in English).
 - Add or update tests when the change touches business rules, input validation, regressions,
   or bug fixes. Skip low-value tests that only restate the implementation.
 - If a contract is used by only one feature, keep it local to that feature. Promote it to a
   shared package only when it is consumed by at least two real boundaries.
-- Key domain entities: `Team`, `Season`, `Player`, `DailyEntry`, `PlayerDailyStats`,
-  and `PushSubscription`.
+- Domain vocabulary and entity relationships: see root [`CONTEXT.md`](../../CONTEXT.md).
 - Never expose or log player tokens. Treat public player flows as security-sensitive.
