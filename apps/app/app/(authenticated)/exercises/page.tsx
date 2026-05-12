@@ -1,5 +1,5 @@
-import { Button } from "@repo/design-system/components/ui/button";
 import { PlusIcon } from "@phosphor-icons/react/ssr";
+import { Button } from "@repo/design-system/components/ui/button";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -24,8 +24,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
     membershipId: staffContext.membershipId,
   });
 
-  const total =
-    initialPayload.favorites.length + initialPayload.rest.length;
+  const total = initialPayload.favorites.length + initialPayload.rest.length;
 
   return (
     <>
