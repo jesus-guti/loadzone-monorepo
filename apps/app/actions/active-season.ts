@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import {
   ACTIVE_SEASON_COOKIE_NAME,
   getCurrentStaffContext,
+  type SeasonSummary,
 } from "@/lib/auth-context";
 
 export async function setActiveSeason(seasonId: string): Promise<void> {
@@ -13,7 +14,7 @@ export async function setActiveSeason(seasonId: string): Promise<void> {
   }
 
   const allowedSeason = staffContext.activeTeamSeasons.find(
-    (season) => season.id === seasonId
+    (season: SeasonSummary) => season.id === seasonId
   );
   if (!allowedSeason) {
     throw new Error("No tienes acceso a esa temporada.");
