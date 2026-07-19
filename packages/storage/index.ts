@@ -86,8 +86,8 @@ export async function uploadImage({
   await validateImageFile(file);
 
   const result = await put(objectKey, file, {
-    access: "private",
-    addRandomSuffix: false,
+  access: "public",
+  addRandomSuffix: false,
     cacheControlMaxAge,
     contentType: file.type,
   });
@@ -123,7 +123,7 @@ export function getPrivateBlob(
   ensureBlobToken();
 
   return get(pathname, {
-    access: "private",
+    access: "public",
     ifNoneMatch,
   });
 }

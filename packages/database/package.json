@@ -1,6 +1,7 @@
 {
   "name": "@repo/database",
   "version": "0.0.0",
+  "type": "module",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -8,7 +9,8 @@
     "./client": "./client.ts",
     "./bootstrap": "./bootstrap.ts",
     "./risk-thresholds": "./risk-thresholds.ts",
-    "./keys": "./keys.ts"
+    "./keys": "./keys.ts",
+        "./e2e-client": "./e2e-client.ts"
   },
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",

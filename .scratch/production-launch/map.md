@@ -50,6 +50,8 @@ Production deployment of `app` (staff) and `player` (check-in) Next.js apps on V
 
 - [Cleanup dead template packages](tickets/01-cleanup-dead-packages.md) — Deleted 6 empty packages (`analytics`, `cms`, `email`, `notifications`, `rate-limit`, `security`). 11 packages remain, all with real code. `pnpm install` passes clean.
 - [Audit and consolidate environment variables](tickets/02-audit-env-vars.md) — Made `NEXT_PUBLIC_WEB_URL` optional in next-config; created `apps/player/keys.ts` for VAPID key validation; added `storage()` keys to app env; fixed SEO metadata from template defaults; cleaned up all `.env.example` files.
+- [Decide domain strategy](tickets/03-domain-strategy.md) — Root domain `loadzone.app` (Cloudflare). Subdomains: `app.loadzone.app` (staff), `player.loadzone.app` (players). Root redirects to app until landing page is built.
+- [Set up Vercel projects](tickets/05-vercel-projects-setup.md) — Created `loadzone-app` and `loadzone-player` projects on Vercel with env vars configured. Fixed broken `ignoreCommand` in vercel.json.
 
 ## Not yet specified
 

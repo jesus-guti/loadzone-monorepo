@@ -6,7 +6,11 @@
     "build": "next build",
     "start": "next start",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test:e2e": "pnpm tsx e2e/helpers/seed-test-data.ts --output e2e/seed-context.json && cd e2e && npx playwright test",
+    "test:e2e:seed": "pnpm tsx e2e/helpers/seed-test-data.ts --output e2e/seed-context.json",
+    "test:e2e:run": "cd e2e && npx playwright test",
+    "test:e2e:report": "npx playwright show-report e2e/playwright-report"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
