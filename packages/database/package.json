@@ -10,7 +10,7 @@
     "./bootstrap": "./bootstrap.ts",
     "./risk-thresholds": "./risk-thresholds.ts",
     "./keys": "./keys.ts",
-        "./e2e-client": "./e2e-client.ts"
+    "./e2e-client": "./e2e-client.ts"
   },
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
