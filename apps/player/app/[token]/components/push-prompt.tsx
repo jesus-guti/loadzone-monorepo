@@ -3,6 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { BellIcon } from "@phosphor-icons/react/ssr";
 import { useState, useEffect } from "react";
+import { env } from "@/env";
 
 type PushPromptProperties = {
   readonly token: string;
@@ -44,7 +45,7 @@ export function PushPrompt({ token, apiUrl }: PushPromptProperties) {
       }
 
       const registration = await navigator.serviceWorker.ready;
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      const vapidKey = env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
       if (!vapidKey) {
         setLoading(false);

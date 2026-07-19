@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".cursor/rules/loadzone-core.mdc",
+    ".cursor/rules/loadzone-architecture.mdc",
+    ".cursor/rules/loadzone-bugfix.mdc",
+    ".cursor/rules/loadzone-admin-shell.mdc",
+    ".cursor/rules/loadzone-content-design.mdc",
+    ".cursor/rules/loadzone-design-system.mdc",
+    ".cursor/rules/loadzone-loading-ux.mdc",
+    ".cursor/rules/loadzone-player-pwa.mdc",
+    ".cursor/rules/loadzone-server-actions.mdc",
+    ".cursor/rules/loadzone-spec-driven.mdc",
+    ".cursor/rules/loadzone-testing.mdc"
+  ]
+}
