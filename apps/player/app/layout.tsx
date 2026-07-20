@@ -1,9 +1,9 @@
 import "./styles.css";
-import { fonts } from "@repo/design-system/lib/fonts";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
+import { fonts } from "@repo/design-system/lib/fonts";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
-import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegister } from "./components/sw-register";
 
 export const metadata: Metadata = {

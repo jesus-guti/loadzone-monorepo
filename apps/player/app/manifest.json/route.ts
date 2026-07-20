@@ -1,11 +1,18 @@
 import type { MetadataRoute } from "next";
+import { NextResponse } from "next/server";
 
-export default function manifest(): MetadataRoute.Manifest {
+const CUID_PATTERN = /^c[a-z0-9]{24,}$/;
+
+function baseManifest(
+  startUrl: string,
+  scope?: string
+): MetadataRoute.Manifest {
   return {
     name: "LoadZone",
     short_name: "LoadZone",
     description: "Registro diario de bienestar y rendimiento deportivo",
-    start_url: "/",
+    start_url: startUrl,
+    scope,
     display: "standalone",
     background_color: "#0a0a0a",
     theme_color: "#0a0a0a",
@@ -29,4 +36,15 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
   };
+}
+
+export function GET(request: Request): Response {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") ?? "";
+
+  if (!CUID_PATTERN.test(token)) {
+    return NextResponse.json(baseManifest("/"));
+  }
+
+  return NextResponse.json(baseManifest(`/${token}`, `/${token}/`));
 }
