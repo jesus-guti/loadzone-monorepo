@@ -1,5 +1,21 @@
 const CACHE_NAME = "loadzone-v1";
-const STATIC_ASSETS = ["/", "/manifest.json"];
+const STATIC_ASSETS = ["/"];
+const TOKEN_STORE = "player-token";
+
+async function getStoredToken() {
+  try {
+    const db = await openIndexedDB();
+    const tx = db.transaction(TOKEN_STORE, "readonly");
+    const store = tx.objectStore(TOKEN_STORE);
+    return new Promise((resolve) => {
+      const request = store.get("token");
+      request.onsuccess = () => resolve(request.result?.value ?? null);
+      request.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -8,15 +24,31 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SET_TOKEN" && event.data.token) {
+    event.waitUntil(
+      openIndexedDB().then((db) => {
+        const tx = db.transaction(TOKEN_STORE, "readwrite");
+        tx.objectStore(TOKEN_STORE).put({
+          id: "token",
+          value: event.data.token,
+        });
+      })
+    );
+  }
+});
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
       )
-    )
   );
   self.clients.claim();
 });
@@ -32,7 +64,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
         const cached = await cache.match(request);
-        if (cached) return cached;
+        if (cached) {
+          return cached;
+        }
 
         const response = await fetch(request);
         if (response.ok) {
@@ -44,13 +78,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    fetch(request).catch(() => caches.match(request))
-  );
+  event.respondWith(fetch(request).catch(() => caches.match(request)));
 });
 
 self.addEventListener("push", (event) => {
-  if (!event.data) return;
+  if (!event.data) {
+    return;
+  }
 
   const data = event.data.json();
   const options = {
@@ -68,16 +102,20 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/";
+  const dataUrl = event.notification.data?.url || "/";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window" }).then((clients) => {
-      for (const client of clients) {
-        if (client.url === url && "focus" in client) {
-          return client.focus();
+    getStoredToken().then((token) => {
+      const url = token && dataUrl === "/" ? `/${token}` : dataUrl;
+
+      return self.clients.matchAll({ type: "window" }).then((clients) => {
+        for (const client of clients) {
+          if (client.url.includes(url) && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
-      return self.clients.openWindow(url);
+        return self.clients.openWindow(url);
+      });
     })
   );
 });
@@ -114,11 +152,17 @@ async function syncPendingEntries() {
 
 function openIndexedDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("loadzone-offline", 1);
+    const request = indexedDB.open("loadzone-offline", 2);
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains("pending-entries")) {
-        db.createObjectStore("pending-entries", { keyPath: "id", autoIncrement: true });
+        db.createObjectStore("pending-entries", {
+          keyPath: "id",
+          autoIncrement: true,
+        });
+      }
+      if (!db.objectStoreNames.contains(TOKEN_STORE)) {
+        db.createObjectStore(TOKEN_STORE, { keyPath: "id" });
       }
     };
     request.onsuccess = () => resolve(request.result);
