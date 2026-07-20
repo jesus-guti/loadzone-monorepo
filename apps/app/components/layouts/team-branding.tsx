@@ -5,7 +5,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
+} from "@repo/design-system/components/avatar";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
 

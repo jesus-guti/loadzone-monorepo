@@ -4,9 +4,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/card";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import Link from "next/link";
 
 type LastSessionExercise = {
@@ -53,9 +53,7 @@ export function LastSessionCard({ session }: LastSessionCardProps) {
         </CardTitle>
         {session ? (
           <CardAction>
-            <Button asChild size="sm" variant="ghost">
-              <Link href={`/sessions/${session.id}`}>Ver detalle</Link>
-            </Button>
+            <Button size="sm" variant="ghost" render={<Link href={`/sessions/${session.id}`}>Ver detalle</Link>} />
           </CardAction>
         ) : null}
       </CardHeader>

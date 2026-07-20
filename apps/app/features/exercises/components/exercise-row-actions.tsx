@@ -7,7 +7,7 @@ import {
   NotePencilIcon,
   TrashIcon,
 } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@repo/design-system/components/ui/alert-dialog";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/alert-dialog";
+import { toast } from "@repo/design-system/components/sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -93,14 +93,7 @@ export function ExerciseRowActions({
 
   return (
     <div className="flex items-center justify-end gap-0.5">
-      <Button asChild size="icon" variant="ghost">
-        <Link
-          aria-label={`Editar ${exerciseName}`}
-          href={`/exercises/${exerciseId}`}
-        >
-          <NotePencilIcon className="size-4 text-text-secondary" />
-        </Link>
-      </Button>
+      <Button size="icon" variant="ghost" render={<Link aria-label={`Editar ${exerciseName}`} href={`/exercises/${exerciseId}`}><NotePencilIcon className="size-4 text-text-secondary" /></Link>} />
       <Button
         aria-label={`Duplicar ${exerciseName}`}
         disabled={isDuplicating}
@@ -129,17 +122,19 @@ export function ExerciseRowActions({
       ) : null}
       {canDelete ? (
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              aria-label={`Archivar ${exerciseName}`}
-              disabled={isArchiving}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              <TrashIcon className="size-4 text-text-secondary" />
-            </Button>
-          </AlertDialogTrigger>
+          <AlertDialogTrigger
+            render={
+              <Button
+                aria-label={`Archivar ${exerciseName}`}
+                disabled={isArchiving}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <TrashIcon className="size-4 text-text-secondary" />
+              </Button>
+            }
+          />
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Archivar ejercicio</AlertDialogTitle>

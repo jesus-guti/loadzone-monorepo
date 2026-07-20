@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import { savePostSession } from "../actions/save-entry";
 import { SliderInput } from "./slider-input";
 import { ChipInput } from "./chip-input";

@@ -1,8 +1,8 @@
 "use client";
 
 import { ListIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
-import { useSidebar } from "@repo/design-system/components/ui/sidebar";
+import { Button } from "@repo/design-system/components/button";
+import { useSidebar } from "@repo/design-system/components/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
 
 export function MobileSidebarFab() {

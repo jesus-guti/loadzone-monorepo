@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
+import { Textarea } from "@repo/design-system/components/textarea";
 import { cn } from "@repo/design-system/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";

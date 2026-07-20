@@ -1,22 +1,22 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
+} from "@repo/design-system/components/dialog";
+import { Input } from "@repo/design-system/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { toast } from "@repo/design-system/components/ui/sonner";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
+} from "@repo/design-system/components/select";
+import { toast } from "@repo/design-system/components/sonner";
+import { Textarea } from "@repo/design-system/components/textarea";
 import { useCompactBoardLayout } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
 import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -418,10 +418,11 @@ function ExerciseBoardSection({
         <input name="diagramData" type="hidden" value={diagramData} />
       ) : null}
       <Dialog onOpenChange={setOpen} open={open}>
-        <DialogTrigger asChild>
-          <button className={boardPreviewButtonClassName} type="button">
-            <BoardPreview data={diagramData} density="comfortable" />
-            <span
+        <DialogTrigger
+          render={
+            <button className={boardPreviewButtonClassName} type="button">
+              <BoardPreview data={diagramData} density="comfortable" />
+              <span
               className={cn(
                 "absolute inset-x-4 bottom-4  border border-border-primary bg-bg-primary/80 p-3 backdrop-blur",
                 compactBoardLayout
@@ -447,7 +448,8 @@ function ExerciseBoardSection({
               </span>
             </span>
           </button>
-        </DialogTrigger>
+          }
+        />
         <DialogContent
           className={cn(
             "fixed z-50 flex flex-col overflow-hidden bg-bg-primary text-text-primary shadow-floating [&>button]:hidden",
@@ -580,7 +582,7 @@ function EnumSelect({ name, label, defaultValue, options }: EnumSelectProps) {
     <div className="space-y-2">
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
       <input name={name} type="hidden" value={value} />
-      <Select onValueChange={setValue} value={value}>
+      <Select onValueChange={(val) => { if (val) setValue(val); }} value={value}>
         <SelectTrigger className="w-full bg-bg-secondary" id={name}>
           <SelectValue />
         </SelectTrigger>

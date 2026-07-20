@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/select";
+import { Textarea } from "@repo/design-system/components/textarea";
+import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect, useId, useState } from "react";
 import { updateSession } from "../actions/session-actions";
 import { FieldLabel, FormSection } from "./form-section";
@@ -290,9 +290,7 @@ export function EditSessionForm({ session, locations }: EditSessionFormProps) {
       ) : null}
 
       <div className="flex justify-end gap-2 pt-4">
-        <Button asChild variant="outline">
-          <Link href={`/sessions/${session.id}`}>Cancelar</Link>
-        </Button>
+        <Button variant="outline" render={<Link href={`/sessions/${session.id}`}>Cancelar</Link>} />
         <Button disabled={isPending} type="submit">
           {isPending ? "Guardando..." : "Guardar cambios"}
         </Button>

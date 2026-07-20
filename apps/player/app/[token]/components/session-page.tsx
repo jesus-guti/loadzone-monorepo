@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useTransition } from "react";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,
   SheetContent,
@@ -10,13 +10,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@repo/design-system/components/ui/sheet";
+} from "@repo/design-system/components/sheet";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/components/tabs";
 import {
   CalendarBlankIcon,
   CheckCircleIcon,
@@ -397,15 +397,17 @@ export function SessionPage({
 
       <footer className="mt-auto pt-4 text-center">
         <Sheet open={injuryOpen} onOpenChange={setInjuryOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
-            >
-              <HeartbeatIcon className="h-3.5 w-3.5" />
-              ¿Tienes una molestia? Reportar lesión
-            </button>
-          </SheetTrigger>
+          <SheetTrigger
+            render={
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
+              >
+                <HeartbeatIcon className="h-3.5 w-3.5" />
+                ¿Tienes una molestia? Reportar lesión
+              </button>
+            }
+          />
           <SheetContent
             side="bottom"
             className="max-h-[90dvh] overflow-y-auto rounded-t-3xl"

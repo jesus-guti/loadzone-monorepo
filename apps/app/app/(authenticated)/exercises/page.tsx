@@ -1,5 +1,5 @@
 import { PlusIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,12 +29,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
   return (
     <>
       <Header page="Ejercicios" pages={["LoadZone"]}>
-        <Button asChild size="sm">
-          <Link href="/exercises/new">
-            <PlusIcon className="mr-1 size-4" />
-            Añadir ejercicio
-          </Link>
-        </Button>
+        <Button size="sm" render={<Link href="/exercises/new"><PlusIcon className="mr-1 size-4" />Añadir ejercicio</Link>} />
       </Header>
 
       <div className="p-4 md:p-6">
@@ -46,12 +41,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
             <p className="mt-1 text-sm text-text-secondary">
               Crea tu primer ejercicio para empezar a montar sesiones.
             </p>
-            <Button asChild className="mt-4" size="sm">
-              <Link href="/exercises/new">
-                <PlusIcon className="mr-1 size-4" />
-                Añadir ejercicio
-              </Link>
-            </Button>
+            <Button className="mt-4" size="sm" render={<Link href="/exercises/new"><PlusIcon className="mr-1 size-4" />Añadir ejercicio</Link>} />
           </div>
         ) : (
           <ExerciseLibraryShell

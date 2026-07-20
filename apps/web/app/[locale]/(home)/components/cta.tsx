@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import type { Dictionary } from "@repo/internationalization";
 import { ArrowRightIcon, PhoneCallIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";

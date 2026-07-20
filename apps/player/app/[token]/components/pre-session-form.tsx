@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/button";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,9 +11,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
+} from "@repo/design-system/components/alert-dialog";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import { savePreSession } from "../actions/save-entry";
 import { ScaleInput } from "./scale-input";
 import { SliderInput } from "./slider-input";

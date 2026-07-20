@@ -6,7 +6,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectTrigger,
-} from "@repo/design-system/components/ui/select";
+} from "@repo/design-system/components/select";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setActiveSeason } from "@/actions/active-season";
@@ -25,7 +25,8 @@ export function ActiveSeasonSwitcher() {
     <Select
       disabled={isPending || activeTeamSeasons.length === 0}
       value={activeValue}
-      onValueChange={(seasonId: string) => {
+      onValueChange={(seasonId: string | null) => {
+        if (!seasonId) return;
         startTransition(async () => {
           await setActiveSeason(seasonId);
           router.refresh();

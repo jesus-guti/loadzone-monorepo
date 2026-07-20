@@ -1,7 +1,7 @@
 "use client";
 
 import { ArchiveIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@repo/design-system/components/ui/alert-dialog";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/alert-dialog";
+import { toast } from "@repo/design-system/components/sonner";
 import { archivePlayer } from "../actions/player-actions";
 
 type ArchiveButtonProperties = {
@@ -38,12 +38,14 @@ export function ArchiveButton({
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <ArchiveIcon className="size-4 text-text-secondary" />
-          <span className="sr-only">Archivar</span>
-        </Button>
-      </AlertDialogTrigger>
+      <AlertDialogTrigger
+        render={
+          <Button variant="ghost" size="sm">
+            <ArchiveIcon className="size-4 text-text-secondary" />
+            <span className="sr-only">Archivar</span>
+          </Button>
+        }
+      />
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Archivar jugador</AlertDialogTitle>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { BellIcon } from "@phosphor-icons/react/ssr";
 import { useState, useEffect } from "react";
 import { env } from "@/env";

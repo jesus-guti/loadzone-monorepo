@@ -6,8 +6,8 @@ import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
 import { Thread } from "@repo/ai/components/thread";
 import { Message } from "@repo/ai/components/message";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
 import { useRef, useEffect, useState } from "react";
 
 const SUGGESTIONS = [

@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/select";
+import { Textarea } from "@repo/design-system/components/textarea";
+import { toast } from "@repo/design-system/components/sonner";
 import {
   closestCenter,
   DndContext,

@@ -1,14 +1,14 @@
 "use client";
 
 import { MagnifyingGlassIcon, SortAscendingIcon } from "@phosphor-icons/react";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Input } from "@repo/design-system/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
+} from "@repo/design-system/components/select";
 import type { ReactElement } from "react";
 import {
   EXERCISE_LIBRARY_FILTER_NONE,
@@ -66,6 +66,7 @@ export function ExerciseLibraryListToolbar({
       <div className="ml-auto mr-0 flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end lg:min-w-0">
         <Select
           onValueChange={(next) => {
+            if (!next) return;
             if (next === EXERCISE_LIBRARY_FILTER_NONE) {
               onClearStrategyFilter();
               return;

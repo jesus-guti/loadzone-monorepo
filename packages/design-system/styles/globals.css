@@ -31,12 +31,6 @@
   --success: oklch(0.69 0.13 156);
   --success-foreground: oklch(0.23 0.03 156);
 
-  --surface-card: var(--bg-primary);
-  --surface-popover: var(--bg-primary);
-  --surface-muted: var(--bg-tertiary);
-  --surface-accent: var(--bg-quaternary);
-  --surface-sidebar: var(--bg-secondary);
-
   --ring: oklch(0.64 0.08 160);
   --radius: 0.5rem;
   --elevation-soft:
@@ -82,12 +76,6 @@
   --danger-foreground: oklch(0.21 0.02 28);
   --success: oklch(0.77 0.12 156);
   --success-foreground: oklch(0.2 0.02 156);
-
-  --surface-card: var(--bg-secondary);
-  --surface-popover: var(--bg-secondary);
-  --surface-muted: var(--bg-tertiary);
-  --surface-accent: var(--bg-quaternary);
-  --surface-sidebar: var(--bg-secondary);
 
   --ring: oklch(0.74 0.08 160);
   --elevation-soft:
@@ -161,10 +149,10 @@
   --color-card: var(--card);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) * 1.4);
   --shadow-soft: var(--elevation-soft);
   --shadow-elevated: var(--elevation-elevated);
   --shadow-floating: var(--elevation-floating);
@@ -176,13 +164,13 @@
       height: 0;
     }
     to {
-      height: var(--radix-accordion-content-height);
+      height: var(--accordion-panel-height);
     }
   }
 
   @keyframes accordion-up {
     from {
-      height: var(--radix-accordion-content-height);
+      height: var(--accordion-panel-height);
     }
     to {
       height: 0;
@@ -194,23 +182,23 @@
 .dark {
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
-  --card: var(--surface-card);
+  --card: var(--bg-primary);
   --card-foreground: var(--text-primary);
-  --popover: var(--surface-popover);
+  --popover: var(--bg-primary);
   --popover-foreground: var(--text-primary);
   --primary: var(--brand);
   --primary-foreground: var(--brand-foreground);
   --secondary: var(--bg-secondary);
   --secondary-foreground: var(--text-primary);
-  --muted: var(--surface-muted);
+  --muted: var(--bg-tertiary);
   --muted-foreground: var(--text-secondary);
-  --accent: var(--surface-accent);
+  --accent: var(--bg-quaternary);
   --accent-foreground: var(--text-primary);
   --destructive: var(--danger);
   --destructive-foreground: var(--danger-foreground);
   --border: var(--border-primary);
   --input: var(--border-secondary);
-  --sidebar: var(--surface-sidebar);
+  --sidebar: var(--bg-secondary);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: var(--brand-foreground);

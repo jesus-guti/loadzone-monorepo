@@ -1,14 +1,14 @@
 "use client";
 
 import { PlusIcon } from "@phosphor-icons/react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import { Button } from "@repo/design-system/components/button";
+import { Separator } from "@repo/design-system/components/separator";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/components/tabs";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -114,12 +114,7 @@ function ExerciseLibraryTabPanel({
             Los ejercicios que añadas aparecerán aquí. El catálogo del club
             sigue en la pestaña Club.
           </p>
-          <Button asChild className="mt-4" size="sm">
-            <Link href="/exercises/new">
-              <PlusIcon className="mr-1 size-4" />
-              Añadir ejercicio
-            </Link>
-          </Button>
+          <Button className="mt-4" size="sm" render={<Link href="/exercises/new"><PlusIcon className="mr-1 size-4" />Añadir ejercicio</Link>} />
         </div>
       );
     }
@@ -221,12 +216,7 @@ export function ExerciseLibraryList({
         <p className="mt-1 text-sm text-text-secondary">
           Crea tu primer ejercicio para empezar a montar sesiones.
         </p>
-        <Button asChild className="mt-4" size="sm">
-          <Link href="/exercises/new">
-            <PlusIcon className="mr-1 size-4" />
-            Añadir ejercicio
-          </Link>
-        </Button>
+        <Button className="mt-4" size="sm" render={<Link href="/exercises/new"><PlusIcon className="mr-1 size-4" />Añadir ejercicio</Link>} />
       </div>
     );
   }

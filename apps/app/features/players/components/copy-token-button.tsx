@@ -1,8 +1,8 @@
 "use client";
 
 import { CheckIcon, ClipboardTextIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { Button } from "@repo/design-system/components/button";
+import { toast } from "@repo/design-system/components/sonner";
 import { useState } from "react";
 import { UI_FEEDBACK_TIMEOUT_MS } from "@/lib/durations";
 

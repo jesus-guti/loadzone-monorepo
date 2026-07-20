@@ -3,8 +3,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/card";
+import { Button } from "@repo/design-system/components/button";
 import { PlusIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 
@@ -17,12 +17,7 @@ export function QuickNewSessionCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 px-0 pb-0">
-        <Button asChild className="mt-4 w-full" size="sm">
-          <Link href="/sessions/new">
-            <PlusIcon className="mr-1 size-4" />
-            Crear nueva sesión
-          </Link>
-        </Button>
+        <Button className="mt-4 w-full" size="sm" render={<Link href="/sessions/new"><PlusIcon className="mr-1 size-4" />Crear nueva sesión</Link>} />
         <div className="flex flex-col gap-2">
           <Link
             className="text-sm text-text-secondary hover:text-text-primary"

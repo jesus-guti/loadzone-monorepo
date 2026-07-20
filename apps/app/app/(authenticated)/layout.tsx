@@ -1,4 +1,4 @@
-import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
+import { SidebarProvider } from "@repo/design-system/components/sidebar";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";

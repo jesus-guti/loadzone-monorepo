@@ -9,13 +9,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/components/card";
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@repo/design-system/components/ui/chart";
+} from "@repo/design-system/components/chart";
 import {
   Area,
   AreaChart,

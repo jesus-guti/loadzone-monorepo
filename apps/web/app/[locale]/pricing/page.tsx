@@ -1,4 +1,4 @@
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { CheckIcon, MinusIcon, ArrowRightIcon, PhoneCallIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { env } from "@/env";

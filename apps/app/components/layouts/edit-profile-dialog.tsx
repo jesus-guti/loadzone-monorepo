@@ -6,8 +6,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/avatar";
+import { Button } from "@repo/design-system/components/button";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +15,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/design-system/components/ui/dialog";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/dialog";
+import { Input } from "@repo/design-system/components/input";
+import { Label } from "@repo/design-system/components/label";
+import { toast } from "@repo/design-system/components/sonner";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { updateCurrentUserProfile } from "@/actions/profile-actions";

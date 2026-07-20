@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { PrinterIcon } from "@phosphor-icons/react/ssr";
 
 export function PrintButton() {

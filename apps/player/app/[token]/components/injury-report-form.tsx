@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { useActionState, useEffect } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import { saveInjuryReport } from "../actions/save-injury";
 import { HeartbeatIcon } from "@phosphor-icons/react/ssr";
 

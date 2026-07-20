@@ -1,4 +1,4 @@
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { Skeleton } from "@repo/design-system/components/skeleton";
 
 const Loading = () => {
   return (

@@ -1,8 +1,8 @@
 "use client";
 
 import { StarIcon } from "@phosphor-icons/react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { Button } from "@repo/design-system/components/button";
+import { toast } from "@repo/design-system/components/sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toggleExerciseFavorite } from "../actions/exercise-actions";
 import { exerciseLibraryQueryKey } from "./exercise-library-keys";

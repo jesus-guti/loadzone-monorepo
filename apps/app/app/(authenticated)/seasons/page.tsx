@@ -1,13 +1,13 @@
 import { database } from "@repo/database";
 import { CalendarBlankIcon, PlusIcon } from "@phosphor-icons/react/ssr";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/components/card";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -47,12 +47,7 @@ const SeasonsPage = async () => {
     <>
       <Header page="Temporadas" pages={["LoadZone"]}>
         <div className="px-4">
-          <Button asChild size="sm">
-            <Link href="/seasons/new">
-              <PlusIcon className="mr-1 h-4 w-4" />
-              Nueva temporada
-            </Link>
-          </Button>
+          <Button size="sm" render={<Link href="/seasons/new"><PlusIcon className="mr-1 h-4 w-4" />Nueva temporada</Link>} />
         </div>
       </Header>
 
@@ -64,12 +59,7 @@ const SeasonsPage = async () => {
             <p className="mt-1 text-sm text-muted-foreground">
               Crea tu primera temporada para empezar a registrar datos.
             </p>
-            <Button asChild className="mt-4" size="sm">
-              <Link href="/seasons/new">
-                <PlusIcon className="mr-1 h-4 w-4" />
-                Nueva temporada
-              </Link>
-            </Button>
+            <Button className="mt-4" size="sm" render={<Link href="/seasons/new"><PlusIcon className="mr-1 h-4 w-4" />Nueva temporada</Link>} />
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">

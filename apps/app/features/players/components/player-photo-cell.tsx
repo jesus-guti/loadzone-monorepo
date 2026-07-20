@@ -8,8 +8,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/avatar";
+import { toast } from "@repo/design-system/components/sonner";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { updatePlayerPhoto } from "../actions/player-actions";
