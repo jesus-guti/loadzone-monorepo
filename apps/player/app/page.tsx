@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@repo/design-system/components/ui/spinner";
+import { Spinner } from "@repo/design-system/components/spinner";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getPlayerToken } from "./lib/token-storage";

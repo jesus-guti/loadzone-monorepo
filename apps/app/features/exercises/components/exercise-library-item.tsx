@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   Item,
   ItemActions,
@@ -9,7 +9,7 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from "@repo/design-system/components/ui/item";
+} from "@repo/design-system/components/item";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import type { ExerciseLibraryListItem } from "../types";

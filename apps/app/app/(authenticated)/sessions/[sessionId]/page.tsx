@@ -1,6 +1,6 @@
 import { database } from "@repo/database";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import { PencilSimpleIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import {
@@ -8,7 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/components/card";
 import type { ReactElement } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -170,12 +170,7 @@ const SessionDetailPage = async ({
           <PrintButton />
           {session.status !== "CANCELLED" ? (
             <>
-              <Button asChild size="icon" variant="outline">
-                <Link href={`/sessions/${session.id}/edit`}>
-                  <PencilSimpleIcon className="size-4" />
-                  <span className="sr-only">Editar sesión</span>
-                </Link>
-              </Button>
+              <Button size="icon" variant="outline" render={<Link href={`/sessions/${session.id}/edit`}><PencilSimpleIcon className="size-4" /><span className="sr-only">Editar sesión</span></Link>} />
               <CancelSessionButton sessionId={session.id} />
             </>
           ) : null}

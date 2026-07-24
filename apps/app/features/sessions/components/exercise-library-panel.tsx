@@ -1,8 +1,8 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/ui/input";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/input";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";

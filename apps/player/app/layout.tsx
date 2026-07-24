@@ -1,5 +1,5 @@
 import "./styles.css";
-import { Toaster } from "@repo/design-system/components/ui/sonner";
+import { Toaster } from "@repo/design-system/components/sonner";
 import { fonts } from "@repo/design-system/lib/fonts";
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";

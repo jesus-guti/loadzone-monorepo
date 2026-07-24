@@ -1,18 +1,18 @@
 import { database } from "@repo/database";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon } from "@phosphor-icons/react/ssr";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
+} from "@repo/design-system/components/avatar";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/components/card";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layouts/header";

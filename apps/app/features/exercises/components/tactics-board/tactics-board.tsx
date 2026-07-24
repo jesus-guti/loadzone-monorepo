@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,8 +10,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@repo/design-system/components/ui/alert-dialog";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/alert-dialog";
+import { Button } from "@repo/design-system/components/button";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
 import { XIcon } from "@phosphor-icons/react/ssr";

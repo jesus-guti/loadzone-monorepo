@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@repo/design-system/components/ui/dropdown-menu";
+} from "@repo/design-system/components/dropdown-menu";
 import { TranslateIcon } from "@phosphor-icons/react/ssr";
 import { useParams, usePathname, useRouter } from "next/navigation";
 

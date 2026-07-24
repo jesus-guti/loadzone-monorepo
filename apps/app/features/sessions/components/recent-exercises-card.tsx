@@ -4,8 +4,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/card";
+import { Button } from "@repo/design-system/components/button";
 import Link from "next/link";
 
 export type RecentExerciseEntry = {
@@ -28,9 +28,7 @@ export function RecentExercisesCard({
           Ejercicios recientes
         </CardTitle>
         <CardAction>
-          <Button asChild size="sm" variant="ghost">
-            <Link href="/exercises">Ver todos</Link>
-          </Button>
+          <Button size="sm" variant="ghost" render={<Link href="/exercises">Ver todos</Link>} />
         </CardAction>
       </CardHeader>
       <CardContent className="px-0 pb-0">

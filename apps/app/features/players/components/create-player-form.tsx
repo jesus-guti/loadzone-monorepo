@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
+import { Label } from "@repo/design-system/components/label";
+import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect } from "react";
 import { createPlayer } from "../actions/player-actions";
 

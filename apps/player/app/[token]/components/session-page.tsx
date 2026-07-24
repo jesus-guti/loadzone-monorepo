@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useTransition } from "react";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,
   SheetContent,
@@ -10,13 +10,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@repo/design-system/components/ui/sheet";
+} from "@repo/design-system/components/sheet";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
+} from "@repo/design-system/components/tabs";
 import {
   CalendarBlankIcon,
   CheckCircleIcon,
@@ -286,7 +286,7 @@ export function SessionPage({
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 space-y-4"
+          className="flex-1 w-full min-w-0 space-y-4"
         >
           <TabsList
             variant="segmented"
@@ -295,7 +295,7 @@ export function SessionPage({
             <TabsTrigger
               value="pre"
               className={cn(
-                "h-10 gap-1.5 rounded-full text-sm font-semibold data-[state=active]:bg-bg-primary data-[state=active]:shadow-soft"
+                "h-10 gap-1.5 rounded-full text-sm font-semibold data-active:shadow-soft"
               )}
             >
               {preCompleted ? (
@@ -306,7 +306,7 @@ export function SessionPage({
             <TabsTrigger
               value="post"
               className={cn(
-                "h-10 gap-1.5 rounded-full text-sm font-semibold data-[state=active]:bg-bg-primary data-[state=active]:shadow-soft"
+                "h-10 gap-1.5 rounded-full text-sm font-semibold data-active:shadow-soft"
               )}
             >
               {postCompleted ? (
@@ -397,15 +397,17 @@ export function SessionPage({
 
       <footer className="mt-auto pt-4 text-center">
         <Sheet open={injuryOpen} onOpenChange={setInjuryOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
-            >
-              <HeartbeatIcon className="h-3.5 w-3.5" />
-              ¿Tienes una molestia? Reportar lesión
-            </button>
-          </SheetTrigger>
+          <SheetTrigger
+            render={
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
+              >
+                <HeartbeatIcon className="h-3.5 w-3.5" />
+                ¿Tienes una molestia? Reportar lesión
+              </button>
+            }
+          />
           <SheetContent
             side="bottom"
             className="max-h-[90dvh] overflow-y-auto rounded-t-3xl"

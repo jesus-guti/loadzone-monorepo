@@ -1,8 +1,8 @@
 import { database } from "@repo/database";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon, PlusIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/button";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/components/ui/table";
+} from "@repo/design-system/components/table";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -77,12 +77,7 @@ const PlayersPage = async () => {
     <>
       <Header page="Jugadores" pages={["LoadZone"]}>
         <div className="px-4">
-          <Button asChild size="sm">
-            <Link href="/players/new">
-              <PlusIcon className="mr-1 size-4" />
-              Añadir jugador
-            </Link>
-          </Button>
+          <Button size="sm" render={<Link href="/players/new"><PlusIcon className="mr-1 size-4" />Añadir jugador</Link>} />
         </div>
       </Header>
 
@@ -95,12 +90,7 @@ const PlayersPage = async () => {
             <p className="mt-1 text-sm text-text-secondary">
               Añade tu primer jugador para ver wellness y enlaces de check-in.
             </p>
-            <Button asChild className="mt-4" size="sm">
-              <Link href="/players/new">
-                <PlusIcon className="mr-1 size-4" />
-                Añadir jugador
-              </Link>
-            </Button>
+            <Button className="mt-4" size="sm" render={<Link href="/players/new"><PlusIcon className="mr-1 size-4" />Añadir jugador</Link>} />
           </div>
         ) : (
           <Table>
@@ -167,11 +157,7 @@ const PlayersPage = async () => {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <CopyTokenButton token={player.token} />
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/players/${player.id}/edit`}>
-                          Editar
-                        </Link>
-                      </Button>
+                      <Button variant="ghost" size="sm" render={<Link href={`/players/${player.id}/edit`}>Editar</Link>} />
                       <ArchiveButton
                         playerId={player.id}
                         playerName={player.name}

@@ -6,14 +6,14 @@ import {
   ShareIcon,
   XIcon,
 } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@repo/design-system/components/ui/sheet";
+} from "@repo/design-system/components/sheet";
 import { useCallback, useEffect, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {

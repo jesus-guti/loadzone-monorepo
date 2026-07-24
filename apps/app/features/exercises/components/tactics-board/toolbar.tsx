@@ -10,7 +10,7 @@ import {
   PencilSimpleIcon,
   TrashIcon,
 } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,
   SheetContent,
@@ -18,9 +18,9 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@repo/design-system/components/ui/sheet";
-import { Switch } from "@repo/design-system/components/ui/switch";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
+} from "@repo/design-system/components/sheet";
+import { Switch } from "@repo/design-system/components/switch";
+import { Textarea } from "@repo/design-system/components/textarea";
 import {
   useCompactBoardLayout,
   useIsMobile,
@@ -283,7 +283,7 @@ function ToolbarSettingsSheet({
 
   return (
     <Sheet>
-      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetTrigger render={children as React.ReactElement} />
       <SheetContent className={sheetContentClassName} side="bottom">
         <SheetHeader>
           <SheetTitle>Pizarra tactica</SheetTitle>

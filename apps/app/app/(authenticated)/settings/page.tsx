@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { database } from "@repo/database";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+import { Button } from "@repo/design-system/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
+import { Input } from "@repo/design-system/components/input";
+import { Label } from "@repo/design-system/components/label";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
@@ -260,15 +260,9 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                 acciones del header.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/players">Jugadores</Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/seasons">Temporadas</Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/injuries">Lesiones</Link>
-                </Button>
+                <Button size="sm" variant="outline" render={<Link href="/players">Jugadores</Link>} />
+                <Button size="sm" variant="outline" render={<Link href="/seasons">Temporadas</Link>} />
+                <Button size="sm" variant="outline" render={<Link href="/injuries">Lesiones</Link>} />
               </div>
             </CardContent>
           </Card>

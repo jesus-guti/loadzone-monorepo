@@ -1,13 +1,13 @@
 "use client";
 
 import { CalendarDotsIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Calendar } from "@repo/design-system/components/ui/calendar";
+import { Button } from "@repo/design-system/components/button";
+import { Calendar } from "@repo/design-system/components/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/design-system/components/ui/popover";
+} from "@repo/design-system/components/popover";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { setActiveWellnessDate } from "@/actions/active-wellness-date";
@@ -94,17 +94,19 @@ export function WellnessDateFilter({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          className="rounded-md"
-          disabled={isPending}
-          size="sm"
-          variant="outline"
-        >
-          <CalendarDotsIcon className="size-4" />
-          {buttonLabel}
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button
+            className="rounded-md"
+            disabled={isPending}
+            size="sm"
+            variant="outline"
+          >
+            <CalendarDotsIcon className="size-4" />
+            {buttonLabel}
+          </Button>
+        }
+      />
       <PopoverContent align="end" className="w-auto p-0">
         <div className="border-b border-border-secondary px-4 py-3">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-secondary">

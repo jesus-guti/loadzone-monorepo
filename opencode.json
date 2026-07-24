@@ -12,5 +12,16 @@
     ".cursor/rules/loadzone-server-actions.mdc",
     ".cursor/rules/loadzone-spec-driven.mdc",
     ".cursor/rules/loadzone-testing.mdc"
-  ]
+  ],
+  "mcp": {
+    "shadcn": {
+      "type": "local",
+      "command": [
+        "npx",
+        "shadcn@latest",
+        "mcp"
+      ],
+      "enabled": true
+    }
+  }
 }

@@ -1,5 +1,5 @@
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
 import {
   CheckCircleIcon,
   WarningIcon,

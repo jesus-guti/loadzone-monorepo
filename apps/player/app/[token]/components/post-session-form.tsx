@@ -1,11 +1,10 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import { savePostSession } from "../actions/save-entry";
 import { SliderInput } from "./slider-input";
-import { ChipInput } from "./chip-input";
 import { QuestionCard, type QuestionState } from "./question-card";
 import { CheckCircleIcon, FlameIcon } from "@phosphor-icons/react/ssr";
 
@@ -50,7 +49,7 @@ type PostSessionFormProperties = {
   readonly onComplete: () => void;
 };
 
-type StepKey = "rpe" | "duration";
+type StepKey = "rpe";
 
 export function PostSessionForm({
   token,
@@ -60,7 +59,6 @@ export function PostSessionForm({
   onComplete,
 }: PostSessionFormProperties) {
   const [rpe, setRpe] = useState<number | null>(null);
-  const [duration, setDuration] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -69,19 +67,17 @@ export function PostSessionForm({
     success: false,
   });
 
-  const questions = template?.questions ?? [];
+  const questions = (template?.questions ?? []).filter(
+    (question) => question.mappingKey !== "duration"
+  );
   const rpeQuestion =
     questions.find((question) => question.mappingKey === "rpe") ?? null;
-  const durationQuestion =
-    questions.find((question) => question.mappingKey === "duration") ?? null;
 
   const steps = useMemo(() => {
     const list: Array<{ key: StepKey; hasValue: boolean }> = [];
     if (rpeQuestion) list.push({ key: "rpe", hasValue: rpe !== null });
-    if (durationQuestion)
-      list.push({ key: "duration", hasValue: duration !== null });
     return list;
-  }, [rpeQuestion, durationQuestion, rpe, duration]);
+  }, [rpeQuestion, rpe]);
 
   const answeredCount = steps.filter((step) => step.hasValue).length;
   const totalSteps = steps.length;
@@ -128,11 +124,6 @@ export function PostSessionForm({
     });
   }
 
-  function handleAnswer(index: number, apply: () => void) {
-    apply();
-    requestAnimationFrame(() => advanceFrom(index));
-  }
-
   function handleEdit(index: number) {
     setCurrentStep(index);
     requestAnimationFrame(() => {
@@ -167,13 +158,6 @@ export function PostSessionForm({
         {rpeQuestion ? (
           <input type="hidden" name={rpeQuestion.key} value={rpe ?? ""} />
         ) : null}
-        {durationQuestion ? (
-          <input
-            type="hidden"
-            name={durationQuestion.key}
-            value={duration ?? ""}
-          />
-        ) : null}
 
         <div className="space-y-3">
           {steps.map((step, index) => {
@@ -207,45 +191,6 @@ export function PostSessionForm({
                       labelForValue={(value) => BORG_LABELS[value]}
                       colorForValue={borgColor}
                       gradientClassName="from-brand via-premium to-danger"
-                    />
-                  </QuestionCard>
-                </div>
-              );
-            }
-
-            if (step.key === "duration" && durationQuestion) {
-              return (
-                <div
-                  key={step.key}
-                  ref={(element) => {
-                    stepRefs.current[index] = element;
-                  }}
-                >
-                  <QuestionCard
-                    state={questionState}
-                    index={index}
-                    label={durationQuestion.label}
-                    summary={duration !== null ? `${duration} min` : undefined}
-                    onEdit={() => handleEdit(index)}
-                  >
-                    <ChipInput
-                      name={durationQuestion.key}
-                      options={[
-                        { value: 45, label: "45 min" },
-                        { value: 60, label: "60 min" },
-                        { value: 75, label: "75 min" },
-                        { value: 90, label: "90 min" },
-                        { value: 105, label: "105 min" },
-                        { value: 120, label: "120 min" },
-                      ]}
-                      value={duration}
-                      onChange={(next) =>
-                        handleAnswer(index, () => setDuration(next))
-                      }
-                      min={durationQuestion.minValue ?? 1}
-                      max={durationQuestion.maxValue ?? 600}
-                      step={durationQuestion.step ?? 5}
-                      customPlaceholder="Otro (min)"
                     />
                   </QuestionCard>
                 </div>

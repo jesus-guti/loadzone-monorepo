@@ -1,16 +1,16 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
+import { Label } from "@repo/design-system/components/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/select";
+import { toast } from "@repo/design-system/components/sonner";
 import type { PlayerStatus } from "@repo/database";
 import { useActionState, useEffect } from "react";
 import { updatePlayer } from "../actions/player-actions";

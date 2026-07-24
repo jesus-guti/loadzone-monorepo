@@ -1,5 +1,5 @@
 import { database } from "@repo/database";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { PlusIcon } from "@phosphor-icons/react/ssr";
 import type { ReactElement } from "react";
 import type { Metadata } from "next";
@@ -149,12 +149,7 @@ const SessionsPage = async (): Promise<ReactElement> => {
   return (
     <>
       <Header page="Sesiones" pages={["LoadZone"]}>
-        <Button asChild size="sm">
-          <Link aria-label="Añadir sesión" href="/sessions/new">
-            <PlusIcon className="size-4 md:mr-1" />
-            <span className="hidden md:inline">Añadir sesión</span>
-          </Link>
-        </Button>
+        <Button size="sm" render={<Link aria-label="Añadir sesión" href="/sessions/new"><PlusIcon className="size-4 md:mr-1" /><span className="hidden md:inline">Añadir sesión</span></Link>} />
       </Header>
       <div className="grid flex-1 gap-6 p-4 md:p-6 lg:grid-cols-[1fr_360px]">
         <SessionCalendar

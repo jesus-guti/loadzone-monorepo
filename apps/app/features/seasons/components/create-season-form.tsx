@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
+import { Label } from "@repo/design-system/components/label";
 import { useActionState, useEffect } from "react";
-import { toast } from "@repo/design-system/components/ui/sonner";
+import { toast } from "@repo/design-system/components/sonner";
 import { createSeason } from "../actions/season-actions";
 
 export function CreateSeasonForm() {

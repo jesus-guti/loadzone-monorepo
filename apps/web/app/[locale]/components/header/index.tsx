@@ -1,7 +1,7 @@
 "use client";
 
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,7 +9,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@repo/design-system/components/ui/navigation-menu";
+} from "@repo/design-system/components/navigation-menu";
 import type { Dictionary } from "@repo/internationalization";
 import { CommandIcon, ListIcon, ArrowRightIcon, XIcon } from "@phosphor-icons/react/ssr";
 import Image from "next/image";

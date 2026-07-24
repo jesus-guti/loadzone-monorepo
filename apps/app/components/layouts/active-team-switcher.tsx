@@ -1,7 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@phosphor-icons/react/ssr";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectLabel,
   SelectSeparator,
   SelectTrigger,
-} from "@repo/design-system/components/ui/select";
+} from "@repo/design-system/components/select";
 import { cn } from "@repo/design-system/lib/utils";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -31,7 +31,8 @@ export function ActiveTeamSwitcher() {
       <Select
         disabled={isPending || teams.length === 0}
         value={activeValue}
-        onValueChange={(teamId: string) => {
+        onValueChange={(teamId: string | null) => {
+          if (!teamId) return;
           if (teamId === CREATE_TEAM_VALUE) {
             router.push("/settings?createTeam=1");
             return;

@@ -1,5 +1,5 @@
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -49,12 +49,8 @@ const Dashboard = async () => {
                 completitud.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button asChild>
-                  <Link href="/wellness">Abrir wellness</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/sessions">Ver sesiones</Link>
-                </Button>
+                <Button render={<Link href="/wellness">Abrir wellness</Link>} />
+                <Button variant="outline" render={<Link href="/sessions">Ver sesiones</Link>} />
               </div>
             </CardContent>
           </Card>

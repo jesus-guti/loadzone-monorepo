@@ -5,15 +5,15 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/avatar";
+import { Button } from "@repo/design-system/components/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/card";
+import { toast } from "@repo/design-system/components/sonner";
 import { validateImageFile } from "@repo/storage/image-validation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { clearClubBrandingLogo, updateClubBranding } from "../actions/team-settings";

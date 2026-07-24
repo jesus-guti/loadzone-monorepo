@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   CaretLeftIcon,

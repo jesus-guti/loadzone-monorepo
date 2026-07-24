@@ -1,7 +1,7 @@
 "use client";
 
 import { BellRingingIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   Dialog,
@@ -11,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/design-system/components/ui/dialog";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/dialog";
+import { toast } from "@repo/design-system/components/sonner";
 import { useState, useTransition } from "react";
 import { remindPendingWellnessPlayers } from "../actions/remind-pending-players";
 
@@ -58,20 +58,22 @@ export function PendingReminderDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          aria-label="Re-notificar jugadores pendientes"
-          className={cn(
-            "size-10 rounded-full",
-            pendingCount > 0 ? "glass-surface text-text-primary" : null
-          )}
-          disabled={pendingCount === 0}
-          size="icon"
-          variant="ghost"
-        >
-          <BellRingingIcon className="size-5" />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button
+            aria-label="Re-notificar jugadores pendientes"
+            className={cn(
+              "size-10 rounded-full",
+              pendingCount > 0 ? "glass-surface text-text-primary" : null
+            )}
+            disabled={pendingCount === 0}
+            size="icon"
+            variant="ghost"
+          >
+            <BellRingingIcon className="size-5" />
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Re-notificar pendientes</DialogTitle>

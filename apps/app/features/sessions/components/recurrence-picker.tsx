@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/ui/input";
-import { Switch } from "@repo/design-system/components/ui/switch";
+import { Input } from "@repo/design-system/components/input";
+import { Switch } from "@repo/design-system/components/switch";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
 import { FieldLabel } from "./form-section";

@@ -3,8 +3,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@repo/design-system/components/ui/accordion";
-import { Button } from "@repo/design-system/components/ui/button";
+} from "@repo/design-system/components/accordion";
+import { Button } from "@repo/design-system/components/button";
 import type { Dictionary } from "@repo/internationalization";
 import { PhoneCallIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";

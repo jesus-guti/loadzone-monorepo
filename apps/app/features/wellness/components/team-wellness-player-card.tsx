@@ -8,9 +8,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+} from "@repo/design-system/components/avatar";
+import { Badge } from "@repo/design-system/components/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
 import Link from "next/link";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";

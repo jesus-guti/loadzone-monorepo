@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Badge } from "@repo/design-system/components/badge";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/design-system/components/ui/table";
+} from "@repo/design-system/components/table";
 import type { RiskLevel } from "@repo/database";
 
 type PlayerHistoryRow = {

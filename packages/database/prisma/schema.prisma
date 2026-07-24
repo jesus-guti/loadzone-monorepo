@@ -283,20 +283,20 @@ model VerificationToken {
 }
 
 model Membership {
-  id               String           @id @default(cuid())
-  userId           String
-  clubId           String
-  role             MembershipRole
-  hasAllTeams      Boolean          @default(false)
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  club             Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  teamLinks        MembershipTeam[]
-  createdSessions  TeamSession[]    @relation("SessionCreators")
-  createdExercises Exercise[]       @relation("ExerciseCreators")
+  id                String                       @id @default(cuid())
+  userId            String
+  clubId            String
+  role              MembershipRole
+  hasAllTeams       Boolean                      @default(false)
+  user              User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club              Club                         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  teamLinks         MembershipTeam[]
+  createdSessions   TeamSession[]                @relation("SessionCreators")
+  createdExercises  Exercise[]                   @relation("ExerciseCreators")
   exerciseFavorites MembershipExerciseFavorite[]
-  reviewedInjuries InjuryReport[]   @relation("ReviewedInjuries")
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  reviewedInjuries  InjuryReport[]               @relation("ReviewedInjuries")
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
 
   @@unique([userId, clubId, role])
   @@index([userId])
@@ -523,36 +523,36 @@ model TeamSessionPlayer {
 }
 
 model Exercise {
-  id                  String              @id @default(cuid())
-  clubId              String?
-  name                String
-  slug                String
-  objectivesText      String
-  explanationText     String
-  durationMinutes     Int
-  spaceWidthMeters    Decimal
-  spaceLengthMeters   Decimal
-  minPlayers          Int
-  maxPlayers          Int
-  complexity          ExerciseComplexity
-  strategy            ExerciseStrategy
-  coordinativeSkill   CoordinativeSkill
-  tacticalIntention   TacticalIntention
-  dynamicType         ExerciseDynamicType
-  gameSituation       GameSituationType
-  coordinationType    CoordinationType
-  diagramData         Json?
-  diagramVersion      Int                 @default(0)
+  id                    String                       @id @default(cuid())
+  clubId                String?
+  name                  String
+  slug                  String
+  objectivesText        String
+  explanationText       String
+  durationMinutes       Int
+  spaceWidthMeters      Decimal
+  spaceLengthMeters     Decimal
+  minPlayers            Int
+  maxPlayers            Int
+  complexity            ExerciseComplexity
+  strategy              ExerciseStrategy
+  coordinativeSkill     CoordinativeSkill
+  tacticalIntention     TacticalIntention
+  dynamicType           ExerciseDynamicType
+  gameSituation         GameSituationType
+  coordinationType      CoordinationType
+  diagramData           Json?
+  diagramVersion        Int                          @default(0)
   diagramThumbnailUrl   String?
-  isSystem              Boolean             @default(false)
-  isArchived            Boolean             @default(false)
-  visibility            ExerciseVisibility  @default(CLUB_SHARED)
+  isSystem              Boolean                      @default(false)
+  isArchived            Boolean                      @default(false)
+  visibility            ExerciseVisibility           @default(CLUB_SHARED)
   createdByMembershipId String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  club                  Club?               @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  createdBy             Membership?         @relation("ExerciseCreators", fields: [createdByMembershipId], references: [id], onDelete: SetNull)
-  membershipFavorites MembershipExerciseFavorite[]
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+  club                  Club?                        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  createdBy             Membership?                  @relation("ExerciseCreators", fields: [createdByMembershipId], references: [id], onDelete: SetNull)
+  membershipFavorites   MembershipExerciseFavorite[]
   sessionExercises      SessionExercise[]
 
   @@unique([clubId, slug])
@@ -580,18 +580,18 @@ model SessionExercise {
 }
 
 model SessionAttendance {
-  id             String           @id @default(cuid())
-  teamSessionId  String
-  playerId       String
-  status         AttendanceStatus @default(PENDING)
-  notes          String?
-  minutesPlayed  Int?
-  startedMinute  Int?
-  markedAt       DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  teamSession    TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
-  player         Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  id            String           @id @default(cuid())
+  teamSessionId String
+  playerId      String
+  status        AttendanceStatus @default(PENDING)
+  notes         String?
+  minutesPlayed Int?
+  startedMinute Int?
+  markedAt      DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  teamSession   TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player        Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@unique([teamSessionId, playerId])
   @@index([playerId, status])

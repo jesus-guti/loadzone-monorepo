@@ -2,7 +2,7 @@
 
 import { BellIcon, ListIcon } from "@phosphor-icons/react/ssr";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Button } from "@repo/design-system/components/button";
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@repo/design-system/components/ui/sidebar";
+} from "@repo/design-system/components/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -131,15 +131,15 @@ export const GlobalSidebar = ({
                 {primaryNavigation.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
-                      asChild
                       isActive={item.match(pathname)}
                       tooltip={item.label}
-                    >
-                      <Link href={item.href} prefetch>
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                      render={
+                        <Link href={item.href} prefetch>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      }
+                    />
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -153,15 +153,15 @@ export const GlobalSidebar = ({
                 {secondaryNavigation.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
-                      asChild
                       isActive={item.match(pathname)}
                       tooltip={item.label}
-                    >
-                      <Link href={item.href} prefetch>
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                      render={
+                        <Link href={item.href} prefetch>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      }
+                    />
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

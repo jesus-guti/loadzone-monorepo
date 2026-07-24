@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/button";
+import { Input } from "@repo/design-system/components/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/design-system/components/ui/select";
-import { toast } from "@repo/design-system/components/ui/sonner";
+} from "@repo/design-system/components/select";
+import { toast } from "@repo/design-system/components/sonner";
 import { useState, useTransition } from "react";
 import type { AttendanceStatus } from "@repo/database";
 import { setAttendance } from "../actions/session-actions";
