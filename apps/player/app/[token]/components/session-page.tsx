@@ -286,7 +286,7 @@ export function SessionPage({
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 space-y-4"
+          className="flex-1 w-full min-w-0 space-y-4"
         >
           <TabsList
             variant="segmented"
@@ -295,7 +295,7 @@ export function SessionPage({
             <TabsTrigger
               value="pre"
               className={cn(
-                "h-10 gap-1.5 rounded-full text-sm font-semibold data-[state=active]:bg-bg-primary data-[state=active]:shadow-soft"
+                "h-10 gap-1.5 rounded-full text-sm font-semibold data-active:shadow-soft"
               )}
             >
               {preCompleted ? (
@@ -306,7 +306,7 @@ export function SessionPage({
             <TabsTrigger
               value="post"
               className={cn(
-                "h-10 gap-1.5 rounded-full text-sm font-semibold data-[state=active]:bg-bg-primary data-[state=active]:shadow-soft"
+                "h-10 gap-1.5 rounded-full text-sm font-semibold data-active:shadow-soft"
               )}
             >
               {postCompleted ? (
