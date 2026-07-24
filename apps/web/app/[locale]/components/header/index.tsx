@@ -64,11 +64,14 @@ export const Header = ({ dictionary }: HeaderProps) => {
               {navigationItems.map((item) => (
                 <NavigationMenuItem key={item.title}>
                   {item.href ? (
-                    <NavigationMenuLink asChild>
-                      <Button asChild variant="ghost">
-                        <Link href={item.href}>{item.title}</Link>
-                      </Button>
-                    </NavigationMenuLink>
+                    <NavigationMenuLink
+                      render={
+                        <Button
+                          variant="ghost"
+                          render={<Link href={item.href}>{item.title}</Link>}
+                        />
+                      }
+                    />
                   ) : (
                     <>
                       <NavigationMenuTrigger className="font-medium text-sm">
@@ -83,11 +86,15 @@ export const Header = ({ dictionary }: HeaderProps) => {
                                 {item.description}
                               </p>
                             </div>
-                            <Button asChild className="mt-10" size="sm">
-                              <Link href="/contact">
-                                {dictionary.web.global.primaryCta}
-                              </Link>
-                            </Button>
+                            <Button
+                              className="mt-10"
+                              size="sm"
+                              render={
+                                <Link href="/contact">
+                                  {dictionary.web.global.primaryCta}
+                                </Link>
+                              }
+                            />
                           </div>
                           <div className="flex h-full flex-col justify-end text-sm">
                             {item.items?.map((subItem, idx) => (
@@ -127,9 +134,13 @@ export const Header = ({ dictionary }: HeaderProps) => {
           <p className="whitespace-nowrap font-semibold">next-forge</p>
         </div>
         <div className="flex w-full justify-end gap-4">
-          <Button asChild className="hidden md:inline" variant="ghost">
-            <Link href="/contact">{dictionary.web.header.contact}</Link>
-          </Button>
+          <Button
+            className="hidden md:inline"
+            variant="ghost"
+            render={
+              <Link href="/contact">{dictionary.web.header.contact}</Link>
+            }
+          />
           <div className="hidden border-r md:inline" />
           <div className="hidden md:inline">
             <LanguageSwitcher />
@@ -137,16 +148,22 @@ export const Header = ({ dictionary }: HeaderProps) => {
           <div className="hidden md:inline">
             <ModeToggle />
           </div>
-          <Button asChild className="hidden md:inline" variant="outline">
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>
-              {dictionary.web.header.signIn}
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
-              {dictionary.web.header.signUp}
-            </Link>
-          </Button>
+          <Button
+            className="hidden md:inline"
+            variant="outline"
+            render={
+              <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>
+                {dictionary.web.header.signIn}
+              </Link>
+            }
+          />
+          <Button
+            render={
+              <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+                {dictionary.web.header.signUp}
+              </Link>
+            }
+          />
         </div>
         <div className="flex w-12 shrink items-end justify-end lg:hidden">
           <Button onClick={() => setOpen(!isOpen)} variant="ghost">
