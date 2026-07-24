@@ -188,6 +188,12 @@ async function parseSubmission(
   const metrics: ProjectedMetrics = {};
 
   for (const question of template.questions) {
+    // Duration is no longer collected from the player; skip even if still present
+    // as a required question on older form templates.
+    if (question.mappingKey === "duration" || question.key === "duration") {
+      continue;
+    }
+
     const parsedValue = parseQuestionValue(formData.get(question.key), question);
     if (question.required && parsedValue == null) {
       return { ok: false, error: `Falta completar: ${question.label}.` };

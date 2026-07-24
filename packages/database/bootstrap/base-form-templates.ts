@@ -112,16 +112,6 @@ const BASE_FORM_TEMPLATES: BaseFormTemplateDefinition[] = [
         step: "1",
         mappingKey: "rpe",
       },
-      {
-        key: "duration",
-        label: "Duración de la sesión (minutos)",
-        type: "NUMBER",
-        order: 2,
-        minValue: "1",
-        maxValue: "600",
-        step: "1",
-        mappingKey: "duration",
-      },
     ],
   },
 ];
