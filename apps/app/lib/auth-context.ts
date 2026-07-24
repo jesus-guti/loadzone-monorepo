@@ -1,6 +1,6 @@
 import { type CurrentUser, currentUser } from "@repo/auth/server";
 import { cookies } from "next/headers";
-import { assembleStaffContext } from "./staff-context-assembly";
+import { assembleStaffContext, type StaffContext } from "./staff-context-assembly";
 import { getStaffDataAdapter } from "./staff-data-adapter";
 import {
   pickPreferredStaffMembership,

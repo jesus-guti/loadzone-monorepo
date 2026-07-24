@@ -27,11 +27,15 @@ const Pricing = () => (
               <span className="text-4xl">$40</span>
               <span className="text-muted-foreground text-sm"> / month</span>
             </p>
-            <Button asChild className="mt-8 gap-4" variant="outline">
-              <Link href={env.NEXT_PUBLIC_APP_URL}>
-                Try it <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-            </Button>
+            <Button
+              className="mt-8 gap-4"
+              variant="outline"
+              render={
+                <Link href={env.NEXT_PUBLIC_APP_URL}>
+                  Try it <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+              }
+            />
           </div>
           <div className="flex flex-col gap-2 px-3 py-1 md:px-6 md:py-4">
             <p className="text-2xl">Growth</p>
@@ -43,11 +47,14 @@ const Pricing = () => (
               <span className="text-4xl">$40</span>
               <span className="text-muted-foreground text-sm"> / month</span>
             </p>
-            <Button asChild className="mt-8 gap-4">
-              <Link href={env.NEXT_PUBLIC_APP_URL}>
-                Try it <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-            </Button>
+            <Button
+              className="mt-8 gap-4"
+              render={
+                <Link href={env.NEXT_PUBLIC_APP_URL}>
+                  Try it <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+              }
+            />
           </div>
           <div className="flex flex-col gap-2 px-3 py-1 md:px-6 md:py-4">
             <p className="text-2xl">Enterprise</p>
@@ -59,11 +66,15 @@ const Pricing = () => (
               <span className="text-4xl">$40</span>
               <span className="text-muted-foreground text-sm"> / month</span>
             </p>
-            <Button asChild className="mt-8 gap-4" variant="outline">
-              <Link href="/contact">
-                Contact us <PhoneCallIcon className="h-4 w-4" />
-              </Link>
-            </Button>
+            <Button
+              className="mt-8 gap-4"
+              variant="outline"
+              render={
+                <Link href="/contact">
+                  Contact us <PhoneCallIcon className="h-4 w-4" />
+                </Link>
+              }
+            />
           </div>
           <div className="col-span-3 px-3 py-4 lg:col-span-1 lg:px-6">
             <b>Features</b>

@@ -61,25 +61,26 @@ export const ContactForm = ({ dictionary }: ContactFormProps) => {
                   {dictionary.web.contact.hero.form.date}
                 </Label>
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      className={cn(
-                        "w-full max-w-sm justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                      variant="outline"
-                    >
-                      <CalendarBlankIcon className="mr-2 h-4 w-4" />
-                      {date ? (
-                        format(date, "PPP")
-                      ) : (
-                        <span>{dictionary.web.contact.hero.form.date}</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
+                  <PopoverTrigger
+                    render={
+                      <Button
+                        className={cn(
+                          "w-full max-w-sm justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                        variant="outline"
+                      >
+                        <CalendarBlankIcon className="mr-2 h-4 w-4" />
+                        {date ? (
+                          format(date, "PPP")
+                        ) : (
+                          <span>{dictionary.web.contact.hero.form.date}</span>
+                        )}
+                      </Button>
+                    }
+                  />
                   <PopoverContent className="w-auto p-0">
                     <Calendar
-                      initialFocus
                       mode="single"
                       onSelect={setDate}
                       selected={date}
