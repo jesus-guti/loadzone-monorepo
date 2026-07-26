@@ -66,7 +66,7 @@ export async function updateCurrentUserProfile(
         previousUrl: currentDatabaseUser.image,
       });
 
-      nextImage = imageUpload.pathname;
+      nextImage = imageUpload.url;
     }
 
     const updatedUser = await database.user.update({

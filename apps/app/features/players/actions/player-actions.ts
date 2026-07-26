@@ -160,7 +160,7 @@ export async function updatePlayerPhoto(
     await database.player.update({
       where: { id: player.id, teamId },
       data: {
-        imageUrl: imageUpload.pathname,
+        imageUrl: imageUpload.url,
       },
     });
 
