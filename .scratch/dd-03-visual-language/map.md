@@ -1,8 +1,9 @@
 # DD-03 — Decide shared visual language and app divergence
 
-Status: planning  
+Status: resolved  
 Parent: `.scratch/design-direction-wayfinder/MAP.md`  
-Ticket: `.scratch/design-direction-wayfinder/issues/03-decide-shared-visual-language-and-app-divergence.md`  
+Ticket: `.scratch/design-direction-wayfinder/issues/03-decide-shared-visual-language-and-app-divergence.md` (closed)  
+Artifact: [shared-visual-language-and-app-divergence.md](../design-direction-wayfinder/artifacts/shared-visual-language-and-app-divergence.md)  
 Locked parents: [admin-experience-principles](../design-direction-wayfinder/artifacts/admin-experience-principles.md), [player-age-bands-and-parental-supervision](../design-direction-wayfinder/resolutions/player-age-bands-and-parental-supervision.md)
 
 ## Destination
@@ -78,12 +79,10 @@ Rule-ready **shared visual language + per-app divergence** for LoadZone — hue 
    Reason: both `globals.css` files already define `--surface-*`; renaming now is churn without product gain.  
    **Revert:** promote `surface-*` into documented product tokens, or retire aliases in a later migration ticket (DD-07).
 
-### Hitl (pending human)
+### Hitl (locked)
 
-10. **[hitl] Brand hue: shared sage family vs split hues between admin and player.**  
-    Parent MAP **Not yet specified** still lists this as fog. Current code already shares ~160–162 OKLCH sage across both apps with different lightness/chroma/radius.  
-    **Recommendation A — keep a shared sage hue family** (both apps ~160–162), diverge via density, radius, border presence, motion, and type scale/weight only. Preserves one product family, matches shipped tokens, and avoids dual-brand maintenance for charts/`brand`/`ring`.  
-    Alternatives: (B) split hues (e.g. admin cooler/neutral, player warmer green) — stronger app personality, weaker family signal, more token/chart drift risk.
+10. **[hitl → locked] Brand hue: shared sage family.**  
+    Human `ok a todo` accepted **recommendation A** — both apps ~160–162 OKLCH sage; diverge via density, radius, border presence, motion, and type scale/weight only. Split hues (B) rejected. Parent MAP fog cleared.
 
 ## Decision ledger (classification)
 
