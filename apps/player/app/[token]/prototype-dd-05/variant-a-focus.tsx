@@ -29,7 +29,7 @@ type VariantAProperties = {
 export function VariantAFocus({
   band,
   step,
-  answers,
+  answers: _answers,
   completed,
   simulateMiss,
   careTriggered,
@@ -51,7 +51,7 @@ export function VariantAFocus({
             {COPY.completionBody[band]}
           </p>
           <CalmStreakChip days={DEMO_STREAK} simulateMiss={simulateMiss} />
-          {careTriggered && band !== "independent" ? (
+          {careTriggered && band !== "independent" && COPY.careSilentNote ? (
             <p className="rounded-2xl bg-bg-tertiary px-4 py-3 text-sm text-text-secondary">
               {COPY.careSilentNote}
             </p>
@@ -82,13 +82,11 @@ export function VariantAFocus({
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-36 pt-6">
       <PrototypeMark />
 
-      {band === "assisted" ? (
-        <p className="mt-4 rounded-2xl bg-brand/10 px-4 py-3 text-sm leading-snug text-text-primary">
-          {COPY.assistedPresence}
-        </p>
+      {band === "assisted" && COPY.assistedPresence ? (
+        <p className="mt-4 text-sm text-text-secondary">{COPY.assistedPresence}</p>
       ) : null}
 
-      {band === "independent" ? (
+      {band === "independent" && COPY.independentFootnote ? (
         <p className="mt-4 text-xs text-text-tertiary">{COPY.independentFootnote}</p>
       ) : null}
 
@@ -113,12 +111,6 @@ export function VariantAFocus({
             onSelect={(value) => onAnswer(question.id, value)}
           />
         </div>
-
-        {Object.keys(answers).length > 0 ? (
-          <p className="mt-4 text-center text-xs text-text-tertiary">
-            Estado: {Object.keys(answers).length}/{total} respondidas
-          </p>
-        ) : null}
       </div>
     </div>
   );

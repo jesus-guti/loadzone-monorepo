@@ -55,7 +55,7 @@ export function VariantBTimeline({
             {COPY.completionBody[band]}
           </p>
         </div>
-        {careTriggered && band !== "independent" ? (
+        {careTriggered && band !== "independent" && COPY.careSilentNote ? (
           <p className="border-t border-border-secondary pt-3 text-sm text-text-secondary">
             {COPY.careSilentNote}
           </p>
@@ -132,8 +132,8 @@ export function VariantBTimeline({
                     </p>
                   </div>
                 </div>
-                {showCare ? (
-                  <p className="mt-2 pl-8 text-xs leading-relaxed text-text-secondary">
+                {showCare && COPY.careSilentNote ? (
+                  <p className="mt-2 pl-8 text-xs text-text-secondary">
                     {COPY.careSilentNote}
                   </p>
                 ) : null}
@@ -147,7 +147,7 @@ export function VariantBTimeline({
                 key={item.id}
                 className="border-t border-border-secondary py-3 text-sm text-text-tertiary first:border-t-0"
               >
-                Próxima: {questionPrompt(item.key, band)}
+                {questionPrompt(item.key, band)}
               </li>
             );
           }
@@ -161,7 +161,7 @@ export function VariantBTimeline({
               )}
             >
               <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
-                Ahora · {COPY.stepOf(step + 1, total)}
+                {COPY.stepOf(step + 1, total)}
               </p>
               <h2 className="mt-2 text-xl font-semibold leading-snug text-text-primary">
                 {questionPrompt(item.key, band)}

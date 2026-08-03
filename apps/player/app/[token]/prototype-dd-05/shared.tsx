@@ -8,26 +8,19 @@ import { COPY } from "./copy";
 
 export function PrototypeMark(): JSX.Element {
   return (
-    <div className="space-y-1">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-premium">
-        {COPY.prototypeBadge}
-      </p>
-      <p className="text-xs leading-snug text-text-tertiary">{COPY.prototypeHint}</p>
-    </div>
+    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-premium">
+      {COPY.prototypeBadge}
+    </p>
   );
 }
 
 export function BandCaption({ band }: { readonly band: AgeBand }): JSX.Element {
   const meta = BAND_META[band];
   return (
-    <details className="rounded-2xl bg-bg-tertiary/60 px-3 py-2 text-xs text-text-secondary">
-      <summary className="cursor-pointer font-semibold text-text-primary">
-        {COPY.howBandChanges} · {meta.label}
-      </summary>
-      <p className="mt-2 leading-relaxed">
-        {meta.caption} Edades indicativas: {meta.indicativeAges}.
-      </p>
-    </details>
+    <p className="text-xs text-text-tertiary">
+      {meta.label}
+      {meta.caption ? ` · ${meta.caption}` : null}
+    </p>
   );
 }
 
@@ -76,9 +69,11 @@ export function FootballTeaser({
       <p className="mt-1 text-center text-xs text-text-secondary">
         {COPY.footballAttribute}
       </p>
-      <p className="mt-3 text-center text-[11px] leading-snug text-text-tertiary">
-        {COPY.footballTeaserHint}
-      </p>
+      {COPY.footballTeaserHint ? (
+        <p className="mt-3 text-center text-[11px] leading-snug text-text-tertiary">
+          {COPY.footballTeaserHint}
+        </p>
+      ) : null}
     </div>
   );
 }

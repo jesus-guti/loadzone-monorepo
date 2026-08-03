@@ -29,7 +29,7 @@ type VariantCProperties = {
 export function VariantCReward({
   band,
   step,
-  answers,
+  answers: _answers,
   completed,
   simulateMiss,
   careTriggered,
@@ -54,12 +54,12 @@ export function VariantCReward({
             {COPY.completionBody[band]}
           </p>
           <CalmStreakChip days={DEMO_STREAK} simulateMiss={simulateMiss} />
-          {careTriggered && band !== "independent" ? (
+          {careTriggered && band !== "independent" && COPY.careSilentNote ? (
             <p className="text-center text-xs text-text-tertiary">
               {COPY.careSilentNote}
             </p>
           ) : null}
-          {band !== "independent" ? (
+          {band !== "independent" && COPY.deferredBanner ? (
             <p className="rounded-2xl bg-bg-tertiary px-4 py-3 text-center text-xs text-text-secondary">
               {COPY.deferredBanner}
             </p>
@@ -89,13 +89,13 @@ export function VariantCReward({
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-36 pt-6">
       <PrototypeMark />
 
-      {showDeferred ? (
+      {showDeferred && COPY.deferredBanner ? (
         <p className="mt-4 rounded-2xl border border-dashed border-border-secondary bg-bg-secondary px-4 py-3 text-sm text-text-secondary">
           {COPY.deferredBanner}
         </p>
       ) : null}
 
-      {band === "assisted" ? (
+      {band === "assisted" && COPY.assistedPresence ? (
         <p className="mt-3 text-sm text-text-secondary">{COPY.assistedPresence}</p>
       ) : null}
 
@@ -120,16 +120,6 @@ export function VariantCReward({
           />
         </div>
       </div>
-
-      <p className="mt-4 text-center text-xs text-text-tertiary">
-        Compacto → el beat emocional llega al cerrar (carta, no score).
-      </p>
-
-      {Object.keys(answers).length > 0 ? (
-        <p className="mt-2 text-center text-[11px] text-text-tertiary">
-          Estado: {Object.keys(answers).length}/{total} respondidas
-        </p>
-      ) : null}
     </div>
   );
 }
