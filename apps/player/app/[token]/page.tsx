@@ -1,11 +1,18 @@
 import { database } from "@repo/database";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
+import {
+  isPrototypeLabToken,
+  parseBand,
+  parseVariant,
+} from "./prototype-dd-05/constants";
+import { PrototypeCheckinLab } from "./prototype-dd-05";
 
 type PageProperties = {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; variant?: string; band?: string }>;
 };
 
 function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
@@ -27,7 +34,71 @@ function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
 
 const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   const { token } = await params;
-  const { date } = await searchParams;
+  const resolvedSearch = await searchParams;
+  const { date, variant: variantRaw, band: bandRaw } = resolvedSearch;
+  const variant = parseVariant(variantRaw);
+
+  // PROTOTYPE lab: ?variant= swaps the subtree; production SessionPage untouched otherwise.
+  if (variant) {
+    const band = parseBand(bandRaw);
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-[100dvh] items-center justify-center text-sm text-text-secondary">
+            Cargando prototipo…
+          </div>
+        }
+      >
+        <PrototypeCheckinLab
+          token={token}
+          initialVariant={variant}
+          initialBand={band}
+        />
+      </Suspense>
+    );
+  }
+
+  if (isPrototypeLabToken(token)) {
+    return (
+      <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center gap-4 px-5 text-text-primary">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-premium">
+          PROTOTIPO · DD-05
+        </p>
+        <h1 className="text-2xl font-semibold">Lab de check-in</h1>
+        <p className="text-sm text-text-secondary">
+          Añade{" "}
+          <code className="rounded bg-bg-tertiary px-1.5 py-0.5 text-xs">
+            ?variant=A&amp;band=assisted
+          </code>{" "}
+          para abrir el prototipo. Sin ese parámetro no se sustituye el check-in
+          de producción.
+        </p>
+        <ul className="space-y-2 text-sm text-text-secondary">
+          <li>
+            <a
+              className="underline"
+              href={`/${token}?variant=A&band=assisted`}
+            >
+              Variante A · Focus · Asistida
+            </a>
+          </li>
+          <li>
+            <a className="underline" href={`/${token}?variant=B&band=guided`}>
+              Variante B · Timeline · Guiada
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline"
+              href={`/${token}?variant=C&band=independent`}
+            >
+              Variante C · Reward · Independiente
+            </a>
+          </li>
+        </ul>
+      </div>
+    );
+  }
 
   const player = await database.player.findUnique({
     where: { token, isArchived: false },

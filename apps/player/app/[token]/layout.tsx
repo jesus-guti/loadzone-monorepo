@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { InstallPrompt } from "../components/install-prompt";
 import { TokenPersistence } from "./components/token-persistence";
+import { isPrototypeLabToken } from "./prototype-dd-05/constants";
 
 type TokenLayoutProperties = {
   readonly children: ReactNode;
@@ -30,6 +31,11 @@ export async function generateMetadata({
 
 const TokenLayout = async ({ children, params }: TokenLayoutProperties) => {
   const { token } = await params;
+
+  // PROTOTYPE lab token skips DB so reviewers can open the throwaway UI without seed data.
+  if (isPrototypeLabToken(token)) {
+    return <>{children}</>;
+  }
 
   const player = await database.player.findUnique({
     where: { token, isArchived: false },

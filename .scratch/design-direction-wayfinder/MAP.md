@@ -22,8 +22,11 @@ An implementation-ready design and interaction specification for both LoadZone a
 
 ## Decisions so far
 
-- **DD-02:** Age Bands Assisted (~under 10) / Guided (~10–15) / Independent (16+); Player-first; Guardian see+notify only (care slice, no routine approve); one adaptive Spanish copy strategy — [resolution](resolutions/player-age-bands-and-parental-supervision.md).
+- **Configurable Age Bands & Guardian settings (2026-08-03):** Age Band cutoffs and Parental Supervision / Guardian receive–escalation options are always staff-configurable defaults, never fixed-only constants — clubs may retune without changing product doctrine.
 
+- [Define admin experience principles](issues/01-define-admin-experience-principles.md) — three staff jobs (wellness/risk, sessions/exercises, roster/season/config); invisible data surfaces; cards as exceptions; progressive interaction; light default; color for state/risk — [artifact](artifacts/admin-experience-principles.md).
+- [Define player age bands and parental supervision](issues/02-define-player-age-bands-and-parental-supervision.md) — Age Bands Assisted (~under 10) / Guided (~10–15) / Independent (16+); Player-first; Guardian see+notify only (care slice, no routine approve); one adaptive Spanish copy strategy — [resolution](resolutions/player-age-bands-and-parental-supervision.md).
+- [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
 ## Not yet specified
 
 - Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
