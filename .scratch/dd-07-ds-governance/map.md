@@ -1,6 +1,6 @@
 # DD-07 — Define design-system governance and migration boundary
 
-Status: planned (pending HITL)  
+Status: locked (human `ok 7`, 2026-08-03)  
 Parent: `.scratch/design-direction-wayfinder/MAP.md`  
 Ticket: `.scratch/design-direction-wayfinder/issues/07-define-design-system-governance-and-migration-boundary.md`  
 Locked parents:
@@ -133,11 +133,16 @@ Lightweight **design-system governance + migration boundary** for LoadZone: what
     No Storybook / Figma mirror required.  
     **Revert:** add a one-page `docs/` note if rules feel too dense; still no Figma mandate.
 
-### Hitl (pending human)
+### Hitl (locked — human `ok 7`)
 
-17. **[hitl] Promotion criteria (intentional gates, not use-count).** Recommendation A below.  
-18. **[hitl] Shared package shape — allow app-flavored kits inside `@repo/design-system`?** Recommendation B below.  
-19. **[hitl] Governance artifact + ADR — ship both, or rules-only?** Recommendation C below.
+17. **[hitl → locked] Promotion criteria — five intentional gates (recommendation A).**  
+    A component may enter `@repo/design-system` only when all pass: (1) app-agnostic contract, (2) same interaction need across ≥2 product boundaries, (3) token-driven appearance, (4) intentional PR naming second consumer, (5) prefer regenerable registry primitives. Reject use-count auto-promote.
+
+18. **[hitl → locked] Shared package shape — Option 1 (recommendation B).**  
+    Strict flat shared primitives; **no** `components/admin/*` or `components/player/*` kits inside `@repo/design-system`; no split admin/player packages.
+
+19. **[hitl → locked] Artifact + short Wave-0 ADR (recommendation C Option 1).**  
+    Wayfinder artifact `artifacts/design-system-governance-and-migration.md` + ADR `docs/adr/0001-design-system-package-boundary.md`. No Figma; no docs site. Rule-file rewrites still wait for DD-08 unless human pulls them forward.
 
 ## Decision ledger (classification)
 
@@ -159,11 +164,11 @@ Lightweight **design-system governance + migration boundary** for LoadZone: what
 | 14 | Migration waves 0→3 | `assume` | Implementation order; reversible |
 | 15 | `--surface-*` internal | `assume` | Confirms DD-03; reversible |
 | 16 | Document app-local in design-system rule | `assume` | Contained; reversible |
-| 17 | Promotion criteria gates | `hitl` | Design-system transversal culture |
-| 18 | No app kits inside shared package | `hitl` | Package architecture; hard to unwind |
-| 19 | Artifact + optional ADR vs rules-only | `hitl` | Hard-to-reverse process surface |
+| 17 | Promotion criteria gates (A) | `hitl` → locked | Human `ok 7` |
+| 18 | No app kits inside shared package (B) | `hitl` → locked | Human `ok 7` |
+| 19 | Artifact + Wave-0 ADR (C) | `hitl` → locked | Human `ok 7` |
 
-**HITL count: 3** (at cap). Ticket is well-formed.
+**HITL count: 3** — all locked (`ok 7`).
 
 ## HITL recommendations (for orchestrator → human)
 
@@ -228,3 +233,7 @@ Option 1 matches “ADRs only when hard to reverse” (package boundary qualifie
 3. Append a one-line gist + link on parent `MAP.md` **Decisions so far**; clear governance/migration fog from **Not yet specified**.  
 4. Close wayfinder ticket 07 with resolution comment pointing at map + artifact.  
 5. Do **not** start Wave 0 rule edits until DD-08 assembles the spec + backlog (unless human explicitly pulls rules forward).
+
+## Human review (2026-08-03)
+
+- **Orchestrator:** `ok 7` — accept all auto/assume decisions and HITL A/B/C recommendations (5 promotion gates; no app kits in DS; wayfinder artifact + short Wave-0 ADR).
