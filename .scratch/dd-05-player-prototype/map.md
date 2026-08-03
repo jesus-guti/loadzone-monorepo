@@ -5,7 +5,7 @@ Planning map for wayfinder prototype ticket
 Parent effort: [LoadZone Design Direction](../design-direction-wayfinder/MAP.md).
 Locked parent: [Player age bands and parental supervision](../design-direction-wayfinder/resolutions/player-age-bands-and-parental-supervision.md).
 
-**Status:** plan ready · **plan:** `auto` · **HITL count:** 0 · **Do not build in this wave.**
+**Status:** built · awaiting human reaction · **plan:** `auto` · **HITL count:** 0
 
 ## Destination
 
@@ -15,7 +15,7 @@ A throwaway **low-fi UI prototype** that answers:
 
 The artifact must show Assisted one-question-at-a-time check-in, calm streak/reward (no miss punishment), where Parental Supervision Layer surfaces without making Guardian the primary operator, Guided/Independent deltas as notes or band toggle, and an optional football-identity teaser that does **not** claim medical/performance scoring.
 
-Resolve the wayfinder ticket only when a human accepts, rejects, or amends player principles after reacting to the artifact. This planning wave stops at the map — **no prototype code yet**.
+**Built (2026-08-03):** in-app lab under `apps/player/app/[token]/prototype-dd-05/` gated by `?variant=` / `?band=`. Ticket marked done with run URLs; **human reaction** still required before folding principles.
 
 ## Notes
 
@@ -124,9 +124,23 @@ None. Product forks for age/supervision are already locked by DD-02. Remaining c
 
 **HITL count: 0** (under cap of 3). Ticket is well-formed and **ready to build** in the next wave.
 
-## Not yet specified (build wave or later)
+## Build wave Decisions gist (2026-08-03)
 
-- Exact Spanish microcopy strings per step (authored in build; keep Assisted-short).
+Implemented as planned; no new HITL.
+
+| Decision | Outcome |
+|---|---|
+| Host | `[token]` + `?variant=` / `?band=`; absent `variant` → production `SessionPage` |
+| Lab token | `cprototype000000000000001` skips DB so the lab runs without seed |
+| Variants | A Focus · B Quiet timeline · C Reward-forward — separate layout trees |
+| Band | Default `assisted`; adaptive Spanish; ages labeled as configurable examples |
+| Parental | A presence cue · B silent care note · C deferred see banner — no approve |
+| Streak | Calm chip + miss simulation; no guilt copy |
+| Football teaser | Non-scoring silhouette (C primary, A optional) |
+| Persistence | None — in-memory stubs only |
+
+## Not yet specified (post-reaction)
+
 - Which variant “wins” after human review (post-artifact).
 - Whether adaptive strings suffice vs per-band catalogs (DD-02 revert trigger — evidence from this prototype).
 - How far football-identity goes before it feels like scoring (parent MAP fog; prototype only teasers).
@@ -135,11 +149,8 @@ None. Product forks for age/supervision are already locked by DD-02. Remaining c
 
 ## Out of scope
 
-- Building the prototype in this planning wave.
-- Committing / pushing from this wave.
-- Closing or resolving the wayfinder issue before human reacts to the artifact.
 - Guardian auth, parent portal, soft-approval, real push/escalation engines.
-- Changing production check-in behavior on main.
+- Changing production check-in behavior on main (lab is query-gated only).
 - Admin data-surface prototype (DD-04) or visual-language locks (DD-03).
 
 ## Human review (2026-08-03)
@@ -147,3 +158,21 @@ None. Product forks for age/supervision are already locked by DD-02. Remaining c
 - **Orchestrator:** `ok a todo` — accept all auto/assume decisions and all HITL recommendations for this ticket.
 - **Product override (global):** Age Band cutoffs and Guardian / Parental Supervision Layer settings MUST remain **staff-configurable at all times** (club/team policy). Indicative ages and Guardian defaults in resolutions are **defaults**, not hard-coded product constants. Spec language must say clubs can always retune bands and guardian receive/escalation options without a code change to product doctrine.
 - **Decision #1 accepted:** in-app `apps/player` `[token]` lab with `?variant=` / `?band=` (throwaway; not production design ship).
+- **Build:** artifact linked on wayfinder issue 05; awaiting human accept/reject/amend of player principles.
+## Human reaction (2026-08-03) — variant A
+
+- **Keep structural variant A (Focus frame)** — B and C rejected for the preferred direction.
+- **Age bands OK** (Assisted / Guided / Independent) as shown.
+- **Amend:** Spanish UI copy is **too dense and informative** — needs calmer, shorter, less explanatory product voice (especially chrome/banners/captions/hints; questions can stay short).
+- **Follow-up:** implemented — thinned copy in `prototype-dd-05` (see Decisions amend below).
+
+## Human review (2026-08-03) — thin copy authorized
+
+- **Orchestrator:** `lanza 05 aligerar` — implementer may edit `apps/player/app/[token]/prototype-dd-05/` copy/chrome only (variant A preferred). Keep bands. Shorten dense explanatory Spanish.
+
+## Decisions amend (2026-08-03) — thin Spanish copy
+
+- **Keep A (Focus)** as preferred product direction; B/C remain lab contrasts only.
+- **Age bands OK** — Assisted / Guided / Independent stay; indicative ages stay in lab meta, not as long player-facing parentheticals.
+- **Copy voice:** calmer, shorter labels over essays — emptied `prototypeHint`, `deferredBanner`, `independentFootnote`, `footballTeaserHint`; shortened presence / care / completion / streak / prompts; BandCaption is a one-line quiet caption (no expandable essay); removed “Estado: N/total respondidas” and clinical Independent phrasing.
+- **Still awaiting** final human visual accept of thinned A before folding principles into DD-07/08.

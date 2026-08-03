@@ -33,6 +33,7 @@ An implementation-ready design and interaction specification for both LoadZone a
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 
 >>>>>>> origin/jgutierrez/dd-06-reminders-streaks
+>>>>>>> origin/jgutierrez/dd-05-player-checkin-prototype
 
 ## Not yet specified
 
