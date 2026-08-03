@@ -22,18 +22,27 @@ An implementation-ready design and interaction specification for both LoadZone a
 
 ## Decisions so far
 
-- Admin experience principles locked: three staff jobs (wellness/risk, sessions/exercises, roster/season/config); invisible data surfaces; cards as exceptions; progressive interaction (no Linear-clone palette/bulk doctrine); light default; color for state/risk — [Define admin experience principles](issues/01-define-admin-experience-principles.md) → [artifacts/admin-experience-principles.md](artifacts/admin-experience-principles.md).
+- **Configurable Age Bands & Guardian settings (2026-08-03):** Age Band cutoffs and Parental Supervision / Guardian receive–escalation options are always staff-configurable defaults, never fixed-only constants — clubs may retune without changing product doctrine.
+- [Define admin experience principles](issues/01-define-admin-experience-principles.md) — three staff jobs (wellness/risk, sessions/exercises, roster/season/config); invisible data surfaces; cards as exceptions; progressive interaction; light default; color for state/risk — [artifact](artifacts/admin-experience-principles.md).
+- [Define player age bands and parental supervision](issues/02-define-player-age-bands-and-parental-supervision.md) — Age Bands Assisted (~under 10) / Guided (~10–15) / Independent (16+); Player-first; Guardian see+notify only (care slice, no routine approve); one adaptive Spanish copy strategy — [resolution](resolutions/player-age-bands-and-parental-supervision.md).
+- [Decide shared visual language and app divergence](issues/03-decide-shared-visual-language-and-app-divergence.md) — shared sage (~OKLCH 160–162); diverge density/radius/border/elevation/motion only; Geist; Phosphor fill vs regular/bold; light defaults; semantic tokens keep / legacy shadcn retire; `--surface-*` internal — [artifact](artifacts/shared-visual-language-and-app-divergence.md).
+- [Define reminders, streaks, and health escalation](issues/06-define-reminders-streaks-and-health-escalation.md) — Player push+in-app / Guardian receive-only / staff re-nudge; anti-nag; consent×band defaults (configurable); Season-scoped recoverable streaks + Excused Absence freeze; Care Alerts for injury/care flags (not ACWR, not miss); calm motivation in / competitive+FUT deferred — [artifact](artifacts/reminders-streaks-and-health-escalation.md).
+- [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
+- [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
+
 
 ## Not yet specified
 
-- Exact age-band cutoffs and what each band can do without an adult present.
-- Whether parental supervision is read-only alerts, soft approval, or a dedicated parent surface — and how that maps to accounts/auth.
+- Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
+- Exact care-slice field allow-lists vs staff DailyEntry (injury / care-relevant boundary locked in DD-06; field list graduates in backlog).
+- Legal/jurisdictional consent copy for minors’ wellness data (policy).
+- How Age Band is assigned/persisted in admin (DOB vs manual tier) — implementation backlog.
 - How far the player card / football identity layer goes before it becomes a scoring system.
-- Privacy, consent, and data-visibility rules for minors across staff, parent, and peer views.
 - Migration sequencing from current Attio/Airbnb-framed rules and surfaces to the new principles (which screens first, what can wait).
-- Whether admin and player should diverge in brand hue, or keep a shared sage family with different density/radius/motion only.
-- Notification timing, channels, and anti-nag rules once reminders are defined.
-- How recoverable streaks interact with season boundaries and missed sessions that are not the player’s fault.
+- Exact numeric thresholds for immediate red-flag wellness form fields (classes locked in DD-06).
+- Guardian contact delivery mechanism (email / SMS / push) once auth fog clears.
+- Whether Excused Absence is staff-only vs Guardian-request workflow (Assisted).
+
 
 ## Out of scope
 

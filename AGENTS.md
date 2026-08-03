@@ -10,11 +10,11 @@
 
 ### Issue tracker
 
-Issues and PRDs live as markdown under `.scratch/`. See `docs/agents/issue-tracker.md`.
+Issues live in Linear (team `Jesus-guti-workspace`, project LoadZone); create/update via Linear MCP. PRDs may still live under `.scratch/`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-Five triage roles use the default strings (`needs-triage`, …). See `docs/agents/triage-labels.md`.
+Five triage roles use the default strings (`needs-triage`, …) as Linear labels under group `Triage`. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
