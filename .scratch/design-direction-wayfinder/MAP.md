@@ -1,11 +1,13 @@
 # LoadZone Design Direction
 
-Status: open
+Status: closed
 Labels: wayfinder:map
 
 ## Destination
 
 An implementation-ready design and interaction specification for both LoadZone apps: a Linear-inspired staff workspace (`apps/app`) and a calm, age-adaptive player experience (`apps/player`) with parental supervision — plus a concrete backlog of implementation tickets ready for later handoff.
+
+**Exit deliverables:** [SPEC.md](SPEC.md) · [BACKLOG.md](BACKLOG.md)
 
 ## Notes
 
@@ -28,13 +30,14 @@ An implementation-ready design and interaction specification for both LoadZone a
 - [Decide shared visual language and app divergence](issues/03-decide-shared-visual-language-and-app-divergence.md) — shared sage (~OKLCH 160–162); diverge density/radius/border/elevation/motion only; Geist; Phosphor fill vs regular/bold; light defaults; semantic tokens keep / legacy shadcn retire; `--surface-*` internal — [artifact](artifacts/shared-visual-language-and-app-divergence.md).
 - [Define reminders, streaks, and health escalation](issues/06-define-reminders-streaks-and-health-escalation.md) — Player push+in-app / Guardian receive-only / staff re-nudge; anti-nag; consent×band defaults (configurable); Season-scoped recoverable streaks + Excused Absence freeze; Care Alerts for injury/care flags (not ACWR, not miss); calm motivation in / competitive+FUT deferred — [artifact](artifacts/reminders-streaks-and-health-escalation.md).
 - [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
-- [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
+- [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — keep **variant A**; bands OK; Spanish copy thinned (`8d60394`); awaiting final visual accept.
+- [Define design-system governance and migration boundary](issues/07-define-design-system-governance-and-migration-boundary.md) — `@repo/design-system` = app-agnostic primitives only; five intentional promotion gates (no use-count); no admin/player kits in DS; admin utilities + player compositions stay app-local; prototype→rule graduation; migration waves 0–3 (rules → pilots → on-touch → package hygiene); ADR for package boundary — [artifact](artifacts/design-system-governance-and-migration.md), [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md).
+- **[Synthesize the design direction specification](issues/08-synthesize-the-design-direction-specification.md) (2026-08-03):** Map exit complete. Assembled [SPEC.md](SPEC.md) (admin, age bands/Guardian configurable, sage + divergence, adherence, governance/ADR 0001, DD-04/DD-05 soft visual accepts, rejects, deferred, glossary proposals) and [BACKLOG.md](BACKLOG.md) (waves 0–3 + adherence A1–A6). No product code; no `.cursor/rules` or `CONTEXT.md` edits in this ticket. Human `DD-08: ok`.
 
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 
 >>>>>>> origin/jgutierrez/dd-06-reminders-streaks
 >>>>>>> origin/jgutierrez/dd-05-player-checkin-prototype
-- [Define design-system governance and migration boundary](issues/07-define-design-system-governance-and-migration-boundary.md) — `@repo/design-system` = app-agnostic primitives only; five intentional promotion gates (no use-count); no admin/player kits in DS; admin utilities + player compositions stay app-local; prototype→rule graduation; migration waves 0–3 (rules → pilots → on-touch → package hygiene); ADR for package boundary — [artifact](artifacts/design-system-governance-and-migration.md), [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md).
 
 >>>>>>> origin/jgutierrez/dd-07-ds-governance
 
@@ -60,6 +63,10 @@ An implementation-ready design and interaction specification for both LoadZone a
 - Exact Wave 0 rule-file wording (assembles in DD-08 / implementation tickets); which DD-05 variant wins layout; decorative DS quarantine inventory details.
 
 >>>>>>> origin/jgutierrez/dd-07-ds-governance
+## Deferred (recorded in SPEC)
+
+Open product fog from this map is **restated in [SPEC.md §9](SPEC.md)** for later efforts — not decided here. Includes: Guardian auth/delivery; care-slice field allow-lists; legal consent copy; Age Band persistence (DOB vs manual); football-identity depth; numeric red-flag thresholds; Excused Absence workflow; dark OKLCH / player ThemeProvider wiring; soft visual accept of DD-04 / thinned DD-05 A. Implementation seeds for some items live in [BACKLOG.md](BACKLOG.md).
+>>>>>>> origin/jgutierrez/dd-08-synthesize-spec
 
 ## Out of scope
 

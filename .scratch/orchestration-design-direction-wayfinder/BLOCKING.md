@@ -23,8 +23,8 @@
 | DD-04 Prototype the admin data surface | `jgutierrez/dd-04-admin-data-prototype` · `../worktrees/rely/dd-04` | DD-01 | done (`f2f4c65`) |
 | DD-05 Prototype the player check-in and reward loop | `jgutierrez/dd-05-player-checkin-prototype` · `../worktrees/rely/dd-05` | DD-02 | done (`59b55ab`) |
 | DD-06 Define reminders, streaks, and health escalation | `jgutierrez/dd-06-reminders-streaks` · `../worktrees/rely/dd-06` | DD-02 | done (`52b2629`) |
-| DD-07 Define design-system governance and migration boundary | `jgutierrez/dd-07-ds-governance` · `../worktrees/rely/dd-07` | DD-03, DD-04, DD-05 | esperando revisión |
-| DD-08 Synthesize the design direction specification | `jgutierrez/dd-08-synthesize-spec` · `../worktrees/rely/dd-08` | DD-01…DD-07 | bloqueada |
+| DD-07 Define design-system governance and migration boundary | `jgutierrez/dd-07-ds-governance` · `../worktrees/rely/dd-07` | DD-03, DD-04, DD-05 | done |
+| DD-08 Synthesize the design direction specification | `jgutierrez/dd-08-synthesize-spec` · `../worktrees/rely/dd-08` | DD-01…DD-07 | done (SPEC + BACKLOG; MAP closed) |
 
 ## Rutas de planificación
 
