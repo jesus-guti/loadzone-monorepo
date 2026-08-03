@@ -32,13 +32,13 @@ plus a tracer-bullet backlog for later `/to-issues` handoff. This wayfinder’s 
 | **Age Band / Guardian always staff-configurable** | Indicative ages and consent×band defaults are **policy defaults only**. Clubs/teams may retune Age Band cutoffs and Guardian receive/escalation options without changing product doctrine. Never hard-code fixed-only constants. |
 | **Shared primitives, app divergence** | `@repo/design-system` stays app-agnostic; each app injects identity via `globals.css` and app-local compositions. |
 | **Spanish UI / English docs** | Product copy Spanish; repo docs, ADRs, specs English. |
-| **Soft visual accepts** | DD-04 admin invisible-list evidence and DD-05 Focus-frame (A) + thinned Spanish may still await final human pixel accept. **Doctrine stays binding**; layout winners / pixel chrome may stay soft-noted. |
+| **Soft visual accepts** | DD-04 layout **rejected** (keep current admin UI; only larger sidebar icons). DD-05 Focus-frame (A) + thinned Spanish may still await final human pixel accept. **Doctrine stays binding** where locked. |
 
 ### Soft visual-accept notes (non-blocking)
 
 | Prototype | Doctrine status | Soft note |
 |---|---|---|
-| **DD-04** admin Wellness list | Invisible data-surface rules from DD-01 are binding | Human visual accept of the throwaway layout may still be pending — cite as evidence, do not invent a new admin chrome doctrine |
+| **DD-04** admin Wellness list | DD-01 invisible-surface doctrine unchanged | **Layout rejected (2026-08-03).** Do not clone throwaway. Keep production chrome. **Amend only:** larger sidebar icons. |
 | **DD-05** player check-in | Keep **variant A (Focus frame)** + thinned calm Spanish; B/C lab-only | Final visual accept of A’s pixel chrome may still be pending — binding: Focus frame, bands, calm thin Spanish |
 
 ---
@@ -69,7 +69,7 @@ Source: [admin-experience-principles.md](artifacts/admin-experience-principles.m
 - Row separation primarily horizontal; no vertical list-frame borders  
 - Group/column labels: small, uppercase, wide tracking, secondary text  
 - Toolbars: underline language (`border-b border-border-secondary`), no card chrome, no structural shadow  
-- Canonical reference: exercise library; Wave 1 pilot: Wellness list + one risk callout (DD-04)
+- Canonical reference: exercise library (**live product**). DD-04 throwaway is **not** a layout winner (rejected 2026-08-03); optional Wellness restyle later only if requested, baseline = current UI.
 
 Elevation only on **floating** surfaces (dialogs, popovers, menus, tooltips).
 

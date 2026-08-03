@@ -29,8 +29,11 @@ Each bullet: title + acceptance cues. Prefer one vertical slice per future issue
 
 ## Wave 1 — Screen pilots
 
-- **W1a — Admin Wellness data surface → invisible list + one risk callout**  
-  Restyle Wellness toward DD-01 invisible rows + a single compact risk callout (DD-04 evidence; exercise library remains pattern reference). Soft: human visual accept may still gate pixel chrome. Acceptance: no four-sided list frame; toolbar underline language; one callout max wrapping no list.
+- **W1a — Admin shell: larger sidebar icons only**  
+  Bump Phosphor / nav icon size in `apps/app` sidebar (the sole liked change from DD-04). **Do not** restyle Wellness toward the DD-04 throwaway list chrome — keep current production data surfaces. Acceptance: sidebar icons visibly larger; Wellness/list layouts unchanged unless separately requested.
+
+- **W1a-deferred — Admin Wellness invisible-list restyle**  
+  ~~Former W1a (clone DD-04 Wellness invisible list + risk callout).~~ **Deferred / cancelled as DD-04 layout winner** after human reject. Revisit only on explicit staff ask; baseline remains live `apps/app`.
 
 - **W1b — Player check-in toward Focus-frame (A)**  
   Production path toward Focus frame: Assisted one-question-at-a-time, calm streak chip, parental see-only affordances, thinned adaptive Spanish. Soft: final A visual accept may still be pending. Acceptance: B/C not primary; no guilt miss UX; Player remains operator.

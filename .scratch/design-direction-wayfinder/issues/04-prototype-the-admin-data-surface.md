@@ -23,17 +23,16 @@ Link the prototype as an asset from this ticket. Resolve when the human accepts,
 
 ## Resolution
 
-**prototype delivered for reaction; principles held as locked**
+**layout rejected; amend = larger sidebar icons only (2026-08-03)**
 
-Throwaway artifact is ready for human visual reaction. No contradiction with [admin-experience-principles.md](../artifacts/admin-experience-principles.md) was found while building. Formal accept / reject / amend of principles remains a **human** step after viewing the prototype (pending human visual accept).
+Human viewed the throwaway and rejected it as a layout winner. **Keep production `apps/app` as it is now.** The only liked change from the prototype: **larger sidebar icons**. DD-01 principles remain doctrine (not reopened); do **not** clone the DD-04 HTML Wellness chrome. Full write-up: [resolutions/admin-data-surface-prototype.md](../resolutions/admin-data-surface-prototype.md).
 
 ## Asset
 
-- Prototype: [`.scratch/dd-04-admin-prototype/prototype/`](../../dd-04-admin-prototype/prototype/)
-- Entry: [`index.html`](../../dd-04-admin-prototype/prototype/index.html)
-- Run: see [`README.md`](../../dd-04-admin-prototype/prototype/README.md) — `cd .scratch/dd-04-admin-prototype/prototype && python3 -m http.server 8765`
-- Planning map: [`.scratch/dd-04-admin-prototype/map.md`](../../dd-04-admin-prototype/map.md)
+- Prototype: [`.scratch/dd-04-admin-prototype/prototype/`](../../dd-04-admin-prototype/prototype/) (historical evidence only)
+- Reaction: [resolutions/admin-data-surface-prototype.md](../resolutions/admin-data-surface-prototype.md)
 
 ## Comments
 
-- **2026-08-03 — Implementer:** Built single faithful composition (Spanish UI): desktop sidebar with locked primary IA (Wellness active) + Más secondary, team chrome `Juvenil A`, invisible Wellness roster list (toolbar underline / horizontal row rules / uppercase labels), exactly one risk callout card (“3 jugadores sin check-in hoy” → Ver pendientes) that does not wrap the list. Principles §2–§5 / §8 held; no doctrine contradiction noted. Human still needs to react to the artifact to formally accept/reject/amend principles — for orchestration this ticket closes with prototype delivered + principles unchanged pending that reaction.
+- **2026-08-03 — Implementer:** Built single faithful composition… (see prior comment).
+- **2026-08-03 — Human:** “DD-04 uy mal; solo me gustan los iconos más grandes del sidebar; el resto dejarlo como está ahora.” Recorded as reject + icon-size amend.
