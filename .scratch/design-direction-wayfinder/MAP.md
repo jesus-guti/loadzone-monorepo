@@ -30,10 +30,14 @@ An implementation-ready design and interaction specification for both LoadZone a
 - [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
 - [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
 
+>>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
+
 ## Not yet specified
 
 - Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
 - Exact care-slice field allow-lists vs staff DailyEntry (injury / care-relevant boundary locked in DD-06; field list graduates in backlog).
+- Exact care-slice field allow-lists vs staff DailyEntry (refine with DD-06 escalation).
+>>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 - Legal/jurisdictional consent copy for minors’ wellness data (policy).
 - How Age Band is assigned/persisted in admin (DOB vs manual tier) — implementation backlog.
 - How far the player card / football identity layer goes before it becomes a scoring system.
@@ -41,6 +45,10 @@ An implementation-ready design and interaction specification for both LoadZone a
 - Exact numeric thresholds for immediate red-flag wellness form fields (classes locked in DD-06).
 - Guardian contact delivery mechanism (email / SMS / push) once auth fog clears.
 - Whether Excused Absence is staff-only vs Guardian-request workflow (Assisted).
+- Whether admin and player should diverge in brand hue, or keep a shared sage family with different density/radius/motion only.
+- Notification timing, channels, and anti-nag rules once reminders are defined (DD-06).
+- How recoverable streaks interact with season boundaries and missed sessions that are not the player’s fault (DD-06).
+>>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 
 ## Out of scope
 
