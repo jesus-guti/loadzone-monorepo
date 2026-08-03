@@ -29,6 +29,7 @@ An implementation-ready design and interaction specification for both LoadZone a
 - [Define reminders, streaks, and health escalation](issues/06-define-reminders-streaks-and-health-escalation.md) — Player push+in-app / Guardian receive-only / staff re-nudge; anti-nag; consent×band defaults (configurable); Season-scoped recoverable streaks + Excused Absence freeze; Care Alerts for injury/care flags (not ACWR, not miss); calm motivation in / competitive+FUT deferred — [artifact](artifacts/reminders-streaks-and-health-escalation.md).
 - [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
 - [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
+- [Define design-system governance and migration boundary](issues/07-define-design-system-governance-and-migration-boundary.md) — `@repo/design-system` = app-agnostic primitives only; five intentional promotion gates (no use-count); no admin/player kits in DS; admin utilities + player compositions stay app-local; prototype→rule graduation; migration waves 0–3 (rules → pilots → on-touch → package hygiene); ADR for package boundary — [artifact](artifacts/design-system-governance-and-migration.md), [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md).
 
 
 ## Not yet specified
@@ -38,10 +39,10 @@ An implementation-ready design and interaction specification for both LoadZone a
 - Legal/jurisdictional consent copy for minors’ wellness data (policy).
 - How Age Band is assigned/persisted in admin (DOB vs manual tier) — implementation backlog.
 - How far the player card / football identity layer goes before it becomes a scoring system.
-- Migration sequencing from current Attio/Airbnb-framed rules and surfaces to the new principles (which screens first, what can wait).
 - Exact numeric thresholds for immediate red-flag wellness form fields (classes locked in DD-06).
 - Guardian contact delivery mechanism (email / SMS / push) once auth fog clears.
 - Whether Excused Absence is staff-only vs Guardian-request workflow (Assisted).
+- Exact Wave 0 rule-file wording (assembles in DD-08 / implementation tickets); which DD-05 variant wins layout; decorative DS quarantine inventory details.
 
 
 ## Out of scope
