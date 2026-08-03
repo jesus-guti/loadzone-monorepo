@@ -30,7 +30,6 @@ An implementation-ready design and interaction specification for both LoadZone a
 - [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
 - [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — throwaway lab on `apps/player` `[token]?variant=` / `?band=` (A Focus / B Quiet timeline / C Reward-forward); Assisted OQAT; calm streak; parental see-only surfaces; non-scoring football teaser. Awaiting human reaction to principles.
 
-
 ## Not yet specified
 
 - Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
@@ -42,7 +41,6 @@ An implementation-ready design and interaction specification for both LoadZone a
 - Exact numeric thresholds for immediate red-flag wellness form fields (classes locked in DD-06).
 - Guardian contact delivery mechanism (email / SMS / push) once auth fog clears.
 - Whether Excused Absence is staff-only vs Guardian-request workflow (Assisted).
-
 
 ## Out of scope
 
