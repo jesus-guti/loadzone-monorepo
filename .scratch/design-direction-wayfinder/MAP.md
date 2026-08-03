@@ -32,12 +32,15 @@ An implementation-ready design and interaction specification for both LoadZone a
 
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 
+>>>>>>> origin/jgutierrez/dd-06-reminders-streaks
+
 ## Not yet specified
 
 - Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
 - Exact care-slice field allow-lists vs staff DailyEntry (injury / care-relevant boundary locked in DD-06; field list graduates in backlog).
 - Exact care-slice field allow-lists vs staff DailyEntry (refine with DD-06 escalation).
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
+>>>>>>> origin/jgutierrez/dd-06-reminders-streaks
 - Legal/jurisdictional consent copy for minors’ wellness data (policy).
 - How Age Band is assigned/persisted in admin (DOB vs manual tier) — implementation backlog.
 - How far the player card / football identity layer goes before it becomes a scoring system.
@@ -49,6 +52,7 @@ An implementation-ready design and interaction specification for both LoadZone a
 - Notification timing, channels, and anti-nag rules once reminders are defined (DD-06).
 - How recoverable streaks interact with season boundaries and missed sessions that are not the player’s fault (DD-06).
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
+>>>>>>> origin/jgutierrez/dd-06-reminders-streaks
 
 ## Out of scope
 
