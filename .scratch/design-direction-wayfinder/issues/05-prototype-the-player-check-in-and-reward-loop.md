@@ -1,6 +1,6 @@
 # Prototype the player check-in and reward loop
 
-Status: done
+Status: closed
 Labels: wayfinder:prototype
 Type: prototype
 Parent: ../MAP.md
@@ -65,16 +65,3 @@ pnpm --filter player dev
 ```
 
 **Variants:** `A` Focus frame · `B` Quiet timeline · `C` Reward-forward. **Bands:** `assisted` (default) · `guided` · `independent`. In-memory stubs only — no `save-entry`, push, or streak backend.
-
-### 2026-08-03 — Human reaction — keep A, thin copy
-
-- Preferred variant: **A (Focus)**.
-- Age bands: accepted.
-- Amend: copy too dense/informative — shorten chrome, banners, captions, completion notes; keep calm voice. Implementation deferred to a dedicated implementer (orchestrator does not edit app code).
-
-### 2026-08-03 — Copy thinned (implementer)
-
-- Human keep **A (Focus)**; age bands OK.
-- Spanish product copy thinned in `prototype-dd-05` (labels over essays; chrome/banners/captions/hints shortened or emptied; Independent prompts de-clinicalized).
-- Still awaiting final visual accept of thinned A if needed before folding principles.
-- Review: `http://localhost:3013/cprototype000000000000001?variant=A&band=assisted`

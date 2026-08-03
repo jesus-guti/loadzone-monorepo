@@ -34,6 +34,9 @@ An implementation-ready design and interaction specification for both LoadZone a
 
 >>>>>>> origin/jgutierrez/dd-06-reminders-streaks
 >>>>>>> origin/jgutierrez/dd-05-player-checkin-prototype
+- [Define design-system governance and migration boundary](issues/07-define-design-system-governance-and-migration-boundary.md) — `@repo/design-system` = app-agnostic primitives only; five intentional promotion gates (no use-count); no admin/player kits in DS; admin utilities + player compositions stay app-local; prototype→rule graduation; migration waves 0–3 (rules → pilots → on-touch → package hygiene); ADR for package boundary — [artifact](artifacts/design-system-governance-and-migration.md), [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md).
+
+>>>>>>> origin/jgutierrez/dd-07-ds-governance
 
 ## Not yet specified
 
@@ -54,6 +57,9 @@ An implementation-ready design and interaction specification for both LoadZone a
 - How recoverable streaks interact with season boundaries and missed sessions that are not the player’s fault (DD-06).
 >>>>>>> origin/jgutierrez/dd-04-admin-data-prototype
 >>>>>>> origin/jgutierrez/dd-06-reminders-streaks
+- Exact Wave 0 rule-file wording (assembles in DD-08 / implementation tickets); which DD-05 variant wins layout; decorative DS quarantine inventory details.
+
+>>>>>>> origin/jgutierrez/dd-07-ds-governance
 
 ## Out of scope
 
