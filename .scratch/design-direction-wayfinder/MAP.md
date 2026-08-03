@@ -1,11 +1,13 @@
 # LoadZone Design Direction
 
-Status: open
+Status: closed
 Labels: wayfinder:map
 
 ## Destination
 
 An implementation-ready design and interaction specification for both LoadZone apps: a Linear-inspired staff workspace (`apps/app`) and a calm, age-adaptive player experience (`apps/player`) with parental supervision — plus a concrete backlog of implementation tickets ready for later handoff.
+
+**Exit deliverables:** [SPEC.md](SPEC.md) · [BACKLOG.md](BACKLOG.md)
 
 ## Notes
 
@@ -30,19 +32,11 @@ An implementation-ready design and interaction specification for both LoadZone a
 - [Prototype the admin data surface](issues/04-prototype-the-admin-data-surface.md) — throwaway Wellness list prototype (invisible rows + one risk callout + locked nav); principles held pending human visual accept — [prototype](../dd-04-admin-prototype/prototype/).
 - [Prototype the player check-in and reward loop](issues/05-prototype-the-player-check-in-and-reward-loop.md) — keep **variant A**; bands OK; Spanish copy thinned (`8d60394`); awaiting final visual accept.
 - [Define design-system governance and migration boundary](issues/07-define-design-system-governance-and-migration-boundary.md) — `@repo/design-system` = app-agnostic primitives only; five intentional promotion gates (no use-count); no admin/player kits in DS; admin utilities + player compositions stay app-local; prototype→rule graduation; migration waves 0–3 (rules → pilots → on-touch → package hygiene); ADR for package boundary — [artifact](artifacts/design-system-governance-and-migration.md), [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md).
+- **[Synthesize the design direction specification](issues/08-synthesize-the-design-direction-specification.md) (2026-08-03):** Map exit complete. Assembled [SPEC.md](SPEC.md) (admin, age bands/Guardian configurable, sage + divergence, adherence, governance/ADR 0001, DD-04/DD-05 soft visual accepts, rejects, deferred, glossary proposals) and [BACKLOG.md](BACKLOG.md) (waves 0–3 + adherence A1–A6). No product code; no `.cursor/rules` or `CONTEXT.md` edits in this ticket. Human `DD-08: ok`.
 
+## Deferred (recorded in SPEC)
 
-## Not yet specified
-
-- Guardian auth / account linkage (notification-only contacts vs login); parent surface product remains fog beyond the supervision layer.
-- Exact care-slice field allow-lists vs staff DailyEntry (injury / care-relevant boundary locked in DD-06; field list graduates in backlog).
-- Legal/jurisdictional consent copy for minors’ wellness data (policy).
-- How Age Band is assigned/persisted in admin (DOB vs manual tier) — implementation backlog.
-- How far the player card / football identity layer goes before it becomes a scoring system.
-- Exact numeric thresholds for immediate red-flag wellness form fields (classes locked in DD-06).
-- Guardian contact delivery mechanism (email / SMS / push) once auth fog clears.
-- Whether Excused Absence is staff-only vs Guardian-request workflow (Assisted).
-
+Open product fog from this map is **restated in [SPEC.md §9](SPEC.md)** for later efforts — not decided here. Includes: Guardian auth/delivery; care-slice field allow-lists; legal consent copy; Age Band persistence (DOB vs manual); football-identity depth; numeric red-flag thresholds; Excused Absence workflow; dark OKLCH / player ThemeProvider wiring; soft visual accept of DD-04 / thinned DD-05 A. Implementation seeds for some items live in [BACKLOG.md](BACKLOG.md).
 
 ## Out of scope
 
