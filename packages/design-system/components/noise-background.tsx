@@ -1,3 +1,9 @@
+/**
+ * QUARANTINED (no-new-usage) — decorative Aceternity-style export.
+ * Do not add new product call sites. Prefer regenerable primitives (`components/ui`)
+ * and semantic tokens, or keep decoration app-local under the consuming app.
+ * Kept in place for import stability; see ADR 0001 and `.scratch/jes-40-quarantine-ds/map.md`.
+ */
 "use client";
 
 import { cn } from "@repo/design-system/lib/utils";
@@ -52,6 +58,9 @@ interface NoiseBackgroundProps {
   animating?: boolean;
 }
 
+/**
+ * @deprecated Quarantined decorative export — no-new-usage. Prefer primitives/tokens or app-local décor.
+ */
 export const NoiseBackground = ({
   children,
   className,

@@ -41,3 +41,12 @@ Referencia canónica: listado de ejercicios (`ExerciseLibraryList`, `ExerciseLib
 - **Peso**: por defecto `weight="fill"` en UI densa (`apps/app`, primitives compactos). Usa `regular` o `bold` cuando la superficie necesite más aire o contraste más suave (`apps/player`, marketing, empty states).
 - **Tamaño**: controla densidad con `className` (`size-4`, `size-5`, `h-* w-*`) sobre `Button`, `Badge` y primitivas existentes; no envuelvas en wrappers solo para icono.
 - No añadas `lucide-react`, `@heroicons/react` ni `@radix-ui/react-icons` en código de producto; si un snippet de docs enseña iconos, que use Phosphor.
+
+## Quarantined decorative exports (no-new-usage)
+
+These shared modules are quarantined — still importable for stability, but **reject new product call sites**. Prefer regenerable primitives (`components/ui`), semantic tokens, or app-local décor (`globals.css` / feature-local components). Do not pull new Aceternity decorative components into `@repo/design-system` (the `@aceternity` registry key in `components.json` stays for historical reference only). Package boundary: [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md); Wave 3 hygiene.
+
+- `packages/design-system/components/noise-background.tsx`
+- `packages/design-system/components/moving-border.tsx`
+- `packages/design-system/components/hover-border-gradient.tsx`
+- `packages/design-system/components/stateful-button.tsx`

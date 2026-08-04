@@ -1,3 +1,10 @@
+/**
+ * QUARANTINED (no-new-usage) — decorative Aceternity-style export.
+ * Do not add new product call sites. Prefer regenerable primitives (`components/ui`)
+ * and semantic tokens, or keep decoration app-local under the consuming app.
+ * Kept in place for import stability; see ADR 0001 and `.scratch/jes-40-quarantine-ds/map.md`.
+ * Local `Button` here is not `components/ui/button`.
+ */
 "use client";
 import React from "react";
 import {
@@ -10,6 +17,9 @@ import {
 import { useRef } from "react";
 import { cn } from "@repo/design-system/lib/utils";
 
+/**
+ * @deprecated Quarantined decorative export — no-new-usage. Prefer primitives/tokens or app-local décor.
+ */
 export function Button({
   borderRadius = "1.75rem",
   children,
@@ -69,6 +79,9 @@ export function Button({
   );
 }
 
+/**
+ * @deprecated Quarantined decorative export — no-new-usage. Prefer primitives/tokens or app-local décor.
+ */
 export const MovingBorder = ({
   children,
   duration = 3000,
