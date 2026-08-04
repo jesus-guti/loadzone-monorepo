@@ -13,6 +13,7 @@ import { Header } from "@/components/layouts/header";
 import {
   AgeBandPolicyFields,
   ClubBrandingCard,
+  ReminderConsentPolicyFields,
   createTeamFromSettings,
   updateClubAgeBandPolicy,
   updateTeamSettings,
@@ -88,6 +89,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
     staffContext.activeTeam.ageBandPolicyOverride === null;
   const clubAgePolicy =
     staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
+  const reminderConsentPolicy = staffContext.activeTeam.reminderConsentPolicy;
 
   return (
     <>
@@ -296,6 +298,19 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
               showInheritToggle
               inheritChecked={inheritsClubAgePolicy}
             />
+          </div>
+
+          <div className="border-t border-border-secondary pt-6">
+            <h3 className="text-sm font-semibold text-text-primary">
+              Consentimiento de recordatorios
+            </h3>
+            <p className="mt-1 mb-4 text-sm text-text-secondary">
+              Valores por defecto del equipo según el tramo de edad. El estado
+              por jugador (opt-in, revocación, consentimiento del tutor) se
+              gestiona en la ficha del jugador. La suscripción push es solo
+              transporte.
+            </p>
+            <ReminderConsentPolicyFields policy={reminderConsentPolicy} />
           </div>
 
           <Button type="submit">Guardar configuración</Button>

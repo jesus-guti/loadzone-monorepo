@@ -10,6 +10,7 @@
     "./bootstrap": "./bootstrap.ts",
     "./risk-thresholds": "./risk-thresholds.ts",
     "./age-band-policy": "./age-band-policy.ts",
+    "./reminder-consent": "./reminder-consent.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"
   },

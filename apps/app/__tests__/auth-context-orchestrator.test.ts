@@ -61,6 +61,7 @@ function fakeTeam(id: string) {
     postSessionReminderMinutes: 60,
     wellnessLimits: null,
     ageBandPolicy: null,
+    reminderConsentPolicy: null,
   };
 }
 

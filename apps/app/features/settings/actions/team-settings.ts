@@ -10,6 +10,7 @@ import { z } from "zod";
 import { ACTIVE_TEAM_COOKIE_NAME, getCurrentStaffContext } from "@/lib/auth-context";
 import { parseWellnessLimits } from "@/lib/wellness-limits";
 import { parseAgeBandPolicyFromFormData } from "../lib/age-band-policy-form";
+import { parseReminderConsentPolicyFromFormData } from "../lib/reminder-consent-policy-form";
 
 const settingsSchema = z.object({
   category: z.string().max(100).optional(),
@@ -84,6 +85,11 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     ageBandPolicyValue = ageBandParsed.policy as Prisma.InputJsonValue;
   }
 
+  const reminderConsentParsed = parseReminderConsentPolicyFromFormData(formData);
+  if (!reminderConsentParsed.success) {
+    throw new Error(reminderConsentParsed.error);
+  }
+
   const wellnessLimitsPayload = parseWellnessLimits({
     recovery: parsed.data.wellness_recovery ?? null,
     energy: parsed.data.wellness_energy ?? null,
@@ -108,6 +114,8 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
             ? Prisma.DbNull
             : (wellnessLimitsPayload as Prisma.InputJsonValue),
         ageBandPolicy: ageBandPolicyValue,
+        reminderConsentPolicy:
+          reminderConsentParsed.policy as Prisma.InputJsonValue,
       },
     });
 

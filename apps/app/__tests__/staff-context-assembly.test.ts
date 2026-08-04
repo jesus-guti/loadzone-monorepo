@@ -56,6 +56,7 @@ function makeTeam(id: string, overrides?: Partial<StaffTeamRow>): StaffTeamRow {
     postSessionReminderMinutes: 60,
     wellnessLimits: null,
     ageBandPolicy: null,
+    reminderConsentPolicy: null,
     ...overrides,
   };
 }
@@ -379,6 +380,47 @@ describe("assembleStaffContext", () => {
       14
     );
     expect(withDefaults.club.ageBandPolicy).toBeNull();
+    expect(withDefaults.activeTeam?.reminderConsentPolicySource).toBe(
+      "defaults"
+    );
+    expect(
+      withDefaults.activeTeam?.reminderConsentPolicy.assisted.playerRemindersMode
+    ).toBe("GUARDIAN_CONSENTS");
+  });
+
+  it("uses Team Reminder Consent JSON when valid", () => {
+    const custom = {
+      assisted: {
+        playerRemindersMode: "OFF" as const,
+        guardianReceiveEnabled: false,
+      },
+      guided: {
+        playerRemindersMode: "PLAYER_OPT_IN" as const,
+        guardianReceiveEnabled: true,
+      },
+      independentYouth: {
+        playerRemindersMode: "PLAYER_CONSENTS" as const,
+        guardianReceiveEnabled: true,
+      },
+      independentMajority: {
+        playerRemindersMode: "PLAYER_CONSENTS" as const,
+        guardianReceiveEnabled: false,
+      },
+    };
+    const result = assembleStaffContext({
+      user: makeUser(),
+      membership: makeMembership(),
+      club: makeClub(),
+      teams: [makeTeam("ta", { reminderConsentPolicy: custom })],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+    expect(result.activeTeam?.reminderConsentPolicySource).toBe("team");
+    expect(
+      result.activeTeam?.reminderConsentPolicy.assisted.playerRemindersMode
+    ).toBe("OFF");
   });
 
   it("sets canCreateTeam based on role and platformRole", () => {

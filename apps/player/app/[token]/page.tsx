@@ -3,6 +3,11 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  resolvePushConsent,
+  type PlayerReminderConsentState,
+} from "@repo/database/reminder-consent";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
@@ -113,11 +118,13 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       teamId: true,
       dateOfBirth: true,
       ageBandOverride: true,
+      reminderConsentState: true,
       team: {
         select: {
           name: true,
           timezone: true,
           ageBandPolicy: true,
+          reminderConsentPolicy: true,
           club: {
             select: {
               ageBandPolicy: true,
@@ -170,6 +177,20 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     dateOfBirth: player.dateOfBirth,
     ageBandOverride: player.ageBandOverride,
     teamTimezone: player.team.timezone,
+  });
+  const { policy: reminderConsentPolicy } =
+    resolveEffectiveReminderConsentPolicy({
+      teamPolicy: player.team.reminderConsentPolicy,
+    });
+  const subscriptionCount = await database.pushSubscription.count({
+    where: { playerId: player.id },
+  });
+  const pushConsent = resolvePushConsent({
+    resolvedAge,
+    reminderConsentPolicy,
+    playerConsentState:
+      player.reminderConsentState as PlayerReminderConsentState,
+    hasActiveSubscription: subscriptionCount > 0,
   });
 
   const selectedDate = resolveSelectedDate(date);
@@ -298,6 +319,11 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       selectedDate={selectedDate.iso}
       ageBand={resolvedAge.ageBand}
       parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
+      pushConsent={{
+        uiMode: pushConsent.uiMode,
+        canSubscribe: pushConsent.canSubscribe,
+        canOptOut: pushConsent.canOptOut,
+      }}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession
