@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
-import type { PlayerStatus } from "@repo/database";
+import type { AgeBand, PlayerStatus } from "@repo/database";
 import { useActionState, useEffect } from "react";
 import { updatePlayer } from "../actions/player-actions";
 
@@ -20,6 +20,8 @@ type EditPlayerFormProperties = {
     id: string;
     name: string;
     status: PlayerStatus;
+    dateOfBirth: string | null;
+    ageBandOverride: AgeBand | null;
   };
 };
 
@@ -72,6 +74,34 @@ export function EditPlayerForm({ player }: EditPlayerFormProperties) {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
+        <Input
+          id="dateOfBirth"
+          name="dateOfBirth"
+          type="date"
+          defaultValue={player.dateOfBirth ?? ""}
+        />
+        <p className="text-xs text-text-secondary">
+          Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
+        <select
+          id="ageBandOverride"
+          name="ageBandOverride"
+          defaultValue={player.ageBandOverride ?? "NONE"}
+          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+        >
+          <option value="NONE">Automático (por fecha)</option>
+          <option value="ASSISTED">Asistida</option>
+          <option value="GUIDED">Guiada</option>
+          <option value="INDEPENDENT">Independiente</option>
+        </select>
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">

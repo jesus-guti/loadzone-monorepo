@@ -77,7 +77,7 @@ _Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendan
 - A **Player** belongs to a **Team**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season).
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
-- A **Player** is assigned an **Age Band** (Assisted / Guided / Independent); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
 
@@ -89,4 +89,5 @@ _Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendan
 ## Flagged ambiguities
 
 - **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
-- **Age Band** assignment/persistence (DOB vs manual tier), **Guardian** auth/linkage, exact care-slice field allow-lists, and **Excused Absence** request workflow remain deferred product decisions — do not invent them here.
+- **Guardian** auth/linkage, exact care-slice field allow-lists, and **Excused Absence** request workflow remain deferred product decisions — do not invent them here.
+- **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).

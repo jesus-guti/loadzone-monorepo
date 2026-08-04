@@ -40,6 +40,7 @@ function makeClub(overrides?: Partial<StaffClubRow>): StaffClubRow {
     id: "club-1",
     name: "Club Test",
     logoUrl: null,
+    ageBandPolicy: null,
     ...overrides,
   };
 }
@@ -54,6 +55,7 @@ function makeTeam(id: string, overrides?: Partial<StaffTeamRow>): StaffTeamRow {
     preSessionReminderMinutes: 30,
     postSessionReminderMinutes: 60,
     wellnessLimits: null,
+    ageBandPolicy: null,
     ...overrides,
   };
 }
@@ -316,6 +318,67 @@ describe("assembleStaffContext", () => {
     });
 
     expect(result.teams[0]?.wellnessLimits).toBeNull();
+  });
+
+  it("resolves Age Band policy: team override > club > defaults", () => {
+    const clubPolicy = {
+      assistedMaxAgeExclusive: 9,
+      guidedMaxAgeExclusive: 13,
+      adultMajorityAge: 16,
+      independentYouthSupervisionEnabled: true,
+      guardianMissReceiveEnabled: false,
+      guardianCareAlertReceiveEnabled: true,
+    };
+    const teamPolicy = {
+      ...clubPolicy,
+      assistedMaxAgeExclusive: 8,
+      independentYouthSupervisionEnabled: false,
+    };
+
+    const withTeam = assembleStaffContext({
+      user: makeUser(),
+      membership: makeMembership(),
+      club: makeClub({ ageBandPolicy: clubPolicy }),
+      teams: [makeTeam("ta", { ageBandPolicy: teamPolicy })],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+    expect(withTeam.activeTeam?.ageBandPolicySource).toBe("team");
+    expect(withTeam.activeTeam?.ageBandPolicy.assistedMaxAgeExclusive).toBe(8);
+    expect(withTeam.activeTeam?.ageBandPolicyOverride).toEqual(teamPolicy);
+    expect(withTeam.club.ageBandPolicy).toEqual(clubPolicy);
+
+    const withClub = assembleStaffContext({
+      user: makeUser(),
+      membership: makeMembership(),
+      club: makeClub({ ageBandPolicy: clubPolicy }),
+      teams: [makeTeam("ta")],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+    expect(withClub.activeTeam?.ageBandPolicySource).toBe("club");
+    expect(withClub.activeTeam?.ageBandPolicyOverride).toBeNull();
+    expect(withClub.activeTeam?.ageBandPolicy).toEqual(clubPolicy);
+
+    const withDefaults = assembleStaffContext({
+      user: makeUser(),
+      membership: makeMembership(),
+      club: makeClub(),
+      teams: [makeTeam("ta")],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+    expect(withDefaults.activeTeam?.ageBandPolicySource).toBe("defaults");
+    expect(withDefaults.activeTeam?.ageBandPolicy.guidedMaxAgeExclusive).toBe(
+      14
+    );
+    expect(withDefaults.club.ageBandPolicy).toBeNull();
   });
 
   it("sets canCreateTeam based on role and platformRole", () => {

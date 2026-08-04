@@ -206,6 +206,12 @@ enum InjurySide {
   CENTRAL
 }
 
+enum AgeBand {
+  ASSISTED
+  GUIDED
+  INDEPENDENT
+}
+
 enum ExerciseVisibility {
   PRIVATE
   CLUB_SHARED
@@ -218,6 +224,8 @@ model Club {
   logoUrl        String?
   primaryColor   String?
   secondaryColor String?
+  /// Nullable JSON Age Band / Guardian policy defaults for Teams that inherit (see @repo/database/age-band-policy).
+  ageBandPolicy  Json?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   memberships    Membership[]
@@ -337,6 +345,8 @@ model Team {
   preSessionReminderMinutes  Int?             @default(120)
   postSessionReminderMinutes Int?             @default(30)
   wellnessLimits             Json?
+  /// Nullable Team override for Age Band / Guardian policy; null inherits Club defaults then package defaults.
+  ageBandPolicy              Json?
   createdAt                  DateTime         @default(now())
   updatedAt                  DateTime         @updatedAt
   club                       Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -367,28 +377,32 @@ model Season {
 }
 
 model Player {
-  id             String              @id @default(cuid())
-  userId         String?             @unique
-  name           String
-  imageUrl       String?
-  token          String              @unique @default(cuid())
-  teamId         String
-  team           Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user           User?               @relation("PlayerUser", fields: [userId], references: [id], onDelete: SetNull)
-  entries        DailyEntry[]
-  subscriptions  PushSubscription[]
-  stats          PlayerDailyStats[]
-  formSubmits    FormSubmission[]
-  injuries       InjuryReport[]
-  sessionLinks   TeamSessionPlayer[]
-  suggestions    AiSuggestion[]
-  attendance     SessionAttendance[]
-  status         PlayerStatus        @default(AVAILABLE)
-  isArchived     Boolean             @default(false)
-  currentStreak  Int                 @default(0)
-  longestStreak  Int                 @default(0)
-  createdAt      DateTime            @default(now())
-  pushDispatches PushDispatch[]
+  id              String              @id @default(cuid())
+  userId          String?             @unique
+  name            String
+  imageUrl        String?
+  token           String              @unique @default(cuid())
+  teamId          String
+  team            Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user            User?               @relation("PlayerUser", fields: [userId], references: [id], onDelete: SetNull)
+  /// Calendar date of birth; age is resolved in Team.timezone against effective Age Band policy.
+  dateOfBirth     DateTime?           @db.Date
+  /// Manual Age Band override when DOB is unknown or category exceptions apply.
+  ageBandOverride AgeBand?
+  entries         DailyEntry[]
+  subscriptions   PushSubscription[]
+  stats           PlayerDailyStats[]
+  formSubmits     FormSubmission[]
+  injuries        InjuryReport[]
+  sessionLinks    TeamSessionPlayer[]
+  suggestions     AiSuggestion[]
+  attendance      SessionAttendance[]
+  status          PlayerStatus        @default(AVAILABLE)
+  isArchived      Boolean             @default(false)
+  currentStreak   Int                 @default(0)
+  longestStreak   Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  pushDispatches  PushDispatch[]
 
   @@index([teamId])
   @@index([token])

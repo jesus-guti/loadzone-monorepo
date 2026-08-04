@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ACTIVE_TEAM_COOKIE_NAME, getCurrentStaffContext } from "@/lib/auth-context";
 import { parseWellnessLimits } from "@/lib/wellness-limits";
+import { parseAgeBandPolicyFromFormData } from "../lib/age-band-policy-form";
 
 const settingsSchema = z.object({
   category: z.string().max(100).optional(),
@@ -34,6 +35,11 @@ type ClubBrandingResult = {
   error?: string;
   logoUrl?: string | null;
 };
+
+function readCheckbox(formData: FormData, key: string): boolean {
+  const raw = formData.get(key);
+  return raw === "on" || raw === "true" || raw === "1";
+}
 
 function getTeamSettingsFormPayload(formData: FormData) {
   return {
@@ -66,6 +72,18 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos no válidos");
   }
 
+  const useClubAgeBandDefaults = readCheckbox(formData, "age_useClubDefaults");
+  let ageBandPolicyValue: Prisma.InputJsonValue | typeof Prisma.DbNull =
+    Prisma.DbNull;
+
+  if (!useClubAgeBandDefaults) {
+    const ageBandParsed = parseAgeBandPolicyFromFormData(formData);
+    if (!ageBandParsed.success) {
+      throw new Error(ageBandParsed.error);
+    }
+    ageBandPolicyValue = ageBandParsed.policy as Prisma.InputJsonValue;
+  }
+
   const wellnessLimitsPayload = parseWellnessLimits({
     recovery: parsed.data.wellness_recovery ?? null,
     energy: parsed.data.wellness_energy ?? null,
@@ -89,6 +107,7 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
           wellnessLimitsPayload === null
             ? Prisma.DbNull
             : (wellnessLimitsPayload as Prisma.InputJsonValue),
+        ageBandPolicy: ageBandPolicyValue,
       },
     });
 

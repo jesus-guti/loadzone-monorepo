@@ -65,6 +65,9 @@ type SessionPageProperties = {
   } | null;
   readonly preTemplate: PlayerFormTemplate | null;
   readonly postTemplate: PlayerFormTemplate | null;
+  /** Resolved from Team/Club Age Band policy — never hard-coded ages in UI. */
+  readonly ageBand: "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
+  readonly parentalSupervisionActive: boolean;
 };
 
 function formatShortDate(value: Date): string {
@@ -90,6 +93,8 @@ export function SessionPage({
   selectedSession,
   preTemplate,
   postTemplate,
+  ageBand,
+  parentalSupervisionActive,
 }: SessionPageProperties) {
   const todayIso = new Date().toISOString().split("T")[0];
   const router = useRouter();
@@ -171,7 +176,11 @@ export function SessionPage({
   const showCelebration = allDone && !editingPre && !editingPost;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5">
+    <div
+      className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5"
+      data-age-band={ageBand}
+      data-parental-supervision={parentalSupervisionActive ? "active" : "off"}
+    >
       <header className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
