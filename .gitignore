@@ -280,3 +280,5 @@ packages/database/generated
 
 # Orchestrator worktrees
 .worktrees/
+# QA staging tokens (regenerate via seed-age-band-qa)
+.scratch/qa-age-band/context.json
