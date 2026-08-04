@@ -1,5 +1,7 @@
 /**
- * Player Pain Alert intake writes (JES-50). Never creates Injury.
+ * Player Pain Alert intake writes (JES-50 / JES-54). Never creates Injury.
+ * Care Alert evaluation (when Parental Supervision allows) stays on the player
+ * save path only — see JES-47 HITL C; staff promote / Injury create must not emit.
  */
 
 import type { InjurySeverity, InjurySide } from "./generated/client";

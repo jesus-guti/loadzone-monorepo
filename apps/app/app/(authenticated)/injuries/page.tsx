@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "@/components/layouts/header";
-import { updateInjury } from "@/features/injuries";
+import { PromotePainAlertForm, updateInjury } from "@/features/injuries";
 
 export const metadata: Metadata = {
   title: "Lesiones | LoadZone",
@@ -40,8 +40,9 @@ const InjuriesPage = async () => {
         player: { select: { name: true } },
       },
     }),
+    // Open triage only — promoted alerts are linked via promotedInjuryId (JES-54).
     database.painAlert.findMany({
-      where: { teamId },
+      where: { teamId, promotedInjuryId: null },
       orderBy: { reportedAt: "desc" },
       take: 50,
       select: {
@@ -149,7 +150,7 @@ const InjuriesPage = async () => {
         {painAlerts.length > 0 ? (
           <section className="space-y-4">
             <h2 className="text-sm font-medium text-text-secondary">
-              Avisos de dolor (jugador)
+              Avisos de dolor abiertos
             </h2>
             {painAlerts.map((alert) => (
               <Card key={alert.id}>
@@ -162,13 +163,18 @@ const InjuriesPage = async () => {
                     {alert.bodyPart ?? "Sin localización"} · {alert.severity}
                   </p>
                 </CardHeader>
-                {alert.description ? (
-                  <CardContent>
+                <CardContent className="space-y-3">
+                  {alert.description ? (
                     <p className="text-sm text-text-secondary">
                       {alert.description}
                     </p>
-                  </CardContent>
-                ) : null}
+                  ) : null}
+                  {/* Interim CTA until JES-51 body-map create UI; soft-deps on createInjury. */}
+                  <PromotePainAlertForm
+                    painAlertId={alert.id}
+                    bodyPartHint={alert.bodyPart}
+                  />
+                </CardContent>
               </Card>
             ))}
           </section>
