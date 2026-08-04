@@ -23,6 +23,7 @@
     "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "bootstrap": "tsx ./scripts/bootstrap.ts",
     "seed-wellness-demo": "tsx ./scripts/seed-wellness-demo.ts",
+    "seed-age-band-qa": "tsx ./scripts/seed-age-band-qa.ts",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "test": "NODE_ENV=test vitest run"
