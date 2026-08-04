@@ -5,12 +5,6 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
-import { mapInjuryRowsToIntervals } from "@repo/database/injury-status";
-import {
-  civilDateToUtcMidnight,
-  shouldSkipWellnessReminderForInjury,
-  type InjuryInterval,
-} from "@repo/database/recoverable-streak";
 import {
   resolveEffectiveReminderConsentPolicy,
   type PlayerReminderConsentState,
@@ -232,38 +226,7 @@ export async function remindPendingWellnessPlayers(
     },
   });
 
-  const evaluatedCivilDate = civilDateToUtcMidnight(evaluatedYmd);
-
-  const injuryRows = await database.injury.findMany({
-    where: {
-      teamId: staffContext.activeTeam.id,
-      startDate: { lte: evaluatedCivilDate },
-      OR: [{ endDate: null }, { endDate: { gte: evaluatedCivilDate } }],
-    },
-    select: {
-      playerId: true,
-      startDate: true,
-      endDate: true,
-    },
-  });
-
-  const injuryIntervalsByPlayerId = new Map<string, InjuryInterval[]>();
-  for (const injury of injuryRows) {
-    const mapped = mapInjuryRowsToIntervals([injury]);
-    const existing = injuryIntervalsByPlayerId.get(injury.playerId) ?? [];
-    injuryIntervalsByPlayerId.set(injury.playerId, [...existing, ...mapped]);
-  }
-
   const playersToNotify = pendingPlayers.filter((player) => {
-    const intervals = injuryIntervalsByPlayerId.get(player.id) ?? [];
-    if (
-      shouldSkipWellnessReminderForInjury({
-        injuryIntervals: intervals,
-        civilDayIso: evaluatedYmd,
-      })
-    ) {
-      return false;
-    }
     const entry = player.entries[0];
     return owedKinds({
       preFilledAt: entry?.preFilledAt,

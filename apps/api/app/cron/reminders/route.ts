@@ -3,12 +3,6 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
-import { mapInjuryRowsToIntervals } from "@repo/database/injury-status";
-import {
-  shouldSkipWellnessReminderForInjury,
-  toCivilDateString,
-  type InjuryInterval,
-} from "@repo/database/recoverable-streak";
 import {
   resolveEffectiveReminderConsentPolicy,
   type PlayerReminderConsentState,
@@ -28,41 +22,12 @@ export const dynamic = "force-dynamic";
 
 const LOOKBACK_MS = 15 * 60 * 1000;
 
-async function loadInjuryIntervalsByPlayerId(
-  playerIds: string[]
-): Promise<Map<string, InjuryInterval[]>> {
-  const intervalsByPlayerId = new Map<string, InjuryInterval[]>();
-  if (playerIds.length === 0) {
-    return intervalsByPlayerId;
-  }
-
-  const injuries = await database.injury.findMany({
-    where: { playerId: { in: playerIds } },
-    select: {
-      playerId: true,
-      startDate: true,
-      endDate: true,
-    },
-  });
-
-  for (const injury of injuries) {
-    const mapped = mapInjuryRowsToIntervals([injury]);
-    const existing = intervalsByPlayerId.get(injury.playerId) ?? [];
-    intervalsByPlayerId.set(injury.playerId, [...existing, ...mapped]);
-  }
-
-  return intervalsByPlayerId;
-}
-
 async function dispatchReminderForPlayers(input: {
   playerIds: string[];
   teamSessionId: string;
   kind: ReminderDispatchKind;
   sessionTitle: string;
   timeZone: string;
-  /** Team.timezone civil day D for injury exemption (JES-32 / JES-53). */
-  exemptionCivilDay: string;
-  injuryIntervalsByPlayerId: ReadonlyMap<string, InjuryInterval[]>;
   now: Date;
   sessionDate: Date;
 }): Promise<number> {
@@ -75,16 +40,6 @@ async function dispatchReminderForPlayers(input: {
   };
 
   for (const playerId of input.playerIds) {
-    const intervals = input.injuryIntervalsByPlayerId.get(playerId) ?? [];
-    if (
-      shouldSkipWellnessReminderForInjury({
-        injuryIntervals: intervals,
-        civilDayIso: input.exemptionCivilDay,
-      })
-    ) {
-      continue;
-    }
-
     const player = await database.player.findUnique({
       where: { id: playerId },
       select: {
@@ -251,14 +206,8 @@ export async function GET(request: Request): Promise<NextResponse> {
       continue;
     }
 
-    const sessionTimeZone =
-      session.timezone || session.team.timezone || "Europe/Madrid";
-    const teamTimeZone = session.team.timezone || "Europe/Madrid";
-    const sessionDate = sessionCalendarDate(session.startsAt, sessionTimeZone);
-    // Exemption clock is Team.timezone (JES-32), even when session TZ drives timing.
-    const exemptionCivilDay = toCivilDateString(session.startsAt, teamTimeZone);
-    const injuryIntervalsByPlayerId =
-      await loadInjuryIntervalsByPlayerId(playerIds);
+    const timeZone = session.timezone || session.team.timezone || "Europe/Madrid";
+    const sessionDate = sessionCalendarDate(session.startsAt, timeZone);
 
     if (session.preReminderMinutes != null) {
       const preTarget = new Date(
@@ -269,7 +218,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         isAutomatedReminderDue({
           configuredTarget: preTarget,
           now,
-          timeZone: sessionTimeZone,
+          timeZone,
           lookbackMs: LOOKBACK_MS,
         })
       ) {
@@ -278,9 +227,7 @@ export async function GET(request: Request): Promise<NextResponse> {
           teamSessionId: session.id,
           kind: "PRE_SESSION",
           sessionTitle: session.title,
-          timeZone: sessionTimeZone,
-          exemptionCivilDay,
-          injuryIntervalsByPlayerId,
+          timeZone,
           now,
           sessionDate,
         });
@@ -296,7 +243,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         isAutomatedReminderDue({
           configuredTarget: postTarget,
           now,
-          timeZone: sessionTimeZone,
+          timeZone,
           lookbackMs: LOOKBACK_MS,
         })
       ) {
@@ -305,9 +252,7 @@ export async function GET(request: Request): Promise<NextResponse> {
           teamSessionId: session.id,
           kind: "POST_SESSION",
           sessionTitle: session.title,
-          timeZone: sessionTimeZone,
-          exemptionCivilDay,
-          injuryIntervalsByPlayerId,
+          timeZone,
           now,
           sessionDate,
         });

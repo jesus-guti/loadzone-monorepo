@@ -24,7 +24,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
-import { PainAlertForm } from "./pain-alert-form";
+import { InjuryReportForm } from "./injury-report-form";
 import {
   FOCUS_COPY,
   shouldShowAssistedPresence,
@@ -125,7 +125,7 @@ export function SessionPage({
   const [editingPost, setEditingPost] = useState(false);
   const [streakCount, setStreakCount] = useState(currentStreak);
   const [streakRestarted, setStreakRestarted] = useState(false);
-  const [painAlertOpen, setPainAlertOpen] = useState(false);
+  const [injuryOpen, setInjuryOpen] = useState(false);
   const [careTriggered, setCareTriggered] = useState(false);
 
   useEffect(() => {
@@ -454,7 +454,7 @@ export function SessionPage({
       )}
 
       <footer className="mt-auto pt-4 text-center">
-        <Sheet open={painAlertOpen} onOpenChange={setPainAlertOpen}>
+        <Sheet open={injuryOpen} onOpenChange={setInjuryOpen}>
           <SheetTrigger
             render={
               <button
@@ -462,7 +462,7 @@ export function SessionPage({
                 className="inline-flex min-h-12 items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
               >
                 <HeartbeatIcon className="h-3.5 w-3.5" weight="fill" />
-                ¿Tienes una molestia? Enviar aviso
+                ¿Tienes una molestia? Reportar lesión
               </button>
             }
           />
@@ -471,17 +471,13 @@ export function SessionPage({
             className="max-h-[90dvh] overflow-y-auto rounded-t-3xl"
           >
             <SheetHeader className="space-y-1 pb-0">
-              <SheetTitle className="text-lg">Aviso de molestia</SheetTitle>
+              <SheetTitle className="text-lg">Reportar lesión</SheetTitle>
               <SheetDescription>
-                Cuéntanos brevemente qué notas. Es un aviso para el equipo, no
-                registra una lesión oficial.
+                Cuéntanos brevemente qué notas. El equipo técnico lo revisa hoy.
               </SheetDescription>
             </SheetHeader>
             <div className="px-4 pb-6">
-              <PainAlertForm
-                token={token}
-                onSuccess={() => setPainAlertOpen(false)}
-              />
+              <InjuryReportForm token={token} />
             </div>
           </SheetContent>
         </Sheet>

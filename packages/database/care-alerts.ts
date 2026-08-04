@@ -222,7 +222,7 @@ export function payloadContainsForbiddenFields(
 }
 
 export type CareAlertEvaluationSignals = {
-  /** Player Pain Alert entity (JES-50). Keep bodyPart/side shape for Guardian allow-list (JES-49). */
+  /** Player Pain Alert (InjuryReport with reportedByPlayer). */
   painAlert?: {
     bodyPart?: string | null;
     side?: string | null;

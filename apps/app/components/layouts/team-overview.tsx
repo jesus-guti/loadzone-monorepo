@@ -17,7 +17,6 @@ type PlayerSummary = {
   name: string;
   status: PlayerStatus;
   currentStreak: number;
-  injuryExemptOnEvaluatedDay?: boolean;
   entries: {
     date: Date;
     recovery: number | null;
@@ -52,7 +51,7 @@ type TeamOverviewProperties = {
   readonly summary: TeamSummary;
 };
 
-type DailyPlayerState = "ALERT" | "COMPLETED" | "EXEMPTED" | "NOT_COMPLETED";
+type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
 
 function getRiskColor(riskLevel: RiskLevel | null | undefined): string {
   switch (riskLevel) {
@@ -127,10 +126,6 @@ function getDailyPlayerState(
     return "COMPLETED";
   }
 
-  if (player.injuryExemptOnEvaluatedDay) {
-    return "EXEMPTED";
-  }
-
   return "NOT_COMPLETED";
 }
 
@@ -140,8 +135,6 @@ function getDailyStateLabel(state: DailyPlayerState): string {
       return "Alerta";
     case "COMPLETED":
       return "Completado";
-    case "EXEMPTED":
-      return "Exento";
     default:
       return "Pendiente";
   }
@@ -193,10 +186,7 @@ export function TeamOverview({
     (p) => p.status === "AVAILABLE"
   ).length;
   const priorityPlayers = players
-    .filter((player) => {
-      const state = getDailyPlayerState(player);
-      return state !== "COMPLETED" && state !== "EXEMPTED";
-    })
+    .filter((player) => getDailyPlayerState(player) !== "COMPLETED")
     .sort((leftPlayer, rightPlayer) => {
       const leftState = getDailyPlayerState(leftPlayer);
       const rightState = getDailyPlayerState(rightPlayer);

@@ -49,7 +49,7 @@ function resolvedAge(
   };
 }
 
-/** Staff Injury-shaped fixture — full operational visibility (not Guardian). */
+/** Staff InjuryReport-shaped fixture — full operational visibility (not Guardian). */
 const staffInjuryFixture = {
   id: "inj-1",
   title: "Esguince de tobillo",

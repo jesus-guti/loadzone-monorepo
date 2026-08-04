@@ -3,29 +3,29 @@
 import { Button } from "@repo/design-system/components/button";
 import { useActionState, useEffect } from "react";
 import { toast } from "@repo/design-system/components/sonner";
-import { savePainAlert } from "../actions/save-pain-alert";
+import { saveInjuryReport } from "../actions/save-injury";
 import { HeartbeatIcon } from "@phosphor-icons/react/Heartbeat";
 
-type PainAlertFormProperties = {
+type InjuryReportFormProperties = {
   readonly token: string;
-  readonly onSuccess?: () => void;
 };
 
-export function PainAlertForm({ token, onSuccess }: PainAlertFormProperties) {
-  const [state, action, isPending] = useActionState(savePainAlert, {
+export function InjuryReportForm({ token }: InjuryReportFormProperties) {
+  const [state, action, isPending] = useActionState(saveInjuryReport, {
     success: false,
   });
 
   useEffect(() => {
     if (state.success) {
-      toast.success(state.careConfirmMessage ?? "Tu equipo ya lo tiene");
-      onSuccess?.();
+      toast.success(
+        state.careConfirmMessage ?? "Tu equipo ya lo tiene"
+      );
     }
 
     if (state.error) {
       toast.error(state.error);
     }
-  }, [state, onSuccess]);
+  }, [state]);
 
   return (
     <form action={action} className="space-y-4 pt-2">

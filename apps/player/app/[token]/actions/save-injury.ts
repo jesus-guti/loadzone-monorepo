@@ -5,10 +5,9 @@ import {
   evaluateAndEmitCareAlert,
   PLAYER_CARE_CONFIRM_MESSAGE,
 } from "@repo/database/care-alerts";
-import { createPlayerPainAlert } from "@repo/database/pain-alert";
 import { z } from "zod";
 
-const painAlertSchema = z.object({
+const injurySchema = z.object({
   token: z.string(),
   title: z.string().min(2).max(100),
   bodyPart: z.string().max(100).optional(),
@@ -16,24 +15,19 @@ const painAlertSchema = z.object({
   description: z.string().max(1000).optional(),
 });
 
-type PainAlertActionResult = {
+type InjuryActionResult = {
   success: boolean;
   error?: string;
   careConfirm?: boolean;
   careConfirmMessage?: string;
 };
 
-/**
- * Player intake → Pain Alert only; never creates an official Injury (JES-54).
- * Care Alert: evaluate after successful persist when Parental Supervision allows
- * (JES-47 HITL A). Staff promote / Injury create must not call this path (HITL C).
- */
-export async function savePainAlert(
-  _prev: PainAlertActionResult,
+export async function saveInjuryReport(
+  _prev: InjuryActionResult,
   formData: FormData
-): Promise<PainAlertActionResult> {
+): Promise<InjuryActionResult> {
   try {
-    const parsed = painAlertSchema.safeParse({
+    const parsed = injurySchema.safeParse({
       token: formData.get("token"),
       title: formData.get("title"),
       bodyPart: formData.get("bodyPart") || undefined,
@@ -77,22 +71,22 @@ export async function savePainAlert(
         ? parsed.data.bodyPart
         : null;
 
-    const painAlert = await createPlayerPainAlert(database, {
-      playerId: player.id,
-      teamId: player.teamId,
-      title: parsed.data.title,
-      bodyPart,
-      severity: parsed.data.severity,
-      description:
-        parsed.data.description && parsed.data.description.length > 0
-          ? parsed.data.description
-          : null,
+    const injury = await database.injuryReport.create({
+      data: {
+        playerId: player.id,
+        teamId: player.teamId,
+        title: parsed.data.title,
+        bodyPart,
+        severity: parsed.data.severity,
+        description:
+          parsed.data.description && parsed.data.description.length > 0
+            ? parsed.data.description
+            : null,
+        reportedByPlayer: true,
+      },
     });
 
-    // Care Alert table (JES-54 / JES-47 HITL C):
-    // - Player Pain Alert save → may emit INJURY_PAIN (policy-gated)
-    // - Staff promote → Injury → never emit
-    // - Staff Registrar lesión → never emit
+    // Staff-authored Injury is intentionally not hooked (JES-47 HITL C).
     // Guardian slice: structured location only (JES-49) — never title/description/severity.
     const careResult = await evaluateAndEmitCareAlert({
       playerId: player.id,
@@ -106,9 +100,9 @@ export async function savePainAlert(
       signals: {
         painAlert: {
           bodyPart,
-          side: painAlert.side,
-          injuryType: painAlert.injuryType,
-          reportedAt: painAlert.reportedAt,
+          side: injury.side,
+          injuryType: injury.injuryType,
+          reportedAt: injury.reportedAt,
         },
       },
       checkInCompleted: false,
@@ -122,6 +116,6 @@ export async function savePainAlert(
         : undefined,
     };
   } catch {
-    return { success: false, error: "No se pudo guardar el aviso de dolor." };
+    return { success: false, error: "No se pudo guardar la lesión." };
   }
 }

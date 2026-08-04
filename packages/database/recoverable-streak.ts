@@ -89,17 +89,6 @@ export function isInjuryActiveOnDay(
   });
 }
 
-/**
- * Wellness PRE/POST reminders and staff re-nudge: skip when an official Injury
- * is active on civil day D. Pain Alert rows never appear in `intervals`.
- */
-export function shouldSkipWellnessReminderForInjury(args: {
-  readonly injuryIntervals: readonly InjuryInterval[];
-  readonly civilDayIso: string;
-}): boolean {
-  return isInjuryActiveOnDay(args.injuryIntervals, args.civilDayIso);
-}
-
 export function resolveDayObligations(
   sessionFillMoments: readonly string[][],
   teamFillMoments: readonly string[]

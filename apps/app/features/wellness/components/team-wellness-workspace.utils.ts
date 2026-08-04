@@ -21,11 +21,7 @@ export type WellnessAlertDisplay = ImmediateWellnessFlag & {
 
 const NAME_WORD_SPLIT_PATTERN = /\s+/;
 
-export type DailyPlayerState =
-  | "ALERT"
-  | "COMPLETED"
-  | "EXEMPTED"
-  | "NOT_COMPLETED";
+export type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
 
 export type TeamWellnessWorkspaceSummary = {
   alertCount: number;
@@ -283,24 +279,7 @@ export function getDailyPlayerState(
     return "COMPLETED";
   }
 
-  if (player.injuryExemptOnEvaluatedDay) {
-    return "EXEMPTED";
-  }
-
   return "NOT_COMPLETED";
-}
-
-export function getDailyStateLabel(state: DailyPlayerState): string {
-  switch (state) {
-    case "ALERT":
-      return "Alerta";
-    case "COMPLETED":
-      return "Completado";
-    case "EXEMPTED":
-      return "Exento";
-    case "NOT_COMPLETED":
-      return "Pendiente";
-  }
 }
 
 export function formatAverage(value: number | null): string {
@@ -344,7 +323,8 @@ export function buildWellnessSummary(
     }).length,
     energyAverage: average(energyValues),
     pendingCount: players.filter((player) => {
-      return getDailyPlayerState(player, wellnessLimits) === "NOT_COMPLETED";
+      const entry = getLatestEntry(player);
+      return !(entry?.preFilledAt && entry?.postFilledAt);
     }).length,
     postCompletedCount: players.filter((player) =>
       Boolean(getLatestEntry(player)?.postFilledAt)

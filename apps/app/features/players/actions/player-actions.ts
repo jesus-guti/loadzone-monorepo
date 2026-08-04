@@ -3,12 +3,7 @@
 import { database } from "@repo/database";
 import type { AgeBand, PlayerStatus } from "@repo/database";
 import { ageBandOverrideSchema } from "@repo/database/age-band-policy";
-import {
-  isPlayerStatusOverrideBlocked,
-  playerHasActiveInjury,
-} from "@repo/database/injury-status";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
-import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -24,23 +19,12 @@ type PhotoActionResult = ActionResult & {
   imageUrl?: string | null;
 };
 
-async function getStaffTeamContext(): Promise<{
-  teamId: string;
-  timeZone: string;
-}> {
+async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
   if (!staffContext?.activeTeam) {
     throw new Error("Equipo no encontrado");
   }
-  return {
-    teamId: staffContext.activeTeam.id,
-    timeZone: staffContext.activeTeam.timezone || "Europe/Madrid",
-  };
-}
-
-async function getTeamId(): Promise<string> {
-  const { teamId } = await getStaffTeamContext();
-  return teamId;
+  return staffContext.activeTeam.id;
 }
 
 const optionalDateOfBirth = z
@@ -166,7 +150,7 @@ export async function updatePlayer(
       return { success: false, error: parsed.error.issues[0]?.message };
     }
 
-    const { teamId, timeZone } = await getStaffTeamContext();
+    const teamId = await getTeamId();
 
     let nextConsentState: PlayerReminderConsentState | undefined;
     const action = parsed.data.reminderConsentAction;
@@ -176,26 +160,6 @@ export async function updatePlayer(
       nextConsentState = "GUARDIAN_BLOCKED";
     } else if (action === "CLEAR_TO_ELIGIBLE") {
       nextConsentState = "ELIGIBLE";
-    }
-
-    const todayCivil = toCivilDateString(new Date(), timeZone);
-    const hasActiveInjury = await playerHasActiveInjury(
-      database,
-      parsed.data.id,
-      todayCivil,
-      timeZone
-    );
-    if (
-      isPlayerStatusOverrideBlocked({
-        hasActiveInjury,
-        requestedStatus: parsed.data.status as PlayerStatus,
-      })
-    ) {
-      return {
-        success: false,
-        error:
-          "No se puede cambiar el estado mientras haya una lesión abierta. Cierra la lesión primero.",
-      };
     }
 
     await database.$transaction(async (tx) => {
