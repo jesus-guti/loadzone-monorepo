@@ -70,6 +70,7 @@ enum FormQuestionType {
 enum FormFillMoment {
   PRE_SESSION
   POST_SESSION
+  /// Dormant — no product form-engine path (JES-33 / JES-50). Leave unused.
   INJURY_REPORT
 }
 
@@ -80,10 +81,40 @@ enum InjurySeverity {
   MAJOR
 }
 
-enum InjuryStatus {
-  REPORTED
-  UNDER_REVIEW
-  RESOLVED
+/// Fixed BodyRegion catalog ids (JES-31). L/R are anatomical (player's left/right).
+enum BodyRegionId {
+  HEAD
+  NECK
+  SHOULDER_R
+  SHOULDER_L
+  UPPER_ARM_R
+  UPPER_ARM_L
+  ELBOW_R
+  ELBOW_L
+  WRIST_HAND_R
+  WRIST_HAND_L
+  CHEST
+  ABDOMEN
+  UPPER_BACK
+  LOWER_BACK
+  HIP_GROIN_R
+  HIP_GROIN_L
+  GLUTE_R
+  GLUTE_L
+  THIGH_FRONT_R
+  THIGH_FRONT_L
+  THIGH_BACK_R
+  THIGH_BACK_L
+  KNEE_R
+  KNEE_L
+  SHIN_R
+  SHIN_L
+  CALF_R
+  CALF_L
+  ANKLE_R
+  ANKLE_L
+  FOOT_R
+  FOOT_L
 }
 
 enum AiSuggestionStatus {
@@ -269,7 +300,7 @@ model User {
   memberships      Membership[]
   aiSuggestions    AiSuggestion[] @relation("AcceptedSuggestions")
   playerProfile    Player?        @relation("PlayerUser")
-  reportedInjuries InjuryReport[] @relation("ReportedInjuries")
+  createdInjuries  Injury[]       @relation("CreatedInjuries")
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
@@ -323,7 +354,6 @@ model Membership {
   createdSessions   TeamSession[]                @relation("SessionCreators")
   createdExercises  Exercise[]                   @relation("ExerciseCreators")
   exerciseFavorites MembershipExerciseFavorite[]
-  reviewedInjuries  InjuryReport[]               @relation("ReviewedInjuries")
   excusedAbsences   ExcusedAbsence[]             @relation("ExcusedAbsenceCreators")
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
@@ -379,7 +409,8 @@ model Team {
   memberships                MembershipTeam[]
   sessions                   TeamSession[]
   forms                      FormAssignment[]
-  injuries                   InjuryReport[]
+  injuries                   Injury[]
+  painAlerts                 PainAlert[]
 
   @@unique([clubId, name])
   @@index([clubId])
@@ -421,7 +452,8 @@ model Player {
   subscriptions       PushSubscription[]
   stats               PlayerDailyStats[]
   formSubmits         FormSubmission[]
-  injuries            InjuryReport[]
+  injuries            Injury[]
+  painAlerts          PainAlert[]
   sessionLinks        TeamSessionPlayer[]
   suggestions         AiSuggestion[]
   attendance          SessionAttendance[]
@@ -435,7 +467,6 @@ model Player {
   createdAt           DateTime            @default(now())
   pushDispatches      PushDispatch[]
   careAlertDispatches CareAlertDispatch[]
-
 
   @@index([teamId])
   @@index([token])
@@ -777,37 +808,65 @@ model FormAnswer {
   @@index([questionId])
 }
 
-model InjuryReport {
-  id                     String         @id @default(cuid())
-  playerId               String
-  teamId                 String
-  title                  String
-  description            String?
-  bodyPart               String?
-  injuryType             String?
-  side                   InjurySide?
-  severity               InjurySeverity @default(UNKNOWN)
-  status                 InjuryStatus   @default(REPORTED)
-  reportedByPlayer       Boolean        @default(false)
-  reportedByUserId       String?
-  reviewedByMembershipId String?
-  occurredAt             DateTime?
-  staffNotes             String?
-  reportedAt             DateTime       @default(now())
-  reviewedAt             DateTime?
-  resolvedAt             DateTime?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
-  player                 Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  team                   Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  reportedBy             User?          @relation("ReportedInjuries", fields: [reportedByUserId], references: [id], onDelete: SetNull)
-  reviewedBy             Membership?    @relation("ReviewedInjuries", fields: [reviewedByMembershipId], references: [id], onDelete: SetNull)
+/// Staff-authored official injury period (JES-30 / JES-50). Inclusive endDate when set.
+model Injury {
+  id                 String              @id @default(cuid())
+  playerId           String
+  teamId             String
+  startDate          DateTime            @db.Date
+  endDate            DateTime?           @db.Date
+  cause              String
+  severity           InjurySeverity      @default(UNKNOWN)
+  regionDetail       String?
+  staffNotes         String?
+  expectedReturnDate DateTime?           @db.Date
+  createdByUserId    String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  player             Player              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  team               Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy          User?               @relation("CreatedInjuries", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  regions            InjuryBodyRegion[]
+  promotedFrom       PainAlert[]
 
-  @@index([occurredAt])
-  @@index([reportedByUserId])
-  @@index([reviewedByMembershipId])
-  @@index([playerId, status])
-  @@index([teamId, status])
+  @@index([playerId, startDate])
+  @@index([teamId, startDate])
+  @@index([playerId, endDate])
+  @@index([createdByUserId])
+}
+
+model InjuryBodyRegion {
+  id       String       @id @default(cuid())
+  injuryId String
+  regionId BodyRegionId
+  injury   Injury       @relation(fields: [injuryId], references: [id], onDelete: Cascade)
+
+  @@unique([injuryId, regionId])
+  @@index([regionId])
+}
+
+/// Player intake aviso — not an official Injury (JES-33 / JES-50).
+model PainAlert {
+  id                String         @id @default(cuid())
+  playerId          String
+  teamId            String
+  title             String
+  description       String?
+  bodyPart          String?
+  side              InjurySide?
+  injuryType        String?
+  severity          InjurySeverity @default(UNKNOWN)
+  reportedAt        DateTime       @default(now())
+  promotedInjuryId  String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  player            Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  team              Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  promotedInjury    Injury?        @relation(fields: [promotedInjuryId], references: [id], onDelete: SetNull)
+
+  @@index([playerId, reportedAt])
+  @@index([teamId, reportedAt])
+  @@index([promotedInjuryId])
 }
 
 model AiSuggestion {
