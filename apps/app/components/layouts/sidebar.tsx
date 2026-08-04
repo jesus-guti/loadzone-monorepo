@@ -60,14 +60,14 @@ function DesktopSidebarOpener() {
         <SidebarMenuItem>
           <SidebarMenuButton
             aria-label={tooltip}
-            className="w-fit"
+            className="w-fit [&_svg]:size-5"
             onClick={() => {
               toggleSidebar();
             }}
             tooltip={tooltip}
             type="button"
           >
-            <ListIcon className="size-4 shrink-0 text-text-secondary" />
+            <ListIcon className="size-5 shrink-0 text-text-secondary" />
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -131,6 +131,7 @@ export const GlobalSidebar = ({
                 {primaryNavigation.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
+                      className="[&_svg]:size-5"
                       isActive={item.match(pathname)}
                       tooltip={item.label}
                       render={
@@ -153,6 +154,7 @@ export const GlobalSidebar = ({
                 {secondaryNavigation.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
+                      className="[&_svg]:size-5"
                       isActive={item.match(pathname)}
                       tooltip={item.label}
                       render={
