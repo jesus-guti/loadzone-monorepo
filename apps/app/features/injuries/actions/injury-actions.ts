@@ -14,6 +14,8 @@ import {
   findActiveSeasonIdForTeam,
   recomputeAndPersistPlayerStreak,
 } from "@repo/database/recompute-player-streak";
+import { parseBodyRegionIds } from "@repo/database/create-injury";
+import { promotePainAlertToInjury } from "@repo/database/promote-pain-alert";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentStaffContext } from "@/lib/auth-context";
@@ -467,4 +469,83 @@ export async function updateInjuryTriage(formData: FormData): Promise<void> {
   );
 
   revalidateInjuryPaths(injury.playerId);
+}
+
+const promotePainAlertSchema = z.object({
+  painAlertId: z.string().min(1),
+  startDate: z.string().optional(),
+});
+
+function collectRegionIds(formData: FormData): string[] {
+  return formData
+    .getAll("regionIds")
+    .filter((value): value is string => typeof value === "string");
+}
+
+/**
+ * Promote open Pain Alert → Injury via shared create path with prefill.
+ * Staff must select ≥1 BodyRegion. Does not emit Care Alerts (JES-47 HITL C).
+ */
+export async function promotePainAlert(
+  _prev: InjuryActionResult,
+  formData: FormData
+): Promise<InjuryActionResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.activeTeam) {
+      return { success: false, error: "Equipo no encontrado" };
+    }
+
+    const parsed = promotePainAlertSchema.safeParse({
+      painAlertId: formData.get("painAlertId"),
+      startDate: formData.get("startDate") || undefined,
+    });
+
+    if (!parsed.success) {
+      return { success: false, error: "Datos no válidos." };
+    }
+
+    const regionIds = parseBodyRegionIds(collectRegionIds(formData));
+    if (regionIds.length === 0) {
+      return {
+        success: false,
+        error: "Selecciona al menos una zona corporal.",
+      };
+    }
+
+    // Care Alert: never on promote / staff Injury (JES-47 HITL C).
+    const result = await promotePainAlertToInjury(database, {
+      painAlertId: parsed.data.painAlertId,
+      teamId: staffContext.activeTeam.id,
+      regionIds,
+      startDate: parsed.data.startDate,
+      createdByUserId: staffContext.user.id,
+      timeZone: staffContext.activeTeam.timezone || "Europe/Madrid",
+    });
+
+    const alert = await database.painAlert.findUnique({
+      where: { id: result.painAlertId },
+      select: { playerId: true },
+    });
+
+    if (alert) {
+      await recomputeStreakAfterInjury(
+        alert.playerId,
+        staffContext.activeTeam.id,
+        staffContext.activeTeam.timezone || "Europe/Madrid",
+        staffContext.activeSeason?.id
+      );
+      revalidateInjuryPaths(alert.playerId);
+    } else {
+      revalidatePath("/injuries");
+    }
+
+    return { success: true, injuryId: result.injuryId };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "No se pudo promover el aviso a lesión.";
+    return { success: false, error: message };
+  }
 }

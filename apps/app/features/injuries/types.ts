@@ -1,4 +1,5 @@
-<<<<<<< HEAD
+import type { BodyRegionCatalogId } from "@repo/database/body-region-catalog";
+
 export type TeamInjuryListItem = {
   readonly id: string;
   readonly playerId: string;
@@ -19,14 +20,15 @@ export type TeamPainAlertListItem = {
   readonly reportedAt: string;
   readonly title: string;
   readonly summary: string | null;
+  /** Raw player body-part hint for promote prefill (JES-54). */
+  readonly bodyPart: string | null;
 };
 
 export type TeamInjuriesListPayload = {
   readonly painAlerts: readonly TeamPainAlertListItem[];
   readonly activeInjuries: readonly TeamInjuryListItem[];
   readonly closedInjuries: readonly TeamInjuryListItem[];
-=======
-import type { BodyRegionCatalogId } from "@repo/database/body-region-catalog";
+};
 
 export type InjuryListItem = {
   readonly id: string;
@@ -36,5 +38,4 @@ export type InjuryListItem = {
   readonly regionDetail: string | null;
   readonly regionIds: readonly BodyRegionCatalogId[];
   readonly regionLabels: readonly string[];
->>>>>>> origin/dev
 };

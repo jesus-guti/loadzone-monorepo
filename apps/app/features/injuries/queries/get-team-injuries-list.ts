@@ -66,6 +66,7 @@ function mapPainAlertRow(row: PainAlertDbRow): TeamPainAlertListItem {
     reportedAt: row.reportedAt.toISOString(),
     title: row.title,
     summary: summarySource ? truncateText(summarySource, 120) : null,
+    bodyPart: row.bodyPart,
   };
 }
 

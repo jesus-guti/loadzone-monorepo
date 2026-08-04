@@ -1,6 +1,7 @@
 import { Badge } from "@repo/design-system/components/badge";
 import { Button } from "@repo/design-system/components/button";
 import Link from "next/link";
+import { PromotePainAlertForm } from "./promote-pain-alert-form";
 import {
   playerProfileHref,
   truncateText,
@@ -109,13 +110,11 @@ function PainAlertRow({
             </p>
           ) : null}
         </Link>
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          <Button type="button" variant="outline" size="sm" disabled>
-            Promover
-          </Button>
-          <span className="max-w-[10rem] text-right text-xs text-text-secondary">
-            Disponible pronto
-          </span>
+        <div className="w-full max-w-sm shrink-0 sm:w-64">
+          <PromotePainAlertForm
+            painAlertId={alert.id}
+            bodyPartHint={alert.bodyPart}
+          />
         </div>
       </div>
     </li>
