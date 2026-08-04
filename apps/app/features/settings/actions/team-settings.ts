@@ -8,7 +8,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ACTIVE_TEAM_COOKIE_NAME, getCurrentStaffContext } from "@/lib/auth-context";
-import { parseWellnessLimits } from "@/lib/wellness-limits";
+import {
+  DEFAULT_NEW_TEAM_WELLNESS_LIMITS,
+  parseWellnessLimits,
+} from "@/lib/wellness-limits";
 import { parseAgeBandPolicyFromFormData } from "../lib/age-band-policy-form";
 import { parseReminderConsentPolicyFromFormData } from "../lib/reminder-consent-policy-form";
 
@@ -19,11 +22,11 @@ const settingsSchema = z.object({
   postSessionReminderMinutes: z.coerce.number().int().min(0).max(1440),
   preFormTemplateId: z.string().optional(),
   postFormTemplateId: z.string().optional(),
-  wellness_recovery: z.coerce.number().min(0).max(10).optional(),
-  wellness_energy: z.coerce.number().min(1).max(5).optional(),
-  wellness_soreness: z.coerce.number().min(1).max(5).optional(),
-  wellness_sleepHours: z.coerce.number().min(0).max(24).optional(),
-  wellness_sleepQuality: z.coerce.number().min(1).max(5).optional(),
+  wellness_recovery: z.coerce.number().int().min(0).max(10).optional(),
+  wellness_energy: z.coerce.number().int().min(1).max(5).optional(),
+  wellness_soreness: z.coerce.number().int().min(1).max(5).optional(),
+  wellness_sleepHours: z.coerce.number().int().min(0).max(24).optional(),
+  wellness_sleepQuality: z.coerce.number().int().min(1).max(5).optional(),
 });
 const createTeamSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
@@ -98,6 +101,10 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     sleepQuality: parsed.data.wellness_sleepQuality ?? null,
   });
 
+  if (wellnessLimitsPayload === null) {
+    throw new Error("Límites de wellness no válidos");
+  }
+
   await database.$transaction(async (transaction) => {
     await transaction.team.update({
       where: { id: activeTeamId },
@@ -109,10 +116,7 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
         timezone: parsed.data.timezone,
         preSessionReminderMinutes: parsed.data.preSessionReminderMinutes,
         postSessionReminderMinutes: parsed.data.postSessionReminderMinutes,
-        wellnessLimits:
-          wellnessLimitsPayload === null
-            ? Prisma.DbNull
-            : (wellnessLimitsPayload as Prisma.InputJsonValue),
+        wellnessLimits: wellnessLimitsPayload as Prisma.InputJsonValue,
         ageBandPolicy: ageBandPolicyValue,
         reminderConsentPolicy:
           reminderConsentParsed.policy as Prisma.InputJsonValue,
@@ -234,6 +238,7 @@ export async function createTeamFromSettings(formData: FormData): Promise<void> 
       timezone: parsed.data.timezone,
       preSessionReminderMinutes: 120,
       postSessionReminderMinutes: 30,
+      wellnessLimits: DEFAULT_NEW_TEAM_WELLNESS_LIMITS as Prisma.InputJsonValue,
       forms: {
         create: defaultAssignments,
       },

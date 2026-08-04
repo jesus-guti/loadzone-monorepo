@@ -6,7 +6,16 @@ import { toast } from "@repo/design-system/components/sonner";
 import { savePostSession } from "../actions/save-entry";
 import { SliderInput } from "./slider-input";
 import { QuestionCard, type QuestionState } from "./question-card";
-import { CheckCircleIcon, FlameIcon } from "@phosphor-icons/react/ssr";
+import { FocusProgress } from "./focus-progress";
+import {
+  DEFAULT_AGE_BAND,
+  FOCUS_COPY,
+  resolveQuestionLabel,
+  shouldShowAssistedPresence,
+  type AgeBand,
+} from "../lib/focus-copy";
+import { nextFocusStepIndex } from "../lib/focus-step";
+import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
 
 const BORG_LABELS: Record<number, string> = {
   0: "Nada",
@@ -32,6 +41,7 @@ type PostSessionFormProperties = {
   readonly token: string;
   readonly date: string;
   readonly teamSessionId: string | null;
+  readonly ageBand?: AgeBand;
   readonly template: {
     id: string;
     name: string;
@@ -46,7 +56,10 @@ type PostSessionFormProperties = {
       step: number | null;
     }>;
   } | null;
-  readonly onComplete: () => void;
+  readonly onComplete: (result?: {
+    currentStreak?: number;
+    restarted?: boolean;
+  }) => void;
 };
 
 type StepKey = "rpe";
@@ -55,12 +68,12 @@ export function PostSessionForm({
   token,
   date,
   teamSessionId,
+  ageBand = DEFAULT_AGE_BAND,
   template,
   onComplete,
 }: PostSessionFormProperties) {
   const [rpe, setRpe] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [state, action, isPending] = useActionState(savePostSession, {
@@ -82,13 +95,15 @@ export function PostSessionForm({
   const answeredCount = steps.filter((step) => step.hasValue).length;
   const totalSteps = steps.length;
   const isValid = totalSteps > 0 && answeredCount === totalSteps;
-  const progressPercent =
-    totalSteps === 0 ? 0 : Math.round((answeredCount / totalSteps) * 100);
+  const allAnswered = isValid;
 
   useEffect(() => {
     if (state.success) {
       toast.success("Post-sesión guardada");
-      onComplete();
+      onComplete({
+        currentStreak: state.currentStreak,
+        restarted: state.restarted,
+      });
     }
     if (state.error) {
       toast.error(state.error);
@@ -101,42 +116,28 @@ export function PostSessionForm({
     return "upcoming";
   }
 
-  function advanceFrom(index: number) {
-    const nextUnanswered = steps.findIndex(
-      (step, idx) => idx > index && !step.hasValue
+  function advanceFrom(index: number, answeredIndex?: number) {
+    const hasValues = steps.map((step, stepIndex) =>
+      stepIndex === answeredIndex ? true : step.hasValue
     );
-    const targetIndex =
-      nextUnanswered === -1
-        ? steps.findIndex((step) => !step.hasValue)
-        : nextUnanswered;
-
-    if (targetIndex === -1) {
-      setCurrentStep(steps.length);
-      return;
-    }
-
-    setCurrentStep(targetIndex);
-    requestAnimationFrame(() => {
-      const target = stepRefs.current[targetIndex];
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    });
+    setCurrentStep(nextFocusStepIndex(hasValues, index));
   }
 
   function handleEdit(index: number) {
     setCurrentStep(index);
-    requestAnimationFrame(() => {
-      const target = stepRefs.current[index];
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    });
   }
 
   function handleSubmit() {
     formRef.current?.requestSubmit();
   }
+
+  const progressCurrent = allAnswered
+    ? Math.max(totalSteps - 1, 0)
+    : Math.min(currentStep, Math.max(totalSteps - 1, 0));
+  const progressLabel = FOCUS_COPY.stepOf(
+    allAnswered ? totalSteps : progressCurrent + 1,
+    totalSteps
+  );
 
   if (!template) {
     return (
@@ -159,41 +160,53 @@ export function PostSessionForm({
           <input type="hidden" name={rpeQuestion.key} value={rpe ?? ""} />
         ) : null}
 
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {shouldShowAssistedPresence(ageBand) ? (
+            <p className="text-sm text-text-secondary">
+              {FOCUS_COPY.assistedPresence}
+            </p>
+          ) : null}
+
+          {totalSteps > 0 ? (
+            <FocusProgress
+              total={totalSteps}
+              current={progressCurrent}
+              label={progressLabel}
+            />
+          ) : null}
+
           {steps.map((step, index) => {
             const questionState = stateFor(index);
 
             if (step.key === "rpe" && rpeQuestion) {
               return (
-                <div
+                <QuestionCard
                   key={step.key}
-                  ref={(element) => {
-                    stepRefs.current[index] = element;
-                  }}
+                  state={questionState}
+                  index={index}
+                  label={resolveQuestionLabel(
+                    "rpe",
+                    ageBand,
+                    rpeQuestion.label
+                  )}
+                  summary={
+                    rpe !== null ? `${BORG_LABELS[rpe]} · ${rpe}` : undefined
+                  }
+                  onEdit={() => handleEdit(index)}
                 >
-                  <QuestionCard
-                    state={questionState}
-                    index={index}
-                    label={rpeQuestion.label}
-                    summary={
-                      rpe !== null ? `${BORG_LABELS[rpe]} · ${rpe}` : undefined
-                    }
-                    onEdit={() => handleEdit(index)}
-                  >
-                    <SliderInput
-                      name={rpeQuestion.key}
-                      min={rpeQuestion.minValue ?? 0}
-                      max={rpeQuestion.maxValue ?? 10}
-                      value={rpe}
-                      onChange={setRpe}
-                      onCommit={() => advanceFrom(index)}
-                      anchorLabels={["Muy suave", "Máximo"]}
-                      labelForValue={(value) => BORG_LABELS[value]}
-                      colorForValue={borgColor}
-                      gradientClassName="from-brand via-premium to-danger"
-                    />
-                  </QuestionCard>
-                </div>
+                  <SliderInput
+                    name={rpeQuestion.key}
+                    min={rpeQuestion.minValue ?? 0}
+                    max={rpeQuestion.maxValue ?? 10}
+                    value={rpe}
+                    onChange={setRpe}
+                    onCommit={() => advanceFrom(index, index)}
+                    anchorLabels={["Muy suave", "Máximo"]}
+                    labelForValue={(value) => BORG_LABELS[value]}
+                    colorForValue={borgColor}
+                    gradientClassName="from-brand via-premium to-danger"
+                  />
+                </QuestionCard>
               );
             }
 
@@ -202,39 +215,30 @@ export function PostSessionForm({
         </div>
       </form>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 pointer-events-none">
-        <div className="mx-auto max-w-md px-4 pb-4 pt-6 pointer-events-auto bg-linear-to-t from-bg-primary via-bg-primary to-transparent">
-          <div className="flex items-center justify-between pb-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
+        <div className="pointer-events-auto mx-auto max-w-md bg-linear-to-t from-bg-primary via-bg-primary to-transparent px-4 pb-4 pt-6">
+          <div className="flex items-center justify-between pb-2 text-xs font-medium text-text-secondary">
             <span>
               {answeredCount} / {totalSteps}
             </span>
-          </div>
-          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-bg-secondary">
-            <div
-              className="h-full rounded-full bg-brand transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
           </div>
           <Button
             type="button"
             onClick={handleSubmit}
             disabled={!isValid || isPending}
-            className="h-14 w-full rounded-full text-base font-bold shadow-elevated"
+            className="h-14 min-h-12 w-full rounded-full text-base font-semibold"
             size="lg"
           >
             {isPending ? (
-              "Guardando..."
+              FOCUS_COPY.saving
             ) : isValid ? (
-              <span className="flex items-center gap-2">
-                <FlameIcon className="h-5 w-5" />
-                Guardar y sumar racha
-              </span>
+              FOCUS_COPY.save
             ) : (
               <span className="flex items-center gap-2">
-                <CheckCircleIcon className="h-5 w-5 opacity-60" />
-                Falta{totalSteps - answeredCount === 1 ? "" : "n"}{" "}
-                {totalSteps - answeredCount} respuesta
-                {totalSteps - answeredCount === 1 ? "" : "s"}
+                <CheckCircleIcon className="h-5 w-5 opacity-60" weight="fill" />
+                {totalSteps - answeredCount === 1
+                  ? FOCUS_COPY.remainingOne
+                  : FOCUS_COPY.remainingMany(totalSteps - answeredCount)}
               </span>
             )}
           </Button>

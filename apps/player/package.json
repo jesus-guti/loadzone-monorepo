@@ -7,6 +7,7 @@
     "start": "next start",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "NODE_ENV=test vitest run",
     "test:e2e": "pnpm tsx e2e/helpers/seed-test-data.ts --output e2e/seed-context.json && cd e2e && npx playwright test",
     "test:e2e:seed": "pnpm tsx e2e/helpers/seed-test-data.ts --output e2e/seed-context.json",
     "test:e2e:run": "cd e2e && npx playwright test",
@@ -32,6 +33,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   }
 }
