@@ -29,6 +29,18 @@ describe("isInjuryActiveOnCivilDay", () => {
     expect(isInjuryActiveOnCivilDay("2026-02-01", null, "2026-08-01")).toBe(true);
     expect(isInjuryActiveOnCivilDay("2026-02-01", null, "2026-01-31")).toBe(false);
   });
+
+  it("future-only open injury is not active today (edit must not lock/force INJURED)", () => {
+    const today = "2026-08-04";
+    const hasActive = isInjuryActiveOnCivilDay("2026-09-01", null, today);
+    expect(hasActive).toBe(false);
+    expect(
+      isPlayerStatusOverrideBlocked({
+        hasActiveInjury: hasActive,
+        requestedStatus: "AVAILABLE",
+      })
+    ).toBe(false);
+  });
 });
 
 describe("derivePlayerStatusFromActiveInjuries", () => {

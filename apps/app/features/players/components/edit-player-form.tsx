@@ -26,7 +26,7 @@ type EditPlayerFormProperties = {
     reminderConsentState: PlayerReminderConsentState;
     resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
-  readonly hasOpenInjury: boolean;
+  readonly hasActiveInjury: boolean;
 };
 
 const STATUS_OPTIONS = [
@@ -47,7 +47,7 @@ const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
 
 export function EditPlayerForm({
   player,
-  hasOpenInjury,
+  hasActiveInjury,
 }: EditPlayerFormProperties) {
   const [state, action, isPending] = useActionState(updatePlayer, {
     success: false,
@@ -77,7 +77,7 @@ export function EditPlayerForm({
 
       <div className="space-y-2">
         <Label htmlFor="status">Estado</Label>
-        {hasOpenInjury ? (
+        {hasActiveInjury ? (
           <>
             <input type="hidden" name="status" value="INJURED" />
             <Select disabled defaultValue="INJURED">
@@ -89,8 +89,8 @@ export function EditPlayerForm({
               </SelectContent>
             </Select>
             <p className="text-xs text-text-secondary">
-              El estado se deriva de las lesiones abiertas. Cierra o da de alta
-              la lesión para poder cambiarlo.
+              El estado se deriva de las lesiones activas hoy. Cierra o da de
+              alta la lesión para poder cambiarlo.
             </p>
           </>
         ) : (
