@@ -71,7 +71,7 @@ export async function saveInjuryReport(
         ? parsed.data.bodyPart
         : null;
 
-    await database.injuryReport.create({
+    const injury = await database.injuryReport.create({
       data: {
         playerId: player.id,
         teamId: player.teamId,
@@ -87,6 +87,7 @@ export async function saveInjuryReport(
     });
 
     // Staff-authored Injury is intentionally not hooked (JES-47 HITL C).
+    // Guardian slice: structured location only (JES-49) — never title/description/severity.
     const careResult = await evaluateAndEmitCareAlert({
       playerId: player.id,
       playerDisplayName: player.name,
@@ -99,7 +100,9 @@ export async function saveInjuryReport(
       signals: {
         painAlert: {
           bodyPart,
-          side: null,
+          side: injury.side,
+          injuryType: injury.injuryType,
+          reportedAt: injury.reportedAt,
         },
       },
       checkInCompleted: false,

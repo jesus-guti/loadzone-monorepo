@@ -1,12 +1,14 @@
 /**
- * Guardian Care Alert evaluation, provisional payload, and ledger emit.
+ * Guardian Care Alert evaluation, graduated care-slice allow-list, and ledger emit.
  *
  * Distinct from miss reminders (PushDispatch). Quiet hours do not apply (JES-47 HITL B).
- * Transport is stubbed until Guardian contacts exist. JES-49 hardens the payload allow-list.
+ * Transport is stubbed until Guardian contacts exist.
+ * Payload boundary: JES-49 `GuardianCareSlice` (allow-list projection, Zod `.strict()`).
  *
  * Import from `@repo/database/care-alerts` so client bundles avoid `server-only`.
  */
 
+import { z } from "zod";
 import {
   reminderConsentBandKeyFor,
   resolveEffectiveReminderConsentPolicy,
@@ -28,33 +30,208 @@ export const CARE_ALERT_TRIGGER_CLASSES = [
 export type CareAlertTriggerClass =
   (typeof CARE_ALERT_TRIGGER_CLASSES)[number];
 
-export type CareAlertFlag = {
-  code: string;
-  labelKey: string;
-};
+export const INJURY_SIDES = [
+  "LEFT",
+  "RIGHT",
+  "BILATERAL",
+  "CENTRAL",
+] as const;
 
-/** Provisional allow-list shape — never include load/ACWR/staffNotes/peer/raw scores. */
-export type ProvisionalCareAlertPayload = {
+export type InjurySideCode = (typeof INJURY_SIDES)[number];
+
+/** Care-flag presentation: stable code + labelKey only (no numeric value — JES-49 HITL C). */
+export const guardianCareFlagSchema = z
+  .object({
+    code: z.string().min(1),
+    labelKey: z.string().min(1),
+  })
+  .strict();
+
+export type CareAlertFlag = z.infer<typeof guardianCareFlagSchema>;
+
+/** Structured injury location only — no title / description / severity (JES-49 HITL B). */
+export const guardianCareInjurySchema = z
+  .object({
+    bodyPart: z.string().nullable().optional(),
+    side: z.enum(INJURY_SIDES).nullable().optional(),
+    injuryType: z.string().nullable().optional(),
+    reportedAt: z.string().min(1).optional(),
+  })
+  .strict();
+
+export type GuardianCareInjury = z.infer<typeof guardianCareInjurySchema>;
+
+/**
+ * Graduated Guardian care-slice allow-list (JES-49).
+ * Closed type: projection builds this object; Zod `.strict()` rejects staff-only keys.
+ */
+export const guardianCareSliceSchema = z
+  .object({
+    playerDisplayName: z.string().min(1),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    checkInCompleted: z.boolean(),
+    triggerClass: z.enum(CARE_ALERT_TRIGGER_CLASSES),
+    careFlags: z.array(guardianCareFlagSchema),
+    injury: guardianCareInjurySchema.optional(),
+  })
+  .strict();
+
+export type GuardianCareSlice = z.infer<typeof guardianCareSliceSchema>;
+
+/** @deprecated Use GuardianCareSlice — alias kept for ledger JSON typing during transition. */
+export type ProvisionalCareAlertPayload = GuardianCareSlice;
+
+export const GUARDIAN_CARE_SLICE_KEYS = [
+  "playerDisplayName",
+  "date",
+  "checkInCompleted",
+  "triggerClass",
+  "careFlags",
+  "injury",
+] as const;
+
+export const GUARDIAN_CARE_FLAG_KEYS = ["code", "labelKey"] as const;
+
+export const GUARDIAN_CARE_INJURY_KEYS = [
+  "bodyPart",
+  "side",
+  "injuryType",
+  "reportedAt",
+] as const;
+
+/** Staff-only / permanently excluded keys that must never appear on a Guardian payload. */
+export const STAFF_ONLY_CARE_SLICE_KEYS = [
+  "acwr",
+  "acuteLoad",
+  "chronicLoad",
+  "srpe",
+  "tqrAvg7d",
+  "rpeAvg7d",
+  "riskLevel",
+  "loadRatio",
+  "loadRatios",
+  "acuteChronic",
+  "staffNotes",
+  "peerComparison",
+  "title",
+  "description",
+  "severity",
+  "recovery",
+  "energy",
+  "soreness",
+  "sleepHours",
+  "sleepQuality",
+  "physioAlert",
+  "duration",
+  "rpe",
+  "value",
+] as const;
+
+export type GuardianCareSliceSource = {
   playerDisplayName: string;
   date: string;
-  triggerClass: CareAlertTriggerClass;
   checkInCompleted: boolean;
-  careFlags: CareAlertFlag[];
-  injuryLocation?: {
+  triggerClass: CareAlertTriggerClass;
+  careFlags: ReadonlyArray<{ code: string; labelKey: string }>;
+  injury?: {
     bodyPart?: string | null;
     side?: string | null;
-  };
+    injuryType?: string | null;
+    reportedAt?: string | Date | null;
+  } | null;
 };
+
+function normalizeInjurySide(side: unknown): InjurySideCode | null {
+  const parsed = z.enum(INJURY_SIDES).safeParse(side);
+  return parsed.success ? parsed.data : null;
+}
+
+function normalizeReportedAt(
+  reportedAt: string | Date | null | undefined
+): string | undefined {
+  if (reportedAt == null) {
+    return undefined;
+  }
+  if (reportedAt instanceof Date) {
+    return reportedAt.toISOString();
+  }
+  if (typeof reportedAt === "string" && reportedAt.length > 0) {
+    return reportedAt;
+  }
+  return undefined;
+}
+
+/**
+ * Allow-list projector: builds a GuardianCareSlice from source fields only.
+ * Extra / staff-only keys on `source` are ignored (never copied). Output is Zod-strict.
+ */
+export function toGuardianCareSlice(
+  source: GuardianCareSliceSource
+): GuardianCareSlice {
+  const careFlags: CareAlertFlag[] = source.careFlags.map((flag) => ({
+    code: flag.code,
+    labelKey: flag.labelKey,
+  }));
+
+  const projected: Record<string, unknown> = {
+    playerDisplayName: source.playerDisplayName,
+    date: source.date,
+    checkInCompleted: source.checkInCompleted,
+    triggerClass: source.triggerClass,
+    careFlags,
+  };
+
+  if (source.injury) {
+    const reportedAt = normalizeReportedAt(source.injury.reportedAt);
+    const injury: Record<string, unknown> = {
+      bodyPart: source.injury.bodyPart ?? null,
+      side: normalizeInjurySide(source.injury.side),
+      injuryType: source.injury.injuryType ?? null,
+    };
+    if (reportedAt !== undefined) {
+      injury.reportedAt = reportedAt;
+    }
+    projected.injury = injury;
+  }
+
+  return guardianCareSliceSchema.parse(projected);
+}
+
+/**
+ * Returns staff-only / forbidden keys found as JSON object keys in a payload.
+ * Used by visibility tests — fail if a staff field leaks onto a Guardian slice.
+ */
+export function findStaffOnlyKeysOnGuardianPayload(
+  payload: unknown
+): string[] {
+  const serialized = JSON.stringify(payload);
+  const found: string[] = [];
+  for (const key of STAFF_ONLY_CARE_SLICE_KEYS) {
+    if (new RegExp(`"${key}"\\s*:`).test(serialized)) {
+      found.push(key);
+    }
+  }
+  return found;
+}
+
+/** @deprecated Prefer findStaffOnlyKeysOnGuardianPayload. */
+export function payloadContainsForbiddenFields(
+  payload: GuardianCareSlice
+): string[] {
+  return findStaffOnlyKeysOnGuardianPayload(payload);
+}
 
 export type CareAlertEvaluationSignals = {
   /** Player Pain Alert (InjuryReport with reportedByPlayer). */
   painAlert?: {
     bodyPart?: string | null;
     side?: string | null;
+    injuryType?: string | null;
+    reportedAt?: string | Date | null;
   };
   /** Explicit check-in injury/pain flag (DailyEntry.physioAlert). */
   physioAlert?: boolean;
-  /** Immediate wellness flags from JES-41 evaluator. */
+  /** Immediate wellness flags from JES-41 evaluator (metric + careRelevant only). */
   wellnessFlags?: ImmediateWellnessFlag[];
   /**
    * Miss / adherence signals must never enter Care Alerts.
@@ -66,7 +243,7 @@ export type CareAlertEvaluationSignals = {
 export type ClassifiedCareAlert = {
   triggerClass: CareAlertTriggerClass;
   careFlags: CareAlertFlag[];
-  injuryLocation?: ProvisionalCareAlertPayload["injuryLocation"];
+  injury?: GuardianCareSliceSource["injury"];
 };
 
 type Ymd = { year: number; month: number; day: number };
@@ -154,16 +331,18 @@ export function classifyCareAlertTriggers(
   const classified: ClassifiedCareAlert[] = [];
 
   const injuryFlags: CareAlertFlag[] = [];
-  let injuryLocation: ProvisionalCareAlertPayload["injuryLocation"];
+  let injury: GuardianCareSliceSource["injury"];
 
   if (signals.painAlert) {
     injuryFlags.push({
       code: "pain_alert",
       labelKey: "care.flag.painAlert",
     });
-    injuryLocation = {
+    injury = {
       bodyPart: signals.painAlert.bodyPart ?? null,
       side: signals.painAlert.side ?? null,
+      injuryType: signals.painAlert.injuryType ?? null,
+      reportedAt: signals.painAlert.reportedAt ?? null,
     };
   }
 
@@ -178,7 +357,7 @@ export function classifyCareAlertTriggers(
     classified.push({
       triggerClass: "INJURY_PAIN",
       careFlags: injuryFlags,
-      injuryLocation,
+      injury,
     });
   }
 
@@ -198,81 +377,6 @@ export function classifyCareAlertTriggers(
   return classified;
 }
 
-export function buildProvisionalCareAlertPayload(input: {
-  playerDisplayName: string;
-  civilDate: string;
-  triggerClass: CareAlertTriggerClass;
-  checkInCompleted: boolean;
-  careFlags: CareAlertFlag[];
-  injuryLocation?: ProvisionalCareAlertPayload["injuryLocation"];
-}): ProvisionalCareAlertPayload {
-  const payload: ProvisionalCareAlertPayload = {
-    playerDisplayName: input.playerDisplayName,
-    date: input.civilDate,
-    triggerClass: input.triggerClass,
-    checkInCompleted: input.checkInCompleted,
-    careFlags: input.careFlags,
-  };
-
-  if (input.injuryLocation) {
-    payload.injuryLocation = {
-      bodyPart: input.injuryLocation.bodyPart ?? null,
-      side: input.injuryLocation.side ?? null,
-    };
-  }
-
-  return payload;
-}
-
-const FORBIDDEN_PAYLOAD_KEYS = [
-  "acwr",
-  "acuteChronic",
-  "loadRatio",
-  "loadRatios",
-  "staffNotes",
-  "peerComparison",
-  "riskLevel",
-  "title",
-  "description",
-  "severity",
-  "recovery",
-  "energy",
-  "soreness",
-  "sleepHours",
-  "sleepQuality",
-] as const;
-
-/** Assert provisional payload stays on the allow-list (used by tests + JES-49 prep). */
-export function payloadContainsForbiddenFields(
-  payload: ProvisionalCareAlertPayload
-): string[] {
-  const serialized = JSON.stringify(payload);
-  const found: string[] = [];
-  for (const key of FORBIDDEN_PAYLOAD_KEYS) {
-    // Match JSON object keys only ("key":)
-    if (new RegExp(`"${key}"\\s*:`).test(serialized)) {
-      found.push(key);
-    }
-  }
-  return found;
-}
-
-/**
- * Stub transport until Guardian contact channels exist.
- * No-op by default; optional structured log without free-text injury notes.
- */
-export async function deliverCareAlertStub(
-  payload: ProvisionalCareAlertPayload
-): Promise<void> {
-  if (process.env.NODE_ENV === "development") {
-    console.info("[care-alert-stub]", {
-      triggerClass: payload.triggerClass,
-      date: payload.date,
-      flagCodes: payload.careFlags.map((flag) => flag.code),
-    });
-  }
-}
-
 export type CareAlertDispatchWriter = {
   careAlertDispatch: {
     create: (args: {
@@ -280,7 +384,7 @@ export type CareAlertDispatchWriter = {
         playerId: string;
         triggerClass: CareAlertTriggerClass;
         civilDate: Date;
-        payload: ProvisionalCareAlertPayload;
+        payload: GuardianCareSlice;
       };
     }) => Promise<unknown>;
   };
@@ -377,17 +481,16 @@ export async function evaluateAndEmitCareAlert(
   const civilDateUtc = civilDateToUtcNoon(civilDate);
   const emitted: CareAlertTriggerClass[] = [];
 
-  const db =
-    input.db ?? (await import("./client")).database;
+  const db = input.db ?? (await import("./client")).database;
 
   for (const item of classified) {
-    const payload = buildProvisionalCareAlertPayload({
+    const payload = toGuardianCareSlice({
       playerDisplayName: input.playerDisplayName,
-      civilDate,
-      triggerClass: item.triggerClass,
+      date: civilDate,
       checkInCompleted: input.checkInCompleted,
+      triggerClass: item.triggerClass,
       careFlags: item.careFlags,
-      injuryLocation: item.injuryLocation,
+      injury: item.injury,
     });
 
     try {
@@ -414,6 +517,22 @@ export async function evaluateAndEmitCareAlert(
   }
 
   return { careFlagPresent: true, emitted, policyBlocked: false };
+}
+
+/**
+ * Stub transport until Guardian contact channels exist.
+ * No-op by default; optional structured log without free-text injury notes.
+ */
+export async function deliverCareAlertStub(
+  payload: GuardianCareSlice
+): Promise<void> {
+  if (process.env.NODE_ENV === "development") {
+    console.info("[care-alert-stub]", {
+      triggerClass: payload.triggerClass,
+      date: payload.date,
+      flagCodes: payload.careFlags.map((flag) => flag.code),
+    });
+  }
 }
 
 /** Calm Spanish Player confirmation when a care flag is present. */
