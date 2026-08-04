@@ -185,7 +185,8 @@ export async function cleanupTestData(ctx: SeedContext): Promise<void> {
   await db.formAnswer.deleteMany({ where: { submission: { playerId: { in: playerIds } } } });
   await db.formSubmission.deleteMany({ where: { playerId: { in: playerIds } } });
   await db.dailyEntry.deleteMany({ where: { playerId: { in: playerIds } } });
-  await db.injuryReport.deleteMany({ where: { playerId: { in: playerIds } } });
+  await db.painAlert.deleteMany({ where: { playerId: { in: playerIds } } });
+  await db.injury.deleteMany({ where: { playerId: { in: playerIds } } });
   await db.teamSessionPlayer.deleteMany({ where: { playerId: { in: playerIds } } });
   await db.sessionExercise.deleteMany({ where: { teamSession: { teamId: ctx.teamId } } });
   await db.teamSession.deleteMany({ where: { teamId: ctx.teamId } });

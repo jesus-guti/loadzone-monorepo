@@ -5,6 +5,7 @@ import {
   evaluateAndEmitCareAlert,
   PLAYER_CARE_CONFIRM_MESSAGE,
 } from "@repo/database/care-alerts";
+import { createPlayerPainAlert } from "@repo/database/pain-alert";
 import { z } from "zod";
 
 const injurySchema = z.object({
@@ -22,6 +23,7 @@ type InjuryActionResult = {
   careConfirmMessage?: string;
 };
 
+/** Player intake → Pain Alert only; never creates an official Injury (JES-50). */
 export async function saveInjuryReport(
   _prev: InjuryActionResult,
   formData: FormData
@@ -71,19 +73,16 @@ export async function saveInjuryReport(
         ? parsed.data.bodyPart
         : null;
 
-    const injury = await database.injuryReport.create({
-      data: {
-        playerId: player.id,
-        teamId: player.teamId,
-        title: parsed.data.title,
-        bodyPart,
-        severity: parsed.data.severity,
-        description:
-          parsed.data.description && parsed.data.description.length > 0
-            ? parsed.data.description
-            : null,
-        reportedByPlayer: true,
-      },
+    const painAlert = await createPlayerPainAlert(database, {
+      playerId: player.id,
+      teamId: player.teamId,
+      title: parsed.data.title,
+      bodyPart,
+      severity: parsed.data.severity,
+      description:
+        parsed.data.description && parsed.data.description.length > 0
+          ? parsed.data.description
+          : null,
     });
 
     // Staff-authored Injury is intentionally not hooked (JES-47 HITL C).
@@ -100,9 +99,9 @@ export async function saveInjuryReport(
       signals: {
         painAlert: {
           bodyPart,
-          side: injury.side,
-          injuryType: injury.injuryType,
-          reportedAt: injury.reportedAt,
+          side: painAlert.side,
+          injuryType: painAlert.injuryType,
+          reportedAt: painAlert.reportedAt,
         },
       },
       checkInCompleted: false,
@@ -116,6 +115,6 @@ export async function saveInjuryReport(
         : undefined,
     };
   } catch {
-    return { success: false, error: "No se pudo guardar la lesión." };
+    return { success: false, error: "No se pudo guardar el aviso de dolor." };
   }
 }

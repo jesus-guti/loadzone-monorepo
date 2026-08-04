@@ -27,25 +27,14 @@ export type PersistStreakResult = RecoverableStreakResult & {
 
 function mapInjuryIntervals(
   injuries: Array<{
-    status: string;
-    occurredAt: Date | null;
-    reportedAt: Date;
-    resolvedAt: Date | null;
-  }>,
-  timeZone: string
+    startDate: Date;
+    endDate: Date | null;
+  }>
 ): InjuryInterval[] {
-  return injuries.map((injury) => {
-    const startSource = injury.occurredAt ?? injury.reportedAt;
-    const startDate = toCivilDateString(startSource, timeZone);
-    if (injury.status === "RESOLVED") {
-      const endSource = injury.resolvedAt ?? injury.reportedAt;
-      return {
-        startDate,
-        endDate: toCivilDateString(endSource, timeZone),
-      };
-    }
-    return { startDate, endDate: null };
-  });
+  return injuries.map((injury) => ({
+    startDate: injury.startDate.toISOString().slice(0, 10),
+    endDate: injury.endDate ? injury.endDate.toISOString().slice(0, 10) : null,
+  }));
 }
 
 function playerOnSession(args: {
@@ -241,17 +230,15 @@ export async function recomputeAndPersistPlayerStreak(
     excuses.map((excuse) => toCivilDateString(excuse.date, "UTC"))
   );
 
-  const injuries = await database.injuryReport.findMany({
+  const injuries = await database.injury.findMany({
     where: { playerId: player.id },
     select: {
-      status: true,
-      occurredAt: true,
-      reportedAt: true,
-      resolvedAt: true,
+      startDate: true,
+      endDate: true,
     },
   });
 
-  const injuryIntervals = mapInjuryIntervals(injuries, timeZone);
+  const injuryIntervals = mapInjuryIntervals(injuries);
 
   const expectedDays: ExpectedDayRecord[] = [];
 
