@@ -17,7 +17,7 @@ A dated work or competition window for one team; frames daily entries and aggreg
 _Avoid_: “Campaign” unless product copy standardises it over **Season**.
 
 **Player**:
-A person on a team roster who submits wellness check-ins. May link to a **User** account or operate via the player’s public access token (do not confuse that token with push subscriptions).
+A person on a team roster who submits wellness check-ins. May link to a **User** account or operate via the player’s public access token (do not confuse that token with push subscriptions). Primary daily operator of `apps/player` across all **Age Bands**.
 _Avoid_: “User” when you only mean the roster record—that is **Player**.
 
 **DailyEntry**:
@@ -35,6 +35,40 @@ _Avoid_: Treating it as the same thing as the player’s public access token—t
 **Exercise**:
 A training drill definition in the library; may be club-owned or part of the **system catalog** (reusable `isSystem` exercises). **Exercise library** visibility for a club combines non-archived club exercises with system-catalog exercises per the rules encoded in the product code.
 
+**Age Band**:
+Capability tier for player autonomy: **Assisted**, **Guided**, or **Independent**. Indicative ages and consent×band defaults are **staff-configurable policy defaults**, never fixed-only product constants.
+_Avoid_: Hard-coding cutoffs as immutable product law; “teen app” as a separate product.
+
+**Guardian**:
+Adult helper and receive target for the **Parental Supervision Layer**. Helps or supervises — never the default daily operator of `apps/player`.
+_Avoid_: “Parent portal,” “family mode,” or modelling Guardian as co-primary user of the player app.
+
+**Assisted Check-in**:
+Check-in mode for the **Assisted** **Age Band**: an adult is expected present; the **Player** still operates the flow. Routine **DailyEntry** submit is not gated on Guardian approval.
+
+**Parental Supervision Layer**:
+Separate see / receive / escalate capabilities for a **Guardian** — not a joint family co-app, and not soft-approval of routine **DailyEntry**. Guardian visibility is a **care slice** only (completion status, escalated flags, injury-relevant signals); not load ratios, staff notes, or peer comparison.
+
+**Reminder Consent**:
+Who opts in for Player reminders and Guardian miss / **Care Alert** receives. Defaults vary by **Age Band** and remain staff-configurable.
+
+**Anti-nag Policy**:
+Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
+
+**Recoverable Streak**:
+Season-scoped expected-day habit: increments on completing expected **DailyEntry** obligations; breaks on miss without **Excused Absence** (calm restart, no guilt UI). Never public shame boards.
+_Avoid_: “Streak punishment,” competitive adherence boards, or geo-based attendance as the streak signal.
+
+**Excused Absence**:
+A day that freezes the **Recoverable Streak** (neither increments nor breaks). Exact staff vs Assisted Guardian-request workflow is deferred.
+
+**Health Escalation**:
+Care path for injury / care-relevant wellness signals, distinct from miss reminders and adherence nagging.
+
+**Care Alert**:
+Guardian-facing care-slice signal (injury / care-relevant). Never includes load ratios or ACWR-style staff metrics.
+_Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendance GPS as care framing.
+
 ## Relationships
 
 - A **Club** has many **Teams** (and club-scoped exercises and other shared entities).
@@ -43,6 +77,9 @@ A training drill definition in the library; may be club-owned or part of the **s
 - A **Player** belongs to a **Team**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season).
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
+- A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
+- A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
 
 ## Example dialogue
 
@@ -52,3 +89,5 @@ A training drill definition in the library; may be club-owned or part of the **s
 ## Flagged ambiguities
 
 - **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
+- **Guardian** auth/linkage, exact care-slice field allow-lists, and **Excused Absence** request workflow remain deferred product decisions — do not invent them here.
+- **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).

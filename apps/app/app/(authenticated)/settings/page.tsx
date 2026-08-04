@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { database } from "@repo/database";
+import { DEFAULT_AGE_BAND_POLICY } from "@repo/database/age-band-policy";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
 import { Button } from "@repo/design-system/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
@@ -10,8 +11,10 @@ import Link from "next/link";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "@/components/layouts/header";
 import {
+  AgeBandPolicyFields,
   ClubBrandingCard,
   createTeamFromSettings,
+  updateClubAgeBandPolicy,
   updateTeamSettings,
 } from "@/features/settings";
 
@@ -23,6 +26,12 @@ type SettingsPageProperties = {
   searchParams?: Promise<{
     createTeam?: string;
   }>;
+};
+
+const POLICY_SOURCE_LABEL: Record<"team" | "club" | "defaults", string> = {
+  team: "override del equipo",
+  club: "valores del club",
+  defaults: "valores seguros por defecto",
 };
 
 const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
@@ -74,18 +83,27 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
     (template) => template.fillMoment === "POST_SESSION"
   );
 
+  const teamAgePolicy = staffContext.activeTeam.ageBandPolicy;
+  const inheritsClubAgePolicy =
+    staffContext.activeTeam.ageBandPolicyOverride === null;
+  const clubAgePolicy =
+    staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
+
   return (
     <>
       <Header page="Configuración" pages={["LoadZone"]} />
       <div className="mx-auto grid max-w-5xl gap-6 p-4 pt-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <form action={updateTeamSettings} className="space-y-6  border p-6">
+        <form
+          action={updateTeamSettings}
+          className="space-y-6 border border-border-secondary p-6"
+        >
           <div>
             <h2 className="text-lg font-semibold text-text-primary">
               Equipo activo
             </h2>
             <p className="mt-1 text-sm text-text-secondary">
-              Configura la operación base de {staffContext.activeTeam.name} dentro
-              de {staffContext.club.name}.
+              Configura la operación base de {staffContext.activeTeam.name}{" "}
+              dentro de {staffContext.club.name}.
             </p>
           </div>
 
@@ -148,7 +166,10 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             </div>
           </div>
 
-          <div id="wellness-forms" className="grid gap-4 scroll-mt-28 md:grid-cols-2">
+          <div
+            id="wellness-forms"
+            className="grid gap-4 scroll-mt-28 md:grid-cols-2"
+          >
             <div className="space-y-2">
               <Label htmlFor="preFormTemplateId">Formulario pre-sesión</Label>
               <select
@@ -184,58 +205,97 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-border-secondary">
-            <h3 className="mb-4 text-sm font-semibold text-text-primary">Límites de alertas (Wellness)</h3>
+          <div className="border-t border-border-secondary pt-6">
+            <h3 className="mb-4 text-sm font-semibold text-text-primary">
+              Límites de alertas (Wellness)
+            </h3>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="wellness_recovery">Recuperación (alerta si es menor o igual a)</Label>
+                <Label htmlFor="wellness_recovery">
+                  Recuperación (alerta si es menor o igual a)
+                </Label>
                 <Input
                   id="wellness_recovery"
                   name="wellness_recovery"
                   type="number"
                   min="0"
                   max="10"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.recovery ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.recovery ?? ""
+                  }
                   placeholder="Ej: 4"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wellness_sleepHours">Horas de sueño (alerta si es menor a)</Label>
+                <Label htmlFor="wellness_sleepHours">
+                  Horas de sueño (alerta si es menor a)
+                </Label>
                 <Input
                   id="wellness_sleepHours"
                   name="wellness_sleepHours"
                   type="number"
                   min="0"
                   max="24"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""
+                  }
                   placeholder="Ej: 6"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wellness_soreness">Agujetas (alerta si es mayor o igual a)</Label>
+                <Label htmlFor="wellness_soreness">
+                  Agujetas (alerta si es mayor o igual a)
+                </Label>
                 <Input
                   id="wellness_soreness"
                   name="wellness_soreness"
                   type="number"
                   min="1"
                   max="5"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.soreness ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.soreness ?? ""
+                  }
                   placeholder="Ej: 4"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wellness_energy">Energía (alerta si es menor o igual a)</Label>
+                <Label htmlFor="wellness_energy">
+                  Energía (alerta si es menor o igual a)
+                </Label>
                 <Input
                   id="wellness_energy"
                   name="wellness_energy"
                   type="number"
                   min="1"
                   max="5"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.energy ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.energy ?? ""
+                  }
                   placeholder="Ej: 2"
                 />
               </div>
             </div>
+          </div>
+
+          <div className="border-t border-border-secondary pt-6">
+            <h3 className="text-sm font-semibold text-text-primary">
+              Tramos de edad y supervisión parental
+            </h3>
+            <p className="mt-1 mb-4 text-sm text-text-secondary">
+              Política efectiva actual:{" "}
+              {
+                POLICY_SOURCE_LABEL[
+                  staffContext.activeTeam.ageBandPolicySource
+                ]
+              }
+              . Los tramos deben ser contiguos (asistida &lt; guiada ≤ mayoría).
+            </p>
+            <AgeBandPolicyFields
+              idPrefix="team-age"
+              policy={teamAgePolicy}
+              showInheritToggle
+              inheritChecked={inheritsClubAgePolicy}
+            />
           </div>
 
           <Button type="submit">Guardar configuración</Button>
@@ -247,7 +307,29 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             clubLogoUrl={staffContext.club.logoUrl}
             clubName={staffContext.club.name}
           />
-          <Card className=" border-border-secondary">
+
+          {staffContext.canCreateTeam ? (
+            <form
+              action={updateClubAgeBandPolicy}
+              className="space-y-4 border-t border-border-secondary pt-4"
+            >
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary">
+                  Política del club (valores por defecto)
+                </h3>
+                <p className="mt-1 text-sm text-text-secondary">
+                  Los equipos sin override heredan estos valores. Si no hay
+                  política de club, se usan los valores seguros del producto.
+                </p>
+              </div>
+              <AgeBandPolicyFields idPrefix="club-age" policy={clubAgePolicy} />
+              <Button type="submit" variant="outline">
+                Guardar política del club
+              </Button>
+            </form>
+          ) : null}
+
+          <Card className="border-border-secondary">
             <CardHeader>
               <CardTitle className="text-base text-text-primary">
                 Superficie secundaria
@@ -256,19 +338,31 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             <CardContent className="space-y-3 text-sm text-text-secondary">
               <p>
                 El roster, las temporadas, las lesiones y el análisis quedan fuera
-                de la navegación principal, pero siguen accesibles desde el menú de
-                acciones del header.
+                de la navegación principal, pero siguen accesibles desde el menú
+                de acciones del header.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" render={<Link href="/players">Jugadores</Link>} />
-                <Button size="sm" variant="outline" render={<Link href="/seasons">Temporadas</Link>} />
-                <Button size="sm" variant="outline" render={<Link href="/injuries">Lesiones</Link>} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  render={<Link href="/players">Jugadores</Link>}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  render={<Link href="/seasons">Temporadas</Link>}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  render={<Link href="/injuries">Lesiones</Link>}
+                />
               </div>
             </CardContent>
           </Card>
 
           {staffContext.canCreateTeam || resolvedSearchParams?.createTeam ? (
-            <Card className=" border-border-secondary">
+            <Card className="border-border-secondary">
               <CardHeader>
                 <CardTitle className="text-base text-text-primary">
                   Crear equipo

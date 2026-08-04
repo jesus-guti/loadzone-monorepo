@@ -1,8 +1,13 @@
 import { database } from "@repo/database";
+import {
+  resolveAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
+import { toFocusAgeBand } from "./lib/age-band";
 import {
   isPrototypeLabToken,
   parseBand,
@@ -107,9 +112,18 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       name: true,
       currentStreak: true,
       teamId: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
       team: {
         select: {
           name: true,
+          timezone: true,
+          ageBandPolicy: true,
+          club: {
+            select: {
+              ageBandPolicy: true,
+            },
+          },
           forms: {
             where: {
               teamSessionId: null,
@@ -146,6 +160,18 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   if (!player) {
     notFound();
   }
+
+  const effectiveAgePolicy = resolveEffectiveAgeBandPolicy({
+    teamPolicy: player.team.ageBandPolicy,
+    clubPolicy: player.team.club.ageBandPolicy,
+  });
+  const resolvedAge = resolveAgeBandPolicy({
+    policy: effectiveAgePolicy.policy,
+    policySource: effectiveAgePolicy.source,
+    dateOfBirth: player.dateOfBirth,
+    ageBandOverride: player.ageBandOverride,
+    teamTimezone: player.team.timezone,
+  });
 
   const selectedDate = resolveSelectedDate(date);
   const nextDay = new Date(selectedDate.value);
@@ -271,6 +297,8 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       currentStreak={player.currentStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
+      ageBand={toFocusAgeBand(resolvedAge.ageBand)}
+      parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession

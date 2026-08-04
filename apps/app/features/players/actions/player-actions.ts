@@ -1,7 +1,8 @@
 "use server";
 
 import { database } from "@repo/database";
-import type { PlayerStatus } from "@repo/database";
+import type { AgeBand, PlayerStatus } from "@repo/database";
+import { ageBandOverrideSchema } from "@repo/database/age-band-policy";
 import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -25,8 +26,53 @@ async function getTeamId(): Promise<string> {
   return staffContext.activeTeam.id;
 }
 
+const optionalDateOfBirth = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    if (!value || value.trim().length === 0) {
+      return null;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La fecha de nacimiento debe tener formato AAAA-MM-DD.",
+      });
+      return z.NEVER;
+    }
+    const date = new Date(`${value}T12:00:00.000Z`);
+    if (Number.isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La fecha de nacimiento no es válida.",
+      });
+      return z.NEVER;
+    }
+    return date;
+  });
+
+const optionalAgeBandOverride = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    if (!value || value.trim().length === 0 || value === "NONE") {
+      return null;
+    }
+    const parsed = ageBandOverrideSchema.safeParse(value);
+    if (!parsed.success) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El tramo de edad manual no es válido.",
+      });
+      return z.NEVER;
+    }
+    return parsed.data;
+  });
+
 const createPlayerSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
+  dateOfBirth: optionalDateOfBirth,
+  ageBandOverride: optionalAgeBandOverride,
 });
 
 export async function createPlayer(
@@ -36,6 +82,8 @@ export async function createPlayer(
   try {
     const parsed = createPlayerSchema.safeParse({
       name: formData.get("name"),
+      dateOfBirth: formData.get("dateOfBirth") || undefined,
+      ageBandOverride: formData.get("ageBandOverride") || undefined,
     });
 
     if (!parsed.success) {
@@ -48,6 +96,8 @@ export async function createPlayer(
       data: {
         name: parsed.data.name,
         teamId,
+        dateOfBirth: parsed.data.dateOfBirth,
+        ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
       },
     });
 
@@ -69,6 +119,8 @@ const updatePlayerSchema = z.object({
     "ILL",
     "UNAVAILABLE",
   ]),
+  dateOfBirth: optionalDateOfBirth,
+  ageBandOverride: optionalAgeBandOverride,
 });
 
 export async function updatePlayer(
@@ -80,6 +132,8 @@ export async function updatePlayer(
       id: formData.get("id"),
       name: formData.get("name"),
       status: formData.get("status"),
+      dateOfBirth: formData.get("dateOfBirth") || undefined,
+      ageBandOverride: formData.get("ageBandOverride") || undefined,
     });
 
     if (!parsed.success) {
@@ -93,6 +147,8 @@ export async function updatePlayer(
       data: {
         name: parsed.data.name,
         status: parsed.data.status as PlayerStatus,
+        dateOfBirth: parsed.data.dateOfBirth,
+        ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
       },
     });
 

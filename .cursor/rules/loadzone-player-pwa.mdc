@@ -1,5 +1,5 @@
 ---
-description: Mobile-first and security rules for the player PWA.
+description: Mobile-first player PWA — Focus-frame Assisted OQAT, calm streaks, adaptive Spanish, parental see-only.
 globs: apps/player/**/*.{ts,tsx,css}
 alwaysApply: false
 ---
@@ -7,11 +7,55 @@ alwaysApply: false
 # LoadZone Player PWA
 
 - Treat the player app as mobile-first and token-based, not Clerk-based.
-- Keep inputs reachable in the thumb zone and touch targets at least `44x44` (prefer `48x48`).
-- Keep each step fast: no more than 3 questions per screen when possible.
+- The **Player** is the daily operator across all Age Bands. Guardian helps or supervises —
+  never the default daily user of `apps/player`.
+
+## Check-in direction (Focus frame)
+
+- Prefer **Focus-frame (variant A)**: full-bleed one question per step, large answer targets, thin
+  progress, and a dedicated calm reward screen.
+- **Assisted** band: one-question-at-a-time (OQAT); adult expected present (**Assisted Check-in**),
+  still Player-operated — routine DailyEntry submit is not gated on Guardian approval.
+- Guided / Independent use the **same component tree** with adaptive copy — not separate products.
+- Variants B/C are lab-only; do not ship as the primary path.
 - Prefer large rounded controls, clean spacing, and frictionless flows over dense UI.
 - Support retries without losing entered data.
 - Preserve offline-friendly behavior and avoid unnecessary dependence on live round-trips.
+
+## Touch targets
+
+- Keep inputs reachable in the thumb zone.
+- Touch targets: **44×44 required**, **48×48 preferred**.
+
+## Spanish copy (one adaptive strategy)
+
+- One adaptive Spanish strategy on the same tree:
+  - Assisted — short, concrete; no load jargon
+  - Guided — plain Spanish
+  - Independent — slightly denser wellness labels
+- Prefer thinned calm Spanish; do not fork per-band visual chrome.
+
+## Motivation and streaks
+
+- **Recoverable Streak**: calm, season-scoped expected-day habit; break restarts without guilt UI.
+- **Excused Absence** freezes the streak (neither increments nor breaks).
+- Never public shame boards, streak punishment, or competitive adherence spam.
+- Optional football-identity teaser must not claim real scoring / FUT-as-health scores.
+
+## Parental Supervision (see-only)
+
+- Parental Supervision Layer is **see / receive / escalate** — not a co-app, not routine DailyEntry
+  approve, not Guardian-as-primary.
+- Guardian sees a **care slice** (completion status, escalated flags, injury-relevant signals) —
+  not load ratios, staff notes, or peer comparison.
+- Miss reminders ≠ Care Alerts. Honor Anti-nag Policy tone (invitational; no modal spam).
+
+## Security and resilience
+
 - Be careful with public endpoints: validate token access, sanitize input ranges, and avoid leaking
   token values in logs or UI.
 - Push notification and service worker flows should degrade gracefully when unsupported.
+
+## Sources
+
+Design-direction SPEC §§3,5–6 · player age-bands / parental-supervision resolution · reminders & streaks artifact.
