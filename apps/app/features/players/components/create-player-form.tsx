@@ -31,6 +31,30 @@ export function CreatePlayerForm() {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
+        <Input id="dateOfBirth" name="dateOfBirth" type="date" />
+        <p className="text-xs text-text-secondary">
+          Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar (sin
+          supervisión parental).
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
+        <select
+          id="ageBandOverride"
+          name="ageBandOverride"
+          defaultValue="NONE"
+          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+        >
+          <option value="NONE">Automático (por fecha)</option>
+          <option value="ASSISTED">Asistida</option>
+          <option value="GUIDED">Guiada</option>
+          <option value="INDEPENDENT">Independiente</option>
+        </select>
+      </div>
+
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? "Creando..." : "Crear jugador"}
       </Button>

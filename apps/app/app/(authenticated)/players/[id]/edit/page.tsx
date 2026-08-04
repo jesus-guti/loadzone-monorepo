@@ -20,16 +20,35 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
 
   const player = await database.player.findUnique({
     where: { id, teamId: staffContext.activeTeam.id },
-    select: { id: true, name: true, status: true },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
+    },
   });
 
   if (!player) notFound();
+
+  const dateOfBirth =
+    player.dateOfBirth === null
+      ? null
+      : player.dateOfBirth.toISOString().slice(0, 10);
 
   return (
     <>
       <Header page={`Editar: ${player.name}`} pages={["LoadZone", "Jugadores"]} />
       <div className="mx-auto max-w-md p-4 pt-0">
-        <EditPlayerForm player={player} />
+        <EditPlayerForm
+          player={{
+            id: player.id,
+            name: player.name,
+            status: player.status,
+            dateOfBirth,
+            ageBandOverride: player.ageBandOverride,
+          }}
+        />
       </div>
     </>
   );
