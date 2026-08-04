@@ -1,4 +1,5 @@
 import { database } from "./client";
+import { mapInjuryRowsToIntervals } from "./injury-status";
 import {
   civilDateToUtcMidnight,
   classifyExpectedDay,
@@ -10,7 +11,6 @@ import {
   toCivilDateString,
   type DayObligations,
   type ExpectedDayRecord,
-  type InjuryInterval,
   type RecoverableStreakResult,
 } from "./recoverable-streak";
 
@@ -24,18 +24,6 @@ type RecomputeArgs = {
 export type PersistStreakResult = RecoverableStreakResult & {
   readonly seasonId: string;
 };
-
-function mapInjuryIntervals(
-  injuries: Array<{
-    startDate: Date;
-    endDate: Date | null;
-  }>
-): InjuryInterval[] {
-  return injuries.map((injury) => ({
-    startDate: injury.startDate.toISOString().slice(0, 10),
-    endDate: injury.endDate ? injury.endDate.toISOString().slice(0, 10) : null,
-  }));
-}
 
 function playerOnSession(args: {
   readonly appliesToAllPlayers: boolean;
@@ -230,6 +218,7 @@ export async function recomputeAndPersistPlayerStreak(
     excuses.map((excuse) => toCivilDateString(excuse.date, "UTC"))
   );
 
+  // Official Injury intervals only — never PainAlert (JES-32 / JES-53).
   const injuries = await database.injury.findMany({
     where: { playerId: player.id },
     select: {
@@ -238,7 +227,7 @@ export async function recomputeAndPersistPlayerStreak(
     },
   });
 
-  const injuryIntervals = mapInjuryIntervals(injuries);
+  const injuryIntervals = mapInjuryRowsToIntervals(injuries);
 
   const expectedDays: ExpectedDayRecord[] = [];
 
