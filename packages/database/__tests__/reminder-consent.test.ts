@@ -162,6 +162,23 @@ describe("resolvePushConsent matrix", () => {
       hasActiveSubscription: false,
     });
     expect(decision.canSubscribe).toBe(false);
+    expect(decision.canOptOut).toBe(false);
+    expect(decision.uiMode).toBe("blocked");
+  });
+
+  it("GUARDIAN_BLOCKED with stale subscription shows blocked UI but allows opt-out", () => {
+    const decision = resolvePushConsent({
+      resolvedAge: resolvedAge({
+        ageBand: "GUIDED",
+        ageYearsComplete: 12,
+        parentalSupervisionActive: true,
+      }),
+      reminderConsentPolicy: DEFAULT_REMINDER_CONSENT_POLICY,
+      playerConsentState: "GUARDIAN_BLOCKED",
+      hasActiveSubscription: true,
+    });
+    expect(decision.canSubscribe).toBe(false);
+    expect(decision.canOptOut).toBe(true);
     expect(decision.uiMode).toBe("blocked");
   });
 
@@ -233,6 +250,30 @@ describe("resolvePushConsent matrix", () => {
       hasActiveSubscription: false,
     });
     expect(decision.canSubscribe).toBe(false);
+    expect(decision.canOptOut).toBe(false);
+    expect(decision.uiMode).toBe("blocked");
+  });
+
+  it("OFF mode with stale subscription shows blocked UI but allows opt-out", () => {
+    const policy: ReminderConsentPolicy = {
+      ...DEFAULT_REMINDER_CONSENT_POLICY,
+      guided: {
+        playerRemindersMode: "OFF",
+        guardianReceiveEnabled: false,
+      },
+    };
+    const decision = resolvePushConsent({
+      resolvedAge: resolvedAge({
+        ageBand: "GUIDED",
+        ageYearsComplete: 11,
+        parentalSupervisionActive: true,
+      }),
+      reminderConsentPolicy: policy,
+      playerConsentState: "OPTED_IN",
+      hasActiveSubscription: true,
+    });
+    expect(decision.canSubscribe).toBe(false);
+    expect(decision.canOptOut).toBe(true);
     expect(decision.uiMode).toBe("blocked");
   });
 
