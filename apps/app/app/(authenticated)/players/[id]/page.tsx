@@ -1,4 +1,9 @@
 import { database } from "@repo/database";
+import {
+  BODY_REGION_IDS,
+  bodyRegionById,
+  type BodyRegionCatalogId,
+} from "@repo/database/body-region-catalog";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon } from "@phosphor-icons/react/ssr";
 import { Badge } from "@repo/design-system/components/badge";
@@ -17,13 +22,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layouts/header";
 import {
+  PlayerInjuriesPanel,
+  type InjuryListItem,
+} from "@/features/injuries";
+import {
   CopyTokenButton,
   ExcusedAbsenceForm,
   PlayerCharts,
   PlayerHistoryTable,
 } from "@/features/players";
 import { getCurrentStaffContext } from "@/lib/auth-context";
-import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
+import {
+  effectiveCurrentStreak,
+  toCivilDateString,
+} from "@repo/database/recoverable-streak";
 
 export const metadata: Metadata = {
   title: "Detalle jugador | LoadZone",
@@ -48,6 +60,37 @@ function getInitials(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
+}
+
+function isBodyRegionCatalogId(value: string): value is BodyRegionCatalogId {
+  return (BODY_REGION_IDS as readonly string[]).includes(value);
+}
+
+function mapInjuryToListItem(injury: {
+  id: string;
+  startDate: Date;
+  endDate: Date | null;
+  cause: string;
+  regionDetail: string | null;
+  regions: Array<{ regionId: string }>;
+}): InjuryListItem {
+  const regionIds = injury.regions
+    .map((region) => region.regionId)
+    .filter(isBodyRegionCatalogId);
+
+  return {
+    id: injury.id,
+    startDate: injury.startDate.toISOString().slice(0, 10),
+    endDate: injury.endDate
+      ? injury.endDate.toISOString().slice(0, 10)
+      : null,
+    cause: injury.cause,
+    regionDetail: injury.regionDetail,
+    regionIds,
+    regionLabels: regionIds.map(
+      (id) => bodyRegionById.get(id)?.labelEs ?? id
+    ),
+  };
 }
 
 const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
@@ -77,6 +120,30 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
     streakSeasonId: player.streakSeasonId,
     activeSeasonId: staffContext.activeSeason?.id ?? null,
   });
+
+  const teamTimezone =
+    staffContext.activeTeam.timezone || "Europe/Madrid";
+  const todayCivil = toCivilDateString(new Date(), teamTimezone);
+
+  const injuryRows = await database.injury.findMany({
+    where: { playerId: player.id, teamId: staffContext.activeTeam.id },
+    orderBy: { startDate: "desc" },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      cause: true,
+      regionDetail: true,
+      regions: { select: { regionId: true } },
+    },
+  });
+
+  const openInjuries = injuryRows
+    .filter((injury) => injury.endDate === null)
+    .map(mapInjuryToListItem);
+  const closedInjuries = injuryRows
+    .filter((injury) => injury.endDate !== null)
+    .map(mapInjuryToListItem);
 
   const excusedAbsences = await database.excusedAbsence.findMany({
     where: { playerId: player.id },
@@ -210,6 +277,13 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
             Racha: {displayStreak} días (máx: {player.longestStreak})
           </span>
         </div>
+
+        <PlayerInjuriesPanel
+          playerId={player.id}
+          todayCivil={todayCivil}
+          openInjuries={openInjuries}
+          closedInjuries={closedInjuries}
+        />
 
         <ExcusedAbsenceForm
           playerId={player.id}
