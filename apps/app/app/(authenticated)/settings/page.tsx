@@ -208,7 +208,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             </div>
           </div>
 
-          <div className="border-t border-border-secondary pt-6">
+          <div className="pt-6 border-t border-border-secondary">
             <h3 className="mb-1 text-sm font-semibold text-text-primary">
               Umbrales de alertas wellness
             </h3>

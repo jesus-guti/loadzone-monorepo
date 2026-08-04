@@ -6,6 +6,13 @@ import {
   PLAYER_CARE_CONFIRM_MESSAGE,
 } from "@repo/database/care-alerts";
 import {
+  civilDateToUtcMidnight,
+  isDayObligationsComplete,
+  resolveDayObligations,
+  toCivilDateString,
+} from "@repo/database/recoverable-streak";
+import { recomputeAndPersistPlayerStreak } from "@repo/database/recompute-player-streak";
+import {
   evaluateImmediateWellnessFlags,
   parseWellnessLimits,
   type ImmediateWellnessFlag,
@@ -25,6 +32,8 @@ type ActionResult = {
   success: boolean;
   error?: string;
   physioAlert?: boolean;
+  currentStreak?: number;
+  restarted?: boolean;
   /** Immediate wellness flags at submit time. */
   wellnessFlags?: ImmediateWellnessFlag[];
   /** Calm Player confirm when a care flag is present (not Guardian delivery). */
@@ -56,12 +65,10 @@ type CareAlertPlayerContext = {
 type SubmissionContext = {
   playerId: string;
   seasonId: string;
+  teamId: string;
+  timeZone: string;
   wellnessLimits: WellnessLimits | null;
   care: CareAlertPlayerContext;
-  player: {
-    currentStreak: number;
-    longestStreak: number;
-  };
 };
 
 type FormQuestionDefinition = {
@@ -76,6 +83,7 @@ type FormQuestionDefinition = {
 type ParsedSubmission = {
   ctx: SubmissionContext;
   entryDate: Date;
+  entryCivilDate: string;
   templateId: string;
   teamSessionId?: string;
   answers: Array<{
@@ -103,11 +111,10 @@ async function getPlayerWithSeason(
     where: { token, isArchived: false },
     select: {
       id: true,
+      teamId: true,
       name: true,
       dateOfBirth: true,
       ageBandOverride: true,
-      currentStreak: true,
-      longestStreak: true,
       team: {
         select: {
           timezone: true,
@@ -124,6 +131,7 @@ async function getPlayerWithSeason(
               startDate: { lte: entryDate },
               endDate: { gte: entryDate },
             },
+            orderBy: { startDate: "desc" },
             take: 1,
             select: { id: true },
           },
@@ -137,49 +145,25 @@ async function getPlayerWithSeason(
   const seasonId = player.team.seasons[0]?.id;
   if (!seasonId) return null;
 
+  const timeZone = player.team.timezone || "Europe/Madrid";
+
   return {
     playerId: player.id,
     seasonId,
+    teamId: player.teamId,
+    timeZone,
     wellnessLimits: parseWellnessLimits(player.team.wellnessLimits),
     care: {
       playerId: player.id,
       playerDisplayName: player.name,
-      teamTimezone: player.team.timezone,
+      teamTimezone: timeZone,
       teamAgeBandPolicy: player.team.ageBandPolicy,
       clubAgeBandPolicy: player.team.club.ageBandPolicy,
       reminderConsentPolicy: player.team.reminderConsentPolicy,
       dateOfBirth: player.dateOfBirth,
       ageBandOverride: player.ageBandOverride,
     },
-    player,
   };
-}
-
-async function updateStreak(
-  playerId: string,
-  currentStreak: number,
-  longestStreak: number,
-  entryDate: Date
-): Promise<void> {
-  const yesterday = new Date(entryDate);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const yesterdayEntry = await database.dailyEntry.findUnique({
-    where: {
-      playerId_date: { playerId, date: yesterday },
-    },
-    select: { id: true },
-  });
-
-  const newStreak = yesterdayEntry ? currentStreak + 1 : 1;
-
-  await database.player.update({
-    where: { id: playerId },
-    data: {
-      currentStreak: newStreak,
-      longestStreak: Math.max(newStreak, longestStreak),
-    },
-  });
 }
 
 function parseQuestionValue(
@@ -212,7 +196,8 @@ async function parseSubmission(
     return { ok: false, error: "Datos no válidos. Revisa los campos." };
   }
 
-  const entryDate = new Date(parsed.data.date);
+  const entryCivilDate = parsed.data.date;
+  const entryDate = civilDateToUtcMidnight(entryCivilDate);
   const ctx = await getPlayerWithSeason(parsed.data.token, entryDate);
   if (!ctx) {
     return { ok: false, error: "Jugador o temporada no encontrados." };
@@ -275,6 +260,7 @@ async function parseSubmission(
     data: {
       ctx,
       entryDate,
+      entryCivilDate,
       templateId: template.id,
       teamSessionId:
         parsed.data.teamSessionId && parsed.data.teamSessionId.length > 0
@@ -337,6 +323,91 @@ async function upsertFormSubmission(
   return createdSubmission.id;
 }
 
+async function maybePersistStreak(
+  parsedSubmission: ParsedSubmission
+): Promise<{ currentStreak: number; restarted: boolean } | null> {
+  const dayStart = parsedSubmission.entryDate;
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+  const sessions = await database.teamSession.findMany({
+    where: {
+      teamId: parsedSubmission.ctx.teamId,
+      status: { not: "CANCELLED" },
+      startsAt: {
+        gte: new Date(dayStart.getTime() - 24 * 60 * 60 * 1000),
+        lt: new Date(dayEnd.getTime() + 24 * 60 * 60 * 1000),
+      },
+      OR: [
+        { appliesToAllPlayers: true },
+        { playerLinks: { some: { playerId: parsedSubmission.ctx.playerId } } },
+      ],
+    },
+    select: {
+      startsAt: true,
+      formAssignments: {
+        where: { isActive: true },
+        select: { fillMoment: true },
+      },
+    },
+  });
+
+  const sessionsForDay = sessions.filter(
+    (session) =>
+      toCivilDateString(session.startsAt, parsedSubmission.ctx.timeZone) ===
+      parsedSubmission.entryCivilDate
+  );
+
+  if (sessionsForDay.length === 0) {
+    return null;
+  }
+
+  const teamForms = await database.formAssignment.findMany({
+    where: {
+      teamId: parsedSubmission.ctx.teamId,
+      teamSessionId: null,
+      isActive: true,
+    },
+    select: { fillMoment: true },
+  });
+
+  const sessionMoments = sessionsForDay.map((session) =>
+    session.formAssignments.map((assignment) => assignment.fillMoment)
+  );
+  const obligations = resolveDayObligations(
+    sessionMoments,
+    teamForms.map((form) => form.fillMoment)
+  );
+
+  const entry = await database.dailyEntry.findUnique({
+    where: {
+      playerId_date: {
+        playerId: parsedSubmission.ctx.playerId,
+        date: parsedSubmission.entryDate,
+      },
+    },
+    select: { preFilledAt: true, postFilledAt: true },
+  });
+
+  if (!isDayObligationsComplete(obligations, entry)) {
+    return null;
+  }
+
+  const result = await recomputeAndPersistPlayerStreak({
+    playerId: parsedSubmission.ctx.playerId,
+    seasonId: parsedSubmission.ctx.seasonId,
+    asOfCivilDate: parsedSubmission.entryCivilDate,
+  });
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    currentStreak: result.currentStreak,
+    restarted: result.restarted,
+  };
+}
+
 export async function savePreSession(
   _prev: ActionResult,
   formData: FormData
@@ -391,12 +462,7 @@ export async function savePreSession(
       },
     });
 
-    await updateStreak(
-      parsedSubmission.ctx.playerId,
-      parsedSubmission.ctx.player.currentStreak,
-      parsedSubmission.ctx.player.longestStreak,
-      parsedSubmission.entryDate
-    );
+    const streak = await maybePersistStreak(parsedSubmission);
 
     const careResult = await evaluateAndEmitCareAlert({
       ...parsedSubmission.ctx.care,
@@ -411,6 +477,8 @@ export async function savePreSession(
       success: true,
       physioAlert,
       wellnessFlags,
+      currentStreak: streak?.currentStreak,
+      restarted: streak?.restarted,
       careConfirm: careResult.careFlagPresent,
       careConfirmMessage: careResult.careFlagPresent
         ? PLAYER_CARE_CONFIRM_MESSAGE
@@ -462,7 +530,13 @@ export async function savePostSession(
       },
     });
 
-    return { success: true };
+    const streak = await maybePersistStreak(parsedSubmission);
+
+    return {
+      success: true,
+      currentStreak: streak?.currentStreak,
+      restarted: streak?.restarted,
+    };
   } catch {
     return { success: false, error: "Error al guardar. Inténtalo de nuevo." };
   }

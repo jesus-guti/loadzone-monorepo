@@ -18,10 +18,12 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layouts/header";
 import {
   CopyTokenButton,
+  ExcusedAbsenceForm,
   PlayerCharts,
   PlayerHistoryTable,
 } from "@/features/players";
 import { getCurrentStaffContext } from "@/lib/auth-context";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 
 export const metadata: Metadata = {
   title: "Detalle jugador | LoadZone",
@@ -63,11 +65,28 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
       status: true,
       currentStreak: true,
       longestStreak: true,
+      streakSeasonId: true,
     },
   });
 
   if (!player) notFound();
   const playerImageUrl = resolveStorageUrl(player.imageUrl);
+
+  const displayStreak = effectiveCurrentStreak({
+    currentStreak: player.currentStreak,
+    streakSeasonId: player.streakSeasonId,
+    activeSeasonId: staffContext.activeSeason?.id ?? null,
+  });
+
+  const excusedAbsences = await database.excusedAbsence.findMany({
+    where: { playerId: player.id },
+    orderBy: { date: "desc" },
+    take: 30,
+    select: { date: true },
+  });
+  const excusedDates = excusedAbsences.map(
+    (excuse) => new Date(excuse.date).toISOString().split("T")[0] ?? ""
+  );
 
   const entries = await database.dailyEntry.findMany({
     where: { playerId: player.id },
@@ -188,9 +207,14 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
           )}
           <span className="flex items-center gap-1 text-sm text-text-secondary">
             <FireIcon className="size-3 text-premium" />
-            Racha: {player.currentStreak} días (máx: {player.longestStreak})
+            Racha: {displayStreak} días (máx: {player.longestStreak})
           </span>
         </div>
+
+        <ExcusedAbsenceForm
+          playerId={player.id}
+          excusedDates={excusedDates}
+        />
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>

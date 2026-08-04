@@ -53,7 +53,7 @@ export function ChipInput({
               className={cn(
                 "flex min-h-12 items-center gap-1.5 rounded-full px-5 text-base font-semibold transition-all active:scale-[0.96]",
                 isSelected
-                  ? "bg-brand text-brand-foreground shadow-elevated ring-2 ring-brand/40"
+                  ? "bg-brand text-brand-foreground ring-2 ring-brand/40"
                   : "bg-bg-primary text-text-primary hover:bg-bg-tertiary"
               )}
             >
@@ -66,7 +66,7 @@ export function ChipInput({
 
       <div
         className={cn(
-          "flex items-center gap-3 rounded-full px-4 py-2 transition",
+          "flex min-h-12 items-center gap-3 rounded-full px-4 py-2 transition",
           isCustom
             ? "bg-brand/10 ring-2 ring-brand/30"
             : "bg-bg-primary hover:bg-bg-tertiary"
@@ -89,7 +89,7 @@ export function ChipInput({
             if (!Number.isNaN(parsed)) onChange(parsed);
           }}
           placeholder="—"
-          className="h-10 w-full bg-transparent text-right text-base font-semibold text-text-primary placeholder:text-text-tertiary focus:outline-none"
+          className="h-12 w-full bg-transparent text-right text-base font-semibold text-text-primary placeholder:text-text-tertiary focus:outline-none"
         />
       </div>
     </div>
