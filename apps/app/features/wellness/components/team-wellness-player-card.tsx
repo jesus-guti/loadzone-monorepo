@@ -87,7 +87,10 @@ export function TeamWellnessPlayerCard({
           ) : null}
         </CardHeader>
         <CardContent className="space-y-4 px-0 pb-0">
-          {state === "ALERT" || state === "NOT_COMPLETED" || injuryLabel ? (
+          {state === "ALERT" ||
+          state === "NOT_COMPLETED" ||
+          state === "EXEMPTED" ||
+          injuryLabel ? (
             <div className="flex flex-wrap items-center gap-2">
               {hasPhysio ? (
                 <Badge className="rounded-md" variant="destructive">
@@ -118,6 +121,14 @@ export function TeamWellnessPlayerCard({
                   variant="secondary"
                 >
                   Pendiente
+                </Badge>
+              ) : null}
+              {state === "EXEMPTED" ? (
+                <Badge
+                  className="rounded-md border-border-secondary text-text-secondary"
+                  variant="outline"
+                >
+                  Exento
                 </Badge>
               ) : null}
               {injuryLabel ? (
