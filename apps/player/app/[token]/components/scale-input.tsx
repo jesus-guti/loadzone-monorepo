@@ -64,10 +64,10 @@ export function ScaleInput({
               onClick={() => handleSelect(option)}
               aria-pressed={isSelected}
               className={cn(
-                "relative flex aspect-square min-h-14 flex-col items-center justify-center rounded-2xl text-lg font-bold transition-all active:scale-95",
+                "relative flex aspect-square min-h-12 flex-col items-center justify-center rounded-2xl text-lg font-bold transition-all active:scale-95",
                 color,
                 isSelected
-                  ? "scale-[1.04] shadow-elevated ring-2 ring-text-primary/10"
+                  ? "scale-[1.04] ring-2 ring-text-primary/10"
                   : "opacity-30 hover:opacity-70"
               )}
             >

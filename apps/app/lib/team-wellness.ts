@@ -13,6 +13,7 @@ export type TeamWellnessPlayer = {
     energy: number | null;
     soreness: number | null;
     sleepHours: number | null;
+    sleepQuality: number | null;
     rpe: number | null;
     duration: number | null;
     preFilledAt: Date | null;
@@ -148,6 +149,7 @@ export async function getTeamWellnessWorkspaceData(
           energy: true,
           soreness: true,
           sleepHours: true,
+          sleepQuality: true,
           rpe: true,
           duration: true,
           preFilledAt: true,
@@ -183,6 +185,7 @@ export async function getTeamWellnessWorkspaceData(
         entry.sleepHours === null || entry.sleepHours === undefined
           ? null
           : Number(entry.sleepHours),
+      sleepQuality: entry.sleepQuality,
       rpe: entry.rpe,
       duration: entry.duration,
       preFilledAt: entry.preFilledAt,
