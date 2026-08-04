@@ -20,7 +20,7 @@ import {
   CalendarBlankIcon,
   CheckCircleIcon,
   HeartbeatIcon,
-} from "@phosphor-icons/react/ssr";
+} from "@phosphor-icons/react";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";

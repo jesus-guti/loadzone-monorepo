@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/button";
 import { useActionState, useEffect } from "react";
 import { toast } from "@repo/design-system/components/sonner";
 import { saveInjuryReport } from "../actions/save-injury";
-import { HeartbeatIcon } from "@phosphor-icons/react/ssr";
+import { HeartbeatIcon } from "@phosphor-icons/react";
 
 type InjuryReportFormProperties = {
   readonly token: string;

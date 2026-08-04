@@ -36,7 +36,7 @@ import {
   BatteryWarningIcon,
   BatteryHighIcon,
   CheckCircleIcon,
-} from "@phosphor-icons/react/ssr";
+} from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 
 type PreSessionFormProperties = {

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 
 export type QuestionState = "upcoming" | "active" | "completed";

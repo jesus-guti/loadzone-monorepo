@@ -5,7 +5,7 @@ import {
   PlusIcon,
   ShareIcon,
   XIcon,
-} from "@phosphor-icons/react/ssr";
+} from "@phosphor-icons/react";
 import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,
