@@ -104,6 +104,12 @@ enum CareAlertTriggerClass {
   CARE_RELEVANT_WELLNESS
 }
 
+/// Who triggered a miss-path reminder; auto and staff caps are independent (JES-48).
+enum PushDispatchOrigin {
+  AUTOMATED
+  STAFF_RE_NUDGE
+}
+
 enum ExerciseLoadFormulaType {
   NONE
   DURATION_X_RPE
@@ -318,6 +324,7 @@ model Membership {
   createdExercises  Exercise[]                   @relation("ExerciseCreators")
   exerciseFavorites MembershipExerciseFavorite[]
   reviewedInjuries  InjuryReport[]               @relation("ReviewedInjuries")
+  excusedAbsences   ExcusedAbsence[]             @relation("ExcusedAbsenceCreators")
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
@@ -379,53 +386,80 @@ model Team {
 }
 
 model Season {
-  id           String             @id @default(cuid())
-  name         String
-  startDate    DateTime
-  endDate      DateTime
-  preSeasonEnd DateTime?
-  teamId       String
-  team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  entries      DailyEntry[]
-  stats        PlayerDailyStats[]
+  id              String            @id @default(cuid())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  preSeasonEnd    DateTime?
+  teamId          String
+  team            Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  entries         DailyEntry[]
+  stats           PlayerDailyStats[]
+  excusedAbsences ExcusedAbsence[]
+  streakPlayers   Player[]          @relation("PlayerStreakSeason")
 
   @@unique([teamId, name])
   @@index([teamId])
 }
 
 model Player {
-  id              String              @id @default(cuid())
-  userId          String?             @unique
-  name            String
-  imageUrl        String?
-  token           String              @unique @default(cuid())
-  teamId          String
-  team            Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user            User?               @relation("PlayerUser", fields: [userId], references: [id], onDelete: SetNull)
+  id               String              @id @default(cuid())
+  userId           String?             @unique
+  name             String
+  imageUrl         String?
+  token            String              @unique @default(cuid())
+  teamId           String
+  team             Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user             User?               @relation("PlayerUser", fields: [userId], references: [id], onDelete: SetNull)
   /// Calendar date of birth; age is resolved in Team.timezone against effective Age Band policy.
-  dateOfBirth     DateTime?           @db.Date
+  dateOfBirth      DateTime?           @db.Date
   /// Manual Age Band override when DOB is unknown or category exceptions apply.
-  ageBandOverride AgeBand?
+  ageBandOverride  AgeBand?
   /// Compact Reminder Consent state; PushSubscription rows are transport only.
   reminderConsentState PlayerReminderConsentState @default(ELIGIBLE)
-  entries         DailyEntry[]
-  subscriptions   PushSubscription[]
-  stats           PlayerDailyStats[]
-  formSubmits     FormSubmission[]
-  injuries        InjuryReport[]
-  sessionLinks    TeamSessionPlayer[]
-  suggestions     AiSuggestion[]
-  attendance      SessionAttendance[]
-  status          PlayerStatus        @default(AVAILABLE)
-  isArchived      Boolean             @default(false)
-  currentStreak   Int                 @default(0)
-  longestStreak   Int                 @default(0)
-  createdAt       DateTime            @default(now())
-  pushDispatches  PushDispatch[]
+  entries             DailyEntry[]
+  subscriptions       PushSubscription[]
+  stats               PlayerDailyStats[]
+  formSubmits         FormSubmission[]
+  injuries            InjuryReport[]
+  sessionLinks        TeamSessionPlayer[]
+  suggestions         AiSuggestion[]
+  attendance          SessionAttendance[]
+  excusedAbsences     ExcusedAbsence[]
+  status              PlayerStatus        @default(AVAILABLE)
+  isArchived          Boolean             @default(false)
+  currentStreak       Int                 @default(0)
+  longestStreak       Int                 @default(0)
+  streakSeasonId      String?
+  streakSeason        Season?             @relation("PlayerStreakSeason", fields: [streakSeasonId], references: [id], onDelete: SetNull)
+  createdAt           DateTime            @default(now())
+  pushDispatches      PushDispatch[]
   careAlertDispatches CareAlertDispatch[]
+
 
   @@index([teamId])
   @@index([token])
+  @@index([streakSeasonId])
+}
+
+/// Staff-marked day-level Excused Absence (streak freeze). Injury auto-excuse does not require a row.
+model ExcusedAbsence {
+  id                     String      @id @default(cuid())
+  playerId               String
+  seasonId               String
+  date                   DateTime    @db.Date
+  reason                 String?
+  createdByMembershipId  String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  player                 Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  season                 Season      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  createdBy              Membership? @relation("ExcusedAbsenceCreators", fields: [createdByMembershipId], references: [id], onDelete: SetNull)
+
+  @@unique([playerId, date])
+  @@index([seasonId, date])
+  @@index([playerId, date])
+  @@index([createdByMembershipId])
 }
 
 model PushSubscription {
@@ -441,15 +475,16 @@ model PushSubscription {
 }
 
 model PushDispatch {
-  id            String           @id @default(cuid())
+  id            String             @id @default(cuid())
   teamSessionId String
   playerId      String
   kind          PushDispatchKind
-  sentAt        DateTime         @default(now())
-  teamSession   TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
-  player        Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  origin        PushDispatchOrigin @default(AUTOMATED)
+  sentAt        DateTime           @default(now())
+  teamSession   TeamSession        @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player        Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([teamSessionId, playerId, kind])
+  @@unique([teamSessionId, playerId, kind, origin])
   @@index([playerId, kind])
 }
 

@@ -9,8 +9,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ACTIVE_TEAM_COOKIE_NAME, getCurrentStaffContext } from "@/lib/auth-context";
 import {
-  parseWellnessLimits,
   DEFAULT_NEW_TEAM_WELLNESS_LIMITS,
+  parseWellnessLimits,
 } from "@/lib/wellness-limits";
 import { parseAgeBandPolicyFromFormData } from "../lib/age-band-policy-form";
 import { parseReminderConsentPolicyFromFormData } from "../lib/reminder-consent-policy-form";

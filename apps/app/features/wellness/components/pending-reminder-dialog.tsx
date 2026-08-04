@@ -33,6 +33,14 @@ export function PendingReminderDialog({
       try {
         const result = await remindPendingWellnessPlayers(evaluatedDate);
 
+        if (result.blockedReason === "quiet_hours") {
+          toast.message(
+            result.blockedMessage ??
+              "No se pueden enviar recordatorios durante la noche (22:00–08:00). Prueba más tarde."
+          );
+          return;
+        }
+
         if (result.targetedPlayers === 0) {
           toast.success("No quedan jugadores pendientes.");
           setIsOpen(false);
@@ -41,11 +49,15 @@ export function PendingReminderDialog({
 
         if (result.sentNotifications > 0) {
           toast.success(
-            `Recordatorio enviado a ${result.sentNotifications} jugadores pendientes.`
+            `Recordatorio enviado a ${result.sentNotifications} pendientes (máx. 1 por ventana).`
+          );
+        } else if (result.skippedAlreadyNudged > 0) {
+          toast.message(
+            "Ya se envió el re-aviso de staff para estas ventanas. No se puede repetir."
           );
         } else {
           toast.message(
-            "Hay jugadores pendientes, pero no hay suscripciones push activas para avisarles ahora."
+            "Hay jugadores pendientes, pero no hay suscripciones push activas o el consentimiento no permite avisarles ahora."
           );
         }
 
@@ -78,8 +90,9 @@ export function PendingReminderDialog({
         <DialogHeader>
           <DialogTitle>Re-notificar pendientes</DialogTitle>
           <DialogDescription>
-            Se reenviará un recordatorio push a quienes siguen sin completar el
-            wellness. Úsalo como empujón puntual, no como secuencia agresiva.
+            Se enviará un recordatorio push invitacional a quienes siguen sin
+            completar el wellness. Empujón puntual: como máximo un re-aviso de
+            staff por ventana (pre o post).
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -93,8 +106,8 @@ export function PendingReminderDialog({
             </p>
           </div>
           <p className="text-sm text-text-secondary">
-            Recomendación: enviar solo cuando el bloque de pendientes siga alto
-            y evitar más de 1 o 2 recordatorios extra por tramo del día.
+            No disponible entre las 22:00 y las 08:00 (horario de la sesión). No
+            uses este aviso como secuencia agresiva ni como alerta de cuidado.
           </p>
         </div>
         <DialogFooter>

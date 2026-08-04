@@ -10,8 +10,10 @@
     "./bootstrap": "./bootstrap.ts",
     "./risk-thresholds": "./risk-thresholds.ts",
     "./age-band-policy": "./age-band-policy.ts",
-    "./reminder-consent": "./reminder-consent.ts",
     "./wellness-limits": "./wellness-limits.ts",
+    "./recoverable-streak": "./recoverable-streak.ts",
+    "./recompute-player-streak": "./recompute-player-streak.ts",
+    "./reminder-consent": "./reminder-consent.ts",
     "./care-alerts": "./care-alerts.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"

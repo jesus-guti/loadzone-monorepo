@@ -21,6 +21,7 @@
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",
+    "@repo/push-notifications": "workspace:*",
     "@repo/seo": "workspace:*",
     "@repo/storage": "workspace:*",
     "@sentry/nextjs": "^10.29.0",
