@@ -127,6 +127,7 @@ export function SessionPage({
   const [editingPre, setEditingPre] = useState(false);
   const [editingPost, setEditingPost] = useState(false);
   const [streakCount, setStreakCount] = useState(currentStreak);
+  const [streakRestarted, setStreakRestarted] = useState(false);
   const [injuryOpen, setInjuryOpen] = useState(false);
   const [careTriggered, setCareTriggered] = useState(false);
 
@@ -141,6 +142,7 @@ export function SessionPage({
     setEditingPre(false);
     setEditingPost(false);
     setStreakCount(currentStreak);
+    setStreakRestarted(false);
     setShowDateEdit(false);
     setCareTriggered(false);
   }, [selectedDate, selectedEntry, currentStreak]);
@@ -148,31 +150,42 @@ export function SessionPage({
   const isTodaySelected = date === todayIso;
 
   const handlePreComplete = useCallback(
-    (result?: { careTriggered?: boolean }) => {
-      const shouldIncreaseStreak = !preCompleted && isTodaySelected;
+    (result?: {
+      careTriggered?: boolean;
+      currentStreak?: number;
+      restarted?: boolean;
+    }) => {
       setPreCompleted(true);
       setEditingPre(false);
       setActiveTab("post");
       if (result?.careTriggered) {
         setCareTriggered(true);
       }
-      if (shouldIncreaseStreak) {
-        setStreakCount((previous) => Math.max(previous, currentStreak + 1));
+      if (typeof result?.currentStreak === "number") {
+        setStreakCount(result.currentStreak);
+        setStreakRestarted(Boolean(result.restarted));
       }
       startTransition(() => {
         router.refresh();
       });
     },
-    [currentStreak, isTodaySelected, preCompleted, router]
+    [router]
   );
 
-  const handlePostComplete = useCallback(() => {
-    setPostCompleted(true);
-    setEditingPost(false);
-    startTransition(() => {
-      router.refresh();
-    });
-  }, [router]);
+  const handlePostComplete = useCallback(
+    (result?: { currentStreak?: number; restarted?: boolean }) => {
+      setPostCompleted(true);
+      setEditingPost(false);
+      if (typeof result?.currentStreak === "number") {
+        setStreakCount(result.currentStreak);
+        setStreakRestarted(Boolean(result.restarted));
+      }
+      startTransition(() => {
+        router.refresh();
+      });
+    },
+    [router]
+  );
 
   const handleDateChange = useCallback(
     (nextDate: string) => {
@@ -285,9 +298,16 @@ export function SessionPage({
               {FOCUS_COPY.completionBody[focusAgeBand]}
             </p>
             {isTodaySelected && streakCount > 0 ? (
-              <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
-                {FOCUS_COPY.streakCalm(streakCount)}
-              </span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
+                  {FOCUS_COPY.streakCalm(streakCount)}
+                </span>
+                {streakRestarted ? (
+                  <p className="text-sm text-text-secondary">
+                    {FOCUS_COPY.streakRestart}
+                  </p>
+                ) : null}
+              </div>
             ) : !isTodaySelected ? (
               <p className="text-sm text-text-tertiary">
                 {FOCUS_COPY.pastDateDone}

@@ -86,6 +86,8 @@ export const FOCUS_COPY = {
   assistedPresence: "Un adulto puede acompañarte.",
   careSilentNote: "El club puede enterarse.",
   streakCalm: (n: number): string => `${n} días`,
+  /** Calm restart after an unexcused miss — no guilt framing. */
+  streakRestart: "Empezamos de nuevo.",
   stepOf: (current: number, total: number): string => `${current}/${total}`,
   save: "Guardar",
   saving: "Guardando…",

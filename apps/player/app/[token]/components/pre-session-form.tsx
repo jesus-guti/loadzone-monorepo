@@ -58,7 +58,11 @@ type PreSessionFormProperties = {
       step: number | null;
     }>;
   } | null;
-  readonly onComplete: (result?: { careTriggered?: boolean }) => void;
+  readonly onComplete: (result?: {
+    careTriggered?: boolean;
+    currentStreak?: number;
+    restarted?: boolean;
+  }) => void;
 };
 
 const ENERGY_ICONS: Record<number, ReactNode> = {
@@ -203,6 +207,8 @@ export function PreSessionForm({
       }
       onComplete({
         careTriggered: isCareRelevantAnswer("soreness", soreness),
+        currentStreak: state.currentStreak,
+        restarted: state.restarted,
       });
     }
     if (state.error) {

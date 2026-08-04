@@ -56,7 +56,10 @@ type PostSessionFormProperties = {
       step: number | null;
     }>;
   } | null;
-  readonly onComplete: () => void;
+  readonly onComplete: (result?: {
+    currentStreak?: number;
+    restarted?: boolean;
+  }) => void;
 };
 
 type StepKey = "rpe";
@@ -97,7 +100,10 @@ export function PostSessionForm({
   useEffect(() => {
     if (state.success) {
       toast.success("Post-sesión guardada");
-      onComplete();
+      onComplete({
+        currentStreak: state.currentStreak,
+        restarted: state.restarted,
+      });
     }
     if (state.error) {
       toast.error(state.error);

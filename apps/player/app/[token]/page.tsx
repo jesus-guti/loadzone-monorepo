@@ -3,6 +3,7 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
@@ -110,6 +111,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       id: true,
       name: true,
       currentStreak: true,
+      streakSeasonId: true,
       teamId: true,
       dateOfBirth: true,
       ageBandOverride: true,
@@ -151,6 +153,15 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
               },
             },
           },
+          seasons: {
+            where: {
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
+            orderBy: { startDate: "desc" },
+            take: 1,
+            select: { id: true },
+          },
         },
       },
     },
@@ -170,6 +181,11 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     dateOfBirth: player.dateOfBirth,
     ageBandOverride: player.ageBandOverride,
     teamTimezone: player.team.timezone,
+  });
+  const displayStreak = effectiveCurrentStreak({
+    currentStreak: player.currentStreak,
+    streakSeasonId: player.streakSeasonId,
+    activeSeasonId: player.team.seasons[0]?.id ?? null,
   });
 
   const selectedDate = resolveSelectedDate(date);
@@ -293,7 +309,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       token={token}
       playerName={player.name}
       teamName={player.team.name}
-      currentStreak={player.currentStreak}
+      currentStreak={displayStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
       ageBand={resolvedAge.ageBand}

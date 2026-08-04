@@ -11,6 +11,8 @@
     "./risk-thresholds": "./risk-thresholds.ts",
     "./age-band-policy": "./age-band-policy.ts",
     "./wellness-limits": "./wellness-limits.ts",
+    "./recoverable-streak": "./recoverable-streak.ts",
+    "./recompute-player-streak": "./recompute-player-streak.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"
   },
