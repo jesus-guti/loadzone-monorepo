@@ -22,6 +22,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layouts/header";
 import {
+  InjuryHistoryMap,
   PlayerInjuriesPanel,
   type InjuryListItem,
 } from "@/features/injuries";
@@ -138,12 +139,11 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
     },
   });
 
-  const openInjuries = injuryRows
-    .filter((injury) => injury.endDate === null)
-    .map(mapInjuryToListItem);
-  const closedInjuries = injuryRows
-    .filter((injury) => injury.endDate !== null)
-    .map(mapInjuryToListItem);
+  const allInjuries = injuryRows.map(mapInjuryToListItem);
+  const openInjuries = allInjuries.filter((injury) => injury.endDate === null);
+  const closedInjuries = allInjuries.filter(
+    (injury) => injury.endDate !== null
+  );
 
   const excusedAbsences = await database.excusedAbsence.findMany({
     where: { playerId: player.id },
@@ -289,6 +289,8 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
           playerId={player.id}
           excusedDates={excusedDates}
         />
+
+        <InjuryHistoryMap injuries={allInjuries} />
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
