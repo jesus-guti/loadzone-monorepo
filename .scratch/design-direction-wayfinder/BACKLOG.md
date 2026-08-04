@@ -77,8 +77,8 @@ Each bullet: title + acceptance cues. Prefer one vertical slice per future issue
 - **A5 — Numeric red-flag wellness thresholds in form config**  
   Classes locked in SPEC; ship numeric thresholds via form/config. Acceptance: thresholds configurable; ACWR anomalies stay staff-only.
 
-- **A6 — Care-slice field allow-list graduation**  
-  Boundary locked (no load ratios / staff notes / peer comparison); graduate exact field allow-list. Acceptance: documented allow-list reviewed; staff vs Guardian visibility tests.
+- **A6 — Care-slice field allow-list graduation** ✅ JES-49  
+  Boundary locked (no load ratios / staff notes / peer comparison); exact allow-list graduated — [resolution](../jes-49-care-allow-list/resolutions/guardian-care-slice-allow-list.md).
 
 ---
 

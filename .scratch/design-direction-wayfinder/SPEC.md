@@ -118,9 +118,10 @@ Indicative ages guide assignment; the product rule is the tier’s autonomy. **C
 ### Visibility: staff vs Guardian
 
 - **Staff:** full DailyEntry, load, injury context for coaching/ops  
+- **Staff:** full DailyEntry, load, injury context for coaching/ops  
 - **Guardian:** **care slice** only — completed status, escalated flags, injury-relevant signals; **no** load ratios, staff notes, or peer comparison  
 
-Exact field allow-lists remain deferred; the boundary is locked.
+Exact field allow-list graduated in [JES-49](https://linear.app/jesus-guti-workspace/issue/JES-49/graduate-the-guardian-care-slice-field-allow-list): see [guardian-care-slice-allow-list.md](../jes-49-care-allow-list/resolutions/guardian-care-slice-allow-list.md). Boundary above remains locked.
 
 ### Spanish copy
 
@@ -189,7 +190,7 @@ Season-scoped expected-day habit: increments on completing expected DailyEntry o
 | Sustained load / ACWR | Staff only | **Never** | **Never** |
 | Missed check-in | Pending / re-nudge | Miss notify (not Care Alert) | Calm pending only |
 
-Rate-limit: at most one Care Alert per trigger class per calendar day per Player (unless later staff manual escalate). Numeric red-flag thresholds and exact care-slice field lists are backlog.
+Rate-limit: at most one Care Alert per trigger class per calendar day per Player (unless later staff manual escalate). Numeric red-flag thresholds: JES-41. Exact care-slice field allow-list: graduated in JES-49 ([resolution](../jes-49-care-allow-list/resolutions/guardian-care-slice-allow-list.md)).
 
 ### Motivation
 
@@ -261,7 +262,7 @@ Union of MAP **Out of scope** and per-artifact rejects:
 Recorded for later efforts — **not decided** by this synthesis:
 
 - Guardian auth / account linkage; delivery mechanism (email / SMS / push)
-- Exact care-slice field allow-lists (boundary locked in §5)
+- Exact care-slice field allow-lists — **graduated in JES-49** ([resolution](../jes-49-care-allow-list/resolutions/guardian-care-slice-allow-list.md)); boundary remains locked in §3 / §5
 - Legal/jurisdictional consent copy for minors’ wellness data
 - How Age Band is assigned/persisted (DOB vs manual tier)
 - Football-identity / player-card depth before it becomes scoring

@@ -91,5 +91,5 @@ _Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendan
 ## Flagged ambiguities
 
 - **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
-- **Guardian** auth/linkage, exact care-slice field allow-lists, and **Excused Absence** request workflow remain deferred product decisions — do not invent them here.
+- **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
 - **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).

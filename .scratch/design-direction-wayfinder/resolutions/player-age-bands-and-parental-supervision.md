@@ -44,7 +44,7 @@ For the same check-in / DailyEntry data:
 | **Staff** (`apps/app`) | Full DailyEntry, load, and injury context needed for coaching and wellness operations. |
 | **Guardian** | **Care slice** only: completed status, escalated flags, and injury-relevant signals. **No** load ratios, staff notes, or peer comparison. |
 
-Exact field allow-lists may graduate after DD-06 escalation rules; the boundary above is the product rule.
+Exact field allow-list graduated in JES-49 — see [guardian-care-slice-allow-list.md](../../jes-49-care-allow-list/resolutions/guardian-care-slice-allow-list.md). The boundary above remains the product rule.
 
 ---
 
