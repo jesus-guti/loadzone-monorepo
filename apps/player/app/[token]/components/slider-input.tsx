@@ -182,7 +182,7 @@ export function SliderInput({
         )}
       </div>
 
-      <div className="relative">
+      <div className="relative min-h-12 py-2">
         <div
           aria-hidden
           className={cn(
@@ -202,11 +202,11 @@ export function SliderInput({
           onMouseUp={handleMouseUp}
           onKeyUp={handleKeyUp}
           className={cn(
-            "relative z-10 h-7 w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none",
+            "relative z-10 h-12 w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none",
             "[&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent",
             "[&::-moz-range-track]:h-2 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-transparent",
-            "[&::-webkit-slider-thumb]:mt-[-10px] [&::-webkit-slider-thumb]:size-7 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-text-primary [&::-webkit-slider-thumb]:bg-bg-primary [&::-webkit-slider-thumb]:shadow-elevated [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110",
-            "[&::-moz-range-thumb]:size-7 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-text-primary [&::-moz-range-thumb]:bg-bg-primary [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
+            "[&::-webkit-slider-thumb]:mt-[-20px] [&::-webkit-slider-thumb]:size-12 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-text-primary [&::-webkit-slider-thumb]:bg-bg-primary [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110",
+            "[&::-moz-range-thumb]:size-12 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-text-primary [&::-moz-range-thumb]:bg-bg-primary [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
           )}
           aria-label={`Valor de ${min} a ${max}`}
         />
