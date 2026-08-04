@@ -8,6 +8,12 @@ import {
   toCivilDateString,
 } from "@repo/database/recoverable-streak";
 import { recomputeAndPersistPlayerStreak } from "@repo/database/recompute-player-streak";
+import {
+  evaluateImmediateWellnessFlags,
+  parseWellnessLimits,
+  type ImmediateWellnessFlag,
+  type WellnessLimits,
+} from "@repo/database/wellness-limits";
 import { z } from "zod";
 
 const submissionSchema = z.object({
@@ -23,6 +29,8 @@ type ActionResult = {
   physioAlert?: boolean;
   currentStreak?: number;
   restarted?: boolean;
+  /** Immediate wellness flags at submit time (Care Alert delivery is JES-47). */
+  wellnessFlags?: ImmediateWellnessFlag[];
 };
 
 type ProjectedMetrics = {
@@ -40,6 +48,7 @@ type SubmissionContext = {
   seasonId: string;
   teamId: string;
   timeZone: string;
+  wellnessLimits: WellnessLimits | null;
 };
 
 type FormQuestionDefinition = {
@@ -86,6 +95,7 @@ async function getPlayerWithSeason(
       team: {
         select: {
           timezone: true,
+          wellnessLimits: true,
           seasons: {
             where: {
               startDate: { lte: entryDate },
@@ -110,6 +120,7 @@ async function getPlayerWithSeason(
     seasonId,
     teamId: player.teamId,
     timeZone: player.team.timezone || "Europe/Madrid",
+    wellnessLimits: parseWellnessLimits(player.team.wellnessLimits),
   };
 }
 
@@ -370,6 +381,10 @@ export async function savePreSession(
     const formSubmissionId = await upsertFormSubmission(parsedSubmission);
     const metrics = parsedSubmission.metrics;
     const physioAlert = metrics.soreness === 5;
+    const wellnessFlags = evaluateImmediateWellnessFlags(
+      metrics,
+      parsedSubmission.ctx.wellnessLimits
+    );
 
     await database.dailyEntry.upsert({
       where: {
@@ -410,6 +425,7 @@ export async function savePreSession(
     return {
       success: true,
       physioAlert,
+      wellnessFlags,
       currentStreak: streak?.currentStreak,
       restarted: streak?.restarted,
     };

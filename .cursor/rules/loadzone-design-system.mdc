@@ -1,5 +1,5 @@
 ---
-description: Design system and semantic token rules for shared UI and app styling.
+description: Shared design-system doctrine — semantic tokens, sage identity, floating elevation, Phosphor, and ADR 0001 promotion gates.
 globs: {packages/design-system,apps/app/app,apps/player/app}/**/*.{ts,tsx,css}
 alwaysApply: true
 ---
@@ -9,35 +9,79 @@ alwaysApply: true
 - Shared primitives live in `packages/design-system/components/ui` and must stay app-agnostic.
 - Visual identity is injected by each app through `apps/app/app/globals.css` and
   `apps/player/app/globals.css`.
-- Use semantic tokens, not raw Tailwind colors:
-  `bg-bg-*`, `text-text-*`, `border-border-*`, `brand`, `premium`, `danger`.
-- Do not introduce old shadcn functional tokens like `bg-card`, `bg-muted`, `text-muted-foreground`,
-  or hardcoded colors like `bg-green-500` in shared UI.
 - Reuse existing primitives and `cn()` before creating custom wrappers.
 - Prefer shared visual constants for motion, debounce, and timing over ad-hoc numeric values.
-- Keep structural shadows out of normal cards and containers.
-- Only floating surfaces such as dialogs, popovers, menus, and tooltips should use elevation.
 
-## App split
+## Semantic tokens
 
-- `apps/app`: Attio/Squarespace style — layout denso, radio pequeño, tipografía y ritmo de productividad. Las **superficies de datos** (listas, tablas, bibliotecas) siguen **diseño invisible**: división casi solo horizontal, sin enmarcar bloques enteros en un rectángulo con borde.
-- `apps/player`: Airbnb style — más aire, radio mayor, superficies más suaves; bordes mínimos en flujos del jugador.
+- Author with semantic tokens, not raw Tailwind colors:
+  `bg-bg-*`, `text-text-*`, `border-border-*`, `brand`, `premium`, `danger`, `success`.
+- Do not introduce legacy shadcn authoring tokens (`bg-card`, `bg-muted`, `text-muted-foreground`, …)
+  or hardcoded colors like `bg-green-500` in shared UI.
+- Treat `--surface-*` as internal aliases only — not the product authoring vocabulary.
 
-## Superficies de datos en `apps/app` (patrón biblioteca de ejercicios)
+## Shared brand and app divergence
 
-Referencia canónica: listado de ejercicios (`ExerciseLibraryList`, `ExerciseLibraryListToolbar`, `ExerciseLibraryGroup` / filas). Objetivo: lectura clara sin “cajas” que rodeen toda la tabla o lista.
+- Shared **sage** brand family (~OKLCH hue **160–162**) for both apps. Diverge via density, radius,
+  border, elevation, motion, and type scale — **not** a second brand hue.
+- `apps/app`: dense — `--radius: 0.25rem`; visible borders where structure needs them; light-first.
+- `apps/player`: airier — `--radius: 1rem`; minimal borders in check-in chrome; thumb-friendly; light-first.
+- Typography: Geist Sans + Mono in both apps. Age Band friendliness is copy register, not a second typeface.
+- Spacing stays **4px multiples** only.
+- No per-Age-Band visual chrome forks in shared primitives.
+- Full invisible-list / toolbar / table framing guidance for staff data surfaces lives in
+  `loadzone-admin-shell.mdc` (canonical live reference: exercise library).
 
-- **Listas por filas** (`Item` + `ItemGroup` u equivalente): sin borde envolvente en el grupo; filas con separación horizontal (`border-t` entre filas, borde inferior en la última fila si cierra el bloque). No añadir bordes verticales al contenedor de la lista.
-- **Tablas** (`Table` en `packages/design-system`): el primitivo ya separa filas con líneas horizontales. **No** envolver la tabla en un `div` con `border` en los cuatro lados. Empty states puntuales pueden usar borde discontinuo (`border-dashed`) como en pantallas vacías de ejercicios.
-- **Cabeceras de sección o columnas**: mismo registro que los títulos de grupo en ejercicios — texto pequeño, `uppercase`, `tracking-wide`, `text-text-secondary` para etiquetas de agrupación. En `<th>`, replicar ese registro visual en código nuevo; evitar `text-muted-foreground` y tokens legacy en estas vistas.
-- **Toolbar** (búsqueda, filtros, ordenación): línea base inferior alineada al lenguaje de **tabs underline** (`border-b border-border-secondary`), controles sin sombra de tarjeta (`shadow-none`), sin tratar el bloque como Card.
-- **Filas vs. contenedor**: el patrón mínimo aplica al **marco** de la lista/tabla. Las filas pueden seguir llevando contenido rico (media, badges, acciones) sin copiar el layout interno de otra pantalla.
+## Elevation
 
-## Iconos
+- Keep structural shadows out of ordinary cards, lists, and toolbars.
+- Elevation only on **floating** surfaces: dialogs, popovers, menus, and tooltips.
 
-- Usa [Phosphor Icons](https://phosphoricons.com/) en React vía `@phosphor-icons/react` en todo el monorepo (producto, `apps/web`, `docs`, etc.).
-- En **Next.js App Router**, importa iconos desde `@phosphor-icons/react/ssr` en `page.tsx`, `layout.tsx` y cualquier Server Component: la entrada `@phosphor-icons/react` arrastra `IconContext` (`createContext`) y falla en RSC.
-- Importa iconos concretos por nombre (p. ej. `HouseIcon`, `CaretDownIcon`); evita mezclar otras librerías salvo dependencias transitivas de terceros.
-- **Peso**: por defecto `weight="fill"` en UI densa (`apps/app`, primitives compactos). Usa `regular` o `bold` cuando la superficie necesite más aire o contraste más suave (`apps/player`, marketing, empty states).
-- **Tamaño**: controla densidad con `className` (`size-4`, `size-5`, `h-* w-*`) sobre `Button`, `Badge` y primitivas existentes; no envuelvas en wrappers solo para icono.
-- No añadas `lucide-react`, `@heroicons/react` ni `@radix-ui/react-icons` en código de producto; si un snippet de docs enseña iconos, que use Phosphor.
+## Motion
+
+- Prefer `transform` / `opacity`.
+- Micro ≤200ms, UI ≤300ms, rare celebration ≤500ms.
+- Honor `prefers-reduced-motion`.
+
+## Icons (Phosphor)
+
+- Use [Phosphor Icons](https://phosphoricons.com/) via `@phosphor-icons/react` across the monorepo.
+- In **Next.js App Router**, import from `@phosphor-icons/react/ssr` in `page.tsx`, `layout.tsx`, and
+  any Server Component — the client entry pulls `IconContext` and fails in RSC.
+- Import concrete icons by name (e.g. `HouseIcon`, `CaretDownIcon`); do not mix other icon libraries
+  except transitive third-party deps.
+- **Weight:** default `weight="fill"` in dense admin chrome; prefer `regular` or `bold` in player,
+  marketing, and empty states.
+- **Size:** control density with `className` (`size-4`, `size-5`, `h-* w-*`) on existing primitives;
+  do not wrap icons only for sizing.
+- Do not add `lucide-react`, `@heroicons/react`, or `@radix-ui/react-icons` in product code.
+
+## Quarantined decorative exports (no-new-usage)
+
+These shared modules are quarantined — still importable for stability, but **reject new product call sites**. Prefer regenerable primitives (`components/ui`), semantic tokens, or app-local décor (`globals.css` / feature-local components). Do not pull new Aceternity decorative components into `@repo/design-system` (the `@aceternity` registry key in `components.json` stays for historical reference only). Package boundary: [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md); Wave 3 hygiene.
+
+- `packages/design-system/components/noise-background.tsx`
+- `packages/design-system/components/moving-border.tsx`
+- `packages/design-system/components/hover-border-gradient.tsx`
+- `packages/design-system/components/stateful-button.tsx`
+
+## Package boundary and promotion (ADR 0001)
+
+- `@repo/design-system` = app-agnostic shared primitives and infrastructure only.
+- **No** `components/admin/*` or `components/player/*` kits; no split `@repo/ui-admin` / `@repo/ui-player`.
+- Admin utilities (`bevel-card`, `glass-surface`, …) and player compositions (`QuestionCard`, streak
+  chrome, …) stay **app-local** until promotion gates pass.
+- Promotion requires **all five intentional gates** (never use-count alone):
+  1. App-agnostic contract (no admin density, player check-in/DailyEntry domain, Spanish product copy,
+     or Age Band branches in the primitive)
+  2. Same interaction need across ≥2 product boundaries among `{apps/app, apps/player, apps/web}`
+     (or a shared non-UI consumer) — same behavior/API, not merely similar visuals
+  3. Token-driven appearance only (no per-app class forks in the shared file)
+  4. Intentional move PR naming the second consumer and linking governance
+  5. Prefer regenerable registry primitives over one-off shared composites
+- Reject use-count auto-promote and Figma dual-kit ceremony.
+- Do not promote throwaway prototype trees into the design system.
+
+## Sources
+
+Design-direction SPEC §§2–4,7 · ADR 0001 (design-system package boundary).

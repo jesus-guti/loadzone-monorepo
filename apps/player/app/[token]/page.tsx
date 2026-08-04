@@ -1,4 +1,8 @@
 import { database } from "@repo/database";
+import {
+  resolveAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
 import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -109,9 +113,18 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       currentStreak: true,
       streakSeasonId: true,
       teamId: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
       team: {
         select: {
           name: true,
+          timezone: true,
+          ageBandPolicy: true,
+          club: {
+            select: {
+              ageBandPolicy: true,
+            },
+          },
           forms: {
             where: {
               teamSessionId: null,
@@ -158,6 +171,17 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     notFound();
   }
 
+  const effectiveAgePolicy = resolveEffectiveAgeBandPolicy({
+    teamPolicy: player.team.ageBandPolicy,
+    clubPolicy: player.team.club.ageBandPolicy,
+  });
+  const resolvedAge = resolveAgeBandPolicy({
+    policy: effectiveAgePolicy.policy,
+    policySource: effectiveAgePolicy.source,
+    dateOfBirth: player.dateOfBirth,
+    ageBandOverride: player.ageBandOverride,
+    teamTimezone: player.team.timezone,
+  });
   const displayStreak = effectiveCurrentStreak({
     currentStreak: player.currentStreak,
     streakSeasonId: player.streakSeasonId,
@@ -288,6 +312,8 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       currentStreak={displayStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
+      ageBand={resolvedAge.ageBand}
+      parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession

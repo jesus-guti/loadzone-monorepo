@@ -28,12 +28,23 @@ import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { InjuryReportForm } from "./injury-report-form";
 import {
-  DEFAULT_AGE_BAND,
   FOCUS_COPY,
   shouldShowAssistedPresence,
   shouldShowCareSilentNote,
   type AgeBand,
 } from "../lib/focus-copy";
+
+type PolicyAgeBand = "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
+
+function toFocusAgeBand(band: PolicyAgeBand): AgeBand {
+  if (band === "ASSISTED") {
+    return "assisted";
+  }
+  if (band === "INDEPENDENT") {
+    return "independent";
+  }
+  return "guided";
+}
 
 type PlayerFormTemplate = {
   readonly id: string;
@@ -70,8 +81,9 @@ type SessionPageProperties = {
   } | null;
   readonly preTemplate: PlayerFormTemplate | null;
   readonly postTemplate: PlayerFormTemplate | null;
-  /** Runtime band only — no schema; defaults Guided until W1c. */
-  readonly ageBand?: AgeBand;
+  /** Resolved from Team/Club Age Band policy — never hard-coded ages in UI. */
+  readonly ageBand: PolicyAgeBand;
+  readonly parentalSupervisionActive: boolean;
 };
 
 function formatShortDate(value: Date): string {
@@ -97,8 +109,10 @@ export function SessionPage({
   selectedSession,
   preTemplate,
   postTemplate,
-  ageBand = DEFAULT_AGE_BAND,
+  ageBand,
+  parentalSupervisionActive,
 }: SessionPageProperties) {
+  const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
   const router = useRouter();
   const pathname = usePathname();
@@ -198,10 +212,14 @@ export function SessionPage({
   const firstName = useMemo(() => playerName.split(" ")[0], [playerName]);
   const allDone = preCompleted && postCompleted;
   const showCelebration = allDone && !editingPre && !editingPost;
-  const showCareNote = shouldShowCareSilentNote(ageBand, careTriggered);
+  const showCareNote = shouldShowCareSilentNote(focusAgeBand, careTriggered);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5">
+    <div
+      className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5"
+      data-age-band={ageBand}
+      data-parental-supervision={parentalSupervisionActive ? "active" : "off"}
+    >
       <header className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
@@ -239,7 +257,7 @@ export function SessionPage({
           ) : null}
         </div>
 
-        {shouldShowAssistedPresence(ageBand) ? (
+        {shouldShowAssistedPresence(focusAgeBand) ? (
           <p className="text-sm text-text-secondary">
             {FOCUS_COPY.assistedPresence}
           </p>
@@ -274,10 +292,10 @@ export function SessionPage({
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center gap-4 px-4 py-12 text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-text-primary">
-              {FOCUS_COPY.completionTitle[ageBand]}
+              {FOCUS_COPY.completionTitle[focusAgeBand]}
             </h2>
             <p className="text-base text-text-secondary">
-              {FOCUS_COPY.completionBody[ageBand]}
+              {FOCUS_COPY.completionBody[focusAgeBand]}
             </p>
             {isTodaySelected && streakCount > 0 ? (
               <div className="flex flex-col items-center gap-1">
@@ -390,7 +408,7 @@ export function SessionPage({
                 token={token}
                 date={date}
                 teamSessionId={selectedSession?.id ?? null}
-                ageBand={ageBand}
+                ageBand={focusAgeBand}
                 template={preTemplate}
                 onComplete={handlePreComplete}
               />
@@ -421,7 +439,7 @@ export function SessionPage({
                 token={token}
                 date={date}
                 teamSessionId={selectedSession?.id ?? null}
-                ageBand={ageBand}
+                ageBand={focusAgeBand}
                 template={postTemplate}
                 onComplete={handlePostComplete}
               />

@@ -1,3 +1,10 @@
+/**
+ * QUARANTINED (no-new-usage) — decorative motion-effect export.
+ * Do not add new product call sites. Prefer regenerable primitives (`components/ui`)
+ * and semantic tokens, or keep decoration app-local under the consuming app.
+ * Kept in place for import stability; see ADR 0001 and `.scratch/jes-40-quarantine-ds/map.md`.
+ * Local `Button` here is not `components/ui/button`.
+ */
 "use client";
 import { cn } from "@repo/design-system/lib/utils";
 import React from "react";
@@ -8,6 +15,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
+/**
+ * @deprecated Quarantined decorative export — no-new-usage. Prefer primitives/tokens or app-local décor.
+ */
 export const Button = ({ className, children, ...props }: ButtonProps) => {
   const [scope, animate] = useAnimate();
 

@@ -9,6 +9,8 @@
     "./client": "./client.ts",
     "./bootstrap": "./bootstrap.ts",
     "./risk-thresholds": "./risk-thresholds.ts",
+    "./age-band-policy": "./age-band-policy.ts",
+    "./wellness-limits": "./wellness-limits.ts",
     "./recoverable-streak": "./recoverable-streak.ts",
     "./recompute-player-streak": "./recompute-player-streak.ts",
     "./keys": "./keys.ts",
