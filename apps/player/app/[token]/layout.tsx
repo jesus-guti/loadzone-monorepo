@@ -2,7 +2,7 @@ import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { InstallPrompt } from "../components/install-prompt";
+import { InstallPromptLazy } from "../components/install-prompt-lazy";
 import { TokenPersistence } from "./components/token-persistence";
 import { isPrototypeLabToken } from "./prototype-dd-05/constants";
 
@@ -50,7 +50,7 @@ const TokenLayout = async ({ children, params }: TokenLayoutProperties) => {
     <>
       <TokenPersistence token={token} />
       {children}
-      <InstallPrompt />
+      <InstallPromptLazy />
     </>
   );
 };

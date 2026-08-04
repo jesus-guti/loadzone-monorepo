@@ -1,11 +1,9 @@
 "use client";
 
-import {
-  DeviceMobileIcon,
-  PlusIcon,
-  ShareIcon,
-  XIcon,
-} from "@phosphor-icons/react";
+import { DeviceMobileIcon } from "@phosphor-icons/react/DeviceMobile";
+import { PlusIcon } from "@phosphor-icons/react/Plus";
+import { ShareIcon } from "@phosphor-icons/react/Share";
+import { XIcon } from "@phosphor-icons/react/X";
 import { Button } from "@repo/design-system/components/button";
 import {
   Sheet,

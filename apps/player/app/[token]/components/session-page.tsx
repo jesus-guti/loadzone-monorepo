@@ -16,11 +16,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/tabs";
-import {
-  CalendarBlankIcon,
-  CheckCircleIcon,
-  HeartbeatIcon,
-} from "@phosphor-icons/react";
+import { CalendarBlankIcon } from "@phosphor-icons/react/CalendarBlank";
+import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
+import { HeartbeatIcon } from "@phosphor-icons/react/Heartbeat";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";
