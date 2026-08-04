@@ -98,6 +98,12 @@ enum PushDispatchKind {
   POST_SESSION
 }
 
+/// Who triggered a miss-path reminder; auto and staff caps are independent (JES-48).
+enum PushDispatchOrigin {
+  AUTOMATED
+  STAFF_RE_NUDGE
+}
+
 enum ExerciseLoadFormulaType {
   NONE
   DURATION_X_RPE
@@ -462,15 +468,16 @@ model PushSubscription {
 }
 
 model PushDispatch {
-  id            String           @id @default(cuid())
+  id            String             @id @default(cuid())
   teamSessionId String
   playerId      String
   kind          PushDispatchKind
-  sentAt        DateTime         @default(now())
-  teamSession   TeamSession      @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
-  player        Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  origin        PushDispatchOrigin @default(AUTOMATED)
+  sentAt        DateTime           @default(now())
+  teamSession   TeamSession        @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  player        Player             @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([teamSessionId, playerId, kind])
+  @@unique([teamSessionId, playerId, kind, origin])
   @@index([playerId, kind])
 }
 
