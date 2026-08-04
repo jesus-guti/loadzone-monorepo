@@ -205,7 +205,7 @@ export function resolvePushConsent(
       ...base,
       canSubscribe: false,
       canOptOut: subscribed,
-      uiMode: subscribed ? "subscribed" : "blocked",
+      uiMode: "blocked",
     };
   }
 

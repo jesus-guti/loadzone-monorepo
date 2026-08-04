@@ -60,6 +60,15 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
     teamTimezone: player.team.timezone,
   });
 
+  // Lock status while ≥1 open Injury episode (endDate null), including future starts.
+  const openEpisodeCount = await database.injury.count({
+    where: {
+      playerId: player.id,
+      teamId: staffContext.activeTeam.id,
+      endDate: null,
+    },
+  });
+
   return (
     <>
       <Header page={`Editar: ${player.name}`} pages={["LoadZone", "Jugadores"]} />
@@ -74,6 +83,7 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
             reminderConsentState: player.reminderConsentState,
             resolvedAgeBand: resolvedAge.ageBand,
           }}
+          hasOpenInjury={openEpisodeCount > 0}
         />
       </div>
     </>
