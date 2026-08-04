@@ -12,6 +12,7 @@
     "./age-band-policy": "./age-band-policy.ts",
     "./reminder-consent": "./reminder-consent.ts",
     "./wellness-limits": "./wellness-limits.ts",
+    "./care-alerts": "./care-alerts.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"
   },

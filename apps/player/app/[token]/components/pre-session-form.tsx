@@ -183,7 +183,9 @@ export function PreSessionForm({
 
   useEffect(() => {
     if (state.success) {
-      if (state.physioAlert) {
+      if (state.careConfirm && state.careConfirmMessage) {
+        toast.info(state.careConfirmMessage);
+      } else if (state.physioAlert) {
         toast.info("Se programará una sesión de fisioterapia.");
       } else {
         toast.success("Pre-sesión guardada");

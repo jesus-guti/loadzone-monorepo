@@ -98,6 +98,12 @@ enum PushDispatchKind {
   POST_SESSION
 }
 
+/// Guardian Care Alert trigger class (miss reminders never use this enum).
+enum CareAlertTriggerClass {
+  INJURY_PAIN
+  CARE_RELEVANT_WELLNESS
+}
+
 enum ExerciseLoadFormulaType {
   NONE
   DURATION_X_RPE
@@ -416,6 +422,7 @@ model Player {
   longestStreak   Int                 @default(0)
   createdAt       DateTime            @default(now())
   pushDispatches  PushDispatch[]
+  careAlertDispatches CareAlertDispatch[]
 
   @@index([teamId])
   @@index([token])
@@ -444,6 +451,23 @@ model PushDispatch {
 
   @@unique([teamSessionId, playerId, kind])
   @@index([playerId, kind])
+}
+
+/// Durable Guardian Care Alert ledger (rate-limit key: player × class × civil day).
+/// Distinct from PushDispatch so miss reminders never share this path.
+model CareAlertDispatch {
+  id           String                @id @default(cuid())
+  playerId     String
+  player       Player                @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  triggerClass CareAlertTriggerClass
+  /// Civil calendar day in Team.timezone (stored as @db.Date).
+  civilDate    DateTime              @db.Date
+  /// Provisional allow-list payload snapshot (JES-49 hardens field graduation).
+  payload      Json
+  createdAt    DateTime              @default(now())
+
+  @@unique([playerId, triggerClass, civilDate])
+  @@index([playerId, civilDate])
 }
 
 model DailyEntry {
