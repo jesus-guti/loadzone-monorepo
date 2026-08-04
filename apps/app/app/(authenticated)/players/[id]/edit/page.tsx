@@ -1,4 +1,8 @@
 import { database } from "@repo/database";
+import {
+  resolveAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
@@ -26,6 +30,14 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
       status: true,
       dateOfBirth: true,
       ageBandOverride: true,
+      reminderConsentState: true,
+      team: {
+        select: {
+          timezone: true,
+          ageBandPolicy: true,
+          club: { select: { ageBandPolicy: true } },
+        },
+      },
     },
   });
 
@@ -35,6 +47,18 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
     player.dateOfBirth === null
       ? null
       : player.dateOfBirth.toISOString().slice(0, 10);
+
+  const effectiveAge = resolveEffectiveAgeBandPolicy({
+    teamPolicy: player.team.ageBandPolicy,
+    clubPolicy: player.team.club.ageBandPolicy,
+  });
+  const resolvedAge = resolveAgeBandPolicy({
+    policy: effectiveAge.policy,
+    policySource: effectiveAge.source,
+    dateOfBirth: player.dateOfBirth,
+    ageBandOverride: player.ageBandOverride,
+    teamTimezone: player.team.timezone,
+  });
 
   return (
     <>
@@ -47,6 +71,8 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
             status: player.status,
             dateOfBirth,
             ageBandOverride: player.ageBandOverride,
+            reminderConsentState: player.reminderConsentState,
+            resolvedAgeBand: resolvedAge.ageBand,
           }}
         />
       </div>

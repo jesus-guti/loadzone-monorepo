@@ -84,6 +84,11 @@ type SessionPageProperties = {
   /** Resolved from Team/Club Age Band policy — never hard-coded ages in UI. */
   readonly ageBand: PolicyAgeBand;
   readonly parentalSupervisionActive: boolean;
+  readonly pushConsent: {
+    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" | "blocked" | "needs_guardian_consent";
+    canSubscribe: boolean;
+    canOptOut: boolean;
+  };
 };
 
 function formatShortDate(value: Date): string {
@@ -111,6 +116,7 @@ export function SessionPage({
   postTemplate,
   ageBand,
   parentalSupervisionActive,
+  pushConsent,
 }: SessionPageProperties) {
   const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
@@ -337,7 +343,15 @@ export function SessionPage({
               </Button>
             </div>
           </div>
-          {isTodaySelected ? <PushPrompt token={token} apiUrl={apiUrl} /> : null}
+          {isTodaySelected ? (
+            <PushPrompt
+              token={token}
+              apiUrl={apiUrl}
+              uiMode={pushConsent.uiMode}
+              canSubscribe={pushConsent.canSubscribe}
+              canOptOut={pushConsent.canOptOut}
+            />
+          ) : null}
         </div>
       ) : (
         <Tabs

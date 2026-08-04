@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_AGE_BAND_POLICY } from "@repo/database/age-band-policy";
+import { DEFAULT_REMINDER_CONSENT_POLICY } from "@repo/database/reminder-consent";
 import type { StaffContext } from "@/lib/auth-context";
 import { parseAgeBandPolicyFromFormData } from "@/features/settings/lib/age-band-policy-form";
+import { parseReminderConsentPolicyFromFormData } from "@/features/settings/lib/reminder-consent-policy-form";
 
 const stubs = vi.hoisted(() => ({
   getCurrentStaffContext: vi.fn(),
@@ -83,9 +85,33 @@ function staffFixture(overrides?: Partial<StaffContext>): StaffContext {
       ageBandPolicyOverride: null,
       ageBandPolicy: DEFAULT_AGE_BAND_POLICY,
       ageBandPolicySource: "defaults",
+      reminderConsentPolicy: DEFAULT_REMINDER_CONSENT_POLICY,
+      reminderConsentPolicySource: "defaults",
     },
     ...overrides,
   } as StaffContext;
+}
+
+function appendReminderConsentDefaults(fd: FormData): void {
+  fd.append(
+    "rc_assisted_mode",
+    DEFAULT_REMINDER_CONSENT_POLICY.assisted.playerRemindersMode
+  );
+  fd.append("rc_assisted_guardianReceive", "on");
+  fd.append(
+    "rc_guided_mode",
+    DEFAULT_REMINDER_CONSENT_POLICY.guided.playerRemindersMode
+  );
+  fd.append("rc_guided_guardianReceive", "on");
+  fd.append(
+    "rc_independentYouth_mode",
+    DEFAULT_REMINDER_CONSENT_POLICY.independentYouth.playerRemindersMode
+  );
+  fd.append("rc_independentYouth_guardianReceive", "on");
+  fd.append(
+    "rc_independentMajority_mode",
+    DEFAULT_REMINDER_CONSENT_POLICY.independentMajority.playerRemindersMode
+  );
 }
 
 function baseTeamForm(): FormData {
@@ -107,6 +133,7 @@ function baseTeamForm(): FormData {
   );
   fd.append("age_guardianMissReceiveEnabled", "on");
   fd.append("age_guardianCareAlertReceiveEnabled", "on");
+  appendReminderConsentDefaults(fd);
   return fd;
 }
 
@@ -199,6 +226,42 @@ describe("updateTeamSettings Age Band auth + persistence", () => {
 
     await expect(updateTeamSettings(fd)).rejects.toThrow(/contiguos/i);
     expect(stubs.teamUpdate).not.toHaveBeenCalled();
+  });
+
+  it("persists Reminder Consent policy with Team settings", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue(staffFixture());
+    const fd = baseTeamForm();
+    fd.set("rc_guided_mode", "OFF");
+    fd.delete("rc_guided_guardianReceive");
+
+    await expect(updateTeamSettings(fd)).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(stubs.teamUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reminderConsentPolicy: expect.objectContaining({
+            guided: {
+              playerRemindersMode: "OFF",
+              guardianReceiveEnabled: false,
+            },
+            independentMajority: {
+              playerRemindersMode: "PLAYER_CONSENTS",
+              guardianReceiveEnabled: false,
+            },
+          }),
+        }),
+      })
+    );
+  });
+});
+
+describe("parseReminderConsentPolicyFromFormData", () => {
+  it("parses SPEC defaults from form fields", () => {
+    const result = parseReminderConsentPolicyFromFormData(baseTeamForm());
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.policy).toEqual(DEFAULT_REMINDER_CONSENT_POLICY);
+    }
   });
 });
 

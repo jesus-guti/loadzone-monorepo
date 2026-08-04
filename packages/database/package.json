@@ -13,6 +13,7 @@
     "./wellness-limits": "./wellness-limits.ts",
     "./recoverable-streak": "./recoverable-streak.ts",
     "./recompute-player-streak": "./recompute-player-streak.ts",
+    "./reminder-consent": "./reminder-consent.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"
   },

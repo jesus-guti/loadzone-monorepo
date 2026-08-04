@@ -18,6 +18,10 @@ import {
   resolveEffectiveAgeBandPolicy,
   type AgeBandPolicy,
 } from "@repo/database/age-band-policy";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  type ReminderConsentPolicy,
+} from "@repo/database/reminder-consent";
 import { parseWellnessLimits, type WellnessLimits } from "./wellness-limits";
 
 export type SeasonSummary = {
@@ -42,6 +46,9 @@ export type TeamSummary = {
   /** Effective policy after Club inheritance. */
   ageBandPolicy: AgeBandPolicy;
   ageBandPolicySource: "team" | "club" | "defaults";
+  /** Effective Reminder Consent policy (Team JSON or package defaults). */
+  reminderConsentPolicy: ReminderConsentPolicy;
+  reminderConsentPolicySource: "team" | "defaults";
 };
 
 export type StaffContext = {
@@ -98,6 +105,9 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
       teamPolicy: team.ageBandPolicy,
       clubPolicy: club?.ageBandPolicy ?? null,
     });
+    const reminderConsent = resolveEffectiveReminderConsentPolicy({
+      teamPolicy: team.reminderConsentPolicy,
+    });
     return {
       id: team.id,
       name: team.name,
@@ -110,6 +120,8 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
       ageBandPolicyOverride: parseAgeBandPolicy(team.ageBandPolicy),
       ageBandPolicy: effective.policy,
       ageBandPolicySource: effective.source,
+      reminderConsentPolicy: reminderConsent.policy,
+      reminderConsentPolicySource: reminderConsent.source,
     };
   });
 

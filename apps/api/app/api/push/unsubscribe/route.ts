@@ -4,30 +4,28 @@ import {
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
 import {
-  consentStateAfterSubscribe,
+  consentStateAfterOptOut,
   resolveEffectiveReminderConsentPolicy,
   resolvePushConsent,
   type PlayerReminderConsentState,
 } from "@repo/database/reminder-consent";
-import { subscribePush } from "@repo/push-notifications";
+import { unsubscribePush } from "@repo/push-notifications";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-const subscribeSchema = z.object({
+const unsubscribeSchema = z.object({
   token: z.string().min(1),
   endpoint: z.string().url(),
-  p256dh: z.string().min(1),
-  auth: z.string().min(1),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body: unknown = await request.json();
-    const parsed = subscribeSchema.safeParse(body);
+    const parsed = unsubscribeSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid subscription data" },
+        { error: "Invalid unsubscribe data" },
         { status: 400 }
       );
     }
@@ -59,6 +57,18 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    const subscription = await database.pushSubscription.findUnique({
+      where: { endpoint: parsed.data.endpoint },
+      select: { id: true, playerId: true },
+    });
+
+    if (!subscription || subscription.playerId !== player.id) {
+      return NextResponse.json(
+        { error: "Subscription not found" },
+        { status: 404 }
+      );
+    }
+
     const effectiveAge = resolveEffectiveAgeBandPolicy({
       teamPolicy: player.team.ageBandPolicy,
       clubPolicy: player.team.club.ageBandPolicy,
@@ -73,32 +83,23 @@ export async function POST(request: Request): Promise<NextResponse> {
     const { policy: reminderPolicy } = resolveEffectiveReminderConsentPolicy({
       teamPolicy: player.team.reminderConsentPolicy,
     });
-
     const consent = resolvePushConsent({
       resolvedAge,
       reminderConsentPolicy: reminderPolicy,
       playerConsentState:
         player.reminderConsentState as PlayerReminderConsentState,
-      // Permission to create/upsert is independent of existing endpoints.
-      hasActiveSubscription: false,
+      hasActiveSubscription: true,
     });
 
-    if (!consent.canSubscribe) {
-      return NextResponse.json(
-        { error: "Reminder consent does not allow push subscription" },
-        { status: 403 }
-      );
+    try {
+      await unsubscribePush(parsed.data.endpoint);
+    } catch {
+      // Row may already be gone; continue to update consent ledger.
     }
 
-    await subscribePush({
-      playerId: player.id,
-      endpoint: parsed.data.endpoint,
-      p256dh: parsed.data.p256dh,
-      auth: parsed.data.auth,
-    });
-
-    const nextState = consentStateAfterSubscribe(
-      player.reminderConsentState as PlayerReminderConsentState
+    const nextState = consentStateAfterOptOut(
+      player.reminderConsentState as PlayerReminderConsentState,
+      consent.mode
     );
     if (nextState !== player.reminderConsentState) {
       await database.player.update({

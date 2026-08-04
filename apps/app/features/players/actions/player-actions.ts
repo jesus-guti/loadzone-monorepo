@@ -3,6 +3,7 @@
 import { database } from "@repo/database";
 import type { AgeBand, PlayerStatus } from "@repo/database";
 import { ageBandOverrideSchema } from "@repo/database/age-band-policy";
+import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -69,6 +70,13 @@ const optionalAgeBandOverride = z
     return parsed.data;
   });
 
+const reminderConsentActionSchema = z.enum([
+  "LEAVE",
+  "GRANT_ASSISTED",
+  "REVOKE_SUPERVISION",
+  "CLEAR_TO_ELIGIBLE",
+]);
+
 const createPlayerSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
   dateOfBirth: optionalDateOfBirth,
@@ -121,6 +129,7 @@ const updatePlayerSchema = z.object({
   ]),
   dateOfBirth: optionalDateOfBirth,
   ageBandOverride: optionalAgeBandOverride,
+  reminderConsentAction: reminderConsentActionSchema.default("LEAVE"),
 });
 
 export async function updatePlayer(
@@ -134,6 +143,7 @@ export async function updatePlayer(
       status: formData.get("status"),
       dateOfBirth: formData.get("dateOfBirth") || undefined,
       ageBandOverride: formData.get("ageBandOverride") || undefined,
+      reminderConsentAction: formData.get("reminderConsentAction") || "LEAVE",
     });
 
     if (!parsed.success) {
@@ -142,14 +152,35 @@ export async function updatePlayer(
 
     const teamId = await getTeamId();
 
-    await database.player.update({
-      where: { id: parsed.data.id, teamId },
-      data: {
-        name: parsed.data.name,
-        status: parsed.data.status as PlayerStatus,
-        dateOfBirth: parsed.data.dateOfBirth,
-        ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
-      },
+    let nextConsentState: PlayerReminderConsentState | undefined;
+    const action = parsed.data.reminderConsentAction;
+    if (action === "GRANT_ASSISTED") {
+      nextConsentState = "ASSISTED_GUARDIAN_GRANTED";
+    } else if (action === "REVOKE_SUPERVISION") {
+      nextConsentState = "GUARDIAN_BLOCKED";
+    } else if (action === "CLEAR_TO_ELIGIBLE") {
+      nextConsentState = "ELIGIBLE";
+    }
+
+    await database.$transaction(async (tx) => {
+      await tx.player.update({
+        where: { id: parsed.data.id, teamId },
+        data: {
+          name: parsed.data.name,
+          status: parsed.data.status as PlayerStatus,
+          dateOfBirth: parsed.data.dateOfBirth,
+          ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
+          ...(nextConsentState
+            ? { reminderConsentState: nextConsentState }
+            : {}),
+        },
+      });
+
+      if (action === "REVOKE_SUPERVISION") {
+        await tx.pushSubscription.deleteMany({
+          where: { playerId: parsed.data.id },
+        });
+      }
     });
 
     revalidatePath("/players");
@@ -232,7 +263,9 @@ export async function updatePlayerPhoto(
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "No se pudo subir la foto del jugador.",
+        error instanceof Error
+          ? error.message
+          : "No se pudo subir la foto del jugador.",
     };
   }
 }

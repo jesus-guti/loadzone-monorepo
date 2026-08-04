@@ -212,6 +212,15 @@ enum AgeBand {
   INDEPENDENT
 }
 
+/// Per-Player Reminder Consent ledger (PushSubscription is transport only — JES-45).
+enum PlayerReminderConsentState {
+  ELIGIBLE
+  OPTED_IN
+  OPTED_OUT
+  GUARDIAN_BLOCKED
+  ASSISTED_GUARDIAN_GRANTED
+}
+
 enum ExerciseVisibility {
   PRIVATE
   CLUB_SHARED
@@ -348,6 +357,8 @@ model Team {
   wellnessLimits             Json?
   /// Nullable Team override for Age Band / Guardian policy; null inherits Club defaults then package defaults.
   ageBandPolicy              Json?
+  /// Nullable Team Reminder Consent defaults × band; null → SPEC §5 package defaults (JES-45).
+  reminderConsentPolicy      Json?
   createdAt                  DateTime         @default(now())
   updatedAt                  DateTime         @updatedAt
   club                       Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -392,6 +403,8 @@ model Player {
   dateOfBirth      DateTime?           @db.Date
   /// Manual Age Band override when DOB is unknown or category exceptions apply.
   ageBandOverride  AgeBand?
+  /// Compact Reminder Consent state; PushSubscription rows are transport only.
+  reminderConsentState PlayerReminderConsentState @default(ELIGIBLE)
   entries          DailyEntry[]
   subscriptions    PushSubscription[]
   stats            PlayerDailyStats[]

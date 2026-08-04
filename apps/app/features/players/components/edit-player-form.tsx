@@ -12,6 +12,7 @@ import {
 } from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
 import type { AgeBand, PlayerStatus } from "@repo/database";
+import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { useActionState, useEffect } from "react";
 import { updatePlayer } from "../actions/player-actions";
 
@@ -22,6 +23,8 @@ type EditPlayerFormProperties = {
     status: PlayerStatus;
     dateOfBirth: string | null;
     ageBandOverride: AgeBand | null;
+    reminderConsentState: PlayerReminderConsentState;
+    resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
 };
 
@@ -32,6 +35,14 @@ const STATUS_OPTIONS = [
   { value: "ILL", label: "Enfermo" },
   { value: "UNAVAILABLE", label: "No disponible" },
 ] as const;
+
+const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
+  ELIGIBLE: "Elegible",
+  OPTED_IN: "Con suscripción / opt-in",
+  OPTED_OUT: "Opt-out del jugador",
+  GUARDIAN_BLOCKED: "Revocado (supervisión)",
+  ASSISTED_GUARDIAN_GRANTED: "Tutor consintió (asistida)",
+};
 
 export function EditPlayerForm({ player }: EditPlayerFormProperties) {
   const [state, action, isPending] = useActionState(updatePlayer, {
@@ -101,6 +112,36 @@ export function EditPlayerForm({ player }: EditPlayerFormProperties) {
           <option value="ASSISTED">Asistida</option>
           <option value="GUIDED">Guiada</option>
           <option value="INDEPENDENT">Independiente</option>
+        </select>
+      </div>
+
+      <div className="space-y-2 border-t border-border-secondary pt-4">
+        <Label htmlFor="reminderConsentAction">
+          Consentimiento de recordatorios
+        </Label>
+        <p className="text-xs text-text-secondary">
+          Estado actual: {CONSENT_STATE_LABEL[player.reminderConsentState]}
+          {player.resolvedAgeBand !== "UNASSIGNED"
+            ? ` · tramo ${player.resolvedAgeBand.toLowerCase()}`
+            : " · sin tramo"}
+          . La suscripción push es solo transporte.
+        </p>
+        <select
+          id="reminderConsentAction"
+          name="reminderConsentAction"
+          defaultValue="LEAVE"
+          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+        >
+          <option value="LEAVE">Mantener estado actual</option>
+          <option value="GRANT_ASSISTED">
+            Registrar consentimiento del tutor (asistida)
+          </option>
+          <option value="REVOKE_SUPERVISION">
+            Revocar recordatorios (supervisión) — elimina push
+          </option>
+          <option value="CLEAR_TO_ELIGIBLE">
+            Volver a elegible (quitar bloqueo / grant)
+          </option>
         </select>
       </div>
 

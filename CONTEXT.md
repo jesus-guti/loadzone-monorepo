@@ -50,7 +50,8 @@ Check-in mode for the **Assisted** **Age Band**: an adult is expected present; t
 Separate see / receive / escalate capabilities for a **Guardian** — not a joint family co-app, and not soft-approval of routine **DailyEntry**. Guardian visibility is a **care slice** only (completion status, escalated flags, injury-relevant signals); not load ratios, staff notes, or peer comparison.
 
 **Reminder Consent**:
-Who opts in for Player reminders and Guardian miss / **Care Alert** receives. Defaults vary by **Age Band** and remain staff-configurable.
+Who opts in for Player reminders and Guardian miss / **Care Alert** receives. Defaults vary by **Age Band** (Assisted / Guided / Independent youth below adult majority / Independent majority) and remain staff-configurable on the **Team**. Per-**Player** compact consent state is the ledger; **PushSubscription** is transport only.
+_Avoid_: Treating subscription presence alone as the consent record.
 
 **Anti-nag Policy**:
 Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
@@ -91,6 +92,7 @@ _Avoid_: Calling a Pain Alert an injury period or “lesión oficial”.
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
 - A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
 - An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
