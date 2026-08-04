@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { Header } from "@/components/layouts/header";
-import { updateInjury } from "@/features/injuries";
+import { updateInjuryTriage } from "@/features/injuries";
 
 export const metadata: Metadata = {
   title: "Lesiones | LoadZone",
@@ -98,7 +98,7 @@ const InjuriesPage = async () => {
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <form action={updateInjury} className="space-y-3">
+                    <form action={updateInjuryTriage} className="space-y-3">
                       <input type="hidden" name="injuryId" value={injury.id} />
                       <div className="space-y-2">
                         <label
