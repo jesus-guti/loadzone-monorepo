@@ -15,7 +15,7 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { nextFocusStepIndex } from "../lib/focus-step";
-import { CheckCircleIcon } from "@phosphor-icons/react/ssr";
+import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 
 const BORG_LABELS: Record<number, string> = {
   0: "Nada",

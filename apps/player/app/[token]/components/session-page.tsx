@@ -16,11 +16,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/tabs";
-import {
-  CalendarBlankIcon,
-  CheckCircleIcon,
-  HeartbeatIcon,
-} from "@phosphor-icons/react/ssr";
+import { CalendarBlankIcon } from "@phosphor-icons/react/CalendarBlank";
+import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
+import { HeartbeatIcon } from "@phosphor-icons/react/Heartbeat";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { PreSessionForm } from "./pre-session-form";
@@ -33,18 +31,11 @@ import {
   shouldShowCareSilentNote,
   type AgeBand,
 } from "../lib/focus-copy";
+import { toFocusAgeBand } from "../lib/age-band";
+
 
 type PolicyAgeBand = "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
 
-function toFocusAgeBand(band: PolicyAgeBand): AgeBand {
-  if (band === "ASSISTED") {
-    return "assisted";
-  }
-  if (band === "INDEPENDENT") {
-    return "independent";
-  }
-  return "guided";
-}
 
 type PlayerFormTemplate = {
   readonly id: string;

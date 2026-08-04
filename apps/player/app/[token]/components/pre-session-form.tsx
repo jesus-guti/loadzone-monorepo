@@ -29,14 +29,12 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { nextFocusStepIndex } from "../lib/focus-step";
-import {
-  BatteryFullIcon,
-  BatteryMediumIcon,
-  BatteryLowIcon,
-  BatteryWarningIcon,
-  BatteryHighIcon,
-  CheckCircleIcon,
-} from "@phosphor-icons/react/ssr";
+import { BatteryFullIcon } from "@phosphor-icons/react/BatteryFull";
+import { BatteryHighIcon } from "@phosphor-icons/react/BatteryHigh";
+import { BatteryLowIcon } from "@phosphor-icons/react/BatteryLow";
+import { BatteryMediumIcon } from "@phosphor-icons/react/BatteryMedium";
+import { BatteryWarningIcon } from "@phosphor-icons/react/BatteryWarning";
+import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 import type { ReactNode } from "react";
 
 type PreSessionFormProperties = {

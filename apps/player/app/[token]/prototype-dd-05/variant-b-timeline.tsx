@@ -3,7 +3,7 @@
 import type { JSX } from "react";
 
 import { Button } from "@repo/design-system/components/button";
-import { CheckCircleIcon } from "@phosphor-icons/react";
+import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 import { cn } from "@repo/design-system/lib/utils";
 import type { AgeBand } from "./constants";
 import { DEMO_STREAK, STUB_QUESTIONS } from "./constants";
