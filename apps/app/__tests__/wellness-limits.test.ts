@@ -12,8 +12,10 @@ describe("parseWellnessLimits", () => {
     });
   });
 
-  it("devuelve null cuando la estructura no es valida", () => {
+  it("devuelve null cuando la estructura no es valida o esta fuera de rango", () => {
     expect(parseWellnessLimits("invalid")).toBeNull();
     expect(parseWellnessLimits({ recovery: "4" })).toBeNull();
+    expect(parseWellnessLimits({ recovery: 11 })).toBeNull();
+    expect(parseWellnessLimits({ soreness: 0 })).toBeNull();
   });
 });
