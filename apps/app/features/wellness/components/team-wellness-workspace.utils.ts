@@ -1,6 +1,23 @@
 import type { PlayerStatus, RiskLevel } from "@repo/database";
+import {
+  evaluateImmediateWellnessFlags,
+  type ImmediateWellnessFlag,
+  type WellnessLimits,
+  type WellnessMetric,
+} from "@/lib/wellness-limits";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
-import type { WellnessLimits } from "@/lib/wellness-limits";
+
+const WELLNESS_ALERT_LABELS: Record<WellnessMetric, string> = {
+  recovery: "Recuperación",
+  energy: "Energía",
+  soreness: "Agujetas",
+  sleepHours: "Sueño",
+  sleepQuality: "Calidad del sueño",
+};
+
+export type WellnessAlertDisplay = ImmediateWellnessFlag & {
+  label: string;
+};
 
 const NAME_WORD_SPLIT_PATTERN = /\s+/;
 
@@ -234,46 +251,11 @@ export function isPlayerActiveToday(player: TeamWellnessPlayer): boolean {
 export function getWellnessAlerts(
   entry: TeamWellnessPlayer["entries"][number] | undefined,
   wellnessLimits?: WellnessLimits | null
-): string[] {
-  if (!(entry && wellnessLimits)) {
-    return [];
-  }
-
-  const alerts: string[] = [];
-
-  if (
-    typeof wellnessLimits.recovery === "number" &&
-    entry.recovery !== null &&
-    entry.recovery <= wellnessLimits.recovery
-  ) {
-    alerts.push("Recuperación");
-  }
-
-  if (
-    typeof wellnessLimits.energy === "number" &&
-    entry.energy !== null &&
-    entry.energy <= wellnessLimits.energy
-  ) {
-    alerts.push("Energía");
-  }
-
-  if (
-    typeof wellnessLimits.soreness === "number" &&
-    entry.soreness !== null &&
-    entry.soreness >= wellnessLimits.soreness
-  ) {
-    alerts.push("Agujetas");
-  }
-
-  if (
-    typeof wellnessLimits.sleepHours === "number" &&
-    entry.sleepHours !== null &&
-    Number(entry.sleepHours) < wellnessLimits.sleepHours
-  ) {
-    alerts.push("Sueño");
-  }
-
-  return alerts;
+): WellnessAlertDisplay[] {
+  return evaluateImmediateWellnessFlags(entry, wellnessLimits).map((flag) => ({
+    ...flag,
+    label: WELLNESS_ALERT_LABELS[flag.metric],
+  }));
 }
 
 export function getDailyPlayerState(

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { database } from "@repo/database";
 import { DEFAULT_AGE_BAND_POLICY } from "@repo/database/age-band-policy";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
+import { WELLNESS_LIMIT_PLACEHOLDERS } from "@repo/database/wellness-limits";
 import { Button } from "@repo/design-system/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/card";
 import { Input } from "@repo/design-system/components/input";
@@ -13,6 +14,7 @@ import { Header } from "@/components/layouts/header";
 import {
   AgeBandPolicyFields,
   ClubBrandingCard,
+  ReminderConsentPolicyFields,
   createTeamFromSettings,
   updateClubAgeBandPolicy,
   updateTeamSettings,
@@ -88,6 +90,7 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
     staffContext.activeTeam.ageBandPolicyOverride === null;
   const clubAgePolicy =
     staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
+  const reminderConsentPolicy = staffContext.activeTeam.reminderConsentPolicy;
 
   return (
     <>
@@ -205,46 +208,19 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
             </div>
           </div>
 
-          <div className="border-t border-border-secondary pt-6">
-            <h3 className="mb-4 text-sm font-semibold text-text-primary">
-              Límites de alertas (Wellness)
+          <div className="pt-6 border-t border-border-secondary">
+            <h3 className="mb-1 text-sm font-semibold text-text-primary">
+              Umbrales de alertas wellness
             </h3>
+            <p className="mb-4 text-xs text-text-secondary">
+              Vacío = desactivado. La alerta de cuidado (Guardian) solo aplica a
+              agujetas; el resto son alertas solo staff. La carga / ACWR no se
+              configura aquí.
+            </p>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="wellness_recovery">
-                  Recuperación (alerta si es menor o igual a)
-                </Label>
-                <Input
-                  id="wellness_recovery"
-                  name="wellness_recovery"
-                  type="number"
-                  min="0"
-                  max="10"
-                  defaultValue={
-                    staffContext.activeTeam.wellnessLimits?.recovery ?? ""
-                  }
-                  placeholder="Ej: 4"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="wellness_sleepHours">
-                  Horas de sueño (alerta si es menor a)
-                </Label>
-                <Input
-                  id="wellness_sleepHours"
-                  name="wellness_sleepHours"
-                  type="number"
-                  min="0"
-                  max="24"
-                  defaultValue={
-                    staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""
-                  }
-                  placeholder="Ej: 6"
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="wellness_soreness">
-                  Agujetas (alerta si es mayor o igual a)
+                  Agujetas — alerta de cuidado (umbral ≥)
                 </Label>
                 <Input
                   id="wellness_soreness"
@@ -252,15 +228,29 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   type="number"
                   min="1"
                   max="5"
-                  defaultValue={
-                    staffContext.activeTeam.wellnessLimits?.soreness ?? ""
-                  }
-                  placeholder="Ej: 4"
+                  step="1"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.soreness ?? ""}
+                  placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.soreness}`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_recovery">
+                  Recuperación — alerta solo staff (umbral ≤)
+                </Label>
+                <Input
+                  id="wellness_recovery"
+                  name="wellness_recovery"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="1"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.recovery ?? ""}
+                  placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.recovery}`}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wellness_energy">
-                  Energía (alerta si es menor o igual a)
+                  Energía — alerta solo staff (umbral ≤)
                 </Label>
                 <Input
                   id="wellness_energy"
@@ -268,10 +258,41 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   type="number"
                   min="1"
                   max="5"
+                  step="1"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.energy ?? ""}
+                  placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.energy}`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_sleepHours">
+                  Horas de sueño — alerta solo staff (umbral &lt;)
+                </Label>
+                <Input
+                  id="wellness_sleepHours"
+                  name="wellness_sleepHours"
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="1"
+                  defaultValue={staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""}
+                  placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.sleepHours}`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wellness_sleepQuality">
+                  Calidad del sueño — alerta solo staff (umbral ≤)
+                </Label>
+                <Input
+                  id="wellness_sleepQuality"
+                  name="wellness_sleepQuality"
+                  type="number"
+                  min="1"
+                  max="5"
+                  step="1"
                   defaultValue={
-                    staffContext.activeTeam.wellnessLimits?.energy ?? ""
+                    staffContext.activeTeam.wellnessLimits?.sleepQuality ?? ""
                   }
-                  placeholder="Ej: 2"
+                  placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.sleepQuality}`}
                 />
               </div>
             </div>
@@ -296,6 +317,19 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
               showInheritToggle
               inheritChecked={inheritsClubAgePolicy}
             />
+          </div>
+
+          <div className="border-t border-border-secondary pt-6">
+            <h3 className="text-sm font-semibold text-text-primary">
+              Consentimiento de recordatorios
+            </h3>
+            <p className="mt-1 mb-4 text-sm text-text-secondary">
+              Valores por defecto del equipo según el tramo de edad. El estado
+              por jugador (opt-in, revocación, consentimiento del tutor) se
+              gestiona en la ficha del jugador. La suscripción push es solo
+              transporte.
+            </p>
+            <ReminderConsentPolicyFields policy={reminderConsentPolicy} />
           </div>
 
           <Button type="submit">Guardar configuración</Button>

@@ -1,8 +1,9 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
+import { DEFAULT_NEW_TEAM_WELLNESS_LIMITS } from "@repo/database/wellness-limits";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -128,6 +129,7 @@ export async function createTeam(
               parsed.data.teamCategory && parsed.data.teamCategory.length > 0
                 ? parsed.data.teamCategory
                 : null,
+            wellnessLimits: DEFAULT_NEW_TEAM_WELLNESS_LIMITS as Prisma.InputJsonValue,
             forms: {
               create: defaultAssignments,
             },

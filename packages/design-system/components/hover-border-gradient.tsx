@@ -1,3 +1,9 @@
+/**
+ * QUARANTINED (no-new-usage) — decorative Aceternity-style export.
+ * Do not add new product call sites. Prefer regenerable primitives (`components/ui`)
+ * and semantic tokens, or keep decoration app-local under the consuming app.
+ * Kept in place for import stability; see ADR 0001 and `.scratch/jes-40-quarantine-ds/map.md`.
+ */
 "use client";
 import React, { useEffect, useState } from "react";
 
@@ -24,6 +30,9 @@ type HoverBorderGradientProps<T extends React.ElementType> =
       keyof HoverBorderGradientOwnProps<T> | "children" | "className"
     >;
 
+/**
+ * @deprecated Quarantined decorative export — no-new-usage. Prefer primitives/tokens or app-local décor.
+ */
 export function HoverBorderGradient<T extends React.ElementType = "button">({
   children,
   containerClassName,

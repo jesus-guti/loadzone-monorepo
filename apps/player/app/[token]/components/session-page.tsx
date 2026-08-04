@@ -28,12 +28,16 @@ import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { InjuryReportForm } from "./injury-report-form";
 import {
-  DEFAULT_AGE_BAND,
   FOCUS_COPY,
   shouldShowAssistedPresence,
   shouldShowCareSilentNote,
   type AgeBand,
 } from "../lib/focus-copy";
+import { toFocusAgeBand } from "../lib/age-band";
+
+
+type PolicyAgeBand = "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
+
 
 type PlayerFormTemplate = {
   readonly id: string;
@@ -70,9 +74,14 @@ type SessionPageProperties = {
   } | null;
   readonly preTemplate: PlayerFormTemplate | null;
   readonly postTemplate: PlayerFormTemplate | null;
-  /** Policy-resolved band mapped to Focus-frame keys — never hard-coded ages in UI. */
-  readonly ageBand?: AgeBand;
+  /** Resolved from Team/Club Age Band policy — never hard-coded ages in UI. */
+  readonly ageBand: PolicyAgeBand;
   readonly parentalSupervisionActive: boolean;
+  readonly pushConsent: {
+    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" | "blocked" | "needs_guardian_consent";
+    canSubscribe: boolean;
+    canOptOut: boolean;
+  };
 };
 
 function formatShortDate(value: Date): string {
@@ -98,9 +107,11 @@ export function SessionPage({
   selectedSession,
   preTemplate,
   postTemplate,
-  ageBand = DEFAULT_AGE_BAND,
+  ageBand,
   parentalSupervisionActive,
+  pushConsent,
 }: SessionPageProperties) {
+  const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
   const router = useRouter();
   const pathname = usePathname();
@@ -115,6 +126,7 @@ export function SessionPage({
   const [editingPre, setEditingPre] = useState(false);
   const [editingPost, setEditingPost] = useState(false);
   const [streakCount, setStreakCount] = useState(currentStreak);
+  const [streakRestarted, setStreakRestarted] = useState(false);
   const [injuryOpen, setInjuryOpen] = useState(false);
   const [careTriggered, setCareTriggered] = useState(false);
 
@@ -129,6 +141,7 @@ export function SessionPage({
     setEditingPre(false);
     setEditingPost(false);
     setStreakCount(currentStreak);
+    setStreakRestarted(false);
     setShowDateEdit(false);
     setCareTriggered(false);
   }, [selectedDate, selectedEntry, currentStreak]);
@@ -136,31 +149,42 @@ export function SessionPage({
   const isTodaySelected = date === todayIso;
 
   const handlePreComplete = useCallback(
-    (result?: { careTriggered?: boolean }) => {
-      const shouldIncreaseStreak = !preCompleted && isTodaySelected;
+    (result?: {
+      careTriggered?: boolean;
+      currentStreak?: number;
+      restarted?: boolean;
+    }) => {
       setPreCompleted(true);
       setEditingPre(false);
       setActiveTab("post");
       if (result?.careTriggered) {
         setCareTriggered(true);
       }
-      if (shouldIncreaseStreak) {
-        setStreakCount((previous) => Math.max(previous, currentStreak + 1));
+      if (typeof result?.currentStreak === "number") {
+        setStreakCount(result.currentStreak);
+        setStreakRestarted(Boolean(result.restarted));
       }
       startTransition(() => {
         router.refresh();
       });
     },
-    [currentStreak, isTodaySelected, preCompleted, router]
+    [router]
   );
 
-  const handlePostComplete = useCallback(() => {
-    setPostCompleted(true);
-    setEditingPost(false);
-    startTransition(() => {
-      router.refresh();
-    });
-  }, [router]);
+  const handlePostComplete = useCallback(
+    (result?: { currentStreak?: number; restarted?: boolean }) => {
+      setPostCompleted(true);
+      setEditingPost(false);
+      if (typeof result?.currentStreak === "number") {
+        setStreakCount(result.currentStreak);
+        setStreakRestarted(Boolean(result.restarted));
+      }
+      startTransition(() => {
+        router.refresh();
+      });
+    },
+    [router]
+  );
 
   const handleDateChange = useCallback(
     (nextDate: string) => {
@@ -187,7 +211,7 @@ export function SessionPage({
   const firstName = useMemo(() => playerName.split(" ")[0], [playerName]);
   const allDone = preCompleted && postCompleted;
   const showCelebration = allDone && !editingPre && !editingPost;
-  const showCareNote = shouldShowCareSilentNote(ageBand, careTriggered);
+  const showCareNote = shouldShowCareSilentNote(focusAgeBand, careTriggered);
 
   return (
     <div
@@ -232,7 +256,7 @@ export function SessionPage({
           ) : null}
         </div>
 
-        {shouldShowAssistedPresence(ageBand) ? (
+        {shouldShowAssistedPresence(focusAgeBand) ? (
           <p className="text-sm text-text-secondary">
             {FOCUS_COPY.assistedPresence}
           </p>
@@ -267,15 +291,22 @@ export function SessionPage({
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center gap-4 px-4 py-12 text-center">
             <h2 className="text-3xl font-semibold tracking-tight text-text-primary">
-              {FOCUS_COPY.completionTitle[ageBand]}
+              {FOCUS_COPY.completionTitle[focusAgeBand]}
             </h2>
             <p className="text-base text-text-secondary">
-              {FOCUS_COPY.completionBody[ageBand]}
+              {FOCUS_COPY.completionBody[focusAgeBand]}
             </p>
             {isTodaySelected && streakCount > 0 ? (
-              <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
-                {FOCUS_COPY.streakCalm(streakCount)}
-              </span>
+              <div className="flex flex-col items-center gap-1">
+                <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
+                  {FOCUS_COPY.streakCalm(streakCount)}
+                </span>
+                {streakRestarted ? (
+                  <p className="text-sm text-text-secondary">
+                    {FOCUS_COPY.streakRestart}
+                  </p>
+                ) : null}
+              </div>
             ) : !isTodaySelected ? (
               <p className="text-sm text-text-tertiary">
                 {FOCUS_COPY.pastDateDone}
@@ -305,7 +336,15 @@ export function SessionPage({
               </Button>
             </div>
           </div>
-          {isTodaySelected ? <PushPrompt token={token} apiUrl={apiUrl} /> : null}
+          {isTodaySelected ? (
+            <PushPrompt
+              token={token}
+              apiUrl={apiUrl}
+              uiMode={pushConsent.uiMode}
+              canSubscribe={pushConsent.canSubscribe}
+              canOptOut={pushConsent.canOptOut}
+            />
+          ) : null}
         </div>
       ) : (
         <Tabs
@@ -376,7 +415,7 @@ export function SessionPage({
                 token={token}
                 date={date}
                 teamSessionId={selectedSession?.id ?? null}
-                ageBand={ageBand}
+                ageBand={focusAgeBand}
                 template={preTemplate}
                 onComplete={handlePreComplete}
               />
@@ -407,7 +446,7 @@ export function SessionPage({
                 token={token}
                 date={date}
                 teamSessionId={selectedSession?.id ?? null}
-                ageBand={ageBand}
+                ageBand={focusAgeBand}
                 template={postTemplate}
                 onComplete={handlePostComplete}
               />

@@ -3,11 +3,16 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  resolvePushConsent,
+  type PlayerReminderConsentState,
+} from "@repo/database/reminder-consent";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
-import { toFocusAgeBand } from "./lib/age-band";
 import {
   isPrototypeLabToken,
   parseBand,
@@ -111,14 +116,17 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       id: true,
       name: true,
       currentStreak: true,
+      streakSeasonId: true,
       teamId: true,
       dateOfBirth: true,
       ageBandOverride: true,
+      reminderConsentState: true,
       team: {
         select: {
           name: true,
           timezone: true,
           ageBandPolicy: true,
+          reminderConsentPolicy: true,
           club: {
             select: {
               ageBandPolicy: true,
@@ -152,6 +160,15 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
               },
             },
           },
+          seasons: {
+            where: {
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
+            orderBy: { startDate: "desc" },
+            take: 1,
+            select: { id: true },
+          },
         },
       },
     },
@@ -171,6 +188,25 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     dateOfBirth: player.dateOfBirth,
     ageBandOverride: player.ageBandOverride,
     teamTimezone: player.team.timezone,
+  });
+  const { policy: reminderConsentPolicy } =
+    resolveEffectiveReminderConsentPolicy({
+      teamPolicy: player.team.reminderConsentPolicy,
+    });
+  const subscriptionCount = await database.pushSubscription.count({
+    where: { playerId: player.id },
+  });
+  const pushConsent = resolvePushConsent({
+    resolvedAge,
+    reminderConsentPolicy,
+    playerConsentState:
+      player.reminderConsentState as PlayerReminderConsentState,
+    hasActiveSubscription: subscriptionCount > 0,
+  });
+  const displayStreak = effectiveCurrentStreak({
+    currentStreak: player.currentStreak,
+    streakSeasonId: player.streakSeasonId,
+    activeSeasonId: player.team.seasons[0]?.id ?? null,
   });
 
   const selectedDate = resolveSelectedDate(date);
@@ -294,11 +330,16 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       token={token}
       playerName={player.name}
       teamName={player.team.name}
-      currentStreak={player.currentStreak}
+      currentStreak={displayStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
-      ageBand={toFocusAgeBand(resolvedAge.ageBand)}
+      ageBand={resolvedAge.ageBand}
       parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
+      pushConsent={{
+        uiMode: pushConsent.uiMode,
+        canSubscribe: pushConsent.canSubscribe,
+        canOptOut: pushConsent.canOptOut,
+      }}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession

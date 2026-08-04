@@ -28,6 +28,7 @@ export type StaffTeamRow = {
   postSessionReminderMinutes: number | null;
   wellnessLimits: unknown;
   ageBandPolicy: unknown;
+  reminderConsentPolicy: unknown;
 };
 
 export type StaffSeasonRow = {
@@ -67,6 +68,7 @@ export function createPrismaStaffDataAdapter(): StaffDataAdapter {
             postSessionReminderMinutes: true,
             wellnessLimits: true,
             ageBandPolicy: true,
+            reminderConsentPolicy: true,
           },
           orderBy: { name: "asc" },
         }),

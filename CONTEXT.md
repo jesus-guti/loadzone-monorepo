@@ -50,7 +50,8 @@ Check-in mode for the **Assisted** **Age Band**: an adult is expected present; t
 Separate see / receive / escalate capabilities for a **Guardian** — not a joint family co-app, and not soft-approval of routine **DailyEntry**. Guardian visibility is a **care slice** only (completion status, escalated flags, injury-relevant signals); not load ratios, staff notes, or peer comparison.
 
 **Reminder Consent**:
-Who opts in for Player reminders and Guardian miss / **Care Alert** receives. Defaults vary by **Age Band** and remain staff-configurable.
+Who opts in for Player reminders and Guardian miss / **Care Alert** receives. Defaults vary by **Age Band** (Assisted / Guided / Independent youth below adult majority / Independent majority) and remain staff-configurable on the **Team**. Per-**Player** compact consent state is the ledger; **PushSubscription** is transport only.
+_Avoid_: Treating subscription presence alone as the consent record.
 
 **Anti-nag Policy**:
 Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
@@ -69,17 +70,34 @@ Care path for injury / care-relevant wellness signals, distinct from miss remind
 Guardian-facing care-slice signal (injury / care-relevant). Never includes load ratios or ACWR-style staff metrics.
 _Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendance GPS as care framing.
 
+**BodyRegion**:
+A named anatomical zone from LoadZone’s fixed injury catalog (with anatomical left/right in the id where needed), used to locate injuries on the staff body map. Optional free-text detail may refine a region; it does not create a new catalog entry.
+_Avoid_: Freehand body-part strings as the primary location; medical coding systems (OSICS/ICD) as the catalog.
+
+**Injury**:
+A staff-authored official injury period for a **Player**, located on one or more **BodyRegion**s, with a required start date and optional inclusive end date. While active it drives `Player.status` `INJURED` and wellness check-in obligation exemption (voluntary **DailyEntry** still allowed).
+_Avoid_: **InjuryReport** as the name of the official period; EMR “case”; treating player self-report as the official period.
+
+**Pain Alert**:
+A player-submitted intake signal (aviso) that something hurts — not an official **Injury**. Does not by itself set `INJURED` or exempt wellness; staff may promote it to an **Injury**.
+_Avoid_: Calling a Pain Alert an injury period or “lesión oficial”.
+
+
 ## Relationships
 
 - A **Club** has many **Teams** (and club-scoped exercises and other shared entities).
 - A **Team** belongs to a **Club** and has many **Seasons** and many **Players**.
 - A **Season** belongs to a **Team**; it groups that season’s **DailyEntry** and **PlayerDailyStats**.
-- A **Player** belongs to a **Team**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season).
+- A **Player** belongs to a **Team**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
 - A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
+- An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
+- A **Pain Alert** belongs to a **Player** and is triage input for staff; it is not an **Injury** until staff promotes it.
+
 
 ## Example dialogue
 

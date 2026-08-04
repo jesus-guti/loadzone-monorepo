@@ -1,6 +1,10 @@
 "use server";
 
 import { database } from "@repo/database";
+import {
+  findActiveSeasonIdForTeam,
+  recomputeAndPersistPlayerStreak,
+} from "@repo/database/recompute-player-streak";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentStaffContext } from "@/lib/auth-context";
@@ -32,7 +36,7 @@ export async function updateInjury(formData: FormData): Promise<void> {
       id: parsed.data.injuryId,
       teamId: staffContext.activeTeam.id,
     },
-    select: { id: true },
+    select: { id: true, playerId: true },
   });
 
   if (!injury) {
@@ -56,5 +60,20 @@ export async function updateInjury(formData: FormData): Promise<void> {
     },
   });
 
+  const seasonId =
+    staffContext.activeSeason?.id ??
+    (await findActiveSeasonIdForTeam(
+      staffContext.activeTeam.id,
+      new Date()
+    ));
+
+  if (seasonId) {
+    await recomputeAndPersistPlayerStreak({
+      playerId: injury.playerId,
+      seasonId,
+    });
+  }
+
   revalidatePath("/injuries");
+  revalidatePath(`/players/${injury.playerId}`);
 }
