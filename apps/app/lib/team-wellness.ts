@@ -1,4 +1,5 @@
 import { database, type PlayerStatus, type RiskLevel } from "@repo/database";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
 
 export type TeamWellnessPlayer = {
@@ -136,6 +137,7 @@ export async function getTeamWellnessWorkspaceData(
       name: true,
       status: true,
       currentStreak: true,
+      streakSeasonId: true,
       entries: {
         where: activeSeason
           ? { seasonId: activeSeason.id, date: today }
@@ -173,7 +175,11 @@ export async function getTeamWellnessWorkspaceData(
     imageUrl: resolveStorageUrl(player.imageUrl),
     name: player.name,
     status: player.status,
-    currentStreak: player.currentStreak,
+    currentStreak: effectiveCurrentStreak({
+      currentStreak: player.currentStreak,
+      streakSeasonId: player.streakSeasonId,
+      activeSeasonId: activeSeason?.id ?? null,
+    }),
     entries: player.entries.map((entry) => ({
       date: entry.date,
       recovery: entry.recovery,

@@ -74,5 +74,6 @@ describe("FOCUS_COPY calm completion", () => {
     expect(FOCUS_COPY.completionTitle.guided).toBe("¡Listo!");
     expect(FOCUS_COPY.completionBody.guided).toBe("Gracias.");
     expect(FOCUS_COPY.streakCalm(3)).toBe("3 días");
+    expect(FOCUS_COPY.streakRestart).toBe("Empezamos de nuevo.");
   });
 });
