@@ -28,7 +28,7 @@ describe("team wellness workspace utils", () => {
     energy: 2,
     soreness: 4,
     sleepHours: 6,
-    sleepQuality: null,
+    sleepQuality: 2,
   };
 
   it("marca alerta cuando el wellness cae por debajo de los limites", () => {
@@ -40,6 +40,7 @@ describe("team wellness workspace utils", () => {
           energy: 2,
           soreness: 4,
           sleepHours: 5,
+          sleepQuality: 2,
           rpe: 7,
           duration: 90,
           preFilledAt: new Date("2026-05-03T07:00:00Z"),
@@ -50,11 +51,40 @@ describe("team wellness workspace utils", () => {
     });
 
     expect(getWellnessAlerts(player.entries[0], wellnessLimits)).toEqual([
-      "Recuperación",
-      "Energía",
-      "Agujetas",
-      "Sueño",
+      { metric: "recovery", careRelevant: false, label: "Recuperación" },
+      { metric: "energy", careRelevant: false, label: "Energía" },
+      { metric: "soreness", careRelevant: true, label: "Agujetas" },
+      { metric: "sleepHours", careRelevant: false, label: "Sueño" },
+      { metric: "sleepQuality", careRelevant: false, label: "Calidad del sueño" },
     ]);
+    expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
+  });
+
+  it("distingue flags care-relevant de staff-only y no mezcla ACWR", () => {
+    const player = createPlayer({
+      entries: [
+        {
+          date: new Date("2026-05-03T00:00:00Z"),
+          recovery: 3,
+          energy: 4,
+          soreness: 5,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: new Date("2026-05-03T07:00:00Z"),
+          postFilledAt: new Date("2026-05-03T21:00:00Z"),
+          physioAlert: false,
+        },
+      ],
+      stats: [{ riskLevel: "HIGH", acwr: 1.6 }],
+    });
+
+    const flags = getWellnessAlerts(player.entries[0], wellnessLimits);
+    expect(flags.filter((flag) => flag.careRelevant)).toEqual([
+      { metric: "soreness", careRelevant: true, label: "Agujetas" },
+    ]);
+    expect(flags.some((flag) => flag.metric === "recovery")).toBe(true);
     expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
   });
 
@@ -69,6 +99,7 @@ describe("team wellness workspace utils", () => {
             energy: 3,
             soreness: 2,
             sleepHours: 7,
+            sleepQuality: 4,
             rpe: 5,
             duration: 80,
             preFilledAt: new Date("2026-05-03T07:00:00Z"),
@@ -86,6 +117,7 @@ describe("team wellness workspace utils", () => {
             energy: 4,
             soreness: 2,
             sleepHours: 8,
+            sleepQuality: 4,
             rpe: null,
             duration: null,
             preFilledAt: new Date("2026-05-03T07:00:00Z"),

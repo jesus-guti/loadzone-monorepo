@@ -1,16 +1,89 @@
 ---
-description: Team-centric shell guidance for the admin app.
+description: Team-centric admin shell — IA, invisible data surfaces, cards as exceptions, progressive interaction.
 globs: apps/app/{app/(authenticated),lib}/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
 # LoadZone Admin Shell
 
+Staff UI exists for dense, calm, predictable **operational clarity** — not sports-marketing chrome or
+issue-tracker bureaucracy. Primary jobs (priority order): monitor team wellness and risk; operate
+sessions and training content; manage roster, season, and configuration.
+
+## Team-centric shell
+
 - The authenticated admin shell must be centered on a single `activeTeam`.
 - Resolve `activeTeam` from one central server helper and validate it against accessible teams.
 - Do not introduce new daily operational views that mix multiple teams in the same screen.
-- Desktop sidebar and mobile bottom navigation must share the same primary navigation config.
-- Keep `Dashboard`, `Wellness`, `Sesiones`, and `Configuración` as the only primary destinations.
-- Treat `Players`, `Seasons`, `Injuries`, and `Analysis` as secondary surfaces reachable from menus or contextual links.
 - Prefer club/team branding in the shell with `Team.logoUrl` first and `Club.logoUrl` as fallback.
-- Keep shell-specific mobile navigation in `apps/app`; shared primitives in `packages/design-system` must remain app-agnostic.
+- Keep shell-specific mobile navigation in `apps/app`; shared primitives in `packages/design-system`
+  must remain app-agnostic.
+
+## Navigation destinations
+
+Desktop sidebar and mobile bottom navigation must share the **same primary navigation config**.
+
+**Primary** (persistent chrome):
+
+- Inicio (Dashboard)
+- Wellness
+- Sesiones
+- Configuración
+
+**Secondary** (menus / contextual links — not primary chrome growth without evidence):
+
+- Jugadores
+- Ejercicios
+- Lesiones
+- Temporadas
+- Análisis IA
+
+## Invisible data surfaces (default)
+
+Default operational surfaces are **invisible horizontal lists and tables**. Canonical live reference:
+exercise library (`ExerciseLibraryList`, `ExerciseLibraryListToolbar`, `ExerciseLibraryGroup` / rows).
+DD-04 throwaway layout is **rejected** — do not clone it; keep production chrome as baseline.
+
+- No four-sided enclosing box around the whole list or table.
+- Row separation is primarily horizontal (`border-t` / table row rules); no vertical list-frame borders.
+- Section / column group labels: small, `uppercase`, wide tracking, `text-text-secondary`.
+- Library / list toolbars: underline language (`border-b border-border-secondary`), no card chrome,
+  no structural shadow (`shadow-none`).
+- Tables from `packages/design-system`: do not wrap in a four-sided bordered frame. Punctual empty
+  states may use `border-dashed` as in exercise empty screens.
+- The minimal-frame rule applies to the **list/table chrome**; rows may still carry rich content
+  (media, badges, actions).
+
+Elevation only on **floating** surfaces (dialogs, popovers, menus, tooltips).
+
+## Cards (exceptions only)
+
+Cards / framed summary panels are **exceptions**, not the default container.
+
+Allowed only for:
+
+1. Floating elevated UI (overlays and ephemeral chrome).
+2. A single interactive decision widget where removing frame hurts interaction.
+3. A compact risk/status callout that does **not** wrap a list or table.
+
+Not for libraries, tables, or multi-row operational lists. Do not treat KPI walls as the default layout.
+
+## Interaction
+
+- Progressive, not Linear-clone: predictable nav, dense keyboard-friendly controls, search/filter/sort
+  on library and list surfaces, clear focus + pending feedback.
+- Bulk actions are **opt-in per surface** when a concrete multi-item workflow exists — not global
+  multi-select doctrine.
+- Refuse Linear product metaphors (issues, cycles, ticket IDs, issue-tracker copy) in staff UX.
+- Domain vocabulary stays LoadZone / `CONTEXT.md`.
+
+## Theme, color, icons
+
+- Default **light**; dark remains a preference.
+- Color for **state, risk, and affordance** — semantic tokens (`brand`, `premium`, `danger`,
+  text/bg/border scales). No decorative multi-accent chrome on operational surfaces.
+- Phosphor; admin dense chrome default weight **`fill`**.
+
+## Sources
+
+Design-direction SPEC §2 · admin-experience-principles.md (DD-01).

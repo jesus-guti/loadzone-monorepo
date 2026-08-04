@@ -1,6 +1,12 @@
 "use server";
 
 import { database } from "@repo/database";
+import {
+  evaluateImmediateWellnessFlags,
+  parseWellnessLimits,
+  type ImmediateWellnessFlag,
+  type WellnessLimits,
+} from "@repo/database/wellness-limits";
 import { z } from "zod";
 
 const submissionSchema = z.object({
@@ -14,6 +20,8 @@ type ActionResult = {
   success: boolean;
   error?: string;
   physioAlert?: boolean;
+  /** Immediate wellness flags at submit time (Care Alert delivery is JES-47). */
+  wellnessFlags?: ImmediateWellnessFlag[];
 };
 
 type ProjectedMetrics = {
@@ -29,6 +37,7 @@ type ProjectedMetrics = {
 type SubmissionContext = {
   playerId: string;
   seasonId: string;
+  wellnessLimits: WellnessLimits | null;
   player: {
     currentStreak: number;
     longestStreak: number;
@@ -78,6 +87,7 @@ async function getPlayerWithSeason(
       longestStreak: true,
       team: {
         select: {
+          wellnessLimits: true,
           seasons: {
             where: {
               startDate: { lte: entryDate },
@@ -96,7 +106,12 @@ async function getPlayerWithSeason(
   const seasonId = player.team.seasons[0]?.id;
   if (!seasonId) return null;
 
-  return { playerId: player.id, seasonId, player };
+  return {
+    playerId: player.id,
+    seasonId,
+    wellnessLimits: parseWellnessLimits(player.team.wellnessLimits),
+    player,
+  };
 }
 
 async function updateStreak(
@@ -296,6 +311,10 @@ export async function savePreSession(
     const formSubmissionId = await upsertFormSubmission(parsedSubmission);
     const metrics = parsedSubmission.metrics;
     const physioAlert = metrics.soreness === 5;
+    const wellnessFlags = evaluateImmediateWellnessFlags(
+      metrics,
+      parsedSubmission.ctx.wellnessLimits
+    );
 
     await database.dailyEntry.upsert({
       where: {
@@ -338,7 +357,7 @@ export async function savePreSession(
       parsedSubmission.entryDate
     );
 
-    return { success: true, physioAlert };
+    return { success: true, physioAlert, wellnessFlags };
   } catch {
     return { success: false, error: "Error al guardar. Inténtalo de nuevo." };
   }
