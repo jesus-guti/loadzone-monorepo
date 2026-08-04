@@ -229,7 +229,9 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   min="1"
                   max="5"
                   step="1"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.soreness ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.soreness ?? ""
+                  }
                   placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.soreness}`}
                 />
               </div>
@@ -244,7 +246,9 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   min="0"
                   max="10"
                   step="1"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.recovery ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.recovery ?? ""
+                  }
                   placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.recovery}`}
                 />
               </div>
@@ -259,7 +263,9 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   min="1"
                   max="5"
                   step="1"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.energy ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.energy ?? ""
+                  }
                   placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.energy}`}
                 />
               </div>
@@ -274,7 +280,9 @@ const SettingsPage = async ({ searchParams }: SettingsPageProperties) => {
                   min="0"
                   max="24"
                   step="1"
-                  defaultValue={staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""}
+                  defaultValue={
+                    staffContext.activeTeam.wellnessLimits?.sleepHours ?? ""
+                  }
                   placeholder={`Ej: ${WELLNESS_LIMIT_PLACEHOLDERS.sleepHours}`}
                 />
               </div>

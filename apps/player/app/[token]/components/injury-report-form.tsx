@@ -17,7 +17,9 @@ export function InjuryReportForm({ token }: InjuryReportFormProperties) {
 
   useEffect(() => {
     if (state.success) {
-      toast.success("Lesión reportada");
+      toast.success(
+        state.careConfirmMessage ?? "Tu equipo ya lo tiene"
+      );
     }
 
     if (state.error) {

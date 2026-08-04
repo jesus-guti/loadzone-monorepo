@@ -2,6 +2,10 @@
 
 import { database } from "@repo/database";
 import {
+  evaluateAndEmitCareAlert,
+  PLAYER_CARE_CONFIRM_MESSAGE,
+} from "@repo/database/care-alerts";
+import {
   civilDateToUtcMidnight,
   isDayObligationsComplete,
   resolveDayObligations,
@@ -14,6 +18,7 @@ import {
   type ImmediateWellnessFlag,
   type WellnessLimits,
 } from "@repo/database/wellness-limits";
+import type { AgeBand } from "@repo/database/age-band-policy";
 import { z } from "zod";
 
 const submissionSchema = z.object({
@@ -29,8 +34,11 @@ type ActionResult = {
   physioAlert?: boolean;
   currentStreak?: number;
   restarted?: boolean;
-  /** Immediate wellness flags at submit time (Care Alert delivery is JES-47). */
+  /** Immediate wellness flags at submit time. */
   wellnessFlags?: ImmediateWellnessFlag[];
+  /** Calm Player confirm when a care flag is present (not Guardian delivery). */
+  careConfirm?: boolean;
+  careConfirmMessage?: string;
 };
 
 type ProjectedMetrics = {
@@ -43,12 +51,24 @@ type ProjectedMetrics = {
   duration?: number;
 };
 
+type CareAlertPlayerContext = {
+  playerId: string;
+  playerDisplayName: string;
+  teamTimezone: string;
+  teamAgeBandPolicy: unknown;
+  clubAgeBandPolicy: unknown;
+  reminderConsentPolicy: unknown;
+  dateOfBirth: Date | null;
+  ageBandOverride: AgeBand | null;
+};
+
 type SubmissionContext = {
   playerId: string;
   seasonId: string;
   teamId: string;
   timeZone: string;
   wellnessLimits: WellnessLimits | null;
+  care: CareAlertPlayerContext;
 };
 
 type FormQuestionDefinition = {
@@ -92,10 +112,20 @@ async function getPlayerWithSeason(
     select: {
       id: true,
       teamId: true,
+      name: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
       team: {
         select: {
           timezone: true,
           wellnessLimits: true,
+          ageBandPolicy: true,
+          reminderConsentPolicy: true,
+          club: {
+            select: {
+              ageBandPolicy: true,
+            },
+          },
           seasons: {
             where: {
               startDate: { lte: entryDate },
@@ -115,12 +145,24 @@ async function getPlayerWithSeason(
   const seasonId = player.team.seasons[0]?.id;
   if (!seasonId) return null;
 
+  const timeZone = player.team.timezone || "Europe/Madrid";
+
   return {
     playerId: player.id,
     seasonId,
     teamId: player.teamId,
-    timeZone: player.team.timezone || "Europe/Madrid",
+    timeZone,
     wellnessLimits: parseWellnessLimits(player.team.wellnessLimits),
+    care: {
+      playerId: player.id,
+      playerDisplayName: player.name,
+      teamTimezone: timeZone,
+      teamAgeBandPolicy: player.team.ageBandPolicy,
+      clubAgeBandPolicy: player.team.club.ageBandPolicy,
+      reminderConsentPolicy: player.team.reminderConsentPolicy,
+      dateOfBirth: player.dateOfBirth,
+      ageBandOverride: player.ageBandOverride,
+    },
   };
 }
 
@@ -422,12 +464,25 @@ export async function savePreSession(
 
     const streak = await maybePersistStreak(parsedSubmission);
 
+    const careResult = await evaluateAndEmitCareAlert({
+      ...parsedSubmission.ctx.care,
+      signals: {
+        physioAlert,
+        wellnessFlags,
+      },
+      checkInCompleted: true,
+    });
+
     return {
       success: true,
       physioAlert,
       wellnessFlags,
       currentStreak: streak?.currentStreak,
       restarted: streak?.restarted,
+      careConfirm: careResult.careFlagPresent,
+      careConfirmMessage: careResult.careFlagPresent
+        ? PLAYER_CARE_CONFIRM_MESSAGE
+        : undefined,
     };
   } catch {
     return { success: false, error: "Error al guardar. Inténtalo de nuevo." };

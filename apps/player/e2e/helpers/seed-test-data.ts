@@ -175,6 +175,9 @@ export async function cleanupTestData(ctx: SeedContext): Promise<void> {
   const playerIds = ctx.players.map((p) => p.id);
 
   await db.pushDispatch.deleteMany({ where: { playerId: { in: playerIds } } });
+  await db.careAlertDispatch.deleteMany({
+    where: { playerId: { in: playerIds } },
+  });
   await db.pushSubscription.deleteMany({ where: { playerId: { in: playerIds } } });
   await db.sessionAttendance.deleteMany({ where: { playerId: { in: playerIds } } });
   await db.aiSuggestion.deleteMany({ where: { playerId: { in: playerIds } } });

@@ -1,6 +1,10 @@
 "use server";
 
 import { database } from "@repo/database";
+import {
+  evaluateAndEmitCareAlert,
+  PLAYER_CARE_CONFIRM_MESSAGE,
+} from "@repo/database/care-alerts";
 import { z } from "zod";
 
 const injurySchema = z.object({
@@ -14,6 +18,8 @@ const injurySchema = z.object({
 type InjuryActionResult = {
   success: boolean;
   error?: string;
+  careConfirm?: boolean;
+  careConfirmMessage?: string;
 };
 
 export async function saveInjuryReport(
@@ -37,7 +43,22 @@ export async function saveInjuryReport(
       where: { token: parsed.data.token, isArchived: false },
       select: {
         id: true,
+        name: true,
         teamId: true,
+        dateOfBirth: true,
+        ageBandOverride: true,
+        team: {
+          select: {
+            timezone: true,
+            ageBandPolicy: true,
+            reminderConsentPolicy: true,
+            club: {
+              select: {
+                ageBandPolicy: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -45,15 +66,17 @@ export async function saveInjuryReport(
       return { success: false, error: "Jugador no encontrado." };
     }
 
+    const bodyPart =
+      parsed.data.bodyPart && parsed.data.bodyPart.length > 0
+        ? parsed.data.bodyPart
+        : null;
+
     await database.injuryReport.create({
       data: {
         playerId: player.id,
         teamId: player.teamId,
         title: parsed.data.title,
-        bodyPart:
-          parsed.data.bodyPart && parsed.data.bodyPart.length > 0
-            ? parsed.data.bodyPart
-            : null,
+        bodyPart,
         severity: parsed.data.severity,
         description:
           parsed.data.description && parsed.data.description.length > 0
@@ -63,7 +86,32 @@ export async function saveInjuryReport(
       },
     });
 
-    return { success: true };
+    // Staff-authored Injury is intentionally not hooked (JES-47 HITL C).
+    const careResult = await evaluateAndEmitCareAlert({
+      playerId: player.id,
+      playerDisplayName: player.name,
+      teamTimezone: player.team.timezone,
+      teamAgeBandPolicy: player.team.ageBandPolicy,
+      clubAgeBandPolicy: player.team.club.ageBandPolicy,
+      reminderConsentPolicy: player.team.reminderConsentPolicy,
+      dateOfBirth: player.dateOfBirth,
+      ageBandOverride: player.ageBandOverride,
+      signals: {
+        painAlert: {
+          bodyPart,
+          side: null,
+        },
+      },
+      checkInCompleted: false,
+    });
+
+    return {
+      success: true,
+      careConfirm: careResult.careFlagPresent,
+      careConfirmMessage: careResult.careFlagPresent
+        ? PLAYER_CARE_CONFIRM_MESSAGE
+        : undefined,
+    };
   } catch {
     return { success: false, error: "No se pudo guardar la lesión." };
   }

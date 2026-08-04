@@ -98,6 +98,12 @@ enum PushDispatchKind {
   POST_SESSION
 }
 
+/// Guardian Care Alert trigger class (miss reminders never use this enum).
+enum CareAlertTriggerClass {
+  INJURY_PAIN
+  CARE_RELEVANT_WELLNESS
+}
+
 /// Who triggered a miss-path reminder; auto and staff caps are independent (JES-48).
 enum PushDispatchOrigin {
   AUTOMATED
@@ -411,23 +417,24 @@ model Player {
   ageBandOverride  AgeBand?
   /// Compact Reminder Consent state; PushSubscription rows are transport only.
   reminderConsentState PlayerReminderConsentState @default(ELIGIBLE)
-  entries          DailyEntry[]
-  subscriptions    PushSubscription[]
-  stats            PlayerDailyStats[]
-  formSubmits      FormSubmission[]
-  injuries         InjuryReport[]
-  sessionLinks     TeamSessionPlayer[]
-  suggestions      AiSuggestion[]
-  attendance       SessionAttendance[]
-  excusedAbsences  ExcusedAbsence[]
-  status           PlayerStatus        @default(AVAILABLE)
-  isArchived       Boolean             @default(false)
-  currentStreak    Int                 @default(0)
-  longestStreak    Int                 @default(0)
-  streakSeasonId   String?
-  streakSeason     Season?             @relation("PlayerStreakSeason", fields: [streakSeasonId], references: [id], onDelete: SetNull)
-  createdAt        DateTime            @default(now())
-  pushDispatches   PushDispatch[]
+  entries             DailyEntry[]
+  subscriptions       PushSubscription[]
+  stats               PlayerDailyStats[]
+  formSubmits         FormSubmission[]
+  injuries            InjuryReport[]
+  sessionLinks        TeamSessionPlayer[]
+  suggestions         AiSuggestion[]
+  attendance          SessionAttendance[]
+  excusedAbsences     ExcusedAbsence[]
+  status              PlayerStatus        @default(AVAILABLE)
+  isArchived          Boolean             @default(false)
+  currentStreak       Int                 @default(0)
+  longestStreak       Int                 @default(0)
+  streakSeasonId      String?
+  streakSeason        Season?             @relation("PlayerStreakSeason", fields: [streakSeasonId], references: [id], onDelete: SetNull)
+  createdAt           DateTime            @default(now())
+  pushDispatches      PushDispatch[]
+  careAlertDispatches CareAlertDispatch[]
 
 
   @@index([teamId])
@@ -479,6 +486,23 @@ model PushDispatch {
 
   @@unique([teamSessionId, playerId, kind, origin])
   @@index([playerId, kind])
+}
+
+/// Durable Guardian Care Alert ledger (rate-limit key: player × class × civil day).
+/// Distinct from PushDispatch so miss reminders never share this path.
+model CareAlertDispatch {
+  id           String                @id @default(cuid())
+  playerId     String
+  player       Player                @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  triggerClass CareAlertTriggerClass
+  /// Civil calendar day in Team.timezone (stored as @db.Date).
+  civilDate    DateTime              @db.Date
+  /// Provisional allow-list payload snapshot (JES-49 hardens field graduation).
+  payload      Json
+  createdAt    DateTime              @default(now())
+
+  @@unique([playerId, triggerClass, civilDate])
+  @@index([playerId, civilDate])
 }
 
 model DailyEntry {
