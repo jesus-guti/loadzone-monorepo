@@ -56,6 +56,15 @@ alwaysApply: true
   do not wrap icons only for sizing.
 - Do not add `lucide-react`, `@heroicons/react`, or `@radix-ui/react-icons` in product code.
 
+## Quarantined decorative exports (no-new-usage)
+
+These shared modules are quarantined — still importable for stability, but **reject new product call sites**. Prefer regenerable primitives (`components/ui`), semantic tokens, or app-local décor (`globals.css` / feature-local components). Do not pull new Aceternity decorative components into `@repo/design-system` (the `@aceternity` registry key in `components.json` stays for historical reference only). Package boundary: [ADR 0001](../../docs/adr/0001-design-system-package-boundary.md); Wave 3 hygiene.
+
+- `packages/design-system/components/noise-background.tsx`
+- `packages/design-system/components/moving-border.tsx`
+- `packages/design-system/components/hover-border-gradient.tsx`
+- `packages/design-system/components/stateful-button.tsx`
+
 ## Package boundary and promotion (ADR 0001)
 
 - `@repo/design-system` = app-agnostic shared primitives and infrastructure only.

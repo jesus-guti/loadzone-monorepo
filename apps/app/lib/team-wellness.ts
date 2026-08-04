@@ -1,4 +1,5 @@
 import { database, type PlayerStatus, type RiskLevel } from "@repo/database";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
 
 export type TeamWellnessPlayer = {
@@ -13,6 +14,7 @@ export type TeamWellnessPlayer = {
     energy: number | null;
     soreness: number | null;
     sleepHours: number | null;
+    sleepQuality: number | null;
     rpe: number | null;
     duration: number | null;
     preFilledAt: Date | null;
@@ -136,6 +138,7 @@ export async function getTeamWellnessWorkspaceData(
       name: true,
       status: true,
       currentStreak: true,
+      streakSeasonId: true,
       entries: {
         where: activeSeason
           ? { seasonId: activeSeason.id, date: today }
@@ -148,6 +151,7 @@ export async function getTeamWellnessWorkspaceData(
           energy: true,
           soreness: true,
           sleepHours: true,
+          sleepQuality: true,
           rpe: true,
           duration: true,
           preFilledAt: true,
@@ -173,7 +177,11 @@ export async function getTeamWellnessWorkspaceData(
     imageUrl: resolveStorageUrl(player.imageUrl),
     name: player.name,
     status: player.status,
-    currentStreak: player.currentStreak,
+    currentStreak: effectiveCurrentStreak({
+      currentStreak: player.currentStreak,
+      streakSeasonId: player.streakSeasonId,
+      activeSeasonId: activeSeason?.id ?? null,
+    }),
     entries: player.entries.map((entry) => ({
       date: entry.date,
       recovery: entry.recovery,
@@ -183,6 +191,7 @@ export async function getTeamWellnessWorkspaceData(
         entry.sleepHours === null || entry.sleepHours === undefined
           ? null
           : Number(entry.sleepHours),
+      sleepQuality: entry.sleepQuality,
       rpe: entry.rpe,
       duration: entry.duration,
       preFilledAt: entry.preFilledAt,

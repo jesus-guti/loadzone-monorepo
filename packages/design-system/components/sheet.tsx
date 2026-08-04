@@ -5,7 +5,7 @@ import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@repo/design-system/lib/utils"
 import { Button } from "@repo/design-system/components/button"
-import { XIcon } from "@phosphor-icons/react/ssr"
+import { XIcon } from "@phosphor-icons/react/X"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />

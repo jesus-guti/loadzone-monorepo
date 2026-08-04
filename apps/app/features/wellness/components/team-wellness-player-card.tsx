@@ -101,11 +101,15 @@ export function TeamWellnessPlayerCard({
               ) : null}
               {wellnessAlerts.map((alert) => (
                 <Badge
-                  key={alert}
-                  className="rounded-md border-danger/40 text-danger"
-                  variant="outline"
+                  key={alert.metric}
+                  className={
+                    alert.careRelevant
+                      ? "rounded-md"
+                      : "rounded-md border-border-secondary text-text-secondary"
+                  }
+                  variant={alert.careRelevant ? "destructive" : "outline"}
                 >
-                  {alert}
+                  {alert.label}
                 </Badge>
               ))}
               {state === "NOT_COMPLETED" ? (

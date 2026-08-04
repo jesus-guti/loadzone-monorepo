@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/button";
-import { BellIcon, BellSlashIcon } from "@phosphor-icons/react";
+import { BellIcon } from "@phosphor-icons/react/Bell";
+import { BellSlashIcon } from "@phosphor-icons/react/BellSlash";
 import { useState, useEffect } from "react";
 import type { PushConsentUiMode } from "@repo/database/reminder-consent";
 import { env } from "@/env";
