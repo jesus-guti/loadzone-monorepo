@@ -82,6 +82,7 @@ export async function updateCurrentUserProfile(
     });
 
     revalidatePath("/");
+    revalidatePath("/settings/cuenta");
     revalidatePath("/settings");
 
     return {
