@@ -258,40 +258,6 @@ export async function updateTeamWellnessLimit(input: {
   }
 }
 
-export async function updateTeamAgeBandInherit(
-  useClubDefaults: boolean
-): Promise<SettingsFieldResult> {
-  try {
-    const staffContext = await requireActiveTeam();
-    if (!staffContext) {
-      return fail("Equipo no encontrado");
-    }
-
-    if (useClubDefaults) {
-      await database.team.update({
-        where: { id: staffContext.activeTeam.id },
-        data: { ageBandPolicy: Prisma.DbNull },
-      });
-    } else {
-      await database.team.update({
-        where: { id: staffContext.activeTeam.id },
-        data: {
-          ageBandPolicy: staffContext.activeTeam
-            .ageBandPolicy as Prisma.InputJsonValue,
-        },
-      });
-    }
-    revalidatePoliticas();
-    return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar la herencia de política."
-    );
-  }
-}
-
 export async function updateTeamAgeBandPolicyFromForm(
   formData: FormData
 ): Promise<SettingsFieldResult> {
