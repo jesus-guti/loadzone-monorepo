@@ -30,16 +30,21 @@ type EquipoFormProps = {
 
 function SettingsSection({
   title,
+  description,
   children,
 }: {
   readonly title: string;
+  readonly description?: string;
   readonly children: ReactNode;
 }) {
   return (
-    <section className="pt-8 first:pt-0">
-      <h2 className="font-medium text-[11px] text-text-secondary uppercase tracking-[0.16em]">
+    <section className="pt-8 first:pt-4">
+      <h2 className="font-medium text-xs text-text-secondary uppercase tracking-wide">
         {title}
       </h2>
+      {description ? (
+        <p className="mt-1 text-sm text-text-secondary">{description}</p>
+      ) : null}
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -78,7 +83,10 @@ export function EquipoForm({
 
   return (
     <div>
-      <SettingsSection title="Identidad">
+      <SettingsSection
+        description="Datos básicos del equipo activo."
+        title="Identidad"
+      >
         <SettingsRow htmlFor="prototype-category" label="Categoría">
           <Select
             value={category}
@@ -106,7 +114,10 @@ export function EquipoForm({
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title="Zona horaria">
+      <SettingsSection
+        description="Define el día local para check-ins y reportes."
+        title="Zona horaria"
+      >
         <SettingsRow htmlFor="prototype-timezone" label="Zona horaria">
           <Select
             value={timezone}
