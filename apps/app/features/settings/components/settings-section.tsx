@@ -1,21 +1,22 @@
 import type { ReactNode } from "react";
 
-type SettingsSectionProps = {
+type SettingsSectionProperties = {
   readonly title: string;
   readonly description?: string;
   readonly id?: string;
   readonly children: ReactNode;
 };
 
+/** Linear-style section: label + optional helper copy, no card chrome (JES-59). */
 export function SettingsSection({
   title,
   description,
   id,
   children,
-}: SettingsSectionProps) {
+}: SettingsSectionProperties) {
   return (
-    <section className="scroll-mt-28 pt-8 first:pt-4" id={id}>
-      <h2 className="font-medium text-xs text-text-secondary uppercase tracking-wide">
+    <section className="scroll-mt-24 pt-8 first:pt-4" id={id}>
+      <h2 className="font-medium text-text-secondary text-xs uppercase tracking-wide">
         {title}
       </h2>
       {description ? (
