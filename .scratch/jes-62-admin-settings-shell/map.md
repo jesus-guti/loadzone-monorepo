@@ -14,7 +14,7 @@ Production `/settings/*` under `(authenticated)`: settings sidebar replaces ops 
 | 1 | Consume JES-56 standing prefs + JES-58/59/60/61 resolutions as closed law | `auto` | Issue body + parent map |
 | 2 | Pathname-branch `GlobalSidebar`: settings chrome vs ops chrome (no route-group split of auth layout) | `auto` | Same `(authenticated)/layout` |
 | 3 | App-local `features/settings` section/row/content + `lib/settings-navigation.ts` + `lib/settings-volver.ts` | `auto` | ADR 0001; port proto structure |
-| 4 | Layout: `mx-10 mb-16 max-w-[640px] md:max-w-none` | `auto` | JES-56 layout law (fix prototype always-max-w) |
+| 4 | Layout: `mx-10 mb-16 max-w-[640px]` at all breakpoints | `auto` | User revoke 2026-08-05 — keep max-w on desktop too (supersedes tablet+ `md:max-w-none`) |
 | 5 | Split `updateTeamSettings` into field-level (or per-control) actions for autosave; no page Guardar | `auto` | JES-58 |
 | 6 | Create-team: dialog/flow inside `ActiveTeamSwitcher`; delete settings `?createTeam=1` + card | `auto` | JES-60 |
 | 7 | Club mutations stay `canCreateTeam`-gated; treat docs `canEdit` as existing club gate | `auto` | Security; explore found no `canEdit` flag |

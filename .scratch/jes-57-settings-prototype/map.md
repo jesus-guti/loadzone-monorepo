@@ -46,8 +46,8 @@ Reason: chrome and Equipo content partition are locked by JES-56; the question i
 User override 2026-08-05 — applies to the settings **main content** column:
 
 - **Single column**, stack downward (sections then rows). Mobile-first.
-- **Default (mobile):** `max-w-[640px]`, horizontal margin `40px` (`mx-10` on 4px scale), bottom margin `64px` (`mb-16`).
-- **Tablet and up:** **full width** of the content pane — **no `max-w`** — but keep the same horizontal (`mx-10`) and bottom (`mb-16`) margins.
+- **All breakpoints:** `max-w-[640px]`, horizontal margin `40px` (`mx-10` on 4px scale), bottom margin `64px` (`mb-16`).
+- **User revoke 2026-08-05:** keep `max-w-[640px]` on tablet/desktop too (supersedes prior tablet+ no max-w).
 - This is **page column geometry**, not Equipo section grouping.
 
 ### Equipo page (only filled route)
@@ -103,7 +103,7 @@ User override 2026-08-05 — applies to the settings **main content** column:
 ### User replies (2026-08-05)
 
 - **Volver override:** Want memory of the page they were on; Volver label may include destination (e.g. “Volver a Wellness”). Prototype may stub persistence loosely; **final** contract = memory + labeled Volver. Align Wave-2 JES-61; do **not** leave “no memory” as the taught default.
-- **Layout / Equipo clarification:** Prior “two sections” assume was about **content section grouping** (stacked headers), not multi-column layout. Layout law: single column, mobile-first; `max-w-[640px]` + `mx-10` + `mb-16` on mobile; tablet+ full width with same margins (no max-w). Keep two stacked Equipo sections if they still teach JES-59 spacing under that law.
+- **Layout / Equipo clarification:** Prior “two sections” assume was about **content section grouping** (stacked headers), not multi-column layout. Layout law: single column; `max-w-[640px]` + `mx-10` + `mb-16` at all breakpoints (user revoke 2026-08-05 — keep max-w on desktop). Keep two stacked Equipo sections if they still teach JES-59 spacing under that law.
 
 ### Auto
 
@@ -125,7 +125,7 @@ User override 2026-08-05 — applies to the settings **main content** column:
 10. **[auto] No persistence for Equipo field values; mock / in-memory state.** Prototype skill default. (Volver memory stub is the exception — see #6 / assume #18.)
 11. **[auto] Zero planning HITL.** Product locks + user overrides below are enough; human reaction after the artifact closes the prototype ticket. Cap unused.
 12. **[auto] Lean on-screen copy.** Labels/values/verbs only; rationale stays in this map / README.
-13. **[auto → user override] Content layout law (single column).** Mobile-first stacked column; mobile `max-w-[640px] mx-10 mb-16`; tablet+ **no max-w**, keep `mx-10 mb-16`. Applies to prototype; note for production settings content. Supersedes prior ~`max-w-2xl` assume (#17 superseded).
+13. **[auto → user override] Content layout law (single column).** Stacked column; `max-w-[640px] mx-10 mb-16` at all breakpoints (user revoke 2026-08-05 — keep max-w on desktop; supersedes prior tablet+ no max-w). Applies to prototype + production settings content. Supersedes prior ~`max-w-2xl` assume (#17 superseded).
 
 ### Assume
 
@@ -171,7 +171,7 @@ User override 2026-08-05 — applies to the settings **main content** column:
 | 10 | In-memory Equipo fields | `auto` | Prototype skill |
 | 11 | Zero planning HITL | `auto` | Overrides sufficient |
 | 12 | Lean copy | `auto` | UI.md + content-design |
-| 13 | Single-column layout law (640 / mx-10 / mb-16; tablet+ no max-w) | `auto` | User override |
+| 13 | Single-column layout law (640 / mx-10 / mb-16 all breakpoints) | `auto` | User override; revoke 2026-08-05 keeps max-w on desktop |
 | 14 | Next host outside `(authenticated)` | `assume` | Reversible |
 | 15 | Two **stacked** Equipo sections (not columns) | `assume` | Soft JES-59; clarified |
 | 16 | Mock pill team switcher | `assume` | Reversible |

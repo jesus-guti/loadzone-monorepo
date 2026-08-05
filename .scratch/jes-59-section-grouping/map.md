@@ -13,7 +13,7 @@ A **per-route composition map** (section title → optional description → rows
 
 - **Grouping law (product override 2026-08-05):** sections, **not cards** — small section title (+ optional short description) then settings rows (label left / control right). No bordered/background Card wrapping a cluster.
 - **Field partition stays JES-56** — this ticket only groups fields already owned by each route; it does not move fields across routes.
-- **Prototype reaction (JES-57):** Equipo uses two stacked sections **Identidad** / **Zona horaria** with `pt-8 first:pt-0` inter-section spacing and `border-t` row separators. Production Equipo **keeps that grouping and spacing language**. Content column geometry (single column; mobile `max-w-[640px] mx-10 mb-16`; tablet+ no max-w) is shell/layout law from JES-57 — not re-decided here.
+- **Prototype reaction (JES-57):** Equipo uses two stacked sections **Identidad** / **Zona horaria** with `pt-8 first:pt-0` inter-section spacing and `border-t` row separators. Production Equipo **keeps that grouping and spacing language**. Content column geometry (single column; `max-w-[640px] mx-10 mb-16` at all breakpoints — user revoke 2026-08-05) is shell/layout law from JES-57 — not re-decided here.
 - **Autosave:** no Save chrome on any of these pages (JES-58). Composition must not reserve footer space for Guardar.
 - **Skills / rules:** `orchestrator/autonomy-matrix.md`, `.cursor/rules/loadzone-design-system.mdc`, `.cursor/rules/loadzone-content-design.mdc`, `.cursor/rules/loadzone-admin-shell.mdc` (settings exception for section/row density).
 - **Language:** this map English; product section titles / descriptions Spanish.
