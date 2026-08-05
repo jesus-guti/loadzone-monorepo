@@ -15,6 +15,7 @@ export default async function CuentaSettingsPage() {
 
   return (
     <CuentaSettingsForm
+      key={staffContext.activeTeam.id}
       teamId={staffContext.activeTeam.id}
       email={staffContext.user.email}
       name={staffContext.user.name}

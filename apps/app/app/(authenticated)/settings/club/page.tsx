@@ -19,6 +19,7 @@ export default async function ClubSettingsPage() {
 
   return (
     <ClubSettingsForm
+      key={staffContext.activeTeam.id}
       teamId={staffContext.activeTeam.id}
       canEdit={staffContext.canCreateTeam}
       clubName={staffContext.club.name}

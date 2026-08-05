@@ -21,6 +21,7 @@ export default async function PoliticasSettingsPage() {
 
   return (
     <PoliticasSettingsForm
+      key={staffContext.activeTeam.id}
       teamId={staffContext.activeTeam.id}
       policySourceLabel={
         POLICY_SOURCE_LABEL[staffContext.activeTeam.ageBandPolicySource]

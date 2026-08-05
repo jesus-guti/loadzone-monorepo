@@ -60,3 +60,9 @@ export const settingsNavigation: SettingsNavItem[] = [
 export function isSettingsPath(pathname: string): boolean {
   return matchesPath(pathname, SETTINGS_BASE);
 }
+
+/** Page title for the settings header (matches nav label; Equipo is default). */
+export function settingsPageTitle(pathname: string): string {
+  const match = settingsNavigation.find((item) => item.match(pathname));
+  return match?.label ?? "Equipo";
+}

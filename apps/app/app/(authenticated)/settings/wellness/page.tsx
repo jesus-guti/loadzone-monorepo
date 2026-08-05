@@ -65,6 +65,7 @@ export default async function WellnessSettingsPage() {
 
   return (
     <WellnessSettingsForm
+      key={staffContext.activeTeam.id}
       teamId={staffContext.activeTeam.id}
       preTemplates={preTemplates}
       postTemplates={postTemplates}

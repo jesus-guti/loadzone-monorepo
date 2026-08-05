@@ -72,7 +72,7 @@ export async function updateTeamCategory(
     }
     const parsed = categorySchema.safeParse(category);
     if (!parsed.success) {
-      return fail(parsed.error.issues[0]?.message ?? "Categoría no válida");
+      return fail("Categoría no válida");
     }
     await database.team.update({
       where: { id: staffContext.activeTeam.id },
@@ -82,10 +82,8 @@ export async function updateTeamCategory(
     });
     revalidateEquipo();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error ? error.message : "No se pudo guardar la categoría."
-    );
+  } catch {
+    return fail("No se pudo guardar la categoría.");
   }
 }
 
@@ -99,7 +97,7 @@ export async function updateTeamTimezone(
     }
     const parsed = timezoneSchema.safeParse(timezone);
     if (!parsed.success) {
-      return fail(parsed.error.issues[0]?.message ?? "Zona horaria no válida");
+      return fail("Zona horaria no válida");
     }
     await database.team.update({
       where: { id: staffContext.activeTeam.id },
@@ -107,12 +105,8 @@ export async function updateTeamTimezone(
     });
     revalidateEquipo();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar la zona horaria."
-    );
+  } catch {
+    return fail("No se pudo guardar la zona horaria.");
   }
 }
 
@@ -127,7 +121,7 @@ export async function updateTeamReminderMinutes(input: {
     }
     const parsed = reminderMinutesSchema.safeParse(input.value);
     if (!parsed.success) {
-      return fail(parsed.error.issues[0]?.message ?? "Minutos no válidos");
+      return fail("Minutos no válidos");
     }
     await database.team.update({
       where: { id: staffContext.activeTeam.id },
@@ -135,12 +129,8 @@ export async function updateTeamReminderMinutes(input: {
     });
     revalidateWellness();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar el recordatorio."
-    );
+  } catch {
+    return fail("No se pudo guardar el recordatorio.");
   }
 }
 
@@ -160,6 +150,21 @@ export async function updateTeamFormAssignment(input: {
     );
     if (!parsed.success) {
       return fail("Plantilla no válida");
+    }
+
+    if (parsed.data) {
+      const template = await database.formTemplate.findFirst({
+        where: {
+          id: parsed.data,
+          isActive: true,
+          isSystem: true,
+          fillMoment: input.fillMoment,
+        },
+        select: { id: true },
+      });
+      if (!template) {
+        return fail("Plantilla no válida");
+      }
     }
 
     await database.$transaction(async (transaction) => {
@@ -182,12 +187,8 @@ export async function updateTeamFormAssignment(input: {
     });
     revalidateWellness();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar el formulario."
-    );
+  } catch {
+    return fail("No se pudo guardar el formulario.");
   }
 }
 
@@ -249,12 +250,8 @@ export async function updateTeamWellnessLimit(input: {
     });
     revalidateWellness();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar el umbral."
-    );
+  } catch {
+    return fail("No se pudo guardar el umbral.");
   }
 }
 
@@ -294,12 +291,8 @@ export async function updateTeamAgeBandPolicyFromForm(
     });
     revalidatePoliticas();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar la política de edad."
-    );
+  } catch {
+    return fail("No se pudo guardar la política de edad.");
   }
 }
 
@@ -327,12 +320,8 @@ export async function updateTeamReminderConsentFromForm(
     });
     revalidatePoliticas();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar el consentimiento de recordatorios."
-    );
+  } catch {
+    return fail("No se pudo guardar el consentimiento de recordatorios.");
   }
 }
 
@@ -361,11 +350,7 @@ export async function updateClubAgeBandPolicyField(
     });
     revalidateClub();
     return ok();
-  } catch (error) {
-    return fail(
-      error instanceof Error
-        ? error.message
-        : "No se pudo guardar la política del club."
-    );
+  } catch {
+    return fail("No se pudo guardar la política del club.");
   }
 }

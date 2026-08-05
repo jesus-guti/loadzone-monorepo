@@ -15,6 +15,7 @@ export default async function EquipoSettingsPage() {
 
   return (
     <EquipoSettingsForm
+      key={staffContext.activeTeam.id}
       teamId={staffContext.activeTeam.id}
       initialCategory={staffContext.activeTeam.category ?? ""}
       initialTimezone={staffContext.activeTeam.timezone}
