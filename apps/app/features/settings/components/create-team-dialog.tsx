@@ -28,7 +28,7 @@ export function CreateTeamDialog({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Crear equipo</DialogTitle>
@@ -37,12 +37,12 @@ export function CreateTeamDialog({
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-4"
           action={(formData) => {
             startTransition(async () => {
               await createTeamFromSettings(formData);
             });
           }}
+          className="space-y-4 p-4"
         >
           <div className="space-y-2">
             <Label htmlFor="create-team-name">Nombre</Label>
@@ -64,9 +64,9 @@ export function CreateTeamDialog({
           <div className="space-y-2">
             <Label htmlFor="create-team-timezone">Zona horaria</Label>
             <Input
+              defaultValue={defaultTimezone}
               id="create-team-timezone"
               name="timezone"
-              defaultValue={defaultTimezone}
               required
             />
           </div>
