@@ -32,7 +32,9 @@ export function ActiveTeamSwitcher() {
         disabled={isPending || teams.length === 0}
         value={activeValue}
         onValueChange={(teamId: string | null) => {
-          if (!teamId) return;
+          if (!teamId) {
+            return;
+          }
           if (teamId === CREATE_TEAM_VALUE) {
             router.push("/settings?createTeam=1");
             return;

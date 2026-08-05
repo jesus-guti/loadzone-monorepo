@@ -26,7 +26,9 @@ export function ActiveSeasonSwitcher() {
       disabled={isPending || activeTeamSeasons.length === 0}
       value={activeValue}
       onValueChange={(seasonId: string | null) => {
-        if (!seasonId) return;
+        if (!seasonId) {
+          return;
+        }
         startTransition(async () => {
           await setActiveSeason(seasonId);
           router.refresh();

@@ -5,7 +5,10 @@ import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { useIsMobile } from "@repo/design-system/hooks/use-mobile"
+import {
+  useIsHydrated,
+  useIsMobile,
+} from "@repo/design-system/hooks/use-mobile"
 import { cn } from "@repo/design-system/lib/utils"
 import { Button } from "@repo/design-system/components/button"
 import { Input } from "@repo/design-system/components/input"
@@ -510,6 +513,10 @@ function SidebarMenuButton({
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const { isMobile, state } = useSidebar()
+  // Defer Tooltip (Base UI useId) until after hydration to avoid Next 16.0.x
+  // mismatched `id="base-ui-_R_…"` attributes on sidebar items.
+  const hydrated = useIsHydrated()
+  const enableTooltip = Boolean(tooltip) && hydrated && !isMobile
   const comp = useRender({
     defaultTagName: "button",
     props: mergeProps<"button">(
@@ -518,7 +525,7 @@ function SidebarMenuButton({
       },
       props
     ),
-    render: !tooltip ? render : <TooltipTrigger render={render} />,
+    render: enableTooltip ? <TooltipTrigger render={render} /> : render,
     state: {
       slot: "sidebar-menu-button",
       sidebar: "menu-button",
@@ -527,7 +534,7 @@ function SidebarMenuButton({
     },
   })
 
-  if (!tooltip) {
+  if (!enableTooltip) {
     return comp
   }
 
@@ -543,7 +550,7 @@ function SidebarMenuButton({
       <TooltipContent
         side="right"
         align="center"
-        hidden={state !== "collapsed" || isMobile}
+        hidden={state !== "collapsed"}
         {...tooltip}
       />
     </Tooltip>
