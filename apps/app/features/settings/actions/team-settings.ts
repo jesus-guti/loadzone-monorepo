@@ -154,9 +154,12 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
     }
   });
 
+  revalidatePath("/settings/equipo");
+  revalidatePath("/settings/wellness");
+  revalidatePath("/settings/politicas");
   revalidatePath("/settings");
   revalidatePath("/");
-  redirect("/settings");
+  redirect("/settings/equipo");
 }
 
 export async function createTeamFromSettings(formData: FormData): Promise<void> {
@@ -255,9 +258,10 @@ export async function createTeamFromSettings(formData: FormData): Promise<void> 
     maxAge: 60 * 60 * 24 * 30,
   });
 
+  revalidatePath("/settings/equipo");
   revalidatePath("/settings");
   revalidatePath("/");
-  redirect("/settings");
+  redirect("/settings/equipo");
 }
 
 export async function updateClubBranding(
@@ -311,6 +315,7 @@ export async function updateClubBranding(
       },
     });
 
+    revalidatePath("/settings/club");
     revalidatePath("/settings");
     revalidatePath("/");
 
@@ -365,6 +370,7 @@ export async function clearClubBrandingLogo(): Promise<ClubBrandingResult> {
       },
     });
 
+    revalidatePath("/settings/club");
     revalidatePath("/settings");
     revalidatePath("/");
 

@@ -53,7 +53,7 @@ const WellnessPage = async () => {
       <Header page="Wellness" pages={["LoadZone"]}>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <WellnessDateFilter initialDate={data.evaluatedDate} />
-          <Button size="sm" variant="outline" render={<Link href="/settings#wellness-forms">Editar wellness</Link>} />
+          <Button size="sm" variant="outline" render={<Link href="/settings/wellness#formularios">Editar wellness</Link>} />
         </div>
       </Header>
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:gap-8 md:px-6">

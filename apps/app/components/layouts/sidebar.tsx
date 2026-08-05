@@ -23,9 +23,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { primaryNavigation, secondaryNavigation } from "@/lib/admin-navigation";
 import type { StaffContext } from "@/lib/auth-context";
+import {
+  isSettingsPath,
+  settingsNavigation,
+} from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { MobileSidebarFab } from "./mobile-sidebar-fab";
+import { OperationalRouteMemory } from "./operational-route-memory";
+import { SettingsVolverLink } from "./settings-volver-link";
 import { SidebarUserMenu } from "./sidebar-user-menu";
 import { TeamBranding } from "./team-branding";
 
@@ -45,7 +51,11 @@ type GlobalSidebarProperties = {
 
 const sidebarPrefetchHrefs = Array.from(
   new Set(
-    [...primaryNavigation, ...secondaryNavigation].map((item) => item.href)
+    [
+      ...primaryNavigation,
+      ...secondaryNavigation,
+      ...settingsNavigation,
+    ].map((item) => item.href)
   )
 );
 
@@ -105,12 +115,31 @@ function SidebarBrandingHeader({
   );
 }
 
+function SettingsSidebarHeader() {
+  return (
+    <SidebarHeader className="gap-2 p-2">
+      <div
+        className={cn(
+          "flex flex-row items-center justify-between gap-2",
+          "group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-1"
+        )}
+      >
+        <p className="min-w-0 flex-1 truncate px-2 font-semibold text-sm text-text-primary group-data-[collapsible=icon]:hidden">
+          Configuración
+        </p>
+        <DesktopSidebarOpener />
+      </div>
+    </SidebarHeader>
+  );
+}
+
 export const GlobalSidebar = ({
   children,
   staffContext,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
   const router = useRouter();
+  const inSettings = isSettingsPath(pathname);
 
   useEffect(() => {
     for (const href of sidebarPrefetchHrefs) {
@@ -120,72 +149,117 @@ export const GlobalSidebar = ({
 
   return (
     <AppShellProvider value={staffContext}>
+      <OperationalRouteMemory />
       <Sidebar collapsible="icon" variant="inset">
-        <SidebarBrandingHeader staffContext={staffContext} />
+        {inSettings ? (
+          <SettingsSidebarHeader />
+        ) : (
+          <SidebarBrandingHeader staffContext={staffContext} />
+        )}
 
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Operación</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {primaryNavigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      className="[&_svg]:size-5"
-                      isActive={item.match(pathname)}
-                      tooltip={item.label}
-                      render={
-                        <Link href={item.href} prefetch>
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {inSettings ? (
+            <>
+              <SidebarGroup>
+                <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+                  Volver
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SettingsVolverLink />
+                </SidebarGroupContent>
+              </SidebarGroup>
 
-          <SidebarGroup className="pt-2">
-            <SidebarGroupLabel>Accesos</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {secondaryNavigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      className="[&_svg]:size-5"
-                      isActive={item.match(pathname)}
-                      tooltip={item.label}
-                      render={
-                        <Link href={item.href} prefetch>
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+              <SidebarGroup className="pt-2">
+                <SidebarGroupLabel>Ajustes</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {settingsNavigation.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          className="[&_svg]:size-5"
+                          isActive={item.match(pathname)}
+                          tooltip={item.label}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon weight="fill" />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          ) : (
+            <>
+              <SidebarGroup>
+                <SidebarGroupLabel>Operación</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {primaryNavigation.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          className="[&_svg]:size-5"
+                          isActive={item.match(pathname)}
+                          tooltip={item.label}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              <SidebarGroup className="pt-2">
+                <SidebarGroupLabel>Accesos</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {secondaryNavigation.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          className="[&_svg]:size-5"
+                          isActive={item.match(pathname)}
+                          tooltip={item.label}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          )}
         </SidebarContent>
 
-        <SidebarFooter className="gap-2">
-          <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center">
-            <Button aria-label="Notificaciones" size="icon" variant="ghost">
-              <BellIcon className="size-5" weight="fill" />
-            </Button>
-            <ModeToggle />
-          </div>
-          <SidebarUserMenu />
-        </SidebarFooter>
+        {inSettings ? null : (
+          <SidebarFooter className="gap-2">
+            <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center">
+              <Button aria-label="Notificaciones" size="icon" variant="ghost">
+                <BellIcon className="size-5" weight="fill" />
+              </Button>
+              <ModeToggle />
+            </div>
+            <SidebarUserMenu />
+          </SidebarFooter>
+        )}
       </Sidebar>
       <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-0 md:pb-0">
         <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain">
           {children}
         </div>
-        <MobileBottomNav />
+        {inSettings ? null : <MobileBottomNav />}
         <MobileSidebarFab />
       </SidebarInset>
     </AppShellProvider>

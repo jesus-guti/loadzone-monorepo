@@ -27,7 +27,8 @@ export async function updateClubAgeBandPolicy(formData: FormData): Promise<void>
     },
   });
 
+  revalidatePath("/settings/club");
   revalidatePath("/settings");
   revalidatePath("/");
-  redirect("/settings");
+  redirect("/settings/club");
 }

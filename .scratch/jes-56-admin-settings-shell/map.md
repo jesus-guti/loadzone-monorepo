@@ -39,8 +39,7 @@ Charted locks — remain law unless a child recorded an explicit override (none 
 ### Layout law (content column — from JES-57 / user 2026-08-05)
 
 - **Single column**, stack downward.
-- **Mobile:** `max-w-[640px] mx-10 mb-16`.
-- **Tablet+:** no `max-w`; keep `mx-10 mb-16`.
+- **All breakpoints:** `max-w-[640px] mx-10 mb-16` (user revoke 2026-08-05 — keep max-w on desktop too; supersedes prior tablet+ no max-w).
 - Page-column geometry — not section grouping (JES-59).
 
 ### Volver law (from standing + JES-57 + JES-61)
