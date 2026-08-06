@@ -352,7 +352,7 @@ export function SessionPage({
         >
           <TabsList
             variant="segmented"
-            className="grid h-12 w-full grid-cols-2 rounded-full bg-bg-secondary p-1"
+            className="grid h-12 w-full grid-cols-2 rounded-full border-0 bg-bg-secondary p-1"
           >
             <TabsTrigger
               value="pre"
