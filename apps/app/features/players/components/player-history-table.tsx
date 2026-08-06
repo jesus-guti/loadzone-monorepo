@@ -10,6 +10,12 @@ import {
   TableRow,
 } from "@repo/design-system/components/table";
 import type { RiskLevel } from "@repo/database";
+import {
+  EnergyScale,
+  RecoveryScale,
+  RiskScale,
+  SorenessScale,
+} from "@/features/wellness/components/wellness-scales";
 
 type PlayerHistoryRow = {
   readonly date: string;
@@ -29,22 +35,6 @@ type PlayerHistoryRow = {
 type PlayerHistoryTableProperties = {
   readonly rows: PlayerHistoryRow[];
 };
-
-function getRiskVariant(
-  riskLevel: RiskLevel | null
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (riskLevel) {
-    case "CRITICAL":
-    case "HIGH":
-      return "destructive";
-    case "MODERATE":
-      return "secondary";
-    case "LOW":
-      return "default";
-    default:
-      return "outline";
-  }
-}
 
 function getRiskLabel(riskLevel: RiskLevel | null): string {
   switch (riskLevel) {
@@ -98,9 +88,15 @@ function PlayerHistoryTableRow({ row }: HistoryRowProps) {
           {row.postFilledAt ? "Sí" : "No"}
         </Badge>
       </TableCell>
-      <TableCell>{formatMetric(row.recovery)}</TableCell>
-      <TableCell>{formatMetric(row.energy)}</TableCell>
-      <TableCell>{formatMetric(row.soreness)}</TableCell>
+      <TableCell>
+        <RecoveryScale size="sm" value={row.recovery} />
+      </TableCell>
+      <TableCell>
+        <EnergyScale size="sm" value={row.energy} />
+      </TableCell>
+      <TableCell>
+        <SorenessScale size="sm" value={row.soreness} />
+      </TableCell>
       <TableCell>{formatSleepSummary(row)}</TableCell>
       <TableCell>{formatMetric(row.rpe)}</TableCell>
       <TableCell>{formatMetric(row.duration)}</TableCell>
@@ -110,9 +106,11 @@ function PlayerHistoryTableRow({ row }: HistoryRowProps) {
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge variant={getRiskVariant(row.riskLevel)}>
-          {getRiskLabel(row.riskLevel)}
-        </Badge>
+        <RiskScale
+          label={row.riskLevel ? getRiskLabel(row.riskLevel) : undefined}
+          riskLevel={row.riskLevel}
+          size="sm"
+        />
       </TableCell>
     </TableRow>
   );

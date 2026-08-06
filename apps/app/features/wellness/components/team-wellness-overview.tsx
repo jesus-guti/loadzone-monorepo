@@ -16,10 +16,15 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import { PendingReminderDialog } from "./pending-reminder-dialog";
 import {
+  EnergyScale,
+  RecoveryScale,
+  RiskScale,
+  SorenessScale,
+} from "./wellness-scales";
+import {
   formatAverage,
   getLatestEntry,
   getRiskLabel,
-  getRiskValueClassName,
   type TeamWellnessWorkspaceSummary,
   toneAlertDensity,
   toneCompletionRatio,
@@ -37,18 +42,9 @@ type TeamWellnessComparisonRowProperties = {
 
 function TeamWellnessComparisonRow({
   player,
-  wellnessLimits,
 }: TeamWellnessComparisonRowProperties) {
   const entry = getLatestEntry(player);
   const riskLevel = player.stats[0]?.riskLevel;
-  const recoveryCellTone = toneForLowerIsBetter(
-    entry?.recovery ?? null,
-    wellnessLimits?.recovery ?? null
-  );
-  const energyCellTone = toneForLowerIsBetter(
-    entry?.energy ?? null,
-    wellnessLimits?.energy ?? null
-  );
 
   return (
     <TableRow className="border-0 hover:bg-bg-secondary/40">
@@ -78,29 +74,21 @@ function TeamWellnessComparisonRow({
       >
         {entry?.postFilledAt ? "Sí" : "—"}
       </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          wellnessValueClass(recoveryCellTone)
-        )}
-      >
-        {entry?.recovery ?? "—"}
+      <TableCell className="hidden py-2 md:table-cell">
+        <RecoveryScale size="sm" value={entry?.recovery ?? null} />
       </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          wellnessValueClass(energyCellTone)
-        )}
-      >
-        {entry?.energy ?? "—"}
+      <TableCell className="hidden py-2 md:table-cell">
+        <EnergyScale size="sm" value={entry?.energy ?? null} />
       </TableCell>
-      <TableCell
-        className={cn(
-          "py-2 pr-0 tabular-nums",
-          getRiskValueClassName(riskLevel)
-        )}
-      >
-        {getRiskLabel(riskLevel)}
+      <TableCell className="hidden py-2 md:table-cell">
+        <SorenessScale size="sm" value={entry?.soreness ?? null} />
+      </TableCell>
+      <TableCell className="py-2 pr-0">
+        <RiskScale
+          label={riskLevel ? getRiskLabel(riskLevel) : undefined}
+          riskLevel={riskLevel}
+          size="sm"
+        />
       </TableCell>
     </TableRow>
   );
@@ -340,6 +328,9 @@ export function TeamWellnessOverview({
               </TableHead>
               <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
                 Energía
+              </TableHead>
+              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
+                Agujetas
               </TableHead>
               <TableHead className="h-8 pr-0 font-medium text-text-tertiary text-xs">
                 Riesgo
