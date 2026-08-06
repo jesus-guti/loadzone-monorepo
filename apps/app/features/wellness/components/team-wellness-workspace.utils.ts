@@ -114,6 +114,22 @@ export function wellnessLabelClass(tone: WellnessTrafficTone): string {
   }
 }
 
+/** Fill class for summary average meters (same traffic map as value/label). */
+export function wellnessAverageFillClass(tone: WellnessTrafficTone): string {
+  switch (tone) {
+    case "good":
+      return "bg-success";
+    case "watch":
+      return "bg-premium";
+    case "bad":
+      return "bg-danger";
+    case "neutral":
+      return "bg-text-secondary";
+    default:
+      return "bg-text-secondary";
+  }
+}
+
 /** Alerta si el valor es bajo (recuperación, energía). */
 export function toneForLowerIsBetter(
   value: number | null | undefined,

@@ -34,6 +34,7 @@ import {
   toneForHigherIsWorse,
   toneForLowerIsBetter,
   tonePendingWorkload,
+  wellnessAverageFillClass,
   wellnessLabelClass,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
@@ -121,19 +122,6 @@ type AverageMeterProperties = {
   readonly tone: WellnessTrafficTone;
 };
 
-function averageFillClass(tone: WellnessTrafficTone): string {
-  switch (tone) {
-    case "good":
-      return "bg-success";
-    case "watch":
-      return "bg-premium";
-    case "bad":
-      return "bg-danger";
-    default:
-      return "bg-brand";
-  }
-}
-
 function AverageMeter({
   label,
   value,
@@ -164,7 +152,7 @@ function AverageMeter({
           <div
             className={cn(
               "h-full rounded-full transition-[width] duration-200",
-              averageFillClass(tone)
+              wellnessAverageFillClass(tone)
             )}
             style={{ width: `${percent}%` }}
           />
