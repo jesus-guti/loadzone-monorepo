@@ -1,14 +1,19 @@
 "use client";
 
 import { SparkleIcon, SquaresFourIcon } from "@phosphor-icons/react/ssr";
-import { cn } from "@repo/design-system/lib/utils";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/tabs";
 import { useMemo, useState } from "react";
+import type { TeamWellnessPlayer } from "@/lib/team-wellness";
+import type { WellnessLimits } from "@/lib/wellness-limits";
 import { TeamWellnessBubblesView } from "./team-wellness-bubbles-view";
 import { TeamWellnessOverview } from "./team-wellness-overview";
 import { TeamWellnessPlayerCard } from "./team-wellness-player-card";
 import { buildWellnessSummary } from "./team-wellness-workspace.utils";
-import type { TeamWellnessPlayer } from "@/lib/team-wellness";
-import type { WellnessLimits } from "@/lib/wellness-limits";
 
 type TeamWellnessWorkspaceProperties = {
   readonly evaluatedDate: string;
@@ -17,6 +22,10 @@ type TeamWellnessWorkspaceProperties = {
 };
 
 type WellnessViewMode = "cards" | "bubbles";
+
+function isWellnessViewMode(value: string): value is WellnessViewMode {
+  return value === "cards" || value === "bubbles";
+}
 
 export function TeamWellnessWorkspace({
   evaluatedDate,
@@ -58,72 +67,65 @@ export function TeamWellnessWorkspace({
         wellnessLimits={wellnessLimits}
       />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-1 self-start rounded-md border border-border-tertiary bg-bg-primary p-0.5">
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
-              viewMode === "cards"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setViewMode("cards")}
-            type="button"
-          >
-            <SquaresFourIcon className="size-4" />
-            Tarjetas
-          </button>
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm transition-colors",
-              viewMode === "bubbles"
-                ? "bg-bg-secondary text-text-primary"
-                : "text-text-secondary hover:text-text-primary"
-            )}
-            onClick={() => setViewMode("bubbles")}
-            type="button"
-          >
-            <SparkleIcon className="size-4" />
-            Burbujas
-          </button>
+      <Tabs
+        onValueChange={(value) => {
+          if (isWellnessViewMode(value)) {
+            setViewMode(value);
+          }
+        }}
+        value={viewMode}
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList aria-label="Vista de bienestar del equipo">
+            <TabsTrigger type="button" value="cards">
+              <SquaresFourIcon className="size-4" />
+              Tarjetas
+            </TabsTrigger>
+            <TabsTrigger type="button" value="bubbles">
+              <SparkleIcon className="size-4" />
+              Burbujas
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <p className="text-sm text-text-tertiary">
+              {selectedPlayerIds.length > 0
+                ? `${selectedPlayerIds.length} jugadores filtrados`
+                : `${players.length} jugadores`}
+            </p>
+            {selectedPlayerIds.length > 0 ? (
+              <button
+                className="text-sm text-text-secondary hover:text-text-primary"
+                onClick={() => setSelectedPlayerIds([])}
+                type="button"
+              >
+                Quitar filtros
+              </button>
+            ) : null}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <p className="text-sm text-text-tertiary">
-            {selectedPlayerIds.length > 0
-              ? `${selectedPlayerIds.length} jugadores filtrados`
-              : `${players.length} jugadores`}
-          </p>
-          {selectedPlayerIds.length > 0 ? (
-            <button
-              className="text-sm text-text-secondary hover:text-text-primary"
-              onClick={() => setSelectedPlayerIds([])}
-              type="button"
-            >
-              Quitar filtros
-            </button>
-          ) : null}
-        </div>
-      </div>
+        <TabsContent className="mt-0 outline-none" value="cards">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {filteredPlayers.map((player) => (
+              <TeamWellnessPlayerCard
+                key={player.id}
+                player={player}
+                wellnessLimits={wellnessLimits}
+              />
+            ))}
+          </div>
+        </TabsContent>
 
-      {viewMode === "cards" ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {filteredPlayers.map((player) => (
-            <TeamWellnessPlayerCard
-              key={player.id}
-              player={player}
-              wellnessLimits={wellnessLimits}
-            />
-          ))}
-        </div>
-      ) : (
-        <TeamWellnessBubblesView
-          players={players}
-          selectedPlayerIds={selectedPlayerIds}
-          onToggle={togglePlayerSelection}
-          wellnessLimits={wellnessLimits}
-        />
-      )}
+        <TabsContent className="mt-0 outline-none" value="bubbles">
+          <TeamWellnessBubblesView
+            onToggle={togglePlayerSelection}
+            players={players}
+            selectedPlayerIds={selectedPlayerIds}
+            wellnessLimits={wellnessLimits}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
