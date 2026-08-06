@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
+  averageProgressPercent,
   buildWellnessSummary,
   getDailyPlayerState,
   getWellnessAlerts,
+  listPendingPlayers,
 } from "@/features/wellness/components/team-wellness-workspace.utils";
 
 function createPlayer(
@@ -137,5 +139,59 @@ describe("team wellness workspace utils", () => {
       recoveryAverage: 5,
       sorenessAverage: 2,
     });
+    expect(listPendingPlayers(players).map((player) => player.id)).toEqual([
+      "player_pending",
+    ]);
+  });
+
+  it("lista pendientes cuando falta pre o post (post esperado)", () => {
+    const missingPre = createPlayer({
+      id: "missing_pre",
+      entries: [
+        {
+          date: new Date("2026-05-03T00:00:00Z"),
+          recovery: null,
+          energy: null,
+          soreness: null,
+          sleepHours: null,
+          sleepQuality: null,
+          rpe: null,
+          duration: null,
+          preFilledAt: null,
+          postFilledAt: null,
+          physioAlert: false,
+        },
+      ],
+    });
+    const complete = createPlayer({
+      id: "complete",
+      entries: [
+        {
+          date: new Date("2026-05-03T00:00:00Z"),
+          recovery: 7,
+          energy: 4,
+          soreness: 2,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: new Date("2026-05-03T07:00:00Z"),
+          postFilledAt: new Date("2026-05-03T21:00:00Z"),
+          physioAlert: false,
+        },
+      ],
+    });
+
+    expect(listPendingPlayers([missingPre, complete]).map((p) => p.id)).toEqual(
+      ["missing_pre"]
+    );
+  });
+
+  it("convierte medias a porcentaje de barra segun escala del formulario", () => {
+    expect(averageProgressPercent(5, "recovery")).toBe(50);
+    expect(averageProgressPercent(4, "energy")).toBe(80);
+    expect(averageProgressPercent(2.5, "soreness")).toBe(50);
+    expect(averageProgressPercent(null, "recovery")).toBeNull();
+    expect(averageProgressPercent(12, "recovery")).toBe(100);
   });
 });
