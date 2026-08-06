@@ -14,7 +14,7 @@ function sizeClass(size: ScaleSize, sm: string, md: string): string {
   return size === "sm" ? sm : md;
 }
 
-function sliderThumbTone(value: number, max: number, polarity: ScalePolarity): string {
+function sliderFillTone(value: number, max: number, polarity: ScalePolarity): string {
   const ratio = max === 0 ? 0 : value / max;
   if (polarity === "higherIsWorse") {
     if (ratio <= 0.4) {
@@ -35,28 +35,7 @@ function sliderThumbTone(value: number, max: number, polarity: ScalePolarity): s
   return "bg-danger";
 }
 
-function sliderThumbSize(
-  value: number,
-  max: number,
-  polarity: ScalePolarity,
-  size: ScaleSize
-): string {
-  const ratio = max === 0 ? 0 : value / max;
-  const isMild =
-    polarity === "higherIsWorse" ? ratio <= 0.4 : ratio >= 0.6;
-  const isHot =
-    polarity === "higherIsWorse" ? ratio > 0.7 : ratio < 0.4;
-
-  if (isMild) {
-    return sizeClass(size, "size-2.5", "size-3");
-  }
-  if (isHot) {
-    return sizeClass(size, "size-3.5", "size-5");
-  }
-  return sizeClass(size, "size-3", "size-4");
-}
-
-/** Continuous spectrum (RPE / recovery 0–10). */
+/** Compact progress bar (RPE / recovery 0–10) — solid fill, no spectrum track. */
 export function ScaleSlider({
   value,
   max = 10,
@@ -75,46 +54,34 @@ export function ScaleSlider({
 }) {
   const clamped = Math.min(max, Math.max(0, value));
   const ratio = max === 0 ? 0 : clamped / max;
-  const thumb = thumbClassName ?? sliderThumbTone(clamped, max, polarity);
-  const thumbSize = sliderThumbSize(clamped, max, polarity, size);
-  const trackGradient =
-    polarity === "higherIsWorse"
-      ? "bg-gradient-to-r from-success via-premium to-danger"
-      : "bg-gradient-to-r from-danger via-premium to-success";
+  const fill = thumbClassName ?? sliderFillTone(clamped, max, polarity);
 
   return (
-    <div className={cn("flex flex-col gap-1", className)}>
-      <span
-        className={cn(
-          "inline-flex w-fit items-center gap-1 rounded-sm bg-text-primary text-bg-primary",
-          sizeClass(size, "px-1.5 py-0.5 text-[9px]", "px-2 py-1 text-[11px]")
-        )}
-      >
-        <span className="font-bold tabular-nums">{clamped}</span>
-        {label ? <span className="opacity-85">{label}</span> : null}
-      </span>
+    <div className={cn("inline-flex items-center gap-2", className)}>
       <div
+        aria-hidden
         className={cn(
-          "relative",
-          sizeClass(size, "h-5 w-[120px]", "h-7 w-[200px]")
+          "overflow-hidden rounded-full bg-bg-tertiary",
+          sizeClass(size, "h-1.5 w-14", "h-2 w-20")
         )}
+        role="presentation"
       >
         <div
-          className={cn(
-            "absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full",
-            trackGradient,
-            sizeClass(size, "h-1", "h-1.5")
-          )}
-        />
-        <div
-          className={cn(
-            "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg-primary",
-            thumb,
-            thumbSize
-          )}
-          style={{ left: `${ratio * 100}%` }}
+          className={cn("h-full rounded-full transition-[width] duration-200", fill)}
+          style={{ width: `${ratio * 100}%` }}
         />
       </div>
+      <span
+        className={cn(
+          "inline-flex shrink-0 items-baseline gap-1 font-semibold tabular-nums text-text-primary",
+          sizeClass(size, "text-[11px]", "text-sm")
+        )}
+      >
+        {clamped}
+        {label ? (
+          <span className="font-medium text-text-tertiary">{label}</span>
+        ) : null}
+      </span>
     </div>
   );
 }
