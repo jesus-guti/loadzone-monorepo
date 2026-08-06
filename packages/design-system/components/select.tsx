@@ -12,6 +12,8 @@ import type * as React from "react";
 
 const Select = SelectPrimitive.Root;
 
+/** Pass `items` (label/value list or record) so `SelectValue` shows labels, not raw values. */
+
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
     <SelectPrimitive.Group
