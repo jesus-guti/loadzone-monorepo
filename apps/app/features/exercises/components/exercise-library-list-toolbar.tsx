@@ -65,6 +65,13 @@ export function ExerciseLibraryListToolbar({
 
       <div className="ml-auto mr-0 flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end lg:min-w-0">
         <Select
+          items={[
+            {
+              value: EXERCISE_LIBRARY_FILTER_NONE,
+              label: "Todas las estrategias",
+            },
+            ...STRATEGY_OPTIONS,
+          ]}
           onValueChange={(next) => {
             if (!next) return;
             if (next === EXERCISE_LIBRARY_FILTER_NONE) {
@@ -95,6 +102,7 @@ export function ExerciseLibraryListToolbar({
         </Select>
 
         <Select
+          items={EXERCISE_LIBRARY_GENERAL_SORT_OPTIONS}
           onValueChange={(v) => {
             onSortKeyChange(v as ExerciseLibrarySortKey);
           }}

@@ -3,6 +3,11 @@ import {
   WarningIcon,
 } from "@phosphor-icons/react/ssr";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/avatar";
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,15 +27,19 @@ import {
   SorenessScale,
 } from "./wellness-scales";
 import {
+  averageProgressPercent,
   formatAverage,
+  getInitials,
   getLatestEntry,
   getRiskLabel,
+  listPendingPlayers,
   type TeamWellnessWorkspaceSummary,
+  type WellnessTrafficTone,
   toneAlertDensity,
-  toneCompletionRatio,
   toneForHigherIsWorse,
   toneForLowerIsBetter,
   tonePendingWorkload,
+  wellnessAverageFillClass,
   wellnessLabelClass,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
@@ -107,6 +116,84 @@ function TeamWellnessComparisonRow({
   );
 }
 
+type AverageMeterProperties = {
+  readonly label: string;
+  readonly value: number | null;
+  readonly percent: number | null;
+  readonly tone: WellnessTrafficTone;
+};
+
+function AverageMeter({
+  label,
+  value,
+  percent,
+  tone,
+}: AverageMeterProperties) {
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className={cn("font-medium text-xs", wellnessLabelClass(tone))}>
+          {label}
+        </p>
+        <p
+          className={cn(
+            "font-semibold text-sm tabular-nums",
+            wellnessValueClass(tone)
+          )}
+        >
+          {formatAverage(value)}
+        </p>
+      </div>
+      <div
+        aria-hidden={percent === null}
+        className="h-1.5 overflow-hidden rounded-full bg-bg-tertiary"
+        role="presentation"
+      >
+        {percent === null ? null : (
+          <div
+            className={cn(
+              "h-full rounded-full transition-[width] duration-200",
+              wellnessAverageFillClass(tone)
+            )}
+            style={{ width: `${percent}%` }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+type PendingPlayerBubbleProperties = {
+  readonly player: TeamWellnessPlayer;
+};
+
+function PendingPlayerBubble({ player }: PendingPlayerBubbleProperties) {
+  return (
+    <Link
+      className="group shrink-0"
+      href={`/players/${player.id}`}
+      title={player.name}
+    >
+      <Avatar
+        className="size-8 rounded-full border border-border-tertiary transition-colors group-hover:border-brand/50"
+        size="default"
+      >
+        {player.imageUrl ? (
+          <AvatarImage
+            alt={player.name}
+            className="object-cover"
+            src={player.imageUrl}
+          />
+        ) : null}
+        <AvatarFallback className="bg-bg-secondary text-[10px] font-semibold text-text-primary">
+          {getInitials(player.name)}
+        </AvatarFallback>
+      </Avatar>
+      <span className="sr-only">{player.name}</span>
+    </Link>
+  );
+}
+
 type TeamWellnessOverviewProperties = {
   readonly evaluatedDate: string;
   readonly players: TeamWellnessPlayer[];
@@ -121,13 +208,9 @@ export function TeamWellnessOverview({
   wellnessLimits,
 }: TeamWellnessOverviewProperties) {
   const totalPlayers = players.length;
-  const hasPending = summary.pendingCount > 0;
+  const pendingPlayers = listPendingPlayers(players);
+  const hasPending = pendingPlayers.length > 0;
   const pendingTone = tonePendingWorkload(summary.pendingCount, totalPlayers);
-  const preTone = toneCompletionRatio(summary.preCompletedCount, totalPlayers);
-  const postTone = toneCompletionRatio(
-    summary.postCompletedCount,
-    totalPlayers
-  );
   const alertTone = toneAlertDensity(summary.alertCount, totalPlayers);
   const recoveryTone =
     typeof summary.recoveryAverage !== "number"
@@ -156,11 +239,11 @@ export function TeamWellnessOverview({
       <div className="min-w-0 space-y-6">
         <div
           className={cn(
-            "flex items-center justify-between gap-4 rounded-md",
+            "flex items-start justify-between gap-4 rounded-md",
             hasPending ? "bg-bg-secondary/80 px-3 py-2.5" : null
           )}
         >
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 space-y-2">
             <p
               className={cn(
                 "flex items-center gap-1.5 font-medium text-xs",
@@ -168,26 +251,20 @@ export function TeamWellnessOverview({
               )}
             >
               {hasPending ? (
-                <WarningIcon className="size-3.5 shrink-0" />
+                <WarningIcon className="size-3.5 shrink-0" weight="fill" />
               ) : (
-                <CheckCircleIcon className="size-3.5 shrink-0" />
+                <CheckCircleIcon className="size-3.5 shrink-0" weight="fill" />
               )}
               Formularios pendientes
             </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-3xl tabular-nums",
-                wellnessValueClass(pendingTone)
-              )}
-            >
-              {summary.preCompletedCount}/{totalPlayers}
-            </p>
             {hasPending ? (
-              <p className="mt-1 text-danger text-sm">
-                Faltan {summary.pendingCount}
-              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {pendingPlayers.map((player) => (
+                  <PendingPlayerBubble key={player.id} player={player} />
+                ))}
+              </div>
             ) : (
-              <p className="mt-1 text-sm text-success">Todo al día</p>
+              <p className="text-sm text-success">Todo al día</p>
             )}
           </div>
           <PendingReminderDialog
@@ -196,131 +273,59 @@ export function TeamWellnessOverview({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-          <div>
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(pendingTone)
-              )}
-            >
-              Prioridad hoy
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(pendingTone)
-              )}
-            >
-              {summary.pendingCount}
-            </p>
-          </div>
-          <div>
-            <p
-              className={cn("font-medium text-xs", wellnessLabelClass(preTone))}
-            >
-              Pre completada
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(preTone)
-              )}
-            >
-              {summary.preCompletedCount}/{totalPlayers}
-            </p>
-          </div>
-          <div>
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(postTone)
-              )}
-            >
-              Post completada
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(postTone)
-              )}
-            >
-              {summary.postCompletedCount}/{totalPlayers}
-            </p>
-          </div>
-          <div>
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(alertTone)
-              )}
-            >
-              Alertas
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(alertTone)
-              )}
-            >
-              {summary.alertCount}
-            </p>
-          </div>
-          <div>
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(recoveryTone)
-              )}
-            >
-              Recuperación media
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(recoveryTone)
-              )}
-            >
-              {formatAverage(summary.recoveryAverage)}
-            </p>
-          </div>
-          <div>
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(energyTone)
-              )}
-            >
-              Energía media
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(energyTone)
-              )}
-            >
-              {formatAverage(summary.energyAverage)}
-            </p>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <p
-              className={cn(
-                "font-medium text-xs",
-                wellnessLabelClass(sorenessTone)
-              )}
-            >
-              Dolor muscular
-            </p>
-            <p
-              className={cn(
-                "mt-1 font-semibold text-2xl tabular-nums",
-                wellnessValueClass(sorenessTone)
-              )}
-            >
-              {formatAverage(summary.sorenessAverage)}
-            </p>
-          </div>
+        <div className="space-y-4">
+          <AverageMeter
+            label="Recuperación media"
+            percent={averageProgressPercent(
+              summary.recoveryAverage,
+              "recovery"
+            )}
+            tone={recoveryTone}
+            value={summary.recoveryAverage}
+          />
+          <AverageMeter
+            label="Energía media"
+            percent={averageProgressPercent(summary.energyAverage, "energy")}
+            tone={energyTone}
+            value={summary.energyAverage}
+          />
+          <AverageMeter
+            label="Dolor muscular"
+            percent={averageProgressPercent(
+              summary.sorenessAverage,
+              "soreness"
+            )}
+            tone={sorenessTone}
+            value={summary.sorenessAverage}
+          />
         </div>
+
+        {summary.alertCount > 0 ? (
+          <div className="flex items-center gap-2">
+            <WarningIcon
+              className={cn("size-4 shrink-0", wellnessValueClass(alertTone))}
+              weight="fill"
+            />
+            <div className="min-w-0">
+              <p
+                className={cn(
+                  "font-medium text-xs",
+                  wellnessLabelClass(alertTone)
+                )}
+              >
+                Alertas
+              </p>
+              <p
+                className={cn(
+                  "font-semibold text-xl tabular-nums",
+                  wellnessValueClass(alertTone)
+                )}
+              >
+                {summary.alertCount}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="min-w-0">
