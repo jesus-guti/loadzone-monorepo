@@ -290,6 +290,48 @@ export function formatAverage(value: number | null): string {
   return value.toFixed(1);
 }
 
+/** Bootstrap form bounds for visual average fill (not new metrics). */
+export const WELLNESS_AVERAGE_SCALE = {
+  recovery: 10,
+  energy: 5,
+  soreness: 5,
+} as const;
+
+export type WellnessAverageMetric = keyof typeof WELLNESS_AVERAGE_SCALE;
+
+/**
+ * Progress percent for a team mean against the form template max.
+ * Returns null when there is no average to render.
+ */
+export function averageProgressPercent(
+  value: number | null,
+  metric: WellnessAverageMetric
+): number | null {
+  if (value === null) {
+    return null;
+  }
+
+  const max = WELLNESS_AVERAGE_SCALE[metric];
+  if (max <= 0) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(100, (value / max) * 100));
+}
+
+/**
+ * Players who still owe pre and/or post (post expected).
+ * Workspace has no session-end signal; pending = missing either fill.
+ */
+export function listPendingPlayers(
+  players: TeamWellnessPlayer[]
+): TeamWellnessPlayer[] {
+  return players.filter((player) => {
+    const entry = getLatestEntry(player);
+    return !(entry?.preFilledAt && entry?.postFilledAt);
+  });
+}
+
 function average(values: number[]): number | null {
   if (values.length === 0) {
     return null;
@@ -315,6 +357,7 @@ export function buildWellnessSummary(
   const sorenessValues = todayEntries
     .map((entry) => entry.soreness)
     .filter((value): value is number => typeof value === "number");
+  const pendingPlayers = listPendingPlayers(players);
 
   return {
     alertCount: players.filter((player) => {
@@ -322,10 +365,7 @@ export function buildWellnessSummary(
       return state === "ALERT";
     }).length,
     energyAverage: average(energyValues),
-    pendingCount: players.filter((player) => {
-      const entry = getLatestEntry(player);
-      return !(entry?.preFilledAt && entry?.postFilledAt);
-    }).length,
+    pendingCount: pendingPlayers.length,
     postCompletedCount: players.filter((player) =>
       Boolean(getLatestEntry(player)?.postFilledAt)
     ).length,
