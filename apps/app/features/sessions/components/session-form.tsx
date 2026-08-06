@@ -205,6 +205,7 @@ export function SessionForm({
               <div className="space-y-2">
                 <FieldLabel htmlFor="type">Tipo</FieldLabel>
                 <Select
+                  items={SESSION_TYPES}
                   name="type"
                   onValueChange={(value) =>
                     setType(value as (typeof SESSION_TYPES)[number]["value"])
@@ -227,6 +228,7 @@ export function SessionForm({
               <div className="space-y-2">
                 <FieldLabel htmlFor="visibility">Visibilidad</FieldLabel>
                 <Select
+                  items={VISIBILITY_OPTIONS}
                   name="visibility"
                   onValueChange={(value) =>
                     setVisibility(

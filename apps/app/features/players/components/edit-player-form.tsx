@@ -73,7 +73,11 @@ export function EditPlayerForm({ player }: EditPlayerFormProperties) {
 
       <div className="space-y-2">
         <Label htmlFor="status">Estado</Label>
-        <Select name="status" defaultValue={player.status}>
+        <Select
+          defaultValue={player.status}
+          items={STATUS_OPTIONS}
+          name="status"
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
