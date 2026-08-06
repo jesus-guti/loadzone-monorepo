@@ -1,6 +1,6 @@
 "use client";
 
-import { BellIcon, ListIcon } from "@phosphor-icons/react/ssr";
+import { BellIcon } from "@phosphor-icons/react/ssr";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/button";
 import {
@@ -15,9 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@repo/design-system/components/sidebar";
-import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
@@ -59,32 +57,6 @@ const sidebarPrefetchHrefs = Array.from(
   )
 );
 
-function DesktopSidebarOpener() {
-  const { toggleSidebar, state } = useSidebar();
-  const tooltip =
-    state === "collapsed" ? "Expandir barra lateral" : "Contraer barra lateral";
-
-  return (
-    <div className="shrink-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            aria-label={tooltip}
-            className="w-fit [&_svg]:size-5"
-            onClick={() => {
-              toggleSidebar();
-            }}
-            tooltip={tooltip}
-            type="button"
-          >
-            <ListIcon className="size-5 shrink-0 text-text-secondary" />
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </div>
-  );
-}
-
 function SidebarBrandingHeader({
   staffContext,
 }: {
@@ -92,24 +64,17 @@ function SidebarBrandingHeader({
 }) {
   return (
     <SidebarHeader className="gap-2 p-2">
-      <div
-        className={cn(
-          "flex flex-row items-center justify-between gap-2",
-          "group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-1"
-        )}
-      >
-        <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center">
+      <div className="flex flex-row items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <TeamBranding
             clubLogoUrl={staffContext.club.logoUrl}
             clubName={staffContext.club.name}
-            detailsClassName="group-data-[collapsible=icon]:hidden"
             logoTreatment="ambient"
             showClubOnly
             teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
             teamName={staffContext.activeTeam?.name ?? null}
           />
         </div>
-        <DesktopSidebarOpener />
       </div>
     </SidebarHeader>
   );
@@ -118,16 +83,10 @@ function SidebarBrandingHeader({
 function SettingsSidebarHeader() {
   return (
     <SidebarHeader className="gap-2 p-2">
-      <div
-        className={cn(
-          "flex flex-row items-center justify-between gap-2",
-          "group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-1"
-        )}
-      >
-        <p className="min-w-0 flex-1 truncate px-2 font-semibold text-sm text-text-primary group-data-[collapsible=icon]:hidden">
+      <div className="flex flex-row items-center justify-between gap-2">
+        <p className="min-w-0 flex-1 truncate px-2 font-semibold text-sm text-text-primary">
           Configuración
         </p>
-        <DesktopSidebarOpener />
       </div>
     </SidebarHeader>
   );
@@ -150,7 +109,7 @@ export const GlobalSidebar = ({
   return (
     <AppShellProvider value={staffContext}>
       <OperationalRouteMemory />
-      <Sidebar collapsible="icon" variant="inset">
+      <Sidebar collapsible="offcanvas" variant="inset">
         {inSettings ? (
           <SettingsSidebarHeader />
         ) : (
@@ -161,9 +120,7 @@ export const GlobalSidebar = ({
           {inSettings ? (
             <>
               <SidebarGroup>
-                <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
-                  Volver
-                </SidebarGroupLabel>
+                <SidebarGroupLabel>Volver</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SettingsVolverLink />
                 </SidebarGroupContent>
@@ -176,7 +133,6 @@ export const GlobalSidebar = ({
                     {settingsNavigation.map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
-                          className="[&_svg]:size-5"
                           isActive={item.match(pathname)}
                           tooltip={item.label}
                           render={
@@ -201,12 +157,11 @@ export const GlobalSidebar = ({
                     {primaryNavigation.map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
-                          className="[&_svg]:size-5"
                           isActive={item.match(pathname)}
                           tooltip={item.label}
                           render={
                             <Link href={item.href} prefetch>
-                              <item.icon />
+                              <item.icon weight="fill" />
                               <span>{item.label}</span>
                             </Link>
                           }
@@ -224,12 +179,11 @@ export const GlobalSidebar = ({
                     {secondaryNavigation.map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
-                          className="[&_svg]:size-5"
                           isActive={item.match(pathname)}
                           tooltip={item.label}
                           render={
                             <Link href={item.href} prefetch>
-                              <item.icon />
+                              <item.icon weight="fill" />
                               <span>{item.label}</span>
                             </Link>
                           }
@@ -245,9 +199,9 @@ export const GlobalSidebar = ({
 
         {inSettings ? null : (
           <SidebarFooter className="gap-2">
-            <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center">
+            <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3">
               <Button aria-label="Notificaciones" size="icon" variant="ghost">
-                <BellIcon className="size-5" weight="fill" />
+                <BellIcon className="size-4" weight="fill" />
               </Button>
               <ModeToggle />
             </div>

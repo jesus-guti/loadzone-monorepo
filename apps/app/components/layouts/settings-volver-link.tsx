@@ -27,10 +27,9 @@ export function SettingsVolverLink() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
-          className="[&_svg]:size-5"
           render={
             <Link href={memory.href} prefetch>
-              <ArrowLeftIcon className="size-5 shrink-0" weight="fill" />
+              <ArrowLeftIcon className="size-4 shrink-0" weight="fill" />
               <span>{label}</span>
             </Link>
           }
