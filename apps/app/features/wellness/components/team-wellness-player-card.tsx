@@ -149,16 +149,28 @@ export function TeamWellnessPlayerCard({
             <div className="space-y-3">
               <div className="space-y-1">
                 <p className="text-xs text-text-tertiary">Recuperación</p>
-                <RecoveryScale size="md" value={entry?.recovery ?? null} />
+                <RecoveryScale
+                  alertAtOrBelow={wellnessLimits?.recovery ?? null}
+                  size="md"
+                  value={entry?.recovery ?? null}
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <p className="text-xs text-text-tertiary">Energía</p>
-                  <EnergyScale size="md" value={entry?.energy ?? null} />
+                  <EnergyScale
+                    alertAtOrBelow={wellnessLimits?.energy ?? null}
+                    size="md"
+                    value={entry?.energy ?? null}
+                  />
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-text-tertiary">Agujetas</p>
-                  <SorenessScale size="md" value={entry?.soreness ?? null} />
+                  <SorenessScale
+                    alertAtOrAbove={wellnessLimits?.soreness ?? null}
+                    size="md"
+                    value={entry?.soreness ?? null}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">

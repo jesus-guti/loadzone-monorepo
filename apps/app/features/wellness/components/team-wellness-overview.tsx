@@ -42,6 +42,7 @@ type TeamWellnessComparisonRowProperties = {
 
 function TeamWellnessComparisonRow({
   player,
+  wellnessLimits,
 }: TeamWellnessComparisonRowProperties) {
   const entry = getLatestEntry(player);
   const riskLevel = player.stats[0]?.riskLevel;
@@ -75,13 +76,25 @@ function TeamWellnessComparisonRow({
         {entry?.postFilledAt ? "Sí" : "—"}
       </TableCell>
       <TableCell className="hidden py-2 md:table-cell">
-        <RecoveryScale size="sm" value={entry?.recovery ?? null} />
+        <RecoveryScale
+          alertAtOrBelow={wellnessLimits?.recovery ?? null}
+          size="sm"
+          value={entry?.recovery ?? null}
+        />
       </TableCell>
       <TableCell className="hidden py-2 md:table-cell">
-        <EnergyScale size="sm" value={entry?.energy ?? null} />
+        <EnergyScale
+          alertAtOrBelow={wellnessLimits?.energy ?? null}
+          size="sm"
+          value={entry?.energy ?? null}
+        />
       </TableCell>
       <TableCell className="hidden py-2 md:table-cell">
-        <SorenessScale size="sm" value={entry?.soreness ?? null} />
+        <SorenessScale
+          alertAtOrAbove={wellnessLimits?.soreness ?? null}
+          size="sm"
+          value={entry?.soreness ?? null}
+        />
       </TableCell>
       <TableCell className="py-2 pr-0">
         <RiskScale

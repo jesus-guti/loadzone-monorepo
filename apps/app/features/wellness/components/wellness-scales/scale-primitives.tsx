@@ -1,3 +1,4 @@
+import { StarIcon } from "@phosphor-icons/react/ssr";
 import { cn } from "@repo/design-system/lib/utils";
 
 export type ScaleSize = "sm" | "md";
@@ -63,15 +64,18 @@ export function ScaleSlider({
   polarity = "higherIsWorse",
   size = "md",
   className,
+  thumbClassName,
 }: SizeProps & {
   readonly value: number;
   readonly max?: number;
   readonly label?: string;
   readonly polarity?: ScalePolarity;
+  /** Optional override (e.g. club wellness-limit traffic tone). */
+  readonly thumbClassName?: string;
 }) {
   const clamped = Math.min(max, Math.max(0, value));
   const ratio = max === 0 ? 0 : clamped / max;
-  const thumb = sliderThumbTone(clamped, max, polarity);
+  const thumb = thumbClassName ?? sliderThumbTone(clamped, max, polarity);
   const thumbSize = sliderThumbSize(clamped, max, polarity, size);
   const trackGradient =
     polarity === "higherIsWorse"
@@ -104,7 +108,7 @@ export function ScaleSlider({
         />
         <div
           className={cn(
-            "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg-primary shadow-sm",
+            "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg-primary",
             thumb,
             thumbSize
           )}
@@ -295,17 +299,15 @@ export function ScaleStars({
   return (
     <div className={cn("inline-flex items-center gap-0.5", className)}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <svg
+        <StarIcon
           key={n}
           aria-hidden
           className={cn(
             sizeClass(size, "size-3", "size-3.5"),
-            n <= level ? "fill-brand" : "fill-border-tertiary"
+            n <= level ? "text-brand" : "text-border-tertiary"
           )}
-          viewBox="0 0 14 14"
-        >
-          <path d="M7 1.2l1.6 3.3 3.6.5-2.6 2.6.6 3.6L7 9.5 3.8 11.2l.6-3.6L1.8 5l3.6-.5L7 1.2z" />
-        </svg>
+          weight="fill"
+        />
       ))}
     </div>
   );

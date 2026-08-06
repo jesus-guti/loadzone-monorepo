@@ -8,11 +8,32 @@ import {
   ScaleThermometer,
   type ScaleSize,
 } from "./scale-primitives";
+import type { WellnessTrafficTone } from "../team-wellness-workspace.utils";
+import {
+  toneForHigherIsWorse,
+  toneForLowerIsBetter,
+  wellnessValueClass,
+} from "../team-wellness-workspace.utils";
 
 type MetricScaleProps = {
   readonly size?: ScaleSize;
   readonly className?: string;
 };
+
+function trafficThumbClass(tone: WellnessTrafficTone): string {
+  switch (tone) {
+    case "good":
+      return "bg-success";
+    case "watch":
+      return "bg-premium";
+    case "bad":
+      return "bg-danger";
+    case "neutral":
+      return "bg-text-secondary";
+    default:
+      return "bg-text-secondary";
+  }
+}
 
 export function EmptyScale({
   className,
@@ -78,15 +99,21 @@ export function RecoveryScale({
   size = "md",
   className,
   showLabel = false,
+  alertAtOrBelow,
 }: MetricScaleProps & {
   readonly value: number | null | undefined;
   readonly showLabel?: boolean;
+  readonly alertAtOrBelow?: number | null;
 }) {
   if (value === null || value === undefined) {
     return <EmptyScale label="Recuperación sin datos" />;
   }
 
   const level = clampScaleLevel(value, 0, 10);
+  const tone =
+    alertAtOrBelow === undefined
+      ? null
+      : toneForLowerIsBetter(level, alertAtOrBelow);
   return (
     <div aria-label={`Recuperación ${level} de 10`} className={className}>
       <ScaleSlider
@@ -94,6 +121,7 @@ export function RecoveryScale({
         max={10}
         polarity="higherIsBetter"
         size={size}
+        thumbClassName={tone ? trafficThumbClass(tone) : undefined}
         value={level}
       />
     </div>
@@ -104,14 +132,20 @@ export function EnergyScale({
   value,
   size = "md",
   className,
+  alertAtOrBelow,
 }: MetricScaleProps & {
   readonly value: number | null | undefined;
+  readonly alertAtOrBelow?: number | null;
 }) {
   if (value === null || value === undefined) {
     return <EmptyScale label="Energía sin datos" />;
   }
 
   const level = clampScaleLevel(value, 1, 5);
+  const tone =
+    alertAtOrBelow === undefined
+      ? null
+      : toneForLowerIsBetter(level, alertAtOrBelow);
   return (
     <div
       aria-label={`Energía ${level} de 5`}
@@ -119,7 +153,12 @@ export function EnergyScale({
     >
       <ScaleBattery level={level} size={size} />
       {size === "md" ? (
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span
+          className={cn(
+            "text-sm font-semibold tabular-nums",
+            tone ? wellnessValueClass(tone) : "text-text-primary"
+          )}
+        >
           {level}
         </span>
       ) : null}
@@ -131,14 +170,20 @@ export function SorenessScale({
   value,
   size = "md",
   className,
+  alertAtOrAbove,
 }: MetricScaleProps & {
   readonly value: number | null | undefined;
+  readonly alertAtOrAbove?: number | null;
 }) {
   if (value === null || value === undefined) {
     return <EmptyScale label="Agujetas sin datos" />;
   }
 
   const level = clampScaleLevel(value, 1, 5);
+  const tone =
+    alertAtOrAbove === undefined
+      ? null
+      : toneForHigherIsWorse(level, alertAtOrAbove);
   return (
     <div
       aria-label={`Agujetas ${level} de 5`}
@@ -146,7 +191,12 @@ export function SorenessScale({
     >
       <ScaleIntensity level={level} size={size} />
       {size === "md" ? (
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span
+          className={cn(
+            "text-sm font-semibold tabular-nums",
+            tone ? wellnessValueClass(tone) : "text-text-primary"
+          )}
+        >
           {level}
         </span>
       ) : null}
