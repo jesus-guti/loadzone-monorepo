@@ -20,10 +20,7 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <SidebarProvider
-      className="h-svh min-h-0 overflow-hidden"
-      defaultOpen={false}
-    >
+    <SidebarProvider className="h-svh min-h-0 overflow-hidden" open>
       <GlobalSidebar staffContext={staffContext}>
         <QueryClientProviderWrapper>{children}</QueryClientProviderWrapper>
       </GlobalSidebar>
