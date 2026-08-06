@@ -82,7 +82,7 @@ export function SidebarUserMenu() {
                       {getInitials(user?.name, user?.email ?? null)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold text-text-primary">
                       {user?.name ?? "Usuario"}
                     </span>

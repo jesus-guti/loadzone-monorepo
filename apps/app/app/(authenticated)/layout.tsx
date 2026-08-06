@@ -37,12 +37,9 @@ async function AuthenticatedShell({
   );
 }
 
-const AppLayout = ({ children }: AppLayoutProperties) => {
+const AppLayout = ({ children }: AppLayoutProperties): ReactNode => {
   return (
-    <SidebarProvider
-      className="h-svh min-h-0 overflow-hidden"
-      defaultOpen={false}
-    >
+    <SidebarProvider className="h-svh min-h-0 overflow-hidden" open>
       <Suspense fallback={<StaffShellInitialLoader />}>
         <AuthenticatedShell>{children}</AuthenticatedShell>
       </Suspense>

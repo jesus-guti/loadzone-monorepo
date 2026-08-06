@@ -1,10 +1,11 @@
+import type { ReactElement } from "react";
 import { Spinner } from "@repo/design-system/components/spinner";
 
 /**
  * First-paint staff shell while auth + GlobalSidebar resolve.
  * Empty sidebar slot + empty main card + centered loader — not a fake dashboard.
  */
-export function StaffShellInitialLoader() {
+export function StaffShellInitialLoader(): ReactElement {
   return (
     <div className="flex h-full min-h-0 w-full flex-1 bg-bg-secondary">
       <aside
