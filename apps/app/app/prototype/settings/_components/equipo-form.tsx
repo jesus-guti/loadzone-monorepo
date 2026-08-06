@@ -89,6 +89,10 @@ export function EquipoForm({
       >
         <SettingsRow htmlFor="prototype-category" label="Categoría">
           <Select
+            items={CATEGORY_OPTIONS.map((option) => ({
+              value: option,
+              label: option,
+            }))}
             value={category}
             onValueChange={(value: string | null) => {
               if (value) {
@@ -120,6 +124,10 @@ export function EquipoForm({
       >
         <SettingsRow htmlFor="prototype-timezone" label="Zona horaria">
           <Select
+            items={TIMEZONE_OPTIONS.map((option) => ({
+              value: option,
+              label: option,
+            }))}
             value={timezone}
             onValueChange={(value: string | null) => {
               if (value) {
