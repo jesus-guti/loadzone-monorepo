@@ -105,6 +105,7 @@ export function AttendanceForm({
                 <td className="px-4 py-3 text-text-primary">{row.playerName}</td>
                 <td className="px-4 py-3">
                   <Select
+                    items={STATUS_OPTIONS}
                     onValueChange={(value) =>
                       updateRow(row.playerId, {
                         status: value as AttendanceStatus,
@@ -176,6 +177,7 @@ export function AttendanceForm({
               {row.playerName}
             </p>
             <Select
+              items={STATUS_OPTIONS}
               onValueChange={(value) =>
                 updateRow(row.playerId, {
                   status: value as AttendanceStatus,

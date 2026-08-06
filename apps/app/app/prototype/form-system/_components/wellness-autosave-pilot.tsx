@@ -243,6 +243,13 @@ export function WellnessAutosavePilot() {
                 <Field data-invalid={fieldState.invalid || undefined}>
                   <FieldLabel>Formulario pre-sesión</FieldLabel>
                   <Select
+                    items={[
+                      { value: NONE_VALUE, label: "Sin asignar" },
+                      ...PRE_TEMPLATES.map((template) => ({
+                        value: template.id,
+                        label: template.name,
+                      })),
+                    ]}
                     value={toSelectValue(field.value)}
                     onValueChange={(next) => {
                       const value = fromSelectValue(next);
@@ -276,6 +283,13 @@ export function WellnessAutosavePilot() {
                 <Field data-invalid={fieldState.invalid || undefined}>
                   <FieldLabel>Formulario post-sesión</FieldLabel>
                   <Select
+                    items={[
+                      { value: NONE_VALUE, label: "Sin asignar" },
+                      ...POST_TEMPLATES.map((template) => ({
+                        value: template.id,
+                        label: template.name,
+                      })),
+                    ]}
                     value={toSelectValue(field.value)}
                     onValueChange={(next) => {
                       const value = fromSelectValue(next);
