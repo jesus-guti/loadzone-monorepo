@@ -21,12 +21,17 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import { PendingReminderDialog } from "./pending-reminder-dialog";
 import {
+  EnergyScale,
+  RecoveryScale,
+  RiskScale,
+  SorenessScale,
+} from "./wellness-scales";
+import {
   averageProgressPercent,
   formatAverage,
   getInitials,
   getLatestEntry,
   getRiskLabel,
-  getRiskValueClassName,
   listPendingPlayers,
   type TeamWellnessWorkspaceSummary,
   type WellnessTrafficTone,
@@ -34,7 +39,6 @@ import {
   toneForHigherIsWorse,
   toneForLowerIsBetter,
   tonePendingWorkload,
-  wellnessAverageFillClass,
   wellnessLabelClass,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
@@ -50,14 +54,6 @@ function TeamWellnessComparisonRow({
 }: TeamWellnessComparisonRowProperties) {
   const entry = getLatestEntry(player);
   const riskLevel = player.stats[0]?.riskLevel;
-  const recoveryCellTone = toneForLowerIsBetter(
-    entry?.recovery ?? null,
-    wellnessLimits?.recovery ?? null
-  );
-  const energyCellTone = toneForLowerIsBetter(
-    entry?.energy ?? null,
-    wellnessLimits?.energy ?? null
-  );
 
   return (
     <TableRow className="border-0 hover:bg-bg-secondary/40">
@@ -87,29 +83,33 @@ function TeamWellnessComparisonRow({
       >
         {entry?.postFilledAt ? "Sí" : "—"}
       </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          wellnessValueClass(recoveryCellTone)
-        )}
-      >
-        {entry?.recovery ?? "—"}
+      <TableCell className="hidden py-2 md:table-cell">
+        <RecoveryScale
+          alertAtOrBelow={wellnessLimits?.recovery ?? null}
+          size="sm"
+          value={entry?.recovery ?? null}
+        />
       </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          wellnessValueClass(energyCellTone)
-        )}
-      >
-        {entry?.energy ?? "—"}
+      <TableCell className="hidden py-2 md:table-cell">
+        <EnergyScale
+          alertAtOrBelow={wellnessLimits?.energy ?? null}
+          size="sm"
+          value={entry?.energy ?? null}
+        />
       </TableCell>
-      <TableCell
-        className={cn(
-          "py-2 pr-0 tabular-nums",
-          getRiskValueClassName(riskLevel)
-        )}
-      >
-        {getRiskLabel(riskLevel)}
+      <TableCell className="hidden py-2 md:table-cell">
+        <SorenessScale
+          alertAtOrAbove={wellnessLimits?.soreness ?? null}
+          size="sm"
+          value={entry?.soreness ?? null}
+        />
+      </TableCell>
+      <TableCell className="py-2 pr-0">
+        <RiskScale
+          label={riskLevel ? getRiskLabel(riskLevel) : undefined}
+          riskLevel={riskLevel}
+          size="sm"
+        />
       </TableCell>
     </TableRow>
   );
@@ -120,43 +120,54 @@ type AverageMeterProperties = {
   readonly value: number | null;
   readonly percent: number | null;
   readonly tone: WellnessTrafficTone;
+  /** Spectrum direction for the morphism fill (summary only). */
+  readonly polarity?: "higherIsBetter" | "higherIsWorse";
 };
+
+function averageMorphFillClass(
+  polarity: "higherIsBetter" | "higherIsWorse"
+): string {
+  return polarity === "higherIsWorse"
+    ? "bg-gradient-to-r from-success via-premium to-danger"
+    : "bg-gradient-to-r from-danger via-premium to-success";
+}
 
 function AverageMeter({
   label,
   value,
   percent,
   tone,
+  polarity = "higherIsBetter",
 }: AverageMeterProperties) {
   return (
-    <div className="min-w-0 space-y-1.5">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className={cn("font-medium text-xs", wellnessLabelClass(tone))}>
-          {label}
-        </p>
+    <div className="min-w-0 space-y-1">
+      <p className={cn("font-medium text-xs", wellnessLabelClass(tone))}>
+        {label}
+      </p>
+      <div className="flex items-center gap-2">
+        <div
+          aria-hidden={percent === null}
+          className="h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-bg-tertiary"
+          role="presentation"
+        >
+          {percent === null ? null : (
+            <div
+              className={cn(
+                "h-full rounded-full transition-[width] duration-200",
+                averageMorphFillClass(polarity)
+              )}
+              style={{ width: `${percent}%` }}
+            />
+          )}
+        </div>
         <p
           className={cn(
-            "font-semibold text-sm tabular-nums",
+            "shrink-0 font-semibold text-sm tabular-nums",
             wellnessValueClass(tone)
           )}
         >
           {formatAverage(value)}
         </p>
-      </div>
-      <div
-        aria-hidden={percent === null}
-        className="h-1.5 overflow-hidden rounded-full bg-bg-tertiary"
-        role="presentation"
-      >
-        {percent === null ? null : (
-          <div
-            className={cn(
-              "h-full rounded-full transition-[width] duration-200",
-              wellnessAverageFillClass(tone)
-            )}
-            style={{ width: `${percent}%` }}
-          />
-        )}
       </div>
     </div>
   );
@@ -279,12 +290,14 @@ export function TeamWellnessOverview({
               summary.recoveryAverage,
               "recovery"
             )}
+            polarity="higherIsBetter"
             tone={recoveryTone}
             value={summary.recoveryAverage}
           />
           <AverageMeter
             label="Energía media"
             percent={averageProgressPercent(summary.energyAverage, "energy")}
+            polarity="higherIsBetter"
             tone={energyTone}
             value={summary.energyAverage}
           />
@@ -294,6 +307,7 @@ export function TeamWellnessOverview({
               summary.sorenessAverage,
               "soreness"
             )}
+            polarity="higherIsWorse"
             tone={sorenessTone}
             value={summary.sorenessAverage}
           />
@@ -345,6 +359,9 @@ export function TeamWellnessOverview({
               </TableHead>
               <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
                 Energía
+              </TableHead>
+              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
+                Agujetas
               </TableHead>
               <TableHead className="h-8 pr-0 font-medium text-text-tertiary text-xs">
                 Riesgo

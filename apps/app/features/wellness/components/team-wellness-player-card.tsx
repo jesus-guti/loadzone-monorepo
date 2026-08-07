@@ -15,6 +15,13 @@ import Link from "next/link";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
+  EnergyScale,
+  RecoveryScale,
+  RiskScale,
+  RpeScale,
+  SorenessScale,
+} from "./wellness-scales";
+import {
   getDailyPlayerState,
   getInitials,
   getInjuryLabel,
@@ -40,6 +47,13 @@ export function TeamWellnessPlayerCard({
   const hasPhysio = Boolean(entry?.physioAlert);
   const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
   const wellnessAlerts = getWellnessAlerts(entry, wellnessLimits);
+  const hasEntryMetrics = Boolean(
+    entry &&
+      (entry.recovery !== null ||
+        entry.energy !== null ||
+        entry.soreness !== null ||
+        entry.rpe !== null)
+  );
   const avatarBadgeIcon = injuryLabel ? (
     <ShieldWarningIcon className="size-3 text-premium" />
   ) : (
@@ -130,20 +144,64 @@ export function TeamWellnessPlayerCard({
               ) : null}
             </div>
           ) : null}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+
+          {hasEntryMetrics ? (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-xs text-text-tertiary">Recuperación</p>
+                <RecoveryScale
+                  alertAtOrBelow={wellnessLimits?.recovery ?? null}
+                  size="md"
+                  value={entry?.recovery ?? null}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-text-tertiary">Energía</p>
+                  <EnergyScale
+                    alertAtOrBelow={wellnessLimits?.energy ?? null}
+                    size="md"
+                    value={entry?.energy ?? null}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-text-tertiary">Agujetas</p>
+                  <SorenessScale
+                    alertAtOrAbove={wellnessLimits?.soreness ?? null}
+                    size="md"
+                    value={entry?.soreness ?? null}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-text-tertiary">Riesgo</p>
+                  <RiskScale
+                    label={riskLevel ? getRiskLabel(riskLevel) : undefined}
+                    riskLevel={riskLevel}
+                    size="md"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-text-tertiary">RPE</p>
+                  <RpeScale size="md" value={entry?.rpe ?? null} />
+                </div>
+              </div>
+            </div>
+          ) : riskLevel ? (
+            <div className="space-y-1">
               <p className="text-xs text-text-tertiary">Riesgo</p>
-              <p className="mt-1 text-base font-semibold text-text-primary">
-                {getRiskLabel(riskLevel)}
-              </p>
+              <RiskScale
+                label={getRiskLabel(riskLevel)}
+                riskLevel={riskLevel}
+                size="md"
+              />
             </div>
-            <div>
-              <p className="text-xs text-text-tertiary">RPE</p>
-              <p className="mt-1 text-base font-semibold text-text-primary tabular-nums">
-                {entry?.rpe ?? "—"}
-              </p>
-            </div>
-          </div>
+          ) : (
+            <p className="text-sm text-text-tertiary">
+              Sin registro de wellness hoy.
+            </p>
+          )}
         </CardContent>
       </Card>
     </Link>
