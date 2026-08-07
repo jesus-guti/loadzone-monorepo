@@ -45,7 +45,7 @@ export function ExerciseLibraryListToolbar({
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-      <div className="relative min-w-0 flex-1 lg:max-w-xl border-b">
+      <div className="relative min-w-0 flex-1 lg:max-w-xl">
         <MagnifyingGlassIcon
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-secondary"
