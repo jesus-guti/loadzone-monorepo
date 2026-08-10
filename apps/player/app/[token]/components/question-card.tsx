@@ -20,15 +20,14 @@ type QuestionCardProperties = {
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 const CLOSE_DURATION_S = 0.2;
-const OPEN_DURATION_S = 0.22;
 const REDUCED_DURATION_S = 0.15;
 
 /**
- * Focus-frame question chrome: one active question, compact completed rows,
- * upcoming steps stay hidden (OQAT).
+ * Focus-frame question chrome: compact completed rows, and active body
+ * content for the persistent shell in `FocusStepList` (OQAT).
  *
- * Active cards expect a parent `AnimatePresence mode="wait"` so height
- * close→open sequences across steps. Reduced motion skips height.
+ * Active state is content-only (no outer card / height motion) so the parent
+ * shell can close→open as one continuous panel.
  */
 export function QuestionCard({
   state,
@@ -79,31 +78,7 @@ export function QuestionCard({
   }
 
   return (
-    <motion.section
-      layout={false}
-      style={style}
-      aria-current="step"
-      className="space-y-6 overflow-hidden rounded-3xl bg-bg-secondary p-6"
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-      animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
-      exit={
-        reduceMotion
-          ? {
-              opacity: 0,
-              transition: { duration: REDUCED_DURATION_S, ease: easeOut },
-            }
-          : {
-              opacity: 0,
-              height: 0,
-              transition: { duration: CLOSE_DURATION_S, ease: easeOut },
-            }
-      }
-      transition={
-        reduceMotion
-          ? { duration: REDUCED_DURATION_S, ease: easeOut }
-          : { duration: OPEN_DURATION_S, ease: easeOut }
-      }
-    >
+    <div style={style} aria-current="step" className="space-y-6 p-6">
       <header className="space-y-3 text-center">
         <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
           Pregunta {index + 1}
@@ -115,13 +90,7 @@ export function QuestionCard({
           <div className="flex justify-center">{accessory}</div>
         ) : null}
       </header>
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: OPEN_DURATION_S, ease: easeOut }}
-      >
-        {children}
-      </motion.div>
-    </motion.section>
+      <div>{children}</div>
+    </div>
   );
 }
