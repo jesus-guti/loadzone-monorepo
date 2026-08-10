@@ -111,7 +111,7 @@ export function ExerciseLibraryListToolbar({
           <SelectTrigger
             aria-label="Ordenar lista de ejercicios"
             className="min-w-30 max-w-48 truncate border-border-secondary font-medium text-text-primary shadow-none sm:min-w-32"
-            size="sm"
+            size="default"
           >
             <SortAscendingIcon
               aria-hidden

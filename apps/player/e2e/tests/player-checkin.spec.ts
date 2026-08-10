@@ -173,10 +173,9 @@ test.describe("Player check-in E2E", () => {
       await expect(
         page.getByText("Pulsa o desliza para elegir")
       ).toBeVisible();
-      const recoveryClass = await sliders.first().getAttribute("class");
-      expect(recoveryClass ?? "").toContain("webkit-slider-thumb");
-      expect(recoveryClass ?? "").toContain("moz-range-thumb");
-      expect(recoveryClass ?? "").not.toContain("mt-[-20px]");
+      await expect(page.locator("[data-slider-thumb]").first()).toBeVisible();
+      await expect(page.locator(".player-slider-thumb").first()).toBeVisible();
+      await expect(sliders.first()).toHaveClass(/player-slider-range/);
 
       // Step 1: Recovery (slider 0-10)
       await setSlider(sliders.first(), vals.recovery);

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   midpointForRange,
   sliderReadoutDigit,
+  sliderThumbOffsetPercent,
 } from "../app/[token]/lib/slider-readout";
 
 describe("midpointForRange", () => {
@@ -22,5 +23,17 @@ describe("sliderReadoutDigit", () => {
   it("shows the committed digit after interaction", () => {
     expect(sliderReadoutDigit(7, 0, 10)).toBe(7);
     expect(sliderReadoutDigit(0, 0, 10)).toBe(0);
+  });
+});
+
+describe("sliderThumbOffsetPercent", () => {
+  it("maps the scale ends and midpoint", () => {
+    expect(sliderThumbOffsetPercent(0, 0, 10)).toBe(0);
+    expect(sliderThumbOffsetPercent(5, 0, 10)).toBe(50);
+    expect(sliderThumbOffsetPercent(10, 0, 10)).toBe(100);
+  });
+
+  it("returns 0 when min equals max", () => {
+    expect(sliderThumbOffsetPercent(3, 3, 3)).toBe(0);
   });
 });

@@ -15,3 +15,17 @@ export function sliderReadoutDigit(
 ): number {
   return value ?? midpointForRange(min, max);
 }
+
+/**
+ * 0–100 position along the track for the visual thumb (matches native range).
+ */
+export function sliderThumbOffsetPercent(
+  value: number,
+  min: number,
+  max: number
+): number {
+  if (max === min) {
+    return 0;
+  }
+  return ((value - min) / (max - min)) * 100;
+}
