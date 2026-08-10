@@ -129,9 +129,24 @@ test.describe("Player check-in E2E", () => {
       const count = await sliders.count();
       expect(count).toBeGreaterThan(0);
 
+      // Unset recovery affordance: mid digit (not lone "–") + press/drag hint
+      const recoveryReadout = page.locator(".text-7xl").first();
+      await expect(recoveryReadout).toHaveText("5");
+      await expect(recoveryReadout).not.toHaveText("–");
+      await expect(
+        page.getByText("Pulsa o desliza para elegir")
+      ).toBeVisible();
+      const recoveryClass = await sliders.first().getAttribute("class");
+      expect(recoveryClass ?? "").toContain("webkit-slider-thumb");
+      expect(recoveryClass ?? "").toContain("moz-range-thumb");
+      expect(recoveryClass ?? "").not.toContain("mt-[-20px]");
+
       // Step 1: Recovery (slider 0-10)
       await setSlider(sliders.first(), vals.recovery);
       await page.waitForTimeout(800);
+      await expect(page.locator(".text-7xl").first()).toHaveText(
+        String(vals.recovery)
+      );
 
       // Step 2: Energy (slider 1-5)
       const s2 = page.locator('input[type="range"]').first();
@@ -207,8 +222,18 @@ test.describe("Player check-in E2E", () => {
       const count = await sliders.count();
       expect(count).toBeGreaterThan(0);
 
+      const rpeReadout = page.locator(".text-7xl").first();
+      await expect(rpeReadout).toHaveText("5");
+      await expect(rpeReadout).not.toHaveText("–");
+      await expect(
+        page.getByText("Pulsa o desliza para elegir")
+      ).toBeVisible();
+
       await setSlider(sliders.first(), vals.rpe);
       await page.waitForTimeout(800);
+      await expect(page.locator(".text-7xl").first()).toHaveText(
+        String(vals.rpe)
+      );
 
       // Step 2: Duration (chip selector)
       const durationChip = page.locator("button", {
