@@ -1,5 +1,11 @@
 import { database, type PlayerStatus, type RiskLevel } from "@repo/database";
-import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
+import { mapInjuryRowsToIntervals } from "@repo/database/injury-status";
+import {
+  civilDateToUtcMidnight,
+  effectiveCurrentStreak,
+  isInjuryActiveOnDay,
+  toCivilDateString,
+} from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
 
 export type TeamWellnessPlayer = {
@@ -8,6 +14,8 @@ export type TeamWellnessPlayer = {
   name: string;
   status: PlayerStatus;
   currentStreak: number;
+  /** Official Injury active on evaluated civil day D (Team.timezone). */
+  injuryExemptOnEvaluatedDay: boolean;
   entries: Array<{
     date: Date;
     recovery: number | null;
@@ -62,18 +70,22 @@ function average(values: number[]): number | null {
   return total / values.length;
 }
 
-function getStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
-}
-
-function formatDateForCookie(date: Date): string {
+function civilYmdFromLocalDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
+}
+
+function resolveEvaluatedCivil(
+  evaluatedDateInput: Date | null | undefined,
+  timeZone: string
+): string {
+  if (evaluatedDateInput) {
+    // Cookie / filter builds a local midnight from YYYY-MM-DD; recover that civil day.
+    return civilYmdFromLocalDate(evaluatedDateInput);
+  }
+  return toCivilDateString(new Date(), timeZone);
 }
 
 export async function getTeamWellnessWorkspaceData(
@@ -81,8 +93,18 @@ export async function getTeamWellnessWorkspaceData(
   seasonId?: string | null,
   evaluatedDateInput?: Date | null
 ): Promise<TeamWellnessWorkspaceData | null> {
-  const today = evaluatedDateInput ? getStartOfDay(evaluatedDateInput) : new Date();
-  today.setHours(0, 0, 0, 0);
+  const teamForClock = await database.team.findUnique({
+    where: { id: teamId },
+    select: { timezone: true },
+  });
+
+  if (!teamForClock) {
+    return null;
+  }
+
+  const timeZone = teamForClock.timezone || "Europe/Madrid";
+  const evaluatedCivil = resolveEvaluatedCivil(evaluatedDateInput, timeZone);
+  const today = civilDateToUtcMidnight(evaluatedCivil);
 
   const team = await database.team.findUnique({
     where: {
@@ -130,79 +152,114 @@ export async function getTeamWellnessWorkspaceData(
           })
         )) ??
     null;
-  const rawPlayers = await database.player.findMany({
-    where: { teamId: team.id, isArchived: false },
-    select: {
-      id: true,
-      imageUrl: true,
-      name: true,
-      status: true,
-      currentStreak: true,
-      streakSeasonId: true,
-      entries: {
-        where: activeSeason
-          ? { seasonId: activeSeason.id, date: today }
-          : { date: today },
-        orderBy: { date: "desc" },
-        take: 1,
-        select: {
-          date: true,
-          recovery: true,
-          energy: true,
-          soreness: true,
-          sleepHours: true,
-          sleepQuality: true,
-          rpe: true,
-          duration: true,
-          preFilledAt: true,
-          postFilledAt: true,
-          physioAlert: true,
-        },
-      },
-      stats: {
-        where: activeSeason ? { seasonId: activeSeason.id } : undefined,
-        orderBy: { date: "desc" },
-        take: 1,
-        select: {
-          riskLevel: true,
-          acwr: true,
-        },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
 
-  const players: TeamWellnessPlayer[] = rawPlayers.map((player) => ({
-    id: player.id,
-    imageUrl: resolveStorageUrl(player.imageUrl),
-    name: player.name,
-    status: player.status,
-    currentStreak: effectiveCurrentStreak({
-      currentStreak: player.currentStreak,
-      streakSeasonId: player.streakSeasonId,
-      activeSeasonId: activeSeason?.id ?? null,
+  const [rawPlayers, injuries] = await Promise.all([
+    database.player.findMany({
+      where: { teamId: team.id, isArchived: false },
+      select: {
+        id: true,
+        imageUrl: true,
+        name: true,
+        status: true,
+        currentStreak: true,
+        streakSeasonId: true,
+        entries: {
+          where: activeSeason
+            ? { seasonId: activeSeason.id, date: today }
+            : { date: today },
+          orderBy: { date: "desc" },
+          take: 1,
+          select: {
+            date: true,
+            recovery: true,
+            energy: true,
+            soreness: true,
+            sleepHours: true,
+            sleepQuality: true,
+            rpe: true,
+            duration: true,
+            preFilledAt: true,
+            postFilledAt: true,
+            physioAlert: true,
+          },
+        },
+        stats: {
+          where: activeSeason ? { seasonId: activeSeason.id } : undefined,
+          orderBy: { date: "desc" },
+          take: 1,
+          select: {
+            riskLevel: true,
+            acwr: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
     }),
-    entries: player.entries.map((entry) => ({
-      date: entry.date,
-      recovery: entry.recovery,
-      energy: entry.energy,
-      soreness: entry.soreness,
-      sleepHours:
-        entry.sleepHours === null || entry.sleepHours === undefined
-          ? null
-          : Number(entry.sleepHours),
-      sleepQuality: entry.sleepQuality,
-      rpe: entry.rpe,
-      duration: entry.duration,
-      preFilledAt: entry.preFilledAt,
-      postFilledAt: entry.postFilledAt,
-      physioAlert: entry.physioAlert,
-    })),
-    stats: player.stats.map((stat) => ({
-      riskLevel: stat.riskLevel,
-      acwr: stat.acwr === null || stat.acwr === undefined ? null : Number(stat.acwr),
-    })),
-  }));
+    database.injury.findMany({
+      where: {
+        teamId: team.id,
+        startDate: { lte: today },
+        OR: [{ endDate: null }, { endDate: { gte: today } }],
+      },
+      select: {
+        playerId: true,
+        startDate: true,
+        endDate: true,
+      },
+    }),
+  ]);
+
+  const intervalsByPlayerId = new Map<
+    string,
+    ReturnType<typeof mapInjuryRowsToIntervals>
+  >();
+  for (const injury of injuries) {
+    const mapped = mapInjuryRowsToIntervals([injury]);
+    const existing = intervalsByPlayerId.get(injury.playerId) ?? [];
+    intervalsByPlayerId.set(injury.playerId, [...existing, ...mapped]);
+  }
+
+  const players: TeamWellnessPlayer[] = rawPlayers.map((player) => {
+    const intervals = intervalsByPlayerId.get(player.id) ?? [];
+    return {
+      id: player.id,
+      imageUrl: resolveStorageUrl(player.imageUrl),
+      name: player.name,
+      status: player.status,
+      currentStreak: effectiveCurrentStreak({
+        currentStreak: player.currentStreak,
+        streakSeasonId: player.streakSeasonId,
+        activeSeasonId: activeSeason?.id ?? null,
+      }),
+      injuryExemptOnEvaluatedDay: isInjuryActiveOnDay(
+        intervals,
+        evaluatedCivil
+      ),
+      entries: player.entries.map((entry) => ({
+        date: entry.date,
+        recovery: entry.recovery,
+        energy: entry.energy,
+        soreness: entry.soreness,
+        sleepHours:
+          entry.sleepHours === null || entry.sleepHours === undefined
+            ? null
+            : Number(entry.sleepHours),
+        sleepQuality: entry.sleepQuality,
+        rpe: entry.rpe,
+        duration: entry.duration,
+        preFilledAt: entry.preFilledAt,
+        postFilledAt: entry.postFilledAt,
+        physioAlert: entry.physioAlert,
+      })),
+      stats: player.stats.map((stat) => ({
+        riskLevel: stat.riskLevel,
+        acwr:
+          stat.acwr === null || stat.acwr === undefined
+            ? null
+            : Number(stat.acwr),
+      })),
+    };
+  });
 
   const todayEntries = players.flatMap((player) => player.entries);
   const recoveryValues = todayEntries
@@ -227,10 +284,12 @@ export async function getTeamWellnessWorkspaceData(
       recoveryAverage: average(recoveryValues),
       energyAverage: average(energyValues),
       sorenessAverage: average(sorenessValues),
-      preCompletedCount: players.filter((player) => Boolean(player.entries[0]?.preFilledAt))
-        .length,
-      postCompletedCount: players.filter((player) => Boolean(player.entries[0]?.postFilledAt))
-        .length,
+      preCompletedCount: players.filter((player) =>
+        Boolean(player.entries[0]?.preFilledAt)
+      ).length,
+      postCompletedCount: players.filter((player) =>
+        Boolean(player.entries[0]?.postFilledAt)
+      ).length,
       alertCount: players.filter((player) => {
         const entry = player.entries[0];
         const riskLevel = player.stats[0]?.riskLevel;
@@ -242,14 +301,21 @@ export async function getTeamWellnessWorkspaceData(
         );
       }).length,
       pendingCount: players.filter((player) => {
+        if (player.injuryExemptOnEvaluatedDay) {
+          return false;
+        }
         const entry = player.entries[0];
         return !(entry?.preFilledAt && entry?.postFilledAt);
       }).length,
     },
-    todayLabel: today.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "long",
-    }),
-    evaluatedDate: formatDateForCookie(today),
+    todayLabel: new Date(`${evaluatedCivil}T12:00:00.000Z`).toLocaleDateString(
+      "es-ES",
+      {
+        day: "2-digit",
+        month: "long",
+        timeZone: "UTC",
+      }
+    ),
+    evaluatedDate: evaluatedCivil,
   };
 }

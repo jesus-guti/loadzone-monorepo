@@ -26,6 +26,7 @@ type EditPlayerFormProperties = {
     reminderConsentState: PlayerReminderConsentState;
     resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
+  readonly hasActiveInjury: boolean;
 };
 
 const STATUS_OPTIONS = [
@@ -36,6 +37,10 @@ const STATUS_OPTIONS = [
   { value: "UNAVAILABLE", label: "No disponible" },
 ] as const;
 
+const INJURED_STATUS_OPTIONS = [
+  { value: "INJURED", label: "Lesionado" },
+] as const;
+
 const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
   ELIGIBLE: "Elegible",
   OPTED_IN: "Con suscripción / opt-in",
@@ -44,7 +49,10 @@ const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
   ASSISTED_GUARDIAN_GRANTED: "Tutor consintió (asistida)",
 };
 
-export function EditPlayerForm({ player }: EditPlayerFormProperties) {
+export function EditPlayerForm({
+  player,
+  hasActiveInjury,
+}: EditPlayerFormProperties) {
   const [state, action, isPending] = useActionState(updatePlayer, {
     success: false,
   });
@@ -73,22 +81,40 @@ export function EditPlayerForm({ player }: EditPlayerFormProperties) {
 
       <div className="space-y-2">
         <Label htmlFor="status">Estado</Label>
-        <Select
-          defaultValue={player.status}
-          items={STATUS_OPTIONS}
-          name="status"
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {hasActiveInjury ? (
+          <>
+            <input type="hidden" name="status" value="INJURED" />
+            <Select disabled defaultValue="INJURED" items={INJURED_STATUS_OPTIONS}>
+              <SelectTrigger id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="INJURED">Lesionado</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-text-secondary">
+              El estado se deriva de las lesiones activas hoy. Cierra o da de
+              alta la lesión para poder cambiarlo.
+            </p>
+          </>
+        ) : (
+          <Select
+            defaultValue={player.status}
+            items={STATUS_OPTIONS}
+            name="status"
+          >
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="space-y-2">
