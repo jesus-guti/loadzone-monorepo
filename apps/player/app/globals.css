@@ -98,3 +98,18 @@
   --chart-4: oklch(0.79 0.1 145);
   --chart-5: oklch(0.73 0.12 32);
 }
+
+/* Session chrome — keep injury footer above fixed Guardar (JES-80).
+   Plain CSS: Tailwind arbitrary calc+env utilities were a no-op here. */
+.session-fixed-save-clearance {
+  padding-bottom: calc(10rem + env(safe-area-inset-bottom, 0px));
+}
+
+.session-fixed-save-cta-pad {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.session-focus-form-scroll-pad {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+}
+

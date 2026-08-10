@@ -478,7 +478,7 @@ export function SessionPage({
               <button
                 type="button"
                 data-injury-report-trigger
-                className="inline-flex min-h-12 items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
+                className="inline-flex min-h-12 items-center gap-1.5 text-xs font-medium text-text-secondary transition hover:text-danger"
               >
                 <HeartbeatIcon className="h-3.5 w-3.5" weight="fill" />
                 ¿Tienes una molestia? Reportar lesión

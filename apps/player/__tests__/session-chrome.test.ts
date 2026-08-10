@@ -73,11 +73,10 @@ describe("shouldReserveFixedSaveClearance", () => {
 });
 
 describe("sessionPageBottomPaddingClass", () => {
-  it("uses fixed-save clearance that includes safe-area", () => {
+  it("uses fixed-save clearance class (globals.css owns the calc)", () => {
     const className = sessionPageBottomPaddingClass(true);
     expect(className).toBe(SESSION_FIXED_SAVE_CLEARANCE_CLASS);
-    expect(className).toContain("safe-area-inset-bottom");
-    expect(className).toMatch(/8\.5rem/);
+    expect(className).toBe("session-fixed-save-clearance");
   });
 
   it("uses default padding when Guardar chrome is absent", () => {
