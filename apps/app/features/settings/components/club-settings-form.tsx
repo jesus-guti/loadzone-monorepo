@@ -15,11 +15,14 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { clearClubBrandingLogo, updateClubBranding } from "../actions/team-settings";
 import { updateClubAgeBandPolicyField } from "../actions/settings-field-actions";
 import { useSettingsAutosave } from "../hooks/use-settings-autosave";
+import { PrimerosPasosReopenSection } from "./primeros-pasos-reopen-section";
 import { SettingsRow } from "./settings-row";
 import { SettingsSection } from "./settings-section";
 
 type ClubSettingsFormProps = {
   readonly teamId: string;
+  readonly userId: string;
+  readonly clubId: string;
   readonly canEdit: boolean;
   readonly clubName: string;
   readonly clubLogoUrl: string | null;
@@ -39,6 +42,8 @@ function getInitials(value: string): string {
 
 export function ClubSettingsForm({
   teamId,
+  userId,
+  clubId,
   canEdit,
   clubName,
   clubLogoUrl,
@@ -267,6 +272,8 @@ export function ClubSettingsForm({
           </p>
         ) : null}
       </SettingsSection>
+
+      <PrimerosPasosReopenSection clubId={clubId} userId={userId} />
 
       <SettingsSection
         description="Los equipos sin override heredan estos valores."
