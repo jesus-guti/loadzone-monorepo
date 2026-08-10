@@ -52,3 +52,16 @@ export function isPrivateImagePathname(value: string | null | undefined): boolea
     value.startsWith("users/")
   );
 }
+
+/** Normalize DB/proxy/absolute blob refs to a pathname or absolute URL `del()` accepts. */
+export function toBlobDeleteTarget(value: string): string {
+  if (value.startsWith(`${PRIVATE_BLOB_ROUTE}?pathname=`)) {
+    return decodeURIComponent(value.slice(`${PRIVATE_BLOB_ROUTE}?pathname=`.length));
+  }
+
+  if (value.includes(".private.blob.vercel-storage.com/")) {
+    return getPathnameFromUrl(value) ?? value;
+  }
+
+  return value;
+}
