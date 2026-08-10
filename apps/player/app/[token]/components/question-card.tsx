@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export type QuestionState = "upcoming" | "active" | "completed";
 
@@ -14,6 +14,7 @@ type QuestionCardProperties = {
   readonly accessory?: ReactNode;
   readonly onEdit?: () => void;
   readonly children?: ReactNode;
+  readonly style?: CSSProperties;
 };
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -30,6 +31,7 @@ export function QuestionCard({
   accessory,
   onEdit,
   children,
+  style,
 }: QuestionCardProperties) {
   if (state === "upcoming") {
     return null;
@@ -40,6 +42,7 @@ export function QuestionCard({
       <motion.button
         type="button"
         layout={false}
+        style={style}
         onClick={onEdit}
         aria-label={`Editar ${label}`}
         className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-bg-secondary/60 px-4 py-3 text-left transition-colors hover:bg-bg-secondary"
@@ -63,6 +66,7 @@ export function QuestionCard({
   return (
     <motion.section
       layout={false}
+      style={style}
       aria-current="step"
       className="space-y-6 rounded-3xl bg-bg-secondary p-6"
       initial={false}
