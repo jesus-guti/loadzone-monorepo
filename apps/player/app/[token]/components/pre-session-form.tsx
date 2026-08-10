@@ -19,6 +19,7 @@ import { ScaleInput } from "./scale-input";
 import { SliderInput } from "./slider-input";
 import { ChipInput } from "./chip-input";
 import { QuestionCard, type QuestionState } from "./question-card";
+import { FocusStepList } from "./focus-step-list";
 import { FocusProgress } from "./focus-progress";
 import {
   DEFAULT_AGE_BAND,
@@ -28,6 +29,7 @@ import {
   shouldShowAssistedPresence,
   type AgeBand,
 } from "../lib/focus-copy";
+import { createFocusAdvanceScheduler } from "../lib/focus-advance";
 import { nextFocusStepIndex } from "../lib/focus-step";
 import {
   FIXED_SAVE_CTA_INNER_CLASS,
@@ -154,10 +156,18 @@ export function PreSessionForm({
   const [showPhysioAlert, setShowPhysioAlert] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const advanceSchedulerRef = useRef(createFocusAdvanceScheduler());
 
   const [state, action, isPending] = useActionState(savePreSession, {
     success: false,
   });
+
+  useEffect(() => {
+    const scheduler = advanceSchedulerRef.current;
+    return (): void => {
+      scheduler.dispose();
+    };
+  }, []);
 
   const questions = template?.questions ?? [];
 
@@ -234,12 +244,18 @@ export function PreSessionForm({
     setCurrentStep(nextFocusStepIndex(hasValues, index));
   }
 
+  const advanceFromRef = useRef(advanceFrom);
+  advanceFromRef.current = advanceFrom;
+
   function handleAnswer(index: number, apply: () => void) {
     apply();
-    advanceFrom(index, index);
+    advanceSchedulerRef.current.schedule(() => {
+      advanceFromRef.current(index, index);
+    });
   }
 
   function handleEdit(index: number) {
+    advanceSchedulerRef.current.cancel();
     setCurrentStep(index);
   }
 
@@ -343,175 +359,210 @@ export function PreSessionForm({
             />
           ) : null}
 
-          {steps.map((step, index) => {
-            const questionState = stateFor(index);
+          <FocusStepList
+            items={steps.map((step, index) => {
+              const questionState = stateFor(index);
 
-            if (step.key === "recovery" && recoveryQuestion) {
-              return (
-                <QuestionCard
-                  key={step.key}
-                  state={questionState}
-                  index={index}
-                  label={labelFor("recovery")}
-                  summary={recovery !== null ? `${recovery}/10` : undefined}
-                  onEdit={() => handleEdit(index)}
-                >
-                  <SliderInput
-                    name={recoveryQuestion.key}
-                    min={recoveryQuestion.minValue ?? 0}
-                    max={recoveryQuestion.maxValue ?? 10}
-                    value={recovery}
-                    onChange={setRecovery}
-                    onCommit={() => advanceFrom(index, index)}
-                    anchorLabels={["Nada recuperado", "Al 100%"]}
-                    labelForValue={recoveryCaption}
-                    colorForValue={recoveryNumberColor}
-                    gradientClassName="from-danger via-premium to-brand"
-                  />
-                </QuestionCard>
-              );
-            }
+              if (step.key === "recovery" && recoveryQuestion) {
+                return {
+                  key: step.key,
+                  state: questionState,
+                  render: (order: number) => (
+                    <QuestionCard
+                      key={step.key}
+                      state={questionState}
+                      index={index}
+                      label={labelFor("recovery")}
+                      summary={
+                        recovery !== null ? `${recovery}/10` : undefined
+                      }
+                      onEdit={() => handleEdit(index)}
+                      style={{ order }}
+                    >
+                      <SliderInput
+                        name={recoveryQuestion.key}
+                        min={recoveryQuestion.minValue ?? 0}
+                        max={recoveryQuestion.maxValue ?? 10}
+                        value={recovery}
+                        onChange={setRecovery}
+                        onCommit={() => advanceFrom(index, index)}
+                        anchorLabels={["Nada recuperado", "Al 100%"]}
+                        labelForValue={recoveryCaption}
+                        colorForValue={recoveryNumberColor}
+                        gradientClassName="from-danger via-premium to-brand"
+                      />
+                    </QuestionCard>
+                  ),
+                };
+              }
 
-            if (step.key === "energy" && energyQuestion) {
-              return (
-                <QuestionCard
-                  key={step.key}
-                  state={questionState}
-                  index={index}
-                  label={labelFor("energy")}
-                  summary={
-                    energy !== null
-                      ? `${ENERGY_LABELS[energy]} · ${energy}/5`
-                      : undefined
-                  }
-                  onEdit={() => handleEdit(index)}
-                >
-                  <ScaleInput
-                    name={energyQuestion.key}
-                    min={energyQuestion.minValue ?? 1}
-                    max={energyQuestion.maxValue ?? 5}
-                    value={energy}
-                    onChange={(next) =>
-                      handleAnswer(index, () => setEnergy(next))
-                    }
-                    renderLabel={(n) => (
-                      <span className="flex flex-col items-center gap-1">
-                        {ENERGY_ICONS[n]}
-                        <span className="text-xs">{n}</span>
-                      </span>
-                    )}
-                    getColor={(n) => energyColor(n)}
-                    valueLabels={ENERGY_LABELS}
-                    anchorLabels={["Sin gasolina", "A tope"]}
-                  />
-                </QuestionCard>
-              );
-            }
-
-            if (step.key === "soreness" && sorenessQuestion) {
-              return (
-                <QuestionCard
-                  key={step.key}
-                  state={questionState}
-                  index={index}
-                  label={labelFor("soreness")}
-                  summary={
-                    soreness !== null
-                      ? `${SORENESS_LABELS[soreness]} · ${soreness}/5`
-                      : undefined
-                  }
-                  onEdit={() => handleEdit(index)}
-                >
-                  <ScaleInput
-                    name={sorenessQuestion.key}
-                    min={sorenessQuestion.minValue ?? 1}
-                    max={sorenessQuestion.maxValue ?? 5}
-                    value={soreness}
-                    onChange={(next) =>
-                      handleAnswer(index, () => setSoreness(next))
-                    }
-                    renderLabel={(n) => (
-                      <span className="flex flex-col items-center gap-1">
-                        <span className="text-lg">{n}</span>
-                        {n === 5 ? (
-                          <span className="text-[10px] font-semibold uppercase tracking-wider">
-                            Fisio
+              if (step.key === "energy" && energyQuestion) {
+                return {
+                  key: step.key,
+                  state: questionState,
+                  render: (order: number) => (
+                    <QuestionCard
+                      key={step.key}
+                      state={questionState}
+                      index={index}
+                      label={labelFor("energy")}
+                      summary={
+                        energy !== null
+                          ? `${ENERGY_LABELS[energy]} · ${energy}/5`
+                          : undefined
+                      }
+                      onEdit={() => handleEdit(index)}
+                      style={{ order }}
+                    >
+                      <ScaleInput
+                        name={energyQuestion.key}
+                        min={energyQuestion.minValue ?? 1}
+                        max={energyQuestion.maxValue ?? 5}
+                        value={energy}
+                        onChange={(next) =>
+                          handleAnswer(index, () => setEnergy(next))
+                        }
+                        renderLabel={(n) => (
+                          <span className="flex flex-col items-center gap-1">
+                            {ENERGY_ICONS[n]}
+                            <span className="text-xs">{n}</span>
                           </span>
-                        ) : null}
-                      </span>
-                    )}
-                    getColor={(n) => sorenessColor(n)}
-                    valueLabels={SORENESS_LABELS}
-                    anchorLabels={["Nada", "Sobrecarga"]}
-                  />
-                </QuestionCard>
-              );
-            }
+                        )}
+                        getColor={(n) => energyColor(n)}
+                        valueLabels={ENERGY_LABELS}
+                        anchorLabels={["Sin gasolina", "A tope"]}
+                      />
+                    </QuestionCard>
+                  ),
+                };
+              }
 
-            if (step.key === "sleepHours" && sleepHoursQuestion) {
-              return (
-                <QuestionCard
-                  key={step.key}
-                  state={questionState}
-                  index={index}
-                  label={labelFor("sleepHours")}
-                  summary={sleepHours !== null ? `${sleepHours} h` : undefined}
-                  onEdit={() => handleEdit(index)}
-                >
-                  <ChipInput
-                    name={sleepHoursQuestion.key}
-                    options={[
-                      { value: 5, label: "5 h" },
-                      { value: 6, label: "6 h" },
-                      { value: 7, label: "7 h" },
-                      { value: 7.5, label: "7.5 h" },
-                      { value: 8, label: "8 h" },
-                      { value: 9, label: "9 h" },
-                    ]}
-                    value={sleepHours}
-                    onChange={(next) =>
-                      handleAnswer(index, () => setSleepHours(next))
-                    }
-                    min={sleepHoursQuestion.minValue ?? 0}
-                    max={sleepHoursQuestion.maxValue ?? 24}
-                    step={sleepHoursQuestion.step ?? 0.5}
-                  />
-                </QuestionCard>
-              );
-            }
+              if (step.key === "soreness" && sorenessQuestion) {
+                return {
+                  key: step.key,
+                  state: questionState,
+                  render: (order: number) => (
+                    <QuestionCard
+                      key={step.key}
+                      state={questionState}
+                      index={index}
+                      label={labelFor("soreness")}
+                      summary={
+                        soreness !== null
+                          ? `${SORENESS_LABELS[soreness]} · ${soreness}/5`
+                          : undefined
+                      }
+                      onEdit={() => handleEdit(index)}
+                      style={{ order }}
+                    >
+                      <ScaleInput
+                        name={sorenessQuestion.key}
+                        min={sorenessQuestion.minValue ?? 1}
+                        max={sorenessQuestion.maxValue ?? 5}
+                        value={soreness}
+                        onChange={(next) =>
+                          handleAnswer(index, () => setSoreness(next))
+                        }
+                        renderLabel={(n) => (
+                          <span className="flex flex-col items-center gap-1">
+                            <span className="text-lg">{n}</span>
+                            {n === 5 ? (
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Fisio
+                              </span>
+                            ) : null}
+                          </span>
+                        )}
+                        getColor={(n) => sorenessColor(n)}
+                        valueLabels={SORENESS_LABELS}
+                        anchorLabels={["Nada", "Sobrecarga"]}
+                      />
+                    </QuestionCard>
+                  ),
+                };
+              }
 
-            if (step.key === "sleepQuality" && sleepQualityQuestion) {
-              return (
-                <QuestionCard
-                  key={step.key}
-                  state={questionState}
-                  index={index}
-                  label={labelFor("sleepQuality")}
-                  summary={
-                    sleepQuality !== null
-                      ? `${SLEEP_QUALITY_LABELS[sleepQuality]} · ${sleepQuality}/5`
-                      : undefined
-                  }
-                  onEdit={() => handleEdit(index)}
-                >
-                  <ScaleInput
-                    name={sleepQualityQuestion.key}
-                    min={sleepQualityQuestion.minValue ?? 1}
-                    max={sleepQualityQuestion.maxValue ?? 5}
-                    value={sleepQuality}
-                    onChange={(next) =>
-                      handleAnswer(index, () => setSleepQuality(next))
-                    }
-                    getColor={(n) => sleepQualityColor(n)}
-                    valueLabels={SLEEP_QUALITY_LABELS}
-                    anchorLabels={["Muy mal", "Reparador"]}
-                  />
-                </QuestionCard>
-              );
-            }
+              if (step.key === "sleepHours" && sleepHoursQuestion) {
+                return {
+                  key: step.key,
+                  state: questionState,
+                  render: (order: number) => (
+                    <QuestionCard
+                      key={step.key}
+                      state={questionState}
+                      index={index}
+                      label={labelFor("sleepHours")}
+                      summary={
+                        sleepHours !== null ? `${sleepHours} h` : undefined
+                      }
+                      onEdit={() => handleEdit(index)}
+                      style={{ order }}
+                    >
+                      <ChipInput
+                        name={sleepHoursQuestion.key}
+                        options={[
+                          { value: 5, label: "5 h" },
+                          { value: 6, label: "6 h" },
+                          { value: 7, label: "7 h" },
+                          { value: 7.5, label: "7.5 h" },
+                          { value: 8, label: "8 h" },
+                          { value: 9, label: "9 h" },
+                        ]}
+                        value={sleepHours}
+                        onChange={(next) =>
+                          handleAnswer(index, () => setSleepHours(next))
+                        }
+                        min={sleepHoursQuestion.minValue ?? 0}
+                        max={sleepHoursQuestion.maxValue ?? 24}
+                        step={sleepHoursQuestion.step ?? 0.5}
+                      />
+                    </QuestionCard>
+                  ),
+                };
+              }
 
-            return null;
-          })}
+              if (step.key === "sleepQuality" && sleepQualityQuestion) {
+                return {
+                  key: step.key,
+                  state: questionState,
+                  render: (order: number) => (
+                    <QuestionCard
+                      key={step.key}
+                      state={questionState}
+                      index={index}
+                      label={labelFor("sleepQuality")}
+                      summary={
+                        sleepQuality !== null
+                          ? `${SLEEP_QUALITY_LABELS[sleepQuality]} · ${sleepQuality}/5`
+                          : undefined
+                      }
+                      onEdit={() => handleEdit(index)}
+                      style={{ order }}
+                    >
+                      <ScaleInput
+                        name={sleepQualityQuestion.key}
+                        min={sleepQualityQuestion.minValue ?? 1}
+                        max={sleepQualityQuestion.maxValue ?? 5}
+                        value={sleepQuality}
+                        onChange={(next) =>
+                          handleAnswer(index, () => setSleepQuality(next))
+                        }
+                        getColor={(n) => sleepQualityColor(n)}
+                        valueLabels={SLEEP_QUALITY_LABELS}
+                        anchorLabels={["Muy mal", "Reparador"]}
+                      />
+                    </QuestionCard>
+                  ),
+                };
+              }
+
+              return {
+                key: step.key,
+                state: questionState,
+                render: (_order: number) => <></>,
+              };
+            })}
+          />
         </div>
       </form>
 
