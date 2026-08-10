@@ -14,8 +14,8 @@ type FocusStepListProperties = {
 };
 
 /**
- * Renders completed + active Focus steps in order. Each `QuestionCard` keeps
- * its question header mounted; field slide lives inside the card.
+ * Renders completed + active Focus steps in order. No step transition chrome —
+ * animation experiments reverted; see handoff for follow-up.
  */
 export function FocusStepList({ items }: FocusStepListProperties) {
   return (

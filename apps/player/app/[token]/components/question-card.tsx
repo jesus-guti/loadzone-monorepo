@@ -1,13 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
-import {
-  useEffect,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export type QuestionState = "upcoming" | "active" | "completed";
 
@@ -19,21 +14,14 @@ type QuestionCardProperties = {
   readonly accessory?: ReactNode;
   readonly onEdit?: () => void;
   readonly children?: ReactNode;
-  /** Flex order when parent uses a reordered Focus step stack. */
   readonly style?: CSSProperties;
 };
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
-const FIELD_DURATION_S = 0.22;
-const REDUCED_DURATION_S = 0.15;
 
 /**
- * Focus-frame step: the question header stays mounted. Only the field body
- * slides out when answered (summary remains) and the next step’s field slides in.
- * Upcoming steps stay hidden (OQAT).
- *
- * Motion enter animations start only after mount so SSR HTML matches the
- * first client paint (`useReducedMotion` / framer `initial` otherwise mismatch).
+ * Focus-frame question chrome: one active question, compact completed rows,
+ * upcoming steps stay hidden (OQAT).
  */
 export function QuestionCard({
   state,
@@ -45,43 +33,45 @@ export function QuestionCard({
   children,
   style,
 }: QuestionCardProperties) {
-  const reduceMotionQuery = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   if (state === "upcoming") {
     return null;
   }
 
-  const isActive = state === "active";
-  const reduceMotion = mounted && reduceMotionQuery === true;
-  const duration = reduceMotion ? REDUCED_DURATION_S : FIELD_DURATION_S;
-  // Skip enter animation on the SSR/hydration frame; still animate later swaps.
-  const enterInitial = !mounted
-    ? false
-    : reduceMotion
-      ? { opacity: 0 }
-      : { opacity: 0, y: 14, height: 0 };
-
-  const sectionStyle: CSSProperties | undefined =
-    style === undefined
-      ? undefined
-      : {
-          ...style,
-          ...(typeof style.order === "number" || typeof style.order === "string"
-            ? { order: Number(style.order) }
-            : {}),
-        };
+  if (state === "completed") {
+    return (
+      <motion.button
+        type="button"
+        layout={false}
+        style={style}
+        onClick={onEdit}
+        aria-label={`Editar ${label}`}
+        className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-bg-secondary/60 px-4 py-3 text-left transition-colors hover:bg-bg-secondary"
+        initial={false}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: easeOut }}
+      >
+        <span className="flex min-w-0 items-center gap-3">
+          <CheckCircleIcon className="size-5 shrink-0 text-brand" weight="fill" />
+          <span className="truncate text-sm font-medium text-text-secondary">
+            {label}
+          </span>
+        </span>
+        <span className="shrink-0 text-sm font-semibold text-text-primary">
+          {summary}
+        </span>
+      </motion.button>
+    );
+  }
 
   return (
-    <section
-      style={sectionStyle}
-      aria-current={isActive ? "step" : undefined}
-      className="space-y-5 rounded-3xl bg-bg-secondary p-6"
-      data-focus-step={state}
+    <motion.section
+      layout={false}
+      style={style}
+      aria-current="step"
+      className="space-y-6 rounded-3xl bg-bg-secondary p-6"
+      initial={false}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: easeOut }}
     >
       <header className="space-y-3 text-center">
         <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
@@ -90,68 +80,21 @@ export function QuestionCard({
         <h2 className="text-2xl font-semibold leading-tight tracking-tight text-text-primary">
           {label}
         </h2>
-        {isActive && accessory ? (
+        {accessory ? (
           <div className="flex justify-center">{accessory}</div>
         ) : null}
       </header>
-
-      <AnimatePresence mode="wait" initial={false}>
-        {isActive ? (
-          <motion.div
-            key="field"
-            className="overflow-hidden"
-            initial={enterInitial}
-            animate={
-              reduceMotion
-                ? { opacity: 1 }
-                : { opacity: 1, y: 0, height: "auto" }
-            }
-            exit={
-              reduceMotion
-                ? {
-                    opacity: 0,
-                    transition: { duration, ease: easeOut },
-                  }
-                : {
-                    opacity: 0,
-                    y: -10,
-                    height: 0,
-                    transition: { duration, ease: easeOut },
-                  }
-            }
-            transition={{ duration, ease: easeOut }}
-          >
-            {children}
-          </motion.div>
-        ) : (
-          <motion.button
-            key="summary"
-            type="button"
-            layout={false}
-            onClick={onEdit}
-            aria-label={`Editar ${label}`}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-bg-primary/50 px-4 py-3 text-center transition-colors hover:bg-bg-primary"
-            initial={
-              !mounted ? false : reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }
-            }
-            animate={{ opacity: 1, y: 0 }}
-            exit={
-              reduceMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: 8, transition: { duration, ease: easeOut } }
-            }
-            transition={{ duration, ease: easeOut }}
-          >
-            <CheckCircleIcon
-              className="size-5 shrink-0 text-brand"
-              weight="fill"
-            />
-            <span className="text-sm font-semibold text-text-primary">
-              {summary}
-            </span>
-          </motion.button>
-        )}
+      <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          key="active-content"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.22, ease: easeOut }}
+        >
+          {children}
+        </motion.div>
       </AnimatePresence>
-    </section>
+    </motion.section>
   );
 }
