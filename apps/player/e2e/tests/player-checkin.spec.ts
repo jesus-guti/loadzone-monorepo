@@ -102,6 +102,43 @@ test.describe("Player check-in E2E", () => {
     });
   }
 
+  // ═══ 2b. Injury trigger clears fixed Guardar on mobile (JES-80) ═══
+
+  test("Injury report trigger is not covered by fixed save CTA on mobile", async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+    const player = ctx.players[0];
+    expect(player).toBeTruthy();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${PLAYER_URL}/${player!.token}`, {
+      waitUntil: "networkidle",
+    });
+
+    const saveCta = page.locator("[data-fixed-save-cta]");
+    const injuryTrigger = page.locator("[data-injury-report-trigger]");
+
+    await expect(saveCta).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator("[data-fixed-save-clearance='on']")).toBeVisible();
+
+    await injuryTrigger.scrollIntoViewIfNeeded();
+    await expect(injuryTrigger).toBeVisible();
+
+    const triggerBox = await injuryTrigger.boundingBox();
+    const saveBox = await saveCta.boundingBox();
+    expect(triggerBox).toBeTruthy();
+    expect(saveBox).toBeTruthy();
+
+    // Trigger bottom edge must sit above the fixed CTA top (no vertical overlap).
+    expect(triggerBox!.y + triggerBox!.height).toBeLessThanOrEqual(saveBox!.y + 1);
+
+    await injuryTrigger.click();
+    await expect(page.getByRole("heading", { name: "Reportar lesión" })).toBeVisible({
+      timeout: 5_000,
+    });
+  });
+
   // ═══ 3. Pre-session form submission ═══════════════════════════════
 
   const wellnessValues = [
