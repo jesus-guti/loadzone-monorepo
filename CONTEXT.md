@@ -130,4 +130,3 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
 - **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).
 - **Session** (staff training session scheduling) is used in product surfaces but is not yet a glossary term here — define it when scheduling semantics are locked.
-- **Recommended Setup** UI persistence (dismiss, reopen, per-user vs per-club) is a product decision — not domain law.
