@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  SESSION_FIXED_SAVE_CLEARANCE_CLASS,
+  SESSION_FIXED_SAVE_CLEARANCE_STYLE,
   sessionPageBottomPaddingClass,
+  sessionPageBottomStyle,
   shouldReserveFixedSaveClearance,
 } from "../app/[token]/lib/session-chrome";
 
@@ -72,14 +73,20 @@ describe("shouldReserveFixedSaveClearance", () => {
   });
 });
 
-describe("sessionPageBottomPaddingClass", () => {
-  it("uses fixed-save clearance class (globals.css owns the calc)", () => {
-    const className = sessionPageBottomPaddingClass(true);
-    expect(className).toBe(SESSION_FIXED_SAVE_CLEARANCE_CLASS);
-    expect(className).toBe("session-fixed-save-clearance");
+describe("session page bottom chrome", () => {
+  it("uses inline clearance style when Guardar is on screen", () => {
+    expect(sessionPageBottomStyle(true)).toEqual(
+      SESSION_FIXED_SAVE_CLEARANCE_STYLE
+    );
+    expect(sessionPageBottomStyle(true)?.paddingBottom).toContain("10rem");
+    expect(sessionPageBottomStyle(true)?.paddingBottom).toContain(
+      "safe-area-inset-bottom"
+    );
+    expect(sessionPageBottomPaddingClass(true)).toBe("");
   });
 
-  it("uses default padding when Guardar chrome is absent", () => {
+  it("uses default padding class when Guardar chrome is absent", () => {
+    expect(sessionPageBottomStyle(false)).toBeUndefined();
     expect(sessionPageBottomPaddingClass(false)).toBe("pb-10");
   });
 });

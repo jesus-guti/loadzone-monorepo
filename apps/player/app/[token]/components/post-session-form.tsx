@@ -17,7 +17,8 @@ import {
 import { nextFocusStepIndex } from "../lib/focus-step";
 import {
   FIXED_SAVE_CTA_INNER_CLASS,
-  FOCUS_FORM_SCROLL_PADDING_CLASS,
+  FIXED_SAVE_CTA_INNER_STYLE,
+  FOCUS_FORM_SCROLL_PADDING_STYLE,
 } from "../lib/session-chrome";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 
@@ -155,7 +156,11 @@ export function PostSessionForm({
 
   return (
     <>
-      <form ref={formRef} action={action} className={FOCUS_FORM_SCROLL_PADDING_CLASS}>
+      <form
+        ref={formRef}
+        action={action}
+        style={FOCUS_FORM_SCROLL_PADDING_STYLE}
+      >
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="date" value={date} />
         <input type="hidden" name="templateId" value={template.id} />
@@ -223,7 +228,10 @@ export function PostSessionForm({
         className="pointer-events-none fixed inset-x-0 bottom-0 z-30"
         data-fixed-save-cta
       >
-        <div className={FIXED_SAVE_CTA_INNER_CLASS}>
+        <div
+          className={FIXED_SAVE_CTA_INNER_CLASS}
+          style={FIXED_SAVE_CTA_INNER_STYLE}
+        >
           <div className="flex items-center justify-between pb-2 text-xs font-medium text-text-secondary">
             <span>
               {answeredCount} / {totalSteps}

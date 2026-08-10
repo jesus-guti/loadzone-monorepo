@@ -34,6 +34,7 @@ import {
 import { toFocusAgeBand } from "../lib/age-band";
 import {
   sessionPageBottomPaddingClass,
+  sessionPageBottomStyle,
   shouldReserveFixedSaveClearance,
 } from "../lib/session-chrome";
 
@@ -231,6 +232,7 @@ export function SessionPage({
         "mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pt-5",
         sessionPageBottomPaddingClass(reserveFixedSaveClearance)
       )}
+      style={sessionPageBottomStyle(reserveFixedSaveClearance)}
       data-age-band={ageBand}
       data-parental-supervision={parentalSupervisionActive ? "active" : "off"}
       data-fixed-save-clearance={reserveFixedSaveClearance ? "on" : "off"}
