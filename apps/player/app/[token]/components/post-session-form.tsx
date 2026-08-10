@@ -15,6 +15,11 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { nextFocusStepIndex } from "../lib/focus-step";
+import {
+  FIXED_SAVE_CTA_INNER_CLASS,
+  FIXED_SAVE_CTA_INNER_STYLE,
+  FOCUS_FORM_SCROLL_PADDING_STYLE,
+} from "../lib/session-chrome";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 
 const BORG_LABELS: Record<number, string> = {
@@ -151,7 +156,11 @@ export function PostSessionForm({
 
   return (
     <>
-      <form ref={formRef} action={action} className="pb-28">
+      <form
+        ref={formRef}
+        action={action}
+        style={FOCUS_FORM_SCROLL_PADDING_STYLE}
+      >
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="date" value={date} />
         <input type="hidden" name="templateId" value={template.id} />
@@ -215,8 +224,14 @@ export function PostSessionForm({
         </div>
       </form>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
-        <div className="pointer-events-auto mx-auto max-w-md bg-linear-to-t from-bg-primary via-bg-primary to-transparent px-4 pb-4 pt-6">
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30"
+        data-fixed-save-cta
+      >
+        <div
+          className={FIXED_SAVE_CTA_INNER_CLASS}
+          style={FIXED_SAVE_CTA_INNER_STYLE}
+        >
           <div className="flex items-center justify-between pb-2 text-xs font-medium text-text-secondary">
             <span>
               {answeredCount} / {totalSteps}
