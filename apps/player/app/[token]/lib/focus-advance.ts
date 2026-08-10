@@ -1,8 +1,8 @@
 /**
  * Debounce for Focus-frame discrete answer → step advance.
- * Matches SliderInput RELEASE_COMMIT_MS so discrete and continuous advances feel consistent.
+ * Longer than slider RELEASE_COMMIT_MS so scale/chip selection stays readable.
  */
-export const DISCRETE_ADVANCE_DEBOUNCE_MS = 300;
+export const DISCRETE_ADVANCE_DEBOUNCE_MS = 500;
 
 export type FocusAdvanceScheduler = {
   /** Paint is caller's job; this only schedules `advance` after idle debounce. */

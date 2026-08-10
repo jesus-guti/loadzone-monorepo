@@ -13,8 +13,8 @@ describe("createFocusAdvanceScheduler", () => {
     vi.useRealTimers();
   });
 
-  it("exports a 300ms discrete debounce matching slider release commit", () => {
-    expect(DISCRETE_ADVANCE_DEBOUNCE_MS).toBe(300);
+  it("exports a 500ms discrete debounce so selection is readable before advance", () => {
+    expect(DISCRETE_ADVANCE_DEBOUNCE_MS).toBe(500);
   });
 
   it("fires advance once after the debounce window", () => {
