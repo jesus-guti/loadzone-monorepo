@@ -2,7 +2,12 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
-import type { CSSProperties, ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 export type QuestionState = "upcoming" | "active" | "completed";
 
@@ -26,6 +31,9 @@ const REDUCED_DURATION_S = 0.15;
  * Focus-frame step: the question header stays mounted. Only the field body
  * slides out when answered (summary remains) and the next step’s field slides in.
  * Upcoming steps stay hidden (OQAT).
+ *
+ * Motion enter animations start only after mount so SSR HTML matches the
+ * first client paint (`useReducedMotion` / framer `initial` otherwise mismatch).
  */
 export function QuestionCard({
   state,
@@ -37,18 +45,40 @@ export function QuestionCard({
   children,
   style,
 }: QuestionCardProperties) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotionQuery = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (state === "upcoming") {
     return null;
   }
 
   const isActive = state === "active";
+  const reduceMotion = mounted && reduceMotionQuery === true;
   const duration = reduceMotion ? REDUCED_DURATION_S : FIELD_DURATION_S;
+  // Skip enter animation on the SSR/hydration frame; still animate later swaps.
+  const enterInitial = !mounted
+    ? false
+    : reduceMotion
+      ? { opacity: 0 }
+      : { opacity: 0, y: 14, height: 0 };
+
+  const sectionStyle: CSSProperties | undefined =
+    style === undefined
+      ? undefined
+      : {
+          ...style,
+          ...(typeof style.order === "number" || typeof style.order === "string"
+            ? { order: Number(style.order) }
+            : {}),
+        };
 
   return (
     <section
-      style={style}
+      style={sectionStyle}
       aria-current={isActive ? "step" : undefined}
       className="space-y-5 rounded-3xl bg-bg-secondary p-6"
       data-focus-step={state}
@@ -65,14 +95,12 @@ export function QuestionCard({
         ) : null}
       </header>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {isActive ? (
           <motion.div
             key="field"
             className="overflow-hidden"
-            initial={
-              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, height: 0 }
-            }
+            initial={enterInitial}
             animate={
               reduceMotion
                 ? { opacity: 1 }
@@ -103,7 +131,9 @@ export function QuestionCard({
             onClick={onEdit}
             aria-label={`Editar ${label}`}
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-bg-primary/50 px-4 py-3 text-center transition-colors hover:bg-bg-primary"
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+            initial={
+              !mounted ? false : reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }
+            }
             animate={{ opacity: 1, y: 0 }}
             exit={
               reduceMotion
