@@ -19,8 +19,10 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
+import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import { primaryNavigation, secondaryNavigation } from "@/lib/admin-navigation";
 import type { StaffContext } from "@/lib/auth-context";
+import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
 import {
   isSettingsPath,
   settingsNavigation,
@@ -45,6 +47,8 @@ type GlobalSidebarProperties = {
     | "role"
     | "teams"
   >;
+  readonly userId: string;
+  readonly recommendedSetupFacts: RecommendedSetupClubFacts;
 };
 
 const sidebarPrefetchHrefs = Array.from(
@@ -95,6 +99,8 @@ function SettingsSidebarHeader() {
 export const GlobalSidebar = ({
   children,
   staffContext,
+  userId,
+  recommendedSetupFacts,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -199,6 +205,17 @@ export const GlobalSidebar = ({
 
         {inSettings ? null : (
           <SidebarFooter className="gap-2">
+            <PrimerosPasosPanel
+              activeTeam={{
+                hasActiveSeason: staffContext.activeSeason !== null,
+                // Player count is Club-fact driven for the checklist; active-Team
+                // baseline for Wellness empty states lands in JES-84.
+                hasPlayers: false,
+              }}
+              clubFacts={recommendedSetupFacts}
+              clubId={staffContext.club.id}
+              userId={userId}
+            />
             <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3">
               <Button aria-label="Notificaciones" size="icon" variant="ghost">
                 <BellIcon className="size-4" weight="fill" />

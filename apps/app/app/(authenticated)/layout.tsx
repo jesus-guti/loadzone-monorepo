@@ -5,6 +5,7 @@ import { QueryClientProviderWrapper } from "@/components/providers/query-client-
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { GlobalSidebar } from "@/components/layouts/sidebar";
 import { StaffShellInitialLoader } from "@/components/layouts/staff-shell-initial-loader";
+import { loadClubRecommendedSetupFacts } from "@/lib/recommended-setup-facts";
 
 type AppLayoutProperties = {
   readonly children: ReactNode;
@@ -27,8 +28,16 @@ async function AuthenticatedShell({
     redirect("/onboarding");
   }
 
+  const recommendedSetupFacts = await loadClubRecommendedSetupFacts(
+    staffContext.club.id,
+  );
+
   return (
-    <GlobalSidebar staffContext={staffContext}>
+    <GlobalSidebar
+      recommendedSetupFacts={recommendedSetupFacts}
+      staffContext={staffContext}
+      userId={staffContext.user.id}
+    >
       <QueryClientProviderWrapper>
         {/* Keep shell mounted on soft nav; do not remount the empty initial loader. */}
         <Suspense fallback={null}>{children}</Suspense>
