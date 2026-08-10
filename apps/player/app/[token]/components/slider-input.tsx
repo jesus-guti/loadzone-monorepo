@@ -3,6 +3,7 @@
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useRef, type ChangeEvent } from "react";
 import { flushSync } from "react-dom";
+import { sliderReadoutDigit } from "../lib/slider-readout";
 
 type SliderInputProperties = {
   readonly name: string;
@@ -38,6 +39,18 @@ const KEYS_THAT_MOVE_RANGE = new Set([
   "PageDown",
 ]);
 
+/**
+ * Native range thumb tokens (WebKit + Firefox). Tall transparent tracks center
+ * the thumb without a brittle negative margin; decorative gradient is the bar.
+ */
+export const SLIDER_RANGE_THUMB_CLASS = cn(
+  "relative z-10 h-12 w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none",
+  "[&::-webkit-slider-runnable-track]:h-12 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent",
+  "[&::-moz-range-track]:h-12 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-transparent",
+  "[&::-webkit-slider-thumb]:size-12 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-text-primary [&::-webkit-slider-thumb]:bg-bg-primary [&::-webkit-slider-thumb]:shadow-none [&::-webkit-slider-thumb]:[-webkit-appearance:none] [&::-webkit-slider-thumb]:transition-[transform,opacity] [&::-webkit-slider-thumb]:active:scale-110",
+  "[&::-moz-range-thumb]:box-border [&::-moz-range-thumb]:size-12 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-text-primary [&::-moz-range-thumb]:bg-bg-primary [&::-moz-range-thumb]:transition-[transform,opacity] [&::-moz-range-thumb]:active:scale-110"
+);
+
 function defaultColor(): string {
   return "text-text-primary";
 }
@@ -55,7 +68,8 @@ export function SliderInput({
   colorForValue = defaultColor,
   gradientClassName = "from-danger via-premium to-brand",
 }: SliderInputProperties) {
-  const displayValue = value ?? Math.round((min + max) / 2);
+  const isUnset = value === null;
+  const readoutDigit = sliderReadoutDigit(value, min, max);
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef = useRef(0);
   const latestRef = useRef<number | null>(null);
@@ -166,10 +180,10 @@ export function SliderInput({
         <span
           className={cn(
             "text-7xl font-black leading-none tabular-nums transition-colors",
-            value === null ? "text-text-tertiary" : colorForValue(value)
+            isUnset ? "text-text-tertiary" : colorForValue(value)
           )}
         >
-          {value ?? "–"}
+          {readoutDigit}
         </span>
         {value !== null && labelForValue ? (
           <span className="text-sm font-medium uppercase tracking-wider text-text-secondary">
@@ -177,7 +191,7 @@ export function SliderInput({
           </span>
         ) : (
           <span className="text-sm text-text-tertiary">
-            Desliza para elegir
+            Pulsa o desliza para elegir
           </span>
         )}
       </div>
@@ -195,18 +209,16 @@ export function SliderInput({
           min={min}
           max={max}
           step={step}
-          value={displayValue}
+          value={readoutDigit}
           onChange={handleChange}
           onPointerUp={handlePointerUp}
           onTouchEnd={handleTouchEnd}
           onMouseUp={handleMouseUp}
           onKeyUp={handleKeyUp}
           className={cn(
-            "relative z-10 h-12 w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none",
-            "[&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent",
-            "[&::-moz-range-track]:h-2 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-transparent",
-            "[&::-webkit-slider-thumb]:mt-[-20px] [&::-webkit-slider-thumb]:size-12 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-text-primary [&::-webkit-slider-thumb]:bg-bg-primary [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110",
-            "[&::-moz-range-thumb]:size-12 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-text-primary [&::-moz-range-thumb]:bg-bg-primary [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
+            SLIDER_RANGE_THUMB_CLASS,
+            isUnset &&
+              "[&::-webkit-slider-thumb]:border-text-secondary [&::-webkit-slider-thumb]:opacity-70 [&::-moz-range-thumb]:border-text-secondary [&::-moz-range-thumb]:opacity-70"
           )}
           aria-label={`Valor de ${min} a ${max}`}
         />
