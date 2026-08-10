@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -19,15 +19,13 @@ type QuestionCardProperties = {
 };
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
-const CLOSE_DURATION_S = 0.2;
+const FIELD_DURATION_S = 0.22;
 const REDUCED_DURATION_S = 0.15;
 
 /**
- * Focus-frame question chrome: compact completed rows, and active body
- * content for the persistent shell in `FocusStepList` (OQAT).
- *
- * Active state is content-only (no outer card / height motion) so the parent
- * shell can close→open as one continuous panel.
+ * Focus-frame step: the question header stays mounted. Only the field body
+ * slides out when answered (summary remains) and the next step’s field slides in.
+ * Upcoming steps stay hidden (OQAT).
  */
 export function QuestionCard({
   state,
@@ -45,40 +43,16 @@ export function QuestionCard({
     return null;
   }
 
-  if (state === "completed") {
-    return (
-      <motion.button
-        type="button"
-        layout={false}
-        style={style}
-        onClick={onEdit}
-        aria-label={`Editar ${label}`}
-        className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-bg-secondary/60 px-4 py-3 text-left transition-colors hover:bg-bg-secondary"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{
-          duration: reduceMotion ? REDUCED_DURATION_S : CLOSE_DURATION_S,
-          ease: easeOut,
-        }}
-      >
-        <span className="flex min-w-0 items-center gap-3">
-          <CheckCircleIcon
-            className="size-5 shrink-0 text-brand"
-            weight="fill"
-          />
-          <span className="truncate text-sm font-medium text-text-secondary">
-            {label}
-          </span>
-        </span>
-        <span className="shrink-0 text-sm font-semibold text-text-primary">
-          {summary}
-        </span>
-      </motion.button>
-    );
-  }
+  const isActive = state === "active";
+  const duration = reduceMotion ? REDUCED_DURATION_S : FIELD_DURATION_S;
 
   return (
-    <div style={style} aria-current="step" className="space-y-6 p-6">
+    <section
+      style={style}
+      aria-current={isActive ? "step" : undefined}
+      className="space-y-5 rounded-3xl bg-bg-secondary p-6"
+      data-focus-step={state}
+    >
       <header className="space-y-3 text-center">
         <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
           Pregunta {index + 1}
@@ -86,11 +60,68 @@ export function QuestionCard({
         <h2 className="text-2xl font-semibold leading-tight tracking-tight text-text-primary">
           {label}
         </h2>
-        {accessory ? (
+        {isActive && accessory ? (
           <div className="flex justify-center">{accessory}</div>
         ) : null}
       </header>
-      <div>{children}</div>
-    </div>
+
+      <AnimatePresence mode="wait">
+        {isActive ? (
+          <motion.div
+            key="field"
+            className="overflow-hidden"
+            initial={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14, height: 0 }
+            }
+            animate={
+              reduceMotion
+                ? { opacity: 1 }
+                : { opacity: 1, y: 0, height: "auto" }
+            }
+            exit={
+              reduceMotion
+                ? {
+                    opacity: 0,
+                    transition: { duration, ease: easeOut },
+                  }
+                : {
+                    opacity: 0,
+                    y: -10,
+                    height: 0,
+                    transition: { duration, ease: easeOut },
+                  }
+            }
+            transition={{ duration, ease: easeOut }}
+          >
+            {children}
+          </motion.div>
+        ) : (
+          <motion.button
+            key="summary"
+            type="button"
+            layout={false}
+            onClick={onEdit}
+            aria-label={`Editar ${label}`}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-bg-primary/50 px-4 py-3 text-center transition-colors hover:bg-bg-primary"
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={
+              reduceMotion
+                ? { opacity: 0 }
+                : { opacity: 0, y: 8, transition: { duration, ease: easeOut } }
+            }
+            transition={{ duration, ease: easeOut }}
+          >
+            <CheckCircleIcon
+              className="size-5 shrink-0 text-brand"
+              weight="fill"
+            />
+            <span className="text-sm font-semibold text-text-primary">
+              {summary}
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </section>
   );
 }
