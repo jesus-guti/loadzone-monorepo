@@ -12,8 +12,8 @@ export type VolverMemory = {
 export const VOLVER_STORAGE_KEY = "loadzone_settings_volver";
 
 export const DEFAULT_VOLVER_MEMORY: VolverMemory = {
-  href: "/",
-  label: "Inicio",
+  href: "/wellness",
+  label: "Wellness",
 };
 
 export function isOperationalPath(pathname: string): boolean {
@@ -53,12 +53,12 @@ export function labelForOperationalPath(pathname: string): string {
   }
 
   if (pathname === "/" || pathname === "") {
-    return "Inicio";
+    return "Wellness";
   }
 
   const segment = pathname.split("/").filter(Boolean)[0];
   if (!segment) {
-    return "Inicio";
+    return "Wellness";
   }
 
   return segment.charAt(0).toUpperCase() + segment.slice(1);

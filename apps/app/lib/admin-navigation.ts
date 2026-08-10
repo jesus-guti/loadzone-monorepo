@@ -1,12 +1,9 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
-  CalendarBlankIcon,
   CalendarDotsIcon,
   ClipboardTextIcon,
-  CpuIcon,
   GearSixIcon,
   HeartIcon,
-  HouseIcon,
   UsersIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -26,12 +23,6 @@ function matchesPath(pathname: string, href: string): boolean {
 }
 
 export const primaryNavigation: AdminNavItem[] = [
-  {
-    href: "/",
-    icon: HouseIcon,
-    label: "Inicio",
-    match: (pathname: string) => matchesPath(pathname, "/"),
-  },
   {
     href: "/wellness",
     icon: HeartIcon,
@@ -70,17 +61,5 @@ export const secondaryNavigation: AdminNavItem[] = [
     icon: HeartIcon,
     label: "Lesiones",
     match: (pathname: string) => matchesPath(pathname, "/injuries"),
-  },
-  {
-    href: "/seasons",
-    icon: CalendarBlankIcon,
-    label: "Temporadas",
-    match: (pathname: string) => matchesPath(pathname, "/seasons"),
-  },
-  {
-    href: "/analysis",
-    icon: CpuIcon,
-    label: "Análisis IA",
-    match: (pathname: string) => matchesPath(pathname, "/analysis"),
   },
 ];

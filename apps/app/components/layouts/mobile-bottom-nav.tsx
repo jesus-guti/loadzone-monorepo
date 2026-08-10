@@ -10,7 +10,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 bg-bg-tertiary/50 backdrop-blur md:hidden">
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-3">
         {primaryNavigation.map((item) => {
           const isActive = Boolean(item.match(pathname));
 

@@ -2,9 +2,13 @@
 
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getCurrentStaffContext } from "@/lib/auth-context";
+import {
+  ACTIVE_SEASON_COOKIE_NAME,
+  getCurrentStaffContext,
+} from "@/lib/auth-context";
 
 async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
@@ -23,45 +27,66 @@ const createSeasonSchema = z
     message: "La fecha de inicio debe ser anterior a la de fin",
   });
 
+async function persistSeason(formData: FormData): Promise<string> {
+  const parsed = createSeasonSchema.safeParse({
+    name: formData.get("name"),
+    startDate: formData.get("startDate"),
+    endDate: formData.get("endDate"),
+    preSeasonEnd: formData.get("preSeasonEnd") || undefined,
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Datos no válidos.");
+  }
+
+  const teamId = await getTeamId();
+
+  const season = await database.season.create({
+    data: {
+      name: parsed.data.name,
+      startDate: new Date(parsed.data.startDate),
+      endDate: new Date(parsed.data.endDate),
+      preSeasonEnd: parsed.data.preSeasonEnd
+        ? new Date(parsed.data.preSeasonEnd)
+        : null,
+      teamId,
+    },
+    select: { id: true },
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set(ACTIVE_SEASON_COOKIE_NAME, season.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  revalidatePath("/wellness");
+  revalidatePath("/");
+
+  return season.id;
+}
+
 export async function createSeason(
   _prev: { success: boolean; error?: string },
   formData: FormData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const parsed = createSeasonSchema.safeParse({
-      name: formData.get("name"),
-      startDate: formData.get("startDate"),
-      endDate: formData.get("endDate"),
-      preSeasonEnd: formData.get("preSeasonEnd") || undefined,
-    });
-
-    if (!parsed.success) {
-      const firstError =
-        parsed.error.issues[0]?.message ?? "Datos no válidos.";
-      return { success: false, error: firstError };
-    }
-
-    const teamId = await getTeamId();
-
-    await database.season.create({
-      data: {
-        name: parsed.data.name,
-        startDate: new Date(parsed.data.startDate),
-        endDate: new Date(parsed.data.endDate),
-        preSeasonEnd: parsed.data.preSeasonEnd
-          ? new Date(parsed.data.preSeasonEnd)
-          : null,
-        teamId,
-      },
-    });
-
-    revalidatePath("/seasons");
-    revalidatePath("/");
-  } catch {
-    return { success: false, error: "Error al crear temporada." };
+    await persistSeason(formData);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error al crear temporada.";
+    return { success: false, error: message };
   }
 
-  redirect("/seasons");
+  redirect("/wellness");
+}
+
+export async function createSeasonFromShell(formData: FormData): Promise<void> {
+  await persistSeason(formData);
+  redirect("/wellness");
 }
 
 export async function deleteSeason(seasonId: string): Promise<void> {
