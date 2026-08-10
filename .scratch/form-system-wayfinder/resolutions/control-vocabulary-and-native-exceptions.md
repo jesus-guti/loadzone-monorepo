@@ -14,7 +14,7 @@ Product forms in `apps/app` and `apps/player` author **design-system field primi
 
 | Need | Use | Do not use |
 | --- | --- | --- |
-| Closed, finite options (enums, status, templates, age band, short lists) | DS `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` / … | Raw `<select>`, `NativeSelect` (new fields), `DropdownMenu` as value picker |
+| Closed, finite options (enums, status, templates, age band, short lists) | DS `Select` / `SelectTrigger` / `SelectContent` / `SelectItem` / … | Raw `<select>`, `DropdownMenu` as value picker |
 | Long lists and/or typeahead / filter / clearable search | DS `Combobox` / `ComboboxInput` / `ComboboxList` / `ComboboxItem` / … | `Select` stretched into a search box; menu-as-picker |
 | Commands / actions (not a form field value) | DS `DropdownMenu` (or Button + menu) | Using menu items to set RHF field values |
 
@@ -22,16 +22,12 @@ Product forms in `apps/app` and `apps/player` author **design-system field primi
 
 **RHF note:** Wire `Select` / `Combobox` through Form* / `Controller` (once Form* exists). Do not require a parallel hidden native `<input name=…>` once the field is RHF-controlled; the exercise-form `EnumSelect` + hidden input pattern is a pre-RHF bridge, not the target contract.
 
-### 2. NativeSelect stance
+### 2. Raw `<select>` stance
 
 | Scope | Stance |
 | --- | --- |
-| `@repo/design-system` package | **Keep** `native-select.tsx` (no deletion / no ADR change). |
-| New product form fields | **Discouraged → treat as no-new-usage.** Prefer DS `Select`. |
-| Raw `<select className=…>` | **Banned** in product form trees (replace with `Select`; do not “upgrade” only to `NativeSelect` as the end state). |
-| Transitional debt | Existing raw selects (settings templates, player age band, injuries, player injury report, etc.) migrate to `Select` when those surfaces adopt RHF — not to `NativeSelect` as a permanent home. |
-
-**Why not ban the package export:** NativeSelect can still serve non-form demos, progressive-enhancement experiments, or rare non-product trees without forcing a package delete. Product form law is stricter than package inventory.
+| Raw `<select className=…>` | **Banned** in product form trees — replace with DS `Select`. |
+| Transitional debt | Existing raw selects (settings templates, player age band, injuries, player injury report, etc.) migrate to `Select` when those surfaces adopt RHF. |
 
 ### 3. Ban on new raw field elements
 
@@ -80,12 +76,11 @@ Whether to add an ESLint / CI guard for raw `<input>`/`<select>`/`<textarea>` in
 
 ## Implications for blocked tickets
 
-- **[Prototype RHF + DS on submit and autosave pilots](https://linear.app/jesus-guti-workspace/issue/JES-70/prototype-rhf-ds-on-submit-and-autosave-pilots):** pilots must demonstrate DS `Select` (not native/`NativeSelect`) on any option field they touch; settings autosave pilot should replace native selects/checkboxes on the chosen surface.
+- **[Prototype RHF + DS on submit and autosave pilots](https://linear.app/jesus-guti-workspace/issue/JES-70/prototype-rhf-ds-on-submit-and-autosave-pilots):** pilots must demonstrate DS `Select` (not raw `<select>`) on any option field they touch; settings autosave pilot should replace native selects/checkboxes on the chosen surface.
 - **[Synthesize Form System SPEC](https://linear.app/jesus-guti-workspace/issue/JES-71/synthesize-form-system-spec):** encode this vocabulary + exception table as normative SPEC sections.
 
 ## No-goals
 
 - Production migration of all native hotspots.
-- Deleting or quarantining `NativeSelect` at package export level.
 - Mandating CI/ESLint in this ticket.
 - Deciding Form* package home (JES-66) or autosave↔RHF contract (JES-67) or error mapping (JES-68).

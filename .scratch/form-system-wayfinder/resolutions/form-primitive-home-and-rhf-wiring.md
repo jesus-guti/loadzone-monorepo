@@ -43,13 +43,13 @@ Shared RHF wiring **belongs in** `@repo/design-system` as the planned Form Syste
 
 - **Preferred path for every control:** `FormField` wrapping RHF `Controller`, with a render prop that receives `field` / `fieldState`.
 - **Required path** for Base UI / composite controls that do not behave like native named inputs: `Select`, `Combobox`, `Checkbox`, `Switch`, `RadioGroup`, `Toggle` / `ToggleGroup`, `Slider`, `Calendar`, `InputOTP`, and any future non-native composite.
-- **Allowed escape hatch:** `register(...)` only on plain `Input`, `Textarea`, and `NativeSelect` when the author intentionally wants uncontrolled DOM fields. SPEC and docs teach Controller/`FormField` first; `register` is not the house style.
+- **Allowed escape hatch:** `register(...)` only on plain `Input` and `Textarea` when the author intentionally wants uncontrolled DOM fields. SPEC and docs teach Controller/`FormField` first; `register` is not the house style.
 - Do **not** invent a second LoadZone form library (no Formik, no uncontrolled-only layer, no app-specific `useForm` wrapper that hides RHF).
 
 **Composition sketch (prose / types — not shipped code):**
 
 ```tsx
-// Text / NativeSelect — preferred
+// Text — preferred
 <FormField
   control={form.control}
   name="teamName"

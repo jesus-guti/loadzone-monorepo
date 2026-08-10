@@ -102,7 +102,7 @@ Unchanged from JES-58 / `useSettingsAutosave`: if generation ≠ current (team o
 | `SettingsRow` | Keeps visible Spanish `label` + `htmlFor` pointing at the control `id`. Do not duplicate the same string with a second visible `FormLabel`. |
 | Hash / deep link | Must not remount or `reset` the form. Scroll is independent of RHF state. |
 | Route layout | Autosave absolute — no footer Guardar on Equipo / Wellness / Políticas / Club / Cuenta. |
-| DS controls | Prefer DS primitives (`NativeSelect` / `Select`, `Input`, `Checkbox`, …) over raw natives as Form System migrates; behavior contract is identical. |
+| DS controls | Prefer DS primitives (`Select`, `Input`, `Checkbox`, …) over raw natives as Form System migrates; behavior contract is identical. |
 
 ---
 
@@ -115,8 +115,8 @@ WellnessSettingsForm
   useForm({ defaultValues: { preForm, postForm, preMinutes, … limits… }, resolver })
   useSettingsAutosave({ teamId, routeKey: "wellness" })
   <SettingsSection id="formularios">  // deep link
-    NativeSelect preForm  → onChange → if valid → saveImmediate(updateTeamFormAssignment)
-    NativeSelect postForm → same
+    Select preForm  → onValueChange → if valid → saveImmediate(updateTeamFormAssignment)
+    Select postForm → same
   </SettingsSection>
   <SettingsSection title="Umbrales…">
     Input soreness|recovery|… → onChange → if valid & ≠ lastSaved → saveDebounced

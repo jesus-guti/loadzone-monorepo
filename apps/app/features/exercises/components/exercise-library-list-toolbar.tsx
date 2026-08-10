@@ -84,8 +84,8 @@ export function ExerciseLibraryListToolbar({
         >
           <SelectTrigger
             aria-label="Filtrar por estrategia"
-            className="min-w-36 max-w-[min(100vw-2rem,14rem)] border-border-secondary font-medium text-text-primary shadow-none"
-            size="sm"
+            className="min-w-36 max-w-[min(100vw-2rem,14rem)]"
+            size="default"
           >
             <SelectValue placeholder="Estrategia" />
           </SelectTrigger>

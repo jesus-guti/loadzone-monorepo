@@ -14,7 +14,7 @@ Policy for which DS controls product forms may author, when native HTML is allow
 | # | Decision | Level | Notes |
 |---|---|---|---|
 | 1 | Closed finite option lists → DS `Select*`; searchable/filterable or long lists → DS `Combobox*`; `DropdownMenu` is not a form value picker | `hitl→accepted` (AFK) | Aligns with session/exercise Select usage; Combobox unused but present |
-| 2 | Product forms: prefer `Select` over `NativeSelect`; `NativeSelect` discouraged for new product form fields (package keeps it; no-new-usage in product forms). Raw `<select>` banned | `hitl→accepted` (AFK) | RHF `Controller` removes FormData-native excuse; EnumSelect+hidden pattern already proves Select path |
+| 2 | Product forms: use DS `Select` for closed option lists. Raw `<select>` banned | `hitl→accepted` (AFK) | RHF `Controller` removes FormData-native excuse; EnumSelect+hidden pattern already proves Select path |
 | 3 | Ban new raw `<input>` / `<select>` / `<textarea>` in product form trees outside the explicit exception list; existing natives are migration debt | `hitl→accepted` (AFK) | Matches JES-63 standing preference |
 | 4 | Exception allow-list: `type="hidden"`; `type="file"` (hidden native + DS trigger); DS `Input` typed variants (`date`, `datetime-local`, `number`, …); DS `InputOTP`; readonly non-control display; internals of ADR-gated app-local player controls (`ScaleInput` / `SliderInput` / `ChipInput`) | `auto` | From JES-64/65 inventory + browser constraints |
 | 5 | Booleans → DS `Checkbox` / `Switch` / `ToggleGroup` / `RadioGroup` as interaction requires — never native `type="checkbox"` / `type="radio"` in product forms | `auto` | DS primitives exist; settings still use native checkboxes |
@@ -30,7 +30,6 @@ Policy for which DS controls product forms may author, when native HTML is allow
 ## Out of scope
 
 - Migrating existing native fields in product (post-SPEC / pilots).
-- Promoting or deleting `NativeSelect` from `@repo/design-system`.
 - Mandating ESLint/CI enforcement in this ticket.
 - Player Age Band chrome forks or check-in question redesign.
 - How Scale/Slider/Chip register with RHF (parent map fog → later ticket).

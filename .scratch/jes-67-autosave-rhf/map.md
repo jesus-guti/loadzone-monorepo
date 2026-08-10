@@ -40,7 +40,7 @@ How should settings per-field autosave (`useSettingsAutosave`: immediate vs debo
 
 | Control | RHF | Save |
 | --- | --- | --- |
-| Pre/post template `<select>` → DS `NativeSelect`/`Select` | field in section form | `saveImmediate` on change |
+| Pre/post template `<select>` → DS `Select` | field in section form | `saveImmediate` on change |
 | Reminder minutes + wellness limits (`Input type="number"`) | same form | debounce 300ms + blur flush iff dirty vs last-saved **and** field valid |
 | Empty limit | valid | may save `null` (disable threshold) |
 

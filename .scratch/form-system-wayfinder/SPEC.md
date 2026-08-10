@@ -70,7 +70,7 @@ Do not invent an app-local Form kit or a second form library.
 
 - **Preferred for every control:** `FormField` → RHF `Controller` with render prop (`field` / `fieldState`).
 - **Required** for Base UI / composite controls: `Select`, `Combobox`, `Checkbox`, `Switch`, `RadioGroup`, `Toggle` / `ToggleGroup`, `Slider`, `Calendar`, `InputOTP`, and future non-native composites.
-- **Escape hatch:** `register(...)` only on plain `Input`, `Textarea`, and (if ever used) `NativeSelect` — not house style; teach Controller first.
+- **Escape hatch:** `register(...)` only on plain `Input` and `Textarea` — not house style; teach Controller first.
 
 ### Compose with `Field*`, do not fork shadcn FormItem
 
@@ -101,11 +101,11 @@ Adopting RHF on a surface **includes** migrating that surface’s controls to th
 
 | Need | Use | Do not use |
 |---|---|---|
-| Closed, finite options | DS `Select*` | Raw `<select>`, new `NativeSelect`, `DropdownMenu` as value picker |
+| Closed, finite options | DS `Select*` | Raw `<select>`, `DropdownMenu` as value picker |
 | Long lists / typeahead / filter | DS `Combobox*` | `Select` stretched into search; menu-as-picker |
 | Commands / actions (not a field value) | `DropdownMenu` / Button + menu | Menu items that set RHF values |
 
-`NativeSelect` stays in the package (no deletion). **No-new-usage** in product forms — migrate natives to `Select`, not to `NativeSelect` as end state.
+Migrate raw natives to DS `Select` — not a parallel native wrapper.
 
 ### Core control map
 
@@ -273,7 +273,6 @@ Hard-case references for implementers: `CreateTeamForm` / dialog (classic); `Wel
 - Throwaway prototypes under `apps/app/app/prototype/**` (may remain as evidence).
 - Redesigning Server Action domain APIs beyond the error-shape contract.
 - Changing Age Band product policy or check-in question content.
-- Deleting or quarantining `NativeSelect` at package export level.
 - A dedicated Form ADR beyond ADR 0001.
 
 ---

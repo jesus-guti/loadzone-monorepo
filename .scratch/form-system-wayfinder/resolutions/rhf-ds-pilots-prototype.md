@@ -44,7 +44,7 @@ Nothing required reverting JES-66–69.
 - Field layout + FormField Controller composition (no FormItem fork).
 - Classic submit: client Zod blocks → action → `fieldErrors` / `formError` / `toastError` channels.
 - Autosave: one form for the surface; per-field immediate vs debounce+blur; invalid blocks save; last-saved skips no-op blur; `resetField` clears only the saved field.
-- DS `Select` for templates (not native / NativeSelect).
+- DS `Select` for templates (not raw `<select>`).
 
 ---
 

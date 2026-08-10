@@ -108,7 +108,7 @@ function rgbToHsl(color: RgbColor): HslColor {
   let hue = 0;
   if (delta !== 0) {
     if (maximum === red) {
-      hue = (((green - blue) / delta) % 6 + 6) % 6;
+      hue = ((((green - blue) / delta) % 6) + 6) % 6;
     } else if (maximum === green) {
       hue = (blue - red) / delta + 2;
     } else {
@@ -540,7 +540,7 @@ export function TeamBranding({
 
   return (
     <div className={rootClassName}>
-      <div className={cn("relative -left-[7px]", avatarContainerClassName)}>
+      <div className={cn("relative", avatarContainerClassName)}>
         {isAmbientLogo ? (
           <>
             <div
@@ -558,13 +558,7 @@ export function TeamBranding({
           </>
         ) : null}
         <div className={avatarAnchorClassName}>
-          <Avatar
-            className={cn(
-              "relative ",
-              avatarSizeClass,
-              avatarClassName
-            )}
-          >
+          <Avatar className={cn("relative ", avatarSizeClass, avatarClassName)}>
             {imageUrl ? (
               <AvatarImage
                 alt={primaryLabel}
@@ -587,7 +581,7 @@ export function TeamBranding({
           </Avatar>
         </div>
       </div>
-      <div className={cn("relative -left-3 top-0.5", detailsBlockClassName)}>
+      <div className={cn("relative top-0.5", detailsBlockClassName)}>
         <p className={primaryLabelClassName}>{primaryLabel}</p>
         {secondaryLabel ? (
           <p className={secondaryLabelClassName}>{secondaryLabel}</p>
