@@ -9,13 +9,18 @@ import {
 import { Button } from "@repo/design-system/components/button";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
-import { useEffect, useRef, type ReactElement } from "react";
+import { useEffect, type ReactElement } from "react";
 import {
   resolveRecommendedSetup,
   type RecommendedSetupActiveTeam,
   type RecommendedSetupClubFacts,
 } from "@/lib/recommended-setup";
 import { usePrimerosPasosChrome } from "../hooks/use-primeros-pasos-chrome";
+import {
+  readPrimerosPasosLastCompletedCount,
+  shouldAutoHidePrimerosPasos,
+  writePrimerosPasosLastCompletedCount,
+} from "../lib/auto-hide";
 import { getPrimerosPasosStepConfig } from "../lib/step-config";
 import { PrimerosPasosBadge } from "./primeros-pasos-badge";
 
@@ -29,8 +34,8 @@ type PrimerosPasosPanelProperties = {
 /**
  * Operational sidebar footer Primeros pasos checklist / badge.
  * Visibility comes from resolveRecommendedSetup; chrome from localStorage.
- * Transition-only auto-hide: write dismissed once when completedCount flips to 5
- * while chrome is expanded — not while staying expanded/minimized at 5/5.
+ * Transition-only auto-hide: persist last known count so remount after the
+ * incomplete→5/5 flip still dismisses once; restore at 5/5 does not re-hide.
  */
 export function PrimerosPasosPanel({
   userId,
@@ -39,7 +44,6 @@ export function PrimerosPasosPanel({
   activeTeam,
 }: PrimerosPasosPanelProperties): ReactElement | null {
   const { chrome, setChrome, hydrated } = usePrimerosPasosChrome(userId, clubId);
-  const previousCompletedCountRef = useRef<number | null>(null);
 
   const result = resolveRecommendedSetup({
     clubFacts,
@@ -52,26 +56,30 @@ export function PrimerosPasosPanel({
       return;
     }
 
-    const previous = previousCompletedCountRef.current;
-    previousCompletedCountRef.current = result.completedCount;
-
-    if (previous === null) {
-      return;
-    }
-
+    const lastKnown = readPrimerosPasosLastCompletedCount(userId, clubId);
     if (
-      previous < result.totalCount &&
-      result.completedCount === result.totalCount &&
-      chrome === "expanded"
+      shouldAutoHidePrimerosPasos({
+        lastKnownCompletedCount: lastKnown,
+        completedCount: result.completedCount,
+        totalCount: result.totalCount,
+        chrome,
+      })
     ) {
       setChrome("dismissed");
     }
+    writePrimerosPasosLastCompletedCount(
+      userId,
+      clubId,
+      result.completedCount,
+    );
   }, [
     chrome,
+    clubId,
     hydrated,
     result.completedCount,
     result.totalCount,
     setChrome,
+    userId,
   ]);
 
   if (!hydrated || result.panelVisibility === "hidden") {
