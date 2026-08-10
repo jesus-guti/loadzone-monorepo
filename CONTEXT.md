@@ -82,6 +82,24 @@ _Avoid_: **InjuryReport** as the name of the official period; EMR “case”; tr
 A player-submitted intake signal (aviso) that something hurts — not an official **Injury**. Does not by itself set `INJURED` or exempt wellness; staff may promote it to an **Injury**.
 _Avoid_: Calling a Pain Alert an injury period or “lesión oficial”.
 
+**Operational Baseline**:
+The minimum state for a **Team** to use day-to-day wellness meaningfully: an active **Season** plus at least one **Player**. Creating **Club** and the first **Team** happens in hard onboarding before the staff shell. Without this baseline, Wellness is empty of usable day-to-day signal — not “broken,” but not yet a working workspace.
+_Avoid_: Treating club logo, exercises, or sessions as blockers before Wellness can open; conflating hard onboarding (Club + Team) with post-shell setup.
+
+**Recommended Setup**:
+The unified first-run path staff should complete after hard onboarding — not a second hard gate. Product UI label: **Primeros pasos** (not English “Getting started” in the staff app). Five steps and completion predicates:
+
+- **Club** logo — `Club` has branding logo set
+- **Season** — any **Season** exists on any **Team** in the Club
+- **Player** — any **Player** exists on any **Team** in the Club
+- **Exercise** — staff has *used* library content: any membership favorite on an **Exercise**, **or** any **Exercise** placed on a Session in the Club (system or club-owned). Creating a club-owned **Exercise** is not required
+- **Session** — any Session exists on any **Team** in the Club
+
+Hard onboarding (Club + first **Team**) is outside this count. Completion is derived from those **Club facts** (and the exercise-use signal), not from whether the current User personally created the rows. Invited staff joining a Club that already satisfies Recommended Setup should not get a false empty-club tour.
+
+Separately, any User may **minimize** or **dismiss** the guidance panel for that Club — minimize collapses it to a compact progress affordance (e.g. `Primeros pasos n/5` with brand emphasis); dismiss/hide-until-reopen is also allowed when they already know the product. The expanded panel lives in the staff **sidebar footer** (above the notifications / user block). Reopen after full completion (or after dismiss) lives under **Settings → Club**. When all Club-fact steps are complete, the expanded panel auto-hides. Dismissing or minimizing does **not** suppress contextual empty states on surfaces like Wellness while **Operational Baseline** facts are still missing.
+_Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+Team gate; English “Getting started” as staff-facing copy; treating “system catalog is visible” alone as the Exercise step; blocking Wellness until every Recommended Setup step is done; refusing a minimize / reopen path; treating panel dismiss as “staff needs no empty-state guidance.”; counting Club+Team creation inside the five Primeros pasos steps.
+
 
 ## Relationships
 
@@ -97,6 +115,8 @@ _Avoid_: Calling a Pain Alert an injury period or “lesión oficial”.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
 - An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
 - A **Pain Alert** belongs to a **Player** and is triage input for staff; it is not an **Injury** until staff promotes it.
+- A **Team** reaches **Operational Baseline** when it has an active **Season** and at least one **Player**; Club + Team creation precedes that via hard onboarding.
+- **Recommended Setup** completion comes from **Club facts** (plus an exercise-*use* signal); User×Club stores expanded / minimized / dismissed panel chrome; panel chrome lives in the sidebar footer; reopen from **Settings → Club**.
 
 
 ## Example dialogue
