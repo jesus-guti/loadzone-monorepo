@@ -7,6 +7,7 @@ import {
   isDayObligationsComplete,
   isInjuryActiveOnDay,
   resolveDayObligations,
+  shouldSkipWellnessReminderForInjury,
   toCivilDateString,
 } from "../recoverable-streak";
 
@@ -86,6 +87,45 @@ describe("isInjuryActiveOnDay", () => {
     const intervals = [{ startDate: "2026-02-01", endDate: "2026-02-03" }];
     expect(isInjuryActiveOnDay(intervals, "2026-02-03")).toBe(true);
     expect(isInjuryActiveOnDay(intervals, "2026-02-04")).toBe(false);
+  });
+
+  it("treats null endDate as open-ended", () => {
+    const intervals = [{ startDate: "2026-02-01", endDate: null }];
+    expect(isInjuryActiveOnDay(intervals, "2026-08-01")).toBe(true);
+    expect(isInjuryActiveOnDay(intervals, "2026-01-31")).toBe(false);
+  });
+
+  it("does not exempt when intervals are empty (Pain Alert alone)", () => {
+    expect(isInjuryActiveOnDay([], "2026-02-03")).toBe(false);
+  });
+});
+
+describe("shouldSkipWellnessReminderForInjury", () => {
+  it("skips cron / re-nudge when Injury is active on civil D", () => {
+    expect(
+      shouldSkipWellnessReminderForInjury({
+        injuryIntervals: [{ startDate: "2026-05-01", endDate: "2026-05-10" }],
+        civilDayIso: "2026-05-03",
+      })
+    ).toBe(true);
+  });
+
+  it("does not skip when only Pain Alert would apply (no Injury intervals)", () => {
+    expect(
+      shouldSkipWellnessReminderForInjury({
+        injuryIntervals: [],
+        civilDayIso: "2026-05-03",
+      })
+    ).toBe(false);
+  });
+
+  it("does not skip outside the Injury interval", () => {
+    expect(
+      shouldSkipWellnessReminderForInjury({
+        injuryIntervals: [{ startDate: "2026-05-01", endDate: "2026-05-02" }],
+        civilDayIso: "2026-05-03",
+      })
+    ).toBe(false);
   });
 });
 

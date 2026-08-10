@@ -21,7 +21,11 @@ export type WellnessAlertDisplay = ImmediateWellnessFlag & {
 
 const NAME_WORD_SPLIT_PATTERN = /\s+/;
 
-export type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
+export type DailyPlayerState =
+  | "ALERT"
+  | "COMPLETED"
+  | "EXEMPTED"
+  | "NOT_COMPLETED";
 
 export type TeamWellnessWorkspaceSummary = {
   alertCount: number;
@@ -295,7 +299,24 @@ export function getDailyPlayerState(
     return "COMPLETED";
   }
 
+  if (player.injuryExemptOnEvaluatedDay) {
+    return "EXEMPTED";
+  }
+
   return "NOT_COMPLETED";
+}
+
+export function getDailyStateLabel(state: DailyPlayerState): string {
+  switch (state) {
+    case "ALERT":
+      return "Alerta";
+    case "COMPLETED":
+      return "Completado";
+    case "EXEMPTED":
+      return "Exento";
+    case "NOT_COMPLETED":
+      return "Pendiente";
+  }
 }
 
 export function formatAverage(value: number | null): string {
@@ -338,11 +359,15 @@ export function averageProgressPercent(
 /**
  * Players who still owe pre and/or post (post expected).
  * Workspace has no session-end signal; pending = missing either fill.
+ * Injury-exempt players (JES-53) are not pending — they do not owe check-in.
  */
 export function listPendingPlayers(
   players: TeamWellnessPlayer[]
 ): TeamWellnessPlayer[] {
   return players.filter((player) => {
+    if (player.injuryExemptOnEvaluatedDay) {
+      return false;
+    }
     const entry = getLatestEntry(player);
     return !(entry?.preFilledAt && entry?.postFilledAt);
   });

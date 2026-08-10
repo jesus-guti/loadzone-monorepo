@@ -15,6 +15,12 @@
     "./recompute-player-streak": "./recompute-player-streak.ts",
     "./reminder-consent": "./reminder-consent.ts",
     "./care-alerts": "./care-alerts.ts",
+    "./injury-status": "./injury-status.ts",
+    "./body-region-catalog": "./body-region-catalog.ts",
+    "./pain-alert": "./pain-alert.ts",
+    "./create-injury": "./create-injury.ts",
+    "./promote-pain-alert": "./promote-pain-alert.ts",
+    "./legacy-body-part-map": "./legacy-body-part-map.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"
   },

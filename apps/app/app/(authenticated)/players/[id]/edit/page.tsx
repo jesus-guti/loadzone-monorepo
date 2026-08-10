@@ -3,6 +3,8 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
+import { playerHasActiveInjury } from "@repo/database/injury-status";
+import { toCivilDateString } from "@repo/database/recoverable-streak";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentStaffContext } from "@/lib/auth-context";
@@ -60,6 +62,17 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
     teamTimezone: player.team.timezone,
   });
 
+  // Lock status only while ≥1 Injury is civil-day active in Team.timezone today
+  // (future-dated open episodes do not force Lesionado).
+  const teamTimezone = player.team.timezone;
+  const todayCivil = toCivilDateString(new Date(), teamTimezone);
+  const hasActiveInjury = await playerHasActiveInjury(
+    database,
+    player.id,
+    todayCivil,
+    teamTimezone
+  );
+
   return (
     <>
       <Header page={`Editar: ${player.name}`} pages={["LoadZone", "Jugadores"]} />
@@ -74,6 +87,7 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
             reminderConsentState: player.reminderConsentState,
             resolvedAgeBand: resolvedAge.ageBand,
           }}
+          hasActiveInjury={hasActiveInjury}
         />
       </div>
     </>
