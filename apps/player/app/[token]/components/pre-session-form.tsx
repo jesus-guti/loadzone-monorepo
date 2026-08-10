@@ -29,6 +29,10 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { nextFocusStepIndex } from "../lib/focus-step";
+import {
+  FIXED_SAVE_CTA_INNER_CLASS,
+  FOCUS_FORM_SCROLL_PADDING_CLASS,
+} from "../lib/session-chrome";
 import { BatteryFullIcon } from "@phosphor-icons/react/BatteryFull";
 import { BatteryHighIcon } from "@phosphor-icons/react/BatteryHigh";
 import { BatteryLowIcon } from "@phosphor-icons/react/BatteryLow";
@@ -282,7 +286,7 @@ export function PreSessionForm({
 
   return (
     <>
-      <form ref={formRef} action={action} className="pb-28">
+      <form ref={formRef} action={action} className={FOCUS_FORM_SCROLL_PADDING_CLASS}>
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="date" value={date} />
         <input type="hidden" name="templateId" value={template.id} />
@@ -506,8 +510,11 @@ export function PreSessionForm({
         </div>
       </form>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
-        <div className="pointer-events-auto mx-auto max-w-md bg-linear-to-t from-bg-primary via-bg-primary to-transparent px-4 pb-4 pt-6">
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30"
+        data-fixed-save-cta
+      >
+        <div className={FIXED_SAVE_CTA_INNER_CLASS}>
           <div className="flex items-center justify-between pb-2 text-xs font-medium text-text-secondary">
             <span>
               {answeredCount} / {totalSteps}

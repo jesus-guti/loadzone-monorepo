@@ -32,6 +32,10 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { toFocusAgeBand } from "../lib/age-band";
+import {
+  sessionPageBottomPaddingClass,
+  shouldReserveFixedSaveClearance,
+} from "../lib/session-chrome";
 
 
 type PolicyAgeBand = "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
@@ -210,12 +214,26 @@ export function SessionPage({
   const allDone = preCompleted && postCompleted;
   const showCelebration = allDone && !editingPre && !editingPost;
   const showCareNote = shouldShowCareSilentNote(focusAgeBand, careTriggered);
+  const reserveFixedSaveClearance = shouldReserveFixedSaveClearance({
+    showCelebration,
+    activeTab,
+    preCompleted,
+    postCompleted,
+    editingPre,
+    editingPost,
+    hasPreTemplate: preTemplate !== null,
+    hasPostTemplate: postTemplate !== null,
+  });
 
   return (
     <div
-      className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pb-10 pt-5"
+      className={cn(
+        "mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 px-4 pt-5",
+        sessionPageBottomPaddingClass(reserveFixedSaveClearance)
+      )}
       data-age-band={ageBand}
       data-parental-supervision={parentalSupervisionActive ? "active" : "off"}
+      data-fixed-save-clearance={reserveFixedSaveClearance ? "on" : "off"}
     >
       <header className="space-y-3">
         <div className="flex items-start justify-between gap-3">
@@ -459,6 +477,7 @@ export function SessionPage({
             render={
               <button
                 type="button"
+                data-injury-report-trigger
                 className="inline-flex min-h-12 items-center gap-1.5 text-xs font-medium text-text-tertiary transition hover:text-danger"
               >
                 <HeartbeatIcon className="h-3.5 w-3.5" weight="fill" />
