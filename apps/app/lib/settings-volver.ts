@@ -1,7 +1,4 @@
-import {
-  primaryNavigation,
-  secondaryNavigation,
-} from "@/lib/admin-navigation";
+import { operationalNavigation } from "@/lib/admin-navigation";
 import { isSettingsPath } from "@/lib/settings-navigation";
 
 export type VolverMemory = {
@@ -38,18 +35,9 @@ export function isOperationalPath(pathname: string): boolean {
 }
 
 export function labelForOperationalPath(pathname: string): string {
-  const fromPrimary = primaryNavigation.find(
-    (item) => item.href !== "/settings" && item.match(pathname)
-  );
-  if (fromPrimary) {
-    return fromPrimary.label;
-  }
-
-  const fromSecondary = secondaryNavigation.find((item) =>
-    item.match(pathname)
-  );
-  if (fromSecondary) {
-    return fromSecondary.label;
+  const fromOps = operationalNavigation.find((item) => item.match(pathname));
+  if (fromOps) {
+    return fromOps.label;
   }
 
   if (pathname === "/" || pathname === "") {

@@ -1,9 +1,9 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
   CalendarDotsIcon,
-  ClipboardTextIcon,
   GearSixIcon,
   HeartIcon,
+  SoccerBallIcon,
   UsersIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -22,7 +22,8 @@ function matchesPath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export const primaryNavigation: AdminNavItem[] = [
+/** Day-to-day destinations — shared by desktop sidebar and mobile bottom nav. */
+export const operationalNavigation: AdminNavItem[] = [
   {
     href: "/wellness",
     icon: HeartIcon,
@@ -36,15 +37,6 @@ export const primaryNavigation: AdminNavItem[] = [
     match: (pathname: string) => matchesPath(pathname, "/sessions"),
   },
   {
-    href: "/settings",
-    icon: GearSixIcon,
-    label: "Configuración",
-    match: (pathname: string) => matchesPath(pathname, "/settings"),
-  },
-];
-
-export const secondaryNavigation: AdminNavItem[] = [
-  {
     href: "/players",
     icon: UsersIcon,
     label: "Jugadores",
@@ -52,7 +44,7 @@ export const secondaryNavigation: AdminNavItem[] = [
   },
   {
     href: "/exercises",
-    icon: ClipboardTextIcon,
+    icon: SoccerBallIcon,
     label: "Ejercicios",
     match: (pathname: string) => matchesPath(pathname, "/exercises"),
   },
@@ -63,3 +55,11 @@ export const secondaryNavigation: AdminNavItem[] = [
     match: (pathname: string) => matchesPath(pathname, "/injuries"),
   },
 ];
+
+/** Alone at the bottom of the ops sidebar nav (above footer). */
+export const configurationNavItem: AdminNavItem = {
+  href: "/settings",
+  icon: GearSixIcon,
+  label: "Configuración",
+  match: (pathname: string) => matchesPath(pathname, "/settings"),
+};

@@ -1,8 +1,5 @@
 "use client";
 
-import { BellIcon } from "@phosphor-icons/react/ssr";
-import { Button } from "@repo/design-system/components/button";
-import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +17,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, type ReactNode, useEffect } from "react";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
-import { primaryNavigation, secondaryNavigation } from "@/lib/admin-navigation";
+import {
+  configurationNavItem,
+  operationalNavigation,
+} from "@/lib/admin-navigation";
 import type { StaffContext } from "@/lib/auth-context";
 import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
 import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
@@ -50,9 +50,11 @@ type GlobalSidebarProperties = {
 
 const sidebarPrefetchHrefs = Array.from(
   new Set(
-    [...primaryNavigation, ...secondaryNavigation, ...settingsNavigation].map(
-      (item) => item.href
-    )
+    [
+      ...operationalNavigation,
+      configurationNavItem,
+      ...settingsNavigation,
+    ].map((item) => item.href)
   )
 );
 
@@ -139,7 +141,7 @@ export const GlobalSidebar = ({
                 <SidebarGroupLabel>Operación</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {primaryNavigation.map((item) => (
+                    {operationalNavigation.map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}
@@ -157,11 +159,10 @@ export const GlobalSidebar = ({
                 </SidebarGroupContent>
               </SidebarGroup>
 
-              <SidebarGroup className="pt-2">
-                <SidebarGroupLabel>Accesos</SidebarGroupLabel>
+              <SidebarGroup className="mt-auto pt-2">
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {secondaryNavigation.map((item) => (
+                    {[configurationNavItem].map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}
@@ -195,12 +196,6 @@ export const GlobalSidebar = ({
               clubId={staffContext.club.id}
               userId={userId}
             />
-            <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3">
-              <Button aria-label="Notificaciones" size="icon" variant="ghost">
-                <BellIcon className="size-4" weight="fill" />
-              </Button>
-              <ModeToggle />
-            </div>
             <SidebarUserMenu />
           </SidebarFooter>
         )}
