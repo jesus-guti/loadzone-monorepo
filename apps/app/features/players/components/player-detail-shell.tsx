@@ -99,7 +99,7 @@ export function PlayerDetailShell(
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 p-4 pt-0 pb-24 md:pb-4">
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-border-secondary border-b bg-bg-primary py-3">
-        <Avatar className="size-12 rounded-2xl border border-border-secondary">
+        <Avatar className="size-12 border border-border-secondary">
           {properties.playerImageUrl ? (
             <AvatarImage
               alt={properties.playerName}
@@ -107,7 +107,7 @@ export function PlayerDetailShell(
               src={properties.playerImageUrl}
             />
           ) : null}
-          <AvatarFallback className="rounded-2xl bg-bg-secondary font-semibold text-sm text-text-primary">
+          <AvatarFallback className="bg-bg-secondary font-semibold text-sm text-text-primary">
             {getInitials(properties.playerName)}
           </AvatarFallback>
         </Avatar>
