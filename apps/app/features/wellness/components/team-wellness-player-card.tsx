@@ -62,11 +62,11 @@ export function TeamWellnessPlayerCard({
 
   return (
     <Link
-      className="block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+      className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
       href={`/players/${player.id}`}
     >
-      <Card className="bevel-card flex h-full flex-col gap-3 rounded-lg border-border-tertiary bg-bg-primary p-4 transition-colors hover:border-border-secondary">
-        <CardHeader className="flex flex-col items-start gap-2 px-0 pb-0">
+      <Card className="flex h-full flex-col gap-3 rounded-none border-0 bg-bg-tertiary p-4 ring-0 shadow-none">
+        <CardHeader className="flex flex-col items-start gap-2 rounded-none px-0 pb-0">
           <div className="relative shrink-0">
             <Avatar className="size-16 border border-border-tertiary">
               {player.imageUrl ? (
