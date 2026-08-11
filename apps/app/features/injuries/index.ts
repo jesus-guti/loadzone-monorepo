@@ -22,6 +22,5 @@ export {
   promotePainAlert,
 } from "./actions/injury-actions";
 export type { InjuryActionResult } from "./actions/injury-actions";
-export { InjuryHistoryMap } from "./components/injury-history-map";
 export { PlayerInjuriesPanel } from "./components/player-injuries-panel";
 export { PromotePainAlertForm } from "./components/promote-pain-alert-form";
