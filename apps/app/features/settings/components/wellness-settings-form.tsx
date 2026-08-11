@@ -2,6 +2,13 @@
 
 import { WELLNESS_LIMIT_PLACEHOLDERS } from "@repo/database/wellness-limits";
 import { Input } from "@repo/design-system/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/select";
 import { useState } from "react";
 import {
   updateTeamFormAssignment,
@@ -12,10 +19,23 @@ import { useSettingsAutosave } from "../hooks/use-settings-autosave";
 import { SettingsRow } from "./settings-row";
 import { SettingsSection } from "./settings-section";
 
+const NONE_VALUE = "__none__";
+
 type FormTemplateOption = {
   readonly id: string;
   readonly name: string;
 };
+
+function toSelectValue(value: string): string {
+  return value === "" ? NONE_VALUE : value;
+}
+
+function fromSelectValue(value: string | null): string {
+  if (!value || value === NONE_VALUE) {
+    return "";
+  }
+  return value;
+}
 
 type WellnessSettingsFormProps = {
   readonly teamId: string;
@@ -77,52 +97,72 @@ export function WellnessSettingsForm({
         {/* Legacy alias for deep links during migrate */}
         <div className="sr-only" id="wellness-forms" />
         <SettingsRow htmlFor="settings-pre-form" label="Formulario pre-sesión">
-          <select
-            id="settings-pre-form"
-            className="h-9 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
-            value={preForm}
-            onChange={(event) => {
-              const next = event.target.value;
-              setPreForm(next);
+          <Select
+            items={[
+              { value: NONE_VALUE, label: "Sin asignar" },
+              ...preTemplates.map((template) => ({
+                value: template.id,
+                label: template.name,
+              })),
+            ]}
+            value={toSelectValue(preForm)}
+            onValueChange={(next) => {
+              const value = fromSelectValue(next);
+              setPreForm(value);
               saveImmediate(() =>
                 updateTeamFormAssignment({
                   fillMoment: "PRE_SESSION",
-                  templateId: next,
+                  templateId: value,
                 })
               );
             }}
           >
-            <option value="">Sin asignar</option>
-            {preTemplates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full" id="settings-pre-form">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE_VALUE}>Sin asignar</SelectItem>
+              {preTemplates.map((template) => (
+                <SelectItem key={template.id} value={template.id}>
+                  {template.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </SettingsRow>
         <SettingsRow htmlFor="settings-post-form" label="Formulario post-sesión">
-          <select
-            id="settings-post-form"
-            className="h-9 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
-            value={postForm}
-            onChange={(event) => {
-              const next = event.target.value;
-              setPostForm(next);
+          <Select
+            items={[
+              { value: NONE_VALUE, label: "Sin asignar" },
+              ...postTemplates.map((template) => ({
+                value: template.id,
+                label: template.name,
+              })),
+            ]}
+            value={toSelectValue(postForm)}
+            onValueChange={(next) => {
+              const value = fromSelectValue(next);
+              setPostForm(value);
               saveImmediate(() =>
                 updateTeamFormAssignment({
                   fillMoment: "POST_SESSION",
-                  templateId: next,
+                  templateId: value,
                 })
               );
             }}
           >
-            <option value="">Sin asignar</option>
-            {postTemplates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full" id="settings-post-form">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE_VALUE}>Sin asignar</SelectItem>
+              {postTemplates.map((template) => (
+                <SelectItem key={template.id} value={template.id}>
+                  {template.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </SettingsRow>
       </SettingsSection>
 

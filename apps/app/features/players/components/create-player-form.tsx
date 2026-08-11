@@ -3,10 +3,24 @@
 import { Button } from "@repo/design-system/components/button";
 import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect } from "react";
 import { DatePicker } from "@/components/date-picker";
 import { createPlayer } from "../actions/player-actions";
+
+const AGE_BAND_OPTIONS = [
+  { value: "NONE", label: "Automático (por fecha)" },
+  { value: "ASSISTED", label: "Asistida" },
+  { value: "GUIDED", label: "Guiada" },
+  { value: "INDEPENDENT", label: "Independiente" },
+] as const;
 
 export function CreatePlayerForm() {
   const [state, action, isPending] = useActionState(createPlayer, {
@@ -34,7 +48,11 @@ export function CreatePlayerForm() {
 
       <div className="space-y-2">
         <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
-        <DatePicker id="dateOfBirth" max={new Date().toISOString().slice(0, 10)} name="dateOfBirth" />
+        <DatePicker
+          id="dateOfBirth"
+          max={new Date().toISOString().slice(0, 10)}
+          name="dateOfBirth"
+        />
         <p className="text-xs text-text-secondary">
           Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar (sin
           supervisión parental).
@@ -43,17 +61,22 @@ export function CreatePlayerForm() {
 
       <div className="space-y-2">
         <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
-        <select
-          id="ageBandOverride"
-          name="ageBandOverride"
+        <Select
           defaultValue="NONE"
-          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+          items={AGE_BAND_OPTIONS}
+          name="ageBandOverride"
         >
-          <option value="NONE">Automático (por fecha)</option>
-          <option value="ASSISTED">Asistida</option>
-          <option value="GUIDED">Guiada</option>
-          <option value="INDEPENDENT">Independiente</option>
-        </select>
+          <SelectTrigger className="w-full" id="ageBandOverride">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {AGE_BAND_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">

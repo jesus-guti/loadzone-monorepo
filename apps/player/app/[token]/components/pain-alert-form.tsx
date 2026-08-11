@@ -1,15 +1,29 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/button";
-import { useActionState, useEffect } from "react";
-import { toast } from "@repo/design-system/components/sonner";
-import { savePainAlert } from "../actions/save-pain-alert";
 import { HeartbeatIcon } from "@phosphor-icons/react/Heartbeat";
+import { Button } from "@repo/design-system/components/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/select";
+import { toast } from "@repo/design-system/components/sonner";
+import { useActionState, useEffect } from "react";
+import { savePainAlert } from "../actions/save-pain-alert";
 
 type PainAlertFormProperties = {
   readonly token: string;
   readonly onSuccess?: () => void;
 };
+
+const SEVERITY_OPTIONS = [
+  { value: "UNKNOWN", label: "No lo sé" },
+  { value: "MINOR", label: "Leve" },
+  { value: "MODERATE", label: "Moderada" },
+  { value: "MAJOR", label: "Alta" },
+] as const;
 
 export function PainAlertForm({ token, onSuccess }: PainAlertFormProperties) {
   const [state, action, isPending] = useActionState(savePainAlert, {
@@ -69,17 +83,25 @@ export function PainAlertForm({ token, onSuccess }: PainAlertFormProperties) {
         >
           Severidad
         </label>
-        <select
-          id="severity"
-          name="severity"
+        <Select
           defaultValue="UNKNOWN"
-          className="h-12 w-full rounded-2xl bg-bg-secondary px-4 text-base text-text-primary outline-none focus:ring-2 focus:ring-brand/40"
+          items={SEVERITY_OPTIONS}
+          name="severity"
         >
-          <option value="UNKNOWN">No lo sé</option>
-          <option value="MINOR">Leve</option>
-          <option value="MODERATE">Moderada</option>
-          <option value="MAJOR">Alta</option>
-        </select>
+          <SelectTrigger
+            className="h-12 w-full rounded-2xl border-0 bg-bg-secondary px-4 text-base"
+            id="severity"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SEVERITY_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">

@@ -50,6 +50,29 @@ const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
   ASSISTED_GUARDIAN_GRANTED: "Tutor consintió (asistida)",
 };
 
+const AGE_BAND_OPTIONS = [
+  { value: "NONE", label: "Automático (por fecha)" },
+  { value: "ASSISTED", label: "Asistida" },
+  { value: "GUIDED", label: "Guiada" },
+  { value: "INDEPENDENT", label: "Independiente" },
+] as const;
+
+const REMINDER_CONSENT_ACTION_OPTIONS = [
+  { value: "LEAVE", label: "Mantener estado actual" },
+  {
+    value: "GRANT_ASSISTED",
+    label: "Registrar consentimiento del tutor (asistida)",
+  },
+  {
+    value: "REVOKE_SUPERVISION",
+    label: "Revocar recordatorios (supervisión) — elimina push",
+  },
+  {
+    value: "CLEAR_TO_ELIGIBLE",
+    label: "Volver a elegible (quitar bloqueo / grant)",
+  },
+] as const;
+
 export function EditPlayerForm({
   player,
   hasActiveInjury,
@@ -133,17 +156,22 @@ export function EditPlayerForm({
 
       <div className="space-y-2">
         <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
-        <select
-          id="ageBandOverride"
-          name="ageBandOverride"
+        <Select
           defaultValue={player.ageBandOverride ?? "NONE"}
-          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+          items={AGE_BAND_OPTIONS}
+          name="ageBandOverride"
         >
-          <option value="NONE">Automático (por fecha)</option>
-          <option value="ASSISTED">Asistida</option>
-          <option value="GUIDED">Guiada</option>
-          <option value="INDEPENDENT">Independiente</option>
-        </select>
+          <SelectTrigger className="w-full" id="ageBandOverride">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {AGE_BAND_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2 border-t border-border-secondary pt-4">
@@ -157,23 +185,22 @@ export function EditPlayerForm({
             : " · sin tramo"}
           . La suscripción push es solo transporte.
         </p>
-        <select
-          id="reminderConsentAction"
-          name="reminderConsentAction"
+        <Select
           defaultValue="LEAVE"
-          className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+          items={REMINDER_CONSENT_ACTION_OPTIONS}
+          name="reminderConsentAction"
         >
-          <option value="LEAVE">Mantener estado actual</option>
-          <option value="GRANT_ASSISTED">
-            Registrar consentimiento del tutor (asistida)
-          </option>
-          <option value="REVOKE_SUPERVISION">
-            Revocar recordatorios (supervisión) — elimina push
-          </option>
-          <option value="CLEAR_TO_ELIGIBLE">
-            Volver a elegible (quitar bloqueo / grant)
-          </option>
-        </select>
+          <SelectTrigger className="w-full" id="reminderConsentAction">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {REMINDER_CONSENT_ACTION_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">

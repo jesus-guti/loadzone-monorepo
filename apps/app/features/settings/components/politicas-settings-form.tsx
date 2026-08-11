@@ -7,6 +7,13 @@ import type {
   ReminderConsentPolicy,
 } from "@repo/database/reminder-consent";
 import { Input } from "@repo/design-system/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/select";
 import { useState } from "react";
 import {
   updateTeamAgeBandPolicyFromForm,
@@ -311,18 +318,18 @@ export function PoliticasSettingsForm({
             return (
               <div key={row.key}>
                 <SettingsRow htmlFor={row.modeField} label={`${row.title} — modo`}>
-                  <select
-                    id={row.modeField}
-                    className="h-9 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+                  <Select
+                    items={MODE_OPTIONS}
                     value={band.playerRemindersMode}
-                    onChange={(event) => {
-                      const nextMode = event.target
-                        .value as PlayerReminderMode;
+                    onValueChange={(nextMode) => {
+                      if (!nextMode) {
+                        return;
+                      }
                       const next = {
                         ...consent,
                         [row.key]: {
                           ...band,
-                          playerRemindersMode: nextMode,
+                          playerRemindersMode: nextMode as PlayerReminderMode,
                         },
                       };
                       setConsent(next);
@@ -333,12 +340,17 @@ export function PoliticasSettingsForm({
                       );
                     }}
                   >
-                    {MODE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full" id={row.modeField}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MODE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </SettingsRow>
                 <SettingsRow
                   htmlFor={row.receiveField}

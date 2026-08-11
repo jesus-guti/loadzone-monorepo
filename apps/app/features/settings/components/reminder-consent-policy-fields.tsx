@@ -4,6 +4,13 @@ import type {
   ReminderConsentPolicy,
 } from "@repo/database/reminder-consent";
 import { Label } from "@repo/design-system/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/select";
 
 type ReminderConsentPolicyFieldsProperties = {
   readonly policy: ReminderConsentPolicy;
@@ -89,18 +96,22 @@ export function ReminderConsentPolicyFields({
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor={row.modeField}>Recordatorios al jugador</Label>
-                <select
-                  id={row.modeField}
-                  name={row.modeField}
+                <Select
                   defaultValue={band.playerRemindersMode}
-                  className="h-10 w-full rounded-md border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary"
+                  items={MODE_OPTIONS}
+                  name={row.modeField}
                 >
-                  {MODE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full" id={row.modeField}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MODE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <label
                 htmlFor={row.receiveField}
