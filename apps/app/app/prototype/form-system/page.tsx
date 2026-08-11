@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CreateTeamPilot } from "./_components/create-team-pilot";
 import { PrototypeStorePanel } from "./_components/prototype-store-panel";
 import { WellnessAutosavePilot } from "./_components/wellness-autosave-pilot";
@@ -27,12 +26,6 @@ export default function FormSystemPrototypePage() {
           Contrato: Form*/Field* + FormActionResult + autosave per-field. No es
           migración de producción.
         </p>
-        <Link
-          href="/prototype/settings"
-          className="text-sm text-brand underline-offset-2 hover:underline"
-        >
-          ← Prototype settings
-        </Link>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_minmax(240px,320px)]">

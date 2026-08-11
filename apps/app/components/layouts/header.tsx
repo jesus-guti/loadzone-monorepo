@@ -19,7 +19,7 @@ export const Header = ({ page, children }: HeaderProps) => {
     <header className="sticky top-0 z-20 bg-bg-primary/95 backdrop-blur">
       <div className="hidden items-center justify-between gap-4 px-6 py-6 md:flex">
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <div className="relative flex min-w-0 flex-col gap-0.5">
+          <div className="relative flex min-w-0 flex-col gap-0.5 -mt-0.5">
             <p className="absolute -top-2 truncate font-medium text-[11px] text-text-secondary uppercase tracking-[0.16em]">
               LoadZone
             </p>

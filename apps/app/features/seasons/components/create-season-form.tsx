@@ -5,6 +5,7 @@ import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
 import { useActionState, useEffect } from "react";
 import { toast } from "@repo/design-system/components/sonner";
+import { DatePicker } from "@/components/date-picker";
 import { createSeason } from "../actions/season-actions";
 
 export function CreateSeasonForm() {
@@ -33,17 +34,17 @@ export function CreateSeasonForm() {
 
       <div className="space-y-2">
         <Label htmlFor="startDate">Fecha de inicio</Label>
-        <Input id="startDate" name="startDate" type="date" required />
+        <DatePicker id="startDate" name="startDate" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="endDate">Fecha de fin</Label>
-        <Input id="endDate" name="endDate" type="date" required />
+        <DatePicker id="endDate" name="endDate" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="preSeasonEnd">Fin de pre-temporada (opcional)</Label>
-        <Input id="preSeasonEnd" name="preSeasonEnd" type="date" />
+        <DatePicker id="preSeasonEnd" name="preSeasonEnd" />
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">

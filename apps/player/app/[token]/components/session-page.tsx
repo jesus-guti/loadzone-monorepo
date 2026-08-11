@@ -21,6 +21,7 @@ import { CheckCircleIcon } from "@phosphor-icons/react/CheckCircle";
 import { HeartbeatIcon } from "@phosphor-icons/react/Heartbeat";
 import { cn } from "@repo/design-system/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
+import { DatePicker } from "@/components/date-picker";
 import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
@@ -257,12 +258,16 @@ export function SessionPage({
               </span>
             </button>
             {showDateEdit ? (
-              <input
-                type="date"
-                value={date}
-                onChange={(event) => handleDateChange(event.target.value)}
+              <DatePicker
+                className="mt-1"
                 disabled={isPending}
-                className="mt-1 min-h-12 rounded-lg bg-bg-secondary px-2 py-1 text-xs text-text-primary focus:outline-none"
+                max={todayIso}
+                onChange={(nextDate) => {
+                  setShowDateEdit(false);
+                  handleDateChange(nextDate);
+                }}
+                triggerClassName="min-h-12 rounded-lg"
+                value={date}
               />
             ) : null}
           </div>

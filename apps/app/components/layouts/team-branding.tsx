@@ -33,11 +33,14 @@ type AmbientPalette = {
   readonly highlight: string;
 };
 
+/** Sage brand tones (~`--brand` hue 160) — no blue/purple flash while extracting. */
 const FALLBACK_AMBIENT_PALETTE: AmbientPalette = {
-  primary: "rgba(59, 130, 246, 0.92)",
-  secondary: "rgba(168, 85, 247, 0.78)",
-  highlight: "rgba(255, 255, 255, 0.55)",
+  primary: "rgba(52, 138, 112, 0.72)",
+  secondary: "rgba(88, 148, 128, 0.55)",
+  highlight: "rgba(220, 240, 230, 0.45)",
 };
+
+const NEUTRAL_AVERAGE_COLOR: RgbColor = { r: 52, g: 138, b: 112 };
 const WHITESPACE_PATTERN = /\s+/;
 
 function getInitials(value: string | null): string {
@@ -169,7 +172,7 @@ function boostSaturation(color: RgbColor, factor: number): RgbColor {
 
 function getAverageColor(colors: readonly RgbColor[]): RgbColor {
   if (colors.length === 0) {
-    return { r: 59, g: 130, b: 246 };
+    return NEUTRAL_AVERAGE_COLOR;
   }
 
   const totals = colors.reduce(
@@ -299,7 +302,7 @@ function getDominantColors(data: Uint8ClampedArray): readonly RgbColor[] {
 }
 
 function buildAmbientPalette(colors: readonly RgbColor[]): AmbientPalette {
-  const rawPrimary = colors[0] ?? { r: 59, g: 130, b: 246 };
+  const rawPrimary = colors[0] ?? NEUTRAL_AVERAGE_COLOR;
   const rawSecondary = colors[1] ?? rawPrimary;
   const primaryColor = boostSaturation(rawPrimary, 1.85);
   const secondaryColor = boostSaturation(rawSecondary, 1.65);
@@ -377,26 +380,29 @@ function shouldUseAnonymousCrossOrigin(imageUrl: string): boolean {
   }
 }
 
+type AmbientPaletteState = {
+  readonly palette: AmbientPalette;
+  /** False until extraction finishes — glow stays hidden to avoid a color pop. */
+  readonly isReady: boolean;
+};
+
 function useAmbientPalette(
   imageUrl: string | null,
   enabled: boolean
-): AmbientPalette {
-  const [palette, setPalette] = useState<AmbientPalette>(
-    FALLBACK_AMBIENT_PALETTE
-  );
+): AmbientPaletteState {
+  const [state, setState] = useState<AmbientPaletteState>({
+    palette: FALLBACK_AMBIENT_PALETTE,
+    isReady: false,
+  });
 
   useEffect(() => {
-    if (!enabled) {
-      setPalette(FALLBACK_AMBIENT_PALETTE);
-      return;
-    }
-
-    if (imageUrl === null) {
-      setPalette(FALLBACK_AMBIENT_PALETTE);
+    if (!enabled || imageUrl === null) {
+      setState({ palette: FALLBACK_AMBIENT_PALETTE, isReady: false });
       return;
     }
 
     let isCancelled = false;
+    setState({ palette: FALLBACK_AMBIENT_PALETTE, isReady: false });
     const image = new Image();
 
     if (shouldUseAnonymousCrossOrigin(imageUrl)) {
@@ -412,19 +418,19 @@ function useAmbientPalette(
       loadAmbientPaletteFromDecodedImage(image, () => isCancelled)
         .then((nextPalette) => {
           if (!isCancelled) {
-            setPalette(nextPalette);
+            setState({ palette: nextPalette, isReady: true });
           }
         })
         .catch(() => {
           if (!isCancelled) {
-            setPalette(FALLBACK_AMBIENT_PALETTE);
+            setState({ palette: FALLBACK_AMBIENT_PALETTE, isReady: true });
           }
         });
     };
 
     image.onerror = () => {
       if (!isCancelled) {
-        setPalette(FALLBACK_AMBIENT_PALETTE);
+        setState({ palette: FALLBACK_AMBIENT_PALETTE, isReady: true });
       }
     };
 
@@ -435,7 +441,7 @@ function useAmbientPalette(
     };
   }, [enabled, imageUrl]);
 
-  return palette;
+  return state;
 }
 
 function getSecondaryLabel(
@@ -495,10 +501,19 @@ export function TeamBranding({
   const imageUrl = teamLogoUrl ?? clubLogoUrl;
   const hasImage = imageUrl !== null;
   const isAmbientLogo = logoTreatment === "ambient" && hasImage;
-  const ambientPalette = useAmbientPalette(imageUrl, isAmbientLogo);
+  const { palette: ambientPalette, isReady: isAmbientPaletteReady } =
+    useAmbientPalette(imageUrl, isAmbientLogo);
   const avatarSizeClass = compact ? "size-10" : "size-9";
   const outerGlowStyle = getAmbientGlowStyle(ambientPalette, "outer");
   const innerGlowStyle = getAmbientGlowStyle(ambientPalette, "inner");
+  const ambientGlowVisibilityClassName = cn(
+    "transition-opacity duration-300 ease-out motion-reduce:transition-none",
+    isAmbientPaletteReady ? "opacity-100" : "opacity-0"
+  );
+  const ambientInnerGlowVisibilityClassName = cn(
+    "transition-opacity duration-300 ease-out motion-reduce:transition-none",
+    isAmbientPaletteReady ? "opacity-95" : "opacity-0"
+  );
   const rootClassName = isAmbientLogo
     ? "flex min-w-0 items-center gap-2"
     : "flex min-w-0 items-center gap-3";
@@ -545,14 +560,18 @@ export function TeamBranding({
           <>
             <div
               aria-hidden
-              // biome-ignore lint/nursery/useSortedClasses: radial halo positioning is easier to read spatially
-              className="absolute left-1/2 top-1/2 size-12 -translate-x-1/2 -translate-y-1/2 rounded-full blur-sm"
+              className={cn(
+                "absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 rounded-full blur-sm",
+                ambientGlowVisibilityClassName
+              )}
               style={outerGlowStyle}
             />
             <div
               aria-hidden
-              // biome-ignore lint/nursery/useSortedClasses: radial halo positioning is easier to read spatially
-              className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-95 blur-sm"
+              className={cn(
+                "absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-sm",
+                ambientInnerGlowVisibilityClassName
+              )}
               style={innerGlowStyle}
             />
           </>
@@ -573,7 +592,7 @@ export function TeamBranding({
               )}
             >
               {imageUrl ? (
-                <ShieldCheckIcon className="size-4" />
+                <ShieldCheckIcon className="size-4" weight="fill" />
               ) : (
                 getInitials(primaryLabel)
               )}

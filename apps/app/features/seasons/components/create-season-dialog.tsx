@@ -12,6 +12,7 @@ import {
 import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
 import { useTransition } from "react";
+import { DatePicker } from "@/components/date-picker";
 import { createSeasonFromShell } from "../actions/season-actions";
 
 type CreateSeasonDialogProps = {
@@ -54,31 +55,21 @@ export function CreateSeasonDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-season-start">Fecha de inicio</Label>
-            <Input
+            <DatePicker
               id="create-season-start"
               name="startDate"
               required
-              type="date"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-season-end">Fecha de fin</Label>
-            <Input
-              id="create-season-end"
-              name="endDate"
-              required
-              type="date"
-            />
+            <DatePicker id="create-season-end" name="endDate" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="create-season-pre">
               Fin de pre-temporada (opcional)
             </Label>
-            <Input
-              id="create-season-pre"
-              name="preSeasonEnd"
-              type="date"
-            />
+            <DatePicker id="create-season-pre" name="preSeasonEnd" />
           </div>
           <DialogFooter>
             <Button

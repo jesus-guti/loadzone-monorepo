@@ -7,6 +7,7 @@ import { Textarea } from "@repo/design-system/components/textarea";
 import { toast } from "@repo/design-system/components/sonner";
 import type { BodyMapView, BodyRegionCatalogId } from "@repo/database/body-region-catalog";
 import { useActionState, useEffect, useState, type FormEvent } from "react";
+import { DatePicker } from "@/components/date-picker";
 import {
   createInjury,
   updateInjury,
@@ -132,13 +133,12 @@ export function InjuryLogForm({
             <Label htmlFor="injury-start-date">
               Fecha de inicio <span className="text-danger">*</span>
             </Label>
-            <Input
+            <DatePicker
               id="injury-start-date"
               name="startDate"
-              type="date"
+              onChange={setStartDate}
               required
               value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
             />
           </div>
 

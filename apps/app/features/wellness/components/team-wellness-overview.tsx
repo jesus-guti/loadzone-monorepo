@@ -342,27 +342,13 @@ export function TeamWellnessOverview({
         <Table>
           <TableHeader>
             <TableRow className="border-0 hover:bg-transparent">
-              <TableHead className="h-8 pl-0 font-medium text-text-tertiary text-xs">
-                Jugador
-              </TableHead>
-              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
-                Pre
-              </TableHead>
-              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
-                Post
-              </TableHead>
-              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
-                Recuperación
-              </TableHead>
-              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
-                Energía
-              </TableHead>
-              <TableHead className="hidden h-8 font-medium text-text-tertiary text-xs md:table-cell">
-                Agujetas
-              </TableHead>
-              <TableHead className="h-8 pr-0 font-medium text-text-tertiary text-xs">
-                Riesgo
-              </TableHead>
+              <TableHead className="pl-0">Jugador</TableHead>
+              <TableHead className="">Pre</TableHead>
+              <TableHead className="">Post</TableHead>
+              <TableHead className="">Recuperación</TableHead>
+              <TableHead className="">Energía</TableHead>
+              <TableHead className="">Agujetas</TableHead>
+              <TableHead className="">Riesgo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

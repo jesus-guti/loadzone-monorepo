@@ -5,6 +5,7 @@ import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
 import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect } from "react";
+import { DatePicker } from "@/components/date-picker";
 import { createPlayer } from "../actions/player-actions";
 
 export function CreatePlayerForm() {
@@ -33,7 +34,7 @@ export function CreatePlayerForm() {
 
       <div className="space-y-2">
         <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
-        <Input id="dateOfBirth" name="dateOfBirth" type="date" />
+        <DatePicker id="dateOfBirth" max={new Date().toISOString().slice(0, 10)} name="dateOfBirth" />
         <p className="text-xs text-text-secondary">
           Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar (sin
           supervisión parental).

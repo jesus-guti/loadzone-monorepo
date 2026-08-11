@@ -9,10 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/dialog";
-import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
 import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect, useState } from "react";
+import { DatePicker } from "@/components/date-picker";
 import {
   closeInjury,
   type InjuryActionResult,
@@ -78,14 +78,13 @@ export function CloseInjuryDialog({
             <Label htmlFor="injury-end-date">
               Fecha de fin <span className="text-danger">*</span>
             </Label>
-            <Input
+            <DatePicker
               id="injury-end-date"
-              name="endDate"
-              type="date"
-              required
               min={injury.startDate}
+              name="endDate"
+              onChange={setEndDate}
+              required
               value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
             />
           </div>
 

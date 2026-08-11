@@ -14,6 +14,7 @@ import { toast } from "@repo/design-system/components/sonner";
 import type { AgeBand, PlayerStatus } from "@repo/database";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { useActionState, useEffect } from "react";
+import { DatePicker } from "@/components/date-picker";
 import { updatePlayer } from "../actions/player-actions";
 
 type EditPlayerFormProperties = {
@@ -119,11 +120,11 @@ export function EditPlayerForm({
 
       <div className="space-y-2">
         <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
-        <Input
-          id="dateOfBirth"
-          name="dateOfBirth"
-          type="date"
+        <DatePicker
           defaultValue={player.dateOfBirth ?? ""}
+          id="dateOfBirth"
+          max={new Date().toISOString().slice(0, 10)}
+          name="dateOfBirth"
         />
         <p className="text-xs text-text-secondary">
           Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar.

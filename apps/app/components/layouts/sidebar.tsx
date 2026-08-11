@@ -1,8 +1,8 @@
 "use client";
 
 import { BellIcon } from "@phosphor-icons/react/ssr";
-import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/button";
+import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -18,15 +18,12 @@ import {
 } from "@repo/design-system/components/sidebar";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect } from "react";
+import { Fragment, type ReactNode, useEffect } from "react";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import { primaryNavigation, secondaryNavigation } from "@/lib/admin-navigation";
 import type { StaffContext } from "@/lib/auth-context";
 import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
-import {
-  isSettingsPath,
-  settingsNavigation,
-} from "@/lib/settings-navigation";
+import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { MobileSidebarFab } from "./mobile-sidebar-fab";
@@ -53,11 +50,9 @@ type GlobalSidebarProperties = {
 
 const sidebarPrefetchHrefs = Array.from(
   new Set(
-    [
-      ...primaryNavigation,
-      ...secondaryNavigation,
-      ...settingsNavigation,
-    ].map((item) => item.href)
+    [...primaryNavigation, ...secondaryNavigation, ...settingsNavigation].map(
+      (item) => item.href
+    )
   )
 );
 
@@ -84,18 +79,6 @@ function SidebarBrandingHeader({
   );
 }
 
-function SettingsSidebarHeader() {
-  return (
-    <SidebarHeader className="gap-2 p-2">
-      <div className="flex flex-row items-center justify-between gap-2">
-        <p className="min-w-0 flex-1 truncate px-2 font-semibold text-sm text-text-primary">
-          Configuración
-        </p>
-      </div>
-    </SidebarHeader>
-  );
-}
-
 export const GlobalSidebar = ({
   children,
   staffContext,
@@ -117,7 +100,7 @@ export const GlobalSidebar = ({
       <OperationalRouteMemory />
       <Sidebar collapsible="offcanvas" variant="inset">
         {inSettings ? (
-          <SettingsSidebarHeader />
+          <Fragment />
         ) : (
           <SidebarBrandingHeader staffContext={staffContext} />
         )}
@@ -125,12 +108,8 @@ export const GlobalSidebar = ({
         <SidebarContent>
           {inSettings ? (
             <>
-              <SidebarGroup>
-                <SidebarGroupLabel>Volver</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SettingsVolverLink />
-                </SidebarGroupContent>
-              </SidebarGroup>
+              <div className="p-2" />
+              <SettingsVolverLink />
 
               <SidebarGroup className="pt-2">
                 <SidebarGroupLabel>Ajustes</SidebarGroupLabel>
@@ -140,13 +119,13 @@ export const GlobalSidebar = ({
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}
-                          tooltip={item.label}
                           render={
                             <Link href={item.href} prefetch>
                               <item.icon weight="fill" />
                               <span>{item.label}</span>
                             </Link>
                           }
+                          tooltip={item.label}
                         />
                       </SidebarMenuItem>
                     ))}
@@ -164,13 +143,13 @@ export const GlobalSidebar = ({
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}
-                          tooltip={item.label}
                           render={
                             <Link href={item.href} prefetch>
                               <item.icon weight="fill" />
                               <span>{item.label}</span>
                             </Link>
                           }
+                          tooltip={item.label}
                         />
                       </SidebarMenuItem>
                     ))}
@@ -186,13 +165,13 @@ export const GlobalSidebar = ({
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}
-                          tooltip={item.label}
                           render={
                             <Link href={item.href} prefetch>
                               <item.icon weight="fill" />
                               <span>{item.label}</span>
                             </Link>
                           }
+                          tooltip={item.label}
                         />
                       </SidebarMenuItem>
                     ))}

@@ -5,6 +5,7 @@ import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
 import { toast } from "@repo/design-system/components/sonner";
 import { useActionState, useEffect, useState } from "react";
+import { DatePicker } from "@/components/date-picker";
 import {
   markExcusedAbsence,
   unmarkExcusedAbsence,
@@ -67,13 +68,12 @@ export function ExcusedAbsenceForm({
         <div className="grid gap-3 sm:grid-cols-[minmax(0,12rem)_1fr_auto] sm:items-end">
           <div className="space-y-1.5">
             <Label htmlFor="excuse-date">Fecha</Label>
-            <Input
+            <DatePicker
               id="excuse-date"
               name="date"
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
+              onChange={setDate}
               required
+              value={date}
             />
           </div>
           {!isExcused ? (
