@@ -23,6 +23,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { InfoHint } from "@/components/info-hint";
 
 type EntryData = {
   date: string;
@@ -73,20 +74,22 @@ const sleepConfig: ChartConfig = {
 type ChartBlockProperties = {
   readonly title: string;
   readonly hint?: string;
+  readonly hintLabel?: string;
   readonly children: React.ReactNode;
 };
 
 function ChartBlock({
   title,
   hint,
+  hintLabel,
   children,
 }: ChartBlockProperties): React.JSX.Element {
   return (
     <div className="min-w-0 space-y-3">
-      <div className="space-y-0.5">
+      <div className="flex items-center gap-1.5">
         <h3 className="font-medium text-sm text-text-primary">{title}</h3>
         {hint ? (
-          <p className="text-sm text-text-secondary">{hint}</p>
+          <InfoHint label={hintLabel ?? `Más sobre ${title}`}>{hint}</InfoHint>
         ) : null}
       </div>
       {children}
@@ -169,6 +172,7 @@ export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
         {stats.length > 0 ? (
           <ChartBlock
             hint="Por encima de la zona de riesgo, la carga aguda sube demasiado rápido frente a la crónica."
+            hintLabel="Qué mide el ACWR"
             title="Carga aguda frente a crónica (ACWR)"
           >
             <ChartContainer className="h-64 w-full" config={acwrConfig}>
@@ -207,7 +211,11 @@ export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
           </ChartBlock>
         ) : null}
 
-        <ChartBlock hint="Barras: horas dormidas. Línea: calidad." title="Sueño">
+        <ChartBlock
+          hint="Barras: horas dormidas. Línea: calidad."
+          hintLabel="Cómo leer el gráfico de sueño"
+          title="Sueño"
+        >
           <ChartContainer className="h-64 w-full" config={sleepConfig}>
             <BarChart data={entries}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />

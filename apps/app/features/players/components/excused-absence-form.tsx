@@ -62,10 +62,6 @@ export function ExcusedAbsenceForm({
 
   return (
     <div className="space-y-3">
-      <p className="max-w-[65ch] text-sm text-text-secondary">
-        Congela la racha del día (ni suma ni rompe). Las lesiones activas ya
-        excusan sin marcar aquí.
-      </p>
       <form action={isExcused ? unmarkAction : markAction} className="space-y-3">
         <input type="hidden" name="playerId" value={playerId} />
         <div className="grid gap-3 sm:grid-cols-[minmax(0,12rem)_1fr_auto] sm:items-end">

@@ -20,6 +20,7 @@ import {
 } from "@repo/design-system/components/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { InfoHint } from "@/components/info-hint";
 import { PlayerInjuriesPanel } from "@/features/injuries/components/player-injuries-panel";
 import type { InjuryListItem } from "@/features/injuries/types";
 import { ExcusedAbsenceForm } from "./excused-absence-form";
@@ -161,13 +162,19 @@ export function PlayerDetailShell(
           <PlayerHistoryTable rows={[...properties.historyRows]} />
 
           <Collapsible className="border-border-secondary border-t pt-6">
-            <CollapsibleTrigger className="group flex items-center gap-2 font-medium text-text-secondary text-xs uppercase tracking-wide hover:text-text-primary focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">
-              Ausencia justificada
-              <CaretDownIcon
-                aria-hidden
-                className="size-3 transition-transform duration-200 group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
-              />
-            </CollapsibleTrigger>
+            <div className="flex items-center gap-1.5">
+              <CollapsibleTrigger className="group flex items-center gap-2 font-medium text-text-secondary text-xs uppercase tracking-wide hover:text-text-primary focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">
+                Ausencia justificada
+                <CaretDownIcon
+                  aria-hidden
+                  className="size-3 transition-transform duration-200 group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
+                />
+              </CollapsibleTrigger>
+              <InfoHint label="Qué es una ausencia justificada">
+                Congela la racha del día (ni suma ni rompe). Las lesiones
+                activas ya excusan sin marcar aquí.
+              </InfoHint>
+            </div>
             <CollapsibleContent className="pt-4">
               <ExcusedAbsenceForm
                 excusedDates={[...properties.excusedDates]}
