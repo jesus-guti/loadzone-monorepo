@@ -61,46 +61,47 @@ export function TeamWellnessPlayerCard({
   );
 
   return (
-    <Link href={`/players/${player.id}`}>
-      <Card className="bevel-card h-full gap-4 rounded-lg border-border-tertiary bg-bg-primary p-4 transition-colors hover:border-border-secondary">
-        <CardHeader className="flex flex-row items-start justify-between gap-3 px-0 pb-0">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="relative shrink-0">
-              <Avatar className="size-11 border border-border-tertiary">
-                {player.imageUrl ? (
-                  <AvatarImage
-                    alt={player.name}
-                    className="object-cover"
-                    src={player.imageUrl}
-                  />
-                ) : null}
-                <AvatarFallback className="bg-bg-secondary text-sm font-semibold text-text-primary">
-                  {getInitials(player.name)}
-                </AvatarFallback>
-              </Avatar>
-              {showAvatarBadge ? (
-                <span className="glass-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
-                  {avatarBadgeIcon}
-                </span>
+    <Link
+      className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+      href={`/players/${player.id}`}
+    >
+      <Card className="flex h-full flex-col gap-3 rounded-none border-0 bg-bg-tertiary p-4 ring-0 shadow-none">
+        <CardHeader className="flex flex-col items-start gap-2 rounded-none px-0 pb-0">
+          <div className="relative shrink-0">
+            <Avatar className="size-16 border border-border-tertiary">
+              {player.imageUrl ? (
+                <AvatarImage
+                  alt={player.name}
+                  className="object-cover"
+                  src={player.imageUrl}
+                />
               ) : null}
-            </div>
-            <div className="min-w-0">
-              <CardTitle className="flex items-center gap-1.5 truncate text-base text-text-primary">
-                <span className="truncate">{player.name}</span>
-                {state === "COMPLETED" && !injuryLabel ? (
-                  <CheckCircleIcon className="size-4 shrink-0 text-brand" />
-                ) : null}
-              </CardTitle>
-            </div>
+              <AvatarFallback className="bg-bg-secondary text-base font-semibold text-text-primary">
+                {getInitials(player.name)}
+              </AvatarFallback>
+            </Avatar>
+            {showAvatarBadge ? (
+              <span className="glass-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
+                {avatarBadgeIcon}
+              </span>
+            ) : null}
           </div>
-          {player.currentStreak > 0 ? (
-            <span className="flex items-center gap-1 text-xs font-medium text-text-secondary">
-              <FireIcon className="size-3 text-premium" />
-              {player.currentStreak}
-            </span>
-          ) : null}
+          <div className="min-w-0 w-full space-y-1">
+            <CardTitle className="flex items-center gap-1.5 truncate text-base text-text-primary">
+              <span className="truncate">{player.name}</span>
+              {state === "COMPLETED" && !injuryLabel ? (
+                <CheckCircleIcon className="size-4 shrink-0 text-brand" />
+              ) : null}
+            </CardTitle>
+            {player.currentStreak > 0 ? (
+              <span className="flex items-center gap-1 text-xs font-medium text-text-secondary">
+                <FireIcon className="size-3 text-premium" />
+                {player.currentStreak}
+              </span>
+            ) : null}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4 px-0 pb-0">
+        <CardContent className="space-y-3 px-0 pb-0">
           {state === "ALERT" ||
           state === "NOT_COMPLETED" ||
           state === "EXEMPTED" ||
@@ -157,7 +158,7 @@ export function TeamWellnessPlayerCard({
           ) : null}
 
           {hasEntryMetrics ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="space-y-1">
                 <p className="text-xs text-text-tertiary">Recuperación</p>
                 <RecoveryScale
@@ -166,7 +167,7 @@ export function TeamWellnessPlayerCard({
                   value={entry?.recovery ?? null}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <p className="text-xs text-text-tertiary">Energía</p>
                   <EnergyScale
@@ -184,7 +185,7 @@ export function TeamWellnessPlayerCard({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <p className="text-xs text-text-tertiary">Riesgo</p>
                   <RiskScale
