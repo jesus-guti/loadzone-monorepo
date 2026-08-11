@@ -66,7 +66,7 @@ export function TeamWellnessPlayerCard({
         <CardHeader className="flex flex-row items-start justify-between gap-3 px-0 pb-0">
           <div className="flex min-w-0 items-center gap-3">
             <div className="relative shrink-0">
-              <Avatar className="size-11 rounded-2xl border border-border-tertiary">
+              <Avatar className="size-11 border border-border-tertiary">
                 {player.imageUrl ? (
                   <AvatarImage
                     alt={player.name}
@@ -74,7 +74,7 @@ export function TeamWellnessPlayerCard({
                     src={player.imageUrl}
                   />
                 ) : null}
-                <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
+                <AvatarFallback className="bg-bg-secondary text-sm font-semibold text-text-primary">
                   {getInitials(player.name)}
                 </AvatarFallback>
               </Avatar>

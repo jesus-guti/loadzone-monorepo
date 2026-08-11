@@ -130,11 +130,11 @@ export function CuentaSettingsForm({
         <SettingsRow label="Avatar / foto">
           <div className="flex items-center justify-end gap-3">
             <button
-              className="group relative rounded-2xl"
+              className="group relative rounded-full"
               onClick={() => inputReference.current?.click()}
               type="button"
             >
-              <Avatar className="size-12 rounded-2xl border border-border-secondary">
+              <Avatar className="size-12 border border-border-secondary">
                 {displayImage ? (
                   <AvatarImage
                     alt={nameValue || email}
@@ -142,7 +142,7 @@ export function CuentaSettingsForm({
                     src={displayImage}
                   />
                 ) : null}
-                <AvatarFallback className="rounded-2xl bg-bg-secondary font-semibold text-sm text-text-primary">
+                <AvatarFallback className="bg-bg-secondary font-semibold text-sm text-text-primary">
                   {getInitials(nameValue || name, email)}
                 </AvatarFallback>
               </Avatar>
