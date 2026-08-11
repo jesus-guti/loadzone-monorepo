@@ -1,7 +1,4 @@
-import {
-  CheckCircleIcon,
-  WarningIcon,
-} from "@phosphor-icons/react/ssr";
+import { CheckCircleIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 import {
   Avatar,
   AvatarFallback,
@@ -21,12 +18,6 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import { PendingReminderDialog } from "./pending-reminder-dialog";
 import {
-  EnergyScale,
-  RecoveryScale,
-  RiskScale,
-  SorenessScale,
-} from "./wellness-scales";
-import {
   averageProgressPercent,
   formatAverage,
   getInitials,
@@ -34,14 +25,20 @@ import {
   getRiskLabel,
   listPendingPlayers,
   type TeamWellnessWorkspaceSummary,
-  type WellnessTrafficTone,
   toneAlertDensity,
   toneForHigherIsWorse,
   toneForLowerIsBetter,
   tonePendingWorkload,
+  type WellnessTrafficTone,
   wellnessLabelClass,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
+import {
+  EnergyScale,
+  RecoveryScale,
+  RiskScale,
+  SorenessScale,
+} from "./wellness-scales";
 
 type TeamWellnessComparisonRowProperties = {
   readonly player: TeamWellnessPlayer;
@@ -140,14 +137,14 @@ function AverageMeter({
   polarity = "higherIsBetter",
 }: AverageMeterProperties) {
   return (
-    <div className="min-w-0 space-y-1">
+    <div className="min-w-0 flex-1 space-y-1">
       <p className={cn("font-medium text-xs", wellnessLabelClass(tone))}>
         {label}
       </p>
       <div className="flex items-center gap-2">
         <div
           aria-hidden={percent === null}
-          className="h-1.5 w-24 shrink-0 overflow-hidden rounded-full bg-bg-tertiary"
+          className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-bg-tertiary"
           role="presentation"
         >
           {percent === null ? null : (
@@ -283,7 +280,7 @@ export function TeamWellnessOverview({
           />
         </div>
 
-        <div className="space-y-4">
+        <div className="flex gap-4">
           <AverageMeter
             label="Recuperación media"
             percent={averageProgressPercent(

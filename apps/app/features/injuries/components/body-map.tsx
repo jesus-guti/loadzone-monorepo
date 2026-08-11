@@ -8,7 +8,7 @@ import {
 } from "@repo/database/body-region-catalog";
 import { cn } from "@repo/design-system/lib/utils";
 import { XIcon } from "@phosphor-icons/react";
-
+import Image from "next/image";
 type BodyMapProperties = {
   readonly selectedIds: ReadonlySet<BodyRegionCatalogId>;
   readonly onToggle: (id: BodyRegionCatalogId) => void;
@@ -71,19 +71,24 @@ export function BodyMap({
         </button>
       </div>
 
-      <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-md border border-border-secondary bg-bg-secondary">
-        {/* eslint-disable-next-line @next/next/no-img-element -- static public body-map asset */}
-        <img
+      <div
+        className="relative mx-auto w-full max-w-sm self-start overflow-hidden rounded-md border border-border-secondary bg-bg-secondary"
+        style={{
+          aspectRatio: `${bodyRegionCatalog.assets.width} / ${bodyRegionCatalog.assets.height}`,
+        }}
+      >
+        <Image
           src={assetSrc}
           alt={
             view === "front"
               ? "Mapa corporal frente"
               : "Mapa corporal espalda"
           }
-          width={bodyRegionCatalog.assets.width}
-          height={bodyRegionCatalog.assets.height}
-          className="block h-auto w-full select-none"
+          fill
+          className="pointer-events-none select-none object-contain"
           draggable={false}
+          sizes="(max-width: 384px) 100vw, 384px"
+          priority
         />
         <div className="absolute inset-0">
           {regions.map((region) => {

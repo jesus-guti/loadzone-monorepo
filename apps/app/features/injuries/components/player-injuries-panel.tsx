@@ -196,7 +196,7 @@ export function PlayerInjuriesPanel({
                   ? "Mapa corporal frente"
                   : "Mapa corporal espalda"
               }
-              className="pointer-events-none select-none object-contain"
+              className="pointer-events-none select-none object-contain [mask-image:radial-gradient(ellipse_78%_72%_at_50%_42%,#000_48%,transparent_78%)] [-webkit-mask-image:radial-gradient(ellipse_78%_72%_at_50%_42%,#000_48%,transparent_78%)]"
               draggable={false}
               fill
               sizes="(max-width: 384px) 100vw, 384px"

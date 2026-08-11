@@ -36,7 +36,7 @@ type PlayerHistoryTableProperties = {
   readonly rows: PlayerHistoryRow[];
 };
 
-function getRiskLabel(riskLevel: RiskLevel | null): string {
+export function getRiskLabel(riskLevel: RiskLevel | null): string {
   switch (riskLevel) {
     case "CRITICAL":
       return "Crítico";
@@ -75,7 +75,7 @@ type HistoryRowProps = {
 function PlayerHistoryTableRow({ row }: HistoryRowProps) {
   return (
     <TableRow>
-      <TableCell className="font-medium">
+      <TableCell className="whitespace-nowrap font-medium">
         {new Date(row.date).toLocaleDateString("es-ES")}
       </TableCell>
       <TableCell>
@@ -120,8 +120,8 @@ export function PlayerHistoryTable({
   rows,
 }: PlayerHistoryTableProperties) {
   return (
-    <section className="space-y-2">
-      <h2 className="px-1 text-xs font-medium uppercase tracking-wide text-text-secondary">
+    <section className="space-y-3">
+      <h2 className="font-medium text-text-secondary text-xs uppercase tracking-wide">
         Historial diario
       </h2>
       {rows.length === 0 ? (

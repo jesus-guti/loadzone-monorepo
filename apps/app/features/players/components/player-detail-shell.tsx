@@ -1,12 +1,17 @@
 "use client";
 
-import { FireIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, FireIcon } from "@phosphor-icons/react";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/avatar";
 import { Badge } from "@repo/design-system/components/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@repo/design-system/components/collapsible";
 import {
   Tabs,
   TabsContent,
@@ -19,7 +24,7 @@ import { PlayerInjuriesPanel } from "@/features/injuries/components/player-injur
 import type { InjuryListItem } from "@/features/injuries/types";
 import { ExcusedAbsenceForm } from "./excused-absence-form";
 import { PlayerCharts } from "./player-charts";
-import { PlayerHistoryTable } from "./player-history-table";
+import { getRiskLabel, PlayerHistoryTable } from "./player-history-table";
 
 type ChartEntry = React.ComponentProps<typeof PlayerCharts>["entries"][number];
 type ChartStat = React.ComponentProps<typeof PlayerCharts>["stats"][number];
@@ -88,9 +93,11 @@ export function PlayerDetailShell(
     [pathname, router, searchParameters]
   );
 
+  const latestRiskLevel = properties.historyRows.at(0)?.riskLevel ?? null;
+
   return (
-    <div className="space-y-6 p-4 pt-0 pb-24 md:pb-4">
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-border-secondary border-b bg-bg-primary py-3">
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 pt-0 pb-24 md:pb-4">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-border-secondary border-b bg-bg-primary py-3">
         <Avatar className="size-12 rounded-2xl border border-border-secondary">
           {properties.playerImageUrl ? (
             <AvatarImage
@@ -103,20 +110,21 @@ export function PlayerDetailShell(
             {getInitials(properties.playerName)}
           </AvatarFallback>
         </Avatar>
+
         <Badge>{properties.statusLabel}</Badge>
-        <Badge variant={properties.preDoneToday ? "default" : "outline"}>
-          Pre hoy {properties.preDoneToday ? "ok" : "pendiente"}
-        </Badge>
-        <Badge variant={properties.postDoneToday ? "default" : "outline"}>
-          Post hoy {properties.postDoneToday ? "ok" : "pendiente"}
-        </Badge>
         {properties.physioAlertToday ? (
-          <Badge variant="destructive">Alerta</Badge>
+          <Badge variant="destructive">Alerta de fisio hoy</Badge>
         ) : null}
+
+        <span className="text-sm text-text-secondary">
+          Hoy: pre {properties.preDoneToday ? "enviado" : "pendiente"} · post{" "}
+          {properties.postDoneToday ? "enviado" : "pendiente"}
+        </span>
+
         <span className="flex items-center gap-1 text-sm text-text-secondary">
           <FireIcon className="size-3 text-premium" />
-          Racha: {properties.displayStreak} días (máx:{" "}
-          {properties.longestStreak})
+          Racha {properties.displayStreak} días (máx. {properties.longestStreak}
+          )
         </span>
       </div>
 
@@ -126,20 +134,16 @@ export function PlayerDetailShell(
           <TabsTrigger value="lesiones">Lesiones</TabsTrigger>
         </TabsList>
 
-        <TabsContent className="space-y-6 pt-4" value="wellness">
-          <dl className="grid gap-6 border-border-secondary/60 border-b pb-6 sm:grid-cols-3">
+        <TabsContent className="space-y-10 pt-6" value="wellness">
+          <dl className="grid gap-6 border-border-secondary border-b pb-8 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              ["Registros totales", String(properties.entryCount)],
-              [
-                "Último RPE",
-                properties.lastRpe === null
-                  ? "—"
-                  : String(properties.lastRpe),
-              ],
+              ["Riesgo actual", getRiskLabel(latestRiskLevel)],
+              ["Último RPE", properties.lastRpe?.toString() ?? "—"],
               ["Último ACWR", properties.lastAcwr?.toFixed(2) ?? "—"],
+              ["Registros totales", String(properties.entryCount)],
             ].map(([label, value]) => (
-              <div key={label}>
-                <dt className="text-text-secondary text-xs uppercase tracking-wide">
+              <div className="space-y-1" key={label}>
+                <dt className="font-medium text-text-secondary text-xs uppercase tracking-wide">
                   {label}
                 </dt>
                 <dd className="font-semibold text-2xl text-text-primary">
@@ -153,11 +157,24 @@ export function PlayerDetailShell(
             entries={[...properties.chartEntries]}
             stats={[...properties.chartStats]}
           />
+
           <PlayerHistoryTable rows={[...properties.historyRows]} />
-          <ExcusedAbsenceForm
-            excusedDates={[...properties.excusedDates]}
-            playerId={properties.playerId}
-          />
+
+          <Collapsible className="border-border-secondary border-t pt-6">
+            <CollapsibleTrigger className="group flex items-center gap-2 font-medium text-text-secondary text-xs uppercase tracking-wide hover:text-text-primary focus-visible:rounded-xs focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">
+              Ausencia justificada
+              <CaretDownIcon
+                aria-hidden
+                className="size-3 transition-transform duration-200 group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <ExcusedAbsenceForm
+                excusedDates={[...properties.excusedDates]}
+                playerId={properties.playerId}
+              />
+            </CollapsibleContent>
+          </Collapsible>
         </TabsContent>
 
         <TabsContent className="space-y-6 pt-4" value="lesiones">

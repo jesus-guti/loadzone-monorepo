@@ -5,12 +5,6 @@ import {
   type RiskLevel,
 } from "@repo/database/risk-thresholds";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/card";
-import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
@@ -58,45 +52,75 @@ type PlayerChartsProperties = {
 };
 
 const rpeRecoveryConfig: ChartConfig = {
-  rpe: { label: "RPE", color: "hsl(var(--chart-1))" },
-  recovery: { label: "Recuperación", color: "hsl(var(--chart-2))" },
+  rpe: { label: "RPE", color: "var(--chart-1)" },
+  recovery: { label: "Recuperación", color: "var(--chart-2)" },
 };
 
 const loadConfig: ChartConfig = {
-  energy: { label: "Energía", color: "hsl(var(--chart-3))" },
-  soreness: { label: "Agujetas", color: "hsl(var(--chart-4))" },
+  energy: { label: "Energía", color: "var(--chart-3)" },
+  soreness: { label: "Agujetas", color: "var(--chart-4)" },
 };
 
 const acwrConfig: ChartConfig = {
-  acwr: { label: "ACWR", color: "hsl(var(--chart-1))" },
+  acwr: { label: "ACWR", color: "var(--chart-1)" },
 };
 
 const sleepConfig: ChartConfig = {
-  sleepHours: { label: "Horas", color: "hsl(var(--chart-5))" },
-  sleepQuality: { label: "Calidad", color: "hsl(var(--chart-3))" },
+  sleepHours: { label: "Horas", color: "var(--chart-5)" },
+  sleepQuality: { label: "Calidad", color: "var(--chart-3)" },
 };
+
+type ChartBlockProperties = {
+  readonly title: string;
+  readonly hint?: string;
+  readonly children: React.ReactNode;
+};
+
+function ChartBlock({
+  title,
+  hint,
+  children,
+}: ChartBlockProperties): React.JSX.Element {
+  return (
+    <div className="min-w-0 space-y-3">
+      <div className="space-y-0.5">
+        <h3 className="font-medium text-sm text-text-primary">{title}</h3>
+        {hint ? (
+          <p className="text-sm text-text-secondary">{hint}</p>
+        ) : null}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
   if (entries.length === 0) {
     return (
-      <div className="border border-dashed border-border-secondary bg-bg-secondary/30 p-8 text-center text-sm text-text-secondary">
-        No hay registros diarios todavía. Cuando el jugador envíe wellness,
-        verás aquí RPE, sueño y carga.
-      </div>
+      <section className="space-y-3">
+        <h2 className="font-medium text-text-secondary text-xs uppercase tracking-wide">
+          Tendencias
+        </h2>
+        <p className="border border-border-secondary border-dashed p-8 text-center text-sm text-text-secondary">
+          No hay registros diarios todavía. Cuando el jugador envíe wellness,
+          verás aquí RPE, sueño y carga.
+        </p>
+      </section>
     );
   }
 
   return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>RPE y Recuperación</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={rpeRecoveryConfig} className="h-64 w-full">
+    <section className="space-y-4">
+      <h2 className="font-medium text-text-secondary text-xs uppercase tracking-wide">
+        Tendencias
+      </h2>
+
+      <div className="grid gap-8 xl:grid-cols-2">
+        <ChartBlock title="RPE y recuperación">
+          <ChartContainer className="h-64 w-full" config={rpeRecoveryConfig}>
             <BarChart data={entries}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} />
+              <XAxis axisLine={false} dataKey="date" tickLine={false} />
               <YAxis domain={[0, 10]} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar
@@ -106,121 +130,109 @@ export function PlayerCharts({ entries, stats }: PlayerChartsProperties) {
               />
               <Line
                 dataKey="recovery"
-                type="monotone"
+                dot={false}
                 stroke="var(--color-recovery)"
                 strokeWidth={2}
-                dot={false}
+                type="monotone"
               />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </ChartBlock>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Energía y Agujetas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={loadConfig} className="h-64 w-full">
+        <ChartBlock title="Energía y agujetas">
+          <ChartContainer className="h-64 w-full" config={loadConfig}>
             <AreaChart data={entries}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} />
+              <XAxis axisLine={false} dataKey="date" tickLine={false} />
               <YAxis domain={[1, 5]} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area
                 dataKey="energy"
-                type="monotone"
                 fill="var(--color-energy)"
                 fillOpacity={0.3}
-                stroke="var(--color-energy)"
                 stackId="a"
+                stroke="var(--color-energy)"
+                type="monotone"
               />
               <Area
                 dataKey="soreness"
-                type="monotone"
                 fill="var(--color-soreness)"
                 fillOpacity={0.3}
-                stroke="var(--color-soreness)"
                 stackId="b"
+                stroke="var(--color-soreness)"
+                type="monotone"
               />
             </AreaChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
+        </ChartBlock>
 
-      {stats.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>ACWR (Ratio Carga Aguda:Crónica)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={acwrConfig} className="h-64 w-full">
+        {stats.length > 0 ? (
+          <ChartBlock
+            hint="Por encima de la zona de riesgo, la carga aguda sube demasiado rápido frente a la crónica."
+            title="Carga aguda frente a crónica (ACWR)"
+          >
+            <ChartContainer className="h-64 w-full" config={acwrConfig}>
               <LineChart data={stats}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tickLine={false} axisLine={false} />
+                <XAxis axisLine={false} dataKey="date" tickLine={false} />
                 <YAxis domain={[0, 3]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ReferenceArea
+                  fill="var(--danger)"
+                  fillOpacity={0.08}
                   y1={RISK_THRESHOLDS.acwr.high}
                   y2={3}
-                  fill="hsl(0, 84%, 60%)"
-                  fillOpacity={0.08}
                 />
                 <ReferenceLine
-                  y={RISK_THRESHOLDS.acwr.high}
-                  stroke="hsl(0, 84%, 60%)"
-                  strokeDasharray="3 3"
                   label="Zona de riesgo"
+                  stroke="var(--danger)"
+                  strokeDasharray="3 3"
+                  y={RISK_THRESHOLDS.acwr.high}
                 />
                 <ReferenceLine
-                  y={0.8}
-                  stroke="hsl(142, 76%, 36%)"
-                  strokeDasharray="3 3"
                   label="Zona óptima"
+                  stroke="var(--success)"
+                  strokeDasharray="3 3"
+                  y={0.8}
                 />
                 <Line
                   dataKey="acwr"
-                  type="monotone"
+                  dot={false}
                   stroke="var(--color-acwr)"
                   strokeWidth={2}
-                  dot={false}
+                  type="monotone"
                 />
               </LineChart>
             </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+          </ChartBlock>
+        ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sueño</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={sleepConfig} className="h-64 w-full">
+        <ChartBlock hint="Barras: horas dormidas. Línea: calidad." title="Sueño">
+          <ChartContainer className="h-64 w-full" config={sleepConfig}>
             <BarChart data={entries}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} />
-              <YAxis yAxisId="hours" domain={[0, 12]} />
-              <YAxis yAxisId="quality" orientation="right" domain={[1, 5]} />
+              <XAxis axisLine={false} dataKey="date" tickLine={false} />
+              <YAxis domain={[0, 12]} yAxisId="hours" />
+              <YAxis domain={[1, 5]} orientation="right" yAxisId="quality" />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar
-                yAxisId="hours"
                 dataKey="sleepHours"
                 fill="var(--color-sleepHours)"
                 radius={[4, 4, 0, 0]}
+                yAxisId="hours"
               />
               <Line
-                yAxisId="quality"
                 dataKey="sleepQuality"
-                type="monotone"
+                dot={false}
                 stroke="var(--color-sleepQuality)"
                 strokeWidth={2}
-                dot={false}
+                type="monotone"
+                yAxisId="quality"
               />
             </BarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
-    </div>
+        </ChartBlock>
+      </div>
+    </section>
   );
 }

@@ -10,6 +10,13 @@ import {
   unmarkExcusedAbsence,
 } from "../actions/excuse-absence";
 
+function formatDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 type ExcusedAbsenceFormProperties = {
   readonly playerId: string;
   readonly excusedDates: readonly string[];
@@ -54,11 +61,8 @@ export function ExcusedAbsenceForm({
   const isExcused = excusedDates.includes(date);
 
   return (
-    <section className="space-y-3">
-      <h2 className="px-1 text-xs font-medium uppercase tracking-wide text-text-secondary">
-        Ausencia justificada
-      </h2>
-      <p className="text-sm text-text-secondary">
+    <div className="space-y-3">
+      <p className="max-w-[65ch] text-sm text-text-secondary">
         Congela la racha del día (ni suma ni rompe). Las lesiones activas ya
         excusan sin marcar aquí.
       </p>
@@ -110,10 +114,11 @@ export function ExcusedAbsenceForm({
         </div>
       </form>
       {excusedDates.length > 0 ? (
-        <p className="text-xs text-text-tertiary">
-          Justificadas: {excusedDates.join(", ")}
+        <p className="text-sm text-text-secondary">
+          Fechas ya justificadas:{" "}
+          {excusedDates.map((excusedDate) => formatDate(excusedDate)).join(" · ")}
         </p>
       ) : null}
-    </section>
+    </div>
   );
 }
