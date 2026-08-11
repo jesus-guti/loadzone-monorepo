@@ -156,6 +156,8 @@ export function PreSessionForm({
   const [showPhysioAlert, setShowPhysioAlert] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  // Fresh instance on each mount — Strict Mode disposes on cleanup; a reused
+  // disposed scheduler would block discrete advance after question 1 (slider).
   const advanceSchedulerRef = useRef(createFocusAdvanceScheduler());
 
   const [state, action, isPending] = useActionState(savePreSession, {
@@ -163,7 +165,8 @@ export function PreSessionForm({
   });
 
   useEffect(() => {
-    const scheduler = advanceSchedulerRef.current;
+    const scheduler = createFocusAdvanceScheduler();
+    advanceSchedulerRef.current = scheduler;
     return (): void => {
       scheduler.dispose();
     };

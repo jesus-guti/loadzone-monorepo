@@ -69,4 +69,19 @@ describe("createFocusAdvanceScheduler", () => {
     vi.advanceTimersByTime(DISCRETE_ADVANCE_DEBOUNCE_MS);
     expect(afterDispose).not.toHaveBeenCalled();
   });
+
+  it("a new scheduler after dispose advances again (Strict Mode remount)", () => {
+    const first = createFocusAdvanceScheduler();
+    const firstAdvance = vi.fn();
+    first.schedule(firstAdvance);
+    first.dispose();
+    vi.advanceTimersByTime(DISCRETE_ADVANCE_DEBOUNCE_MS);
+    expect(firstAdvance).not.toHaveBeenCalled();
+
+    const second = createFocusAdvanceScheduler();
+    const secondAdvance = vi.fn();
+    second.schedule(secondAdvance);
+    vi.advanceTimersByTime(DISCRETE_ADVANCE_DEBOUNCE_MS);
+    expect(secondAdvance).toHaveBeenCalledTimes(1);
+  });
 });
