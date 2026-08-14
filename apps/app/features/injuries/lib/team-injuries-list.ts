@@ -133,6 +133,16 @@ export function takeSectionCap<T>(
   return items.slice(0, cap);
 }
 
-export function toCivilYmd(value: Date): string {
+export function toIsoTimestamp(value: Date | string): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return value.toISOString();
+}
+
+export function toCivilYmd(value: Date | string): string {
+  if (typeof value === "string") {
+    return value.slice(0, 10);
+  }
   return value.toISOString().slice(0, 10);
 }

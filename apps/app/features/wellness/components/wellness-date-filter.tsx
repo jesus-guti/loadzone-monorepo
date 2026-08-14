@@ -113,13 +113,15 @@ export function WellnessDateFilter({
             Día evaluado
           </p>
         </div>
-        <Calendar
-          buttonVariant="ghost"
-          disabled={{ after: new Date() }}
-          mode="single"
-          onSelect={handleDateSelect}
-          selected={selectedDate}
-        />
+        {isOpen ? (
+          <Calendar
+            buttonVariant="ghost"
+            disabled={{ after: new Date() }}
+            mode="single"
+            onSelect={handleDateSelect}
+            selected={selectedDate}
+          />
+        ) : null}
         <div className="flex justify-end border-t border-border-secondary px-3 py-3">
           <Button
             className="rounded-md"

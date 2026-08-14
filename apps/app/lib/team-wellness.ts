@@ -71,8 +71,23 @@ function average(values: number[]): number | null {
   return total / values.length;
 }
 
-function toIsoOrNull(value: Date | null | undefined): string | null {
-  return value ? value.toISOString() : null;
+function toIsoOrNull(value: Date | string | null | undefined): string | null {
+  if (value == null || value === "") {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
+function toIsoRequired(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return new Date(0).toISOString();
+  }
+  return date.toISOString();
 }
 
 function civilYmdFromLocalDate(date: Date): string {
@@ -241,7 +256,7 @@ export async function getTeamWellnessWorkspaceData(
         evaluatedCivil
       ),
       entries: player.entries.map((entry) => ({
-        date: entry.date.toISOString(),
+        date: toIsoRequired(entry.date),
         recovery: entry.recovery,
         energy: entry.energy,
         soreness: entry.soreness,

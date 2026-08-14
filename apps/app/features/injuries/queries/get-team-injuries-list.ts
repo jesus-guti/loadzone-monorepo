@@ -8,6 +8,7 @@ import {
   sortPainAlertsNewestFirst,
   takeSectionCap,
   toCivilYmd,
+  toIsoTimestamp,
   truncateText,
 } from "../lib/team-injuries-list";
 import type {
@@ -63,7 +64,7 @@ function mapPainAlertRow(row: PainAlertDbRow): TeamPainAlertListItem {
     id: row.id,
     playerId: row.playerId,
     playerName: row.player.name,
-    reportedAt: row.reportedAt.toISOString(),
+    reportedAt: toIsoTimestamp(row.reportedAt),
     title: row.title,
     summary: summarySource ? truncateText(summarySource, 120) : null,
     bodyPart: row.bodyPart,
