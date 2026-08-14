@@ -47,7 +47,7 @@ function fakeCurrentUser() {
 }
 
 function fakeClub() {
-  return { id: "club-1", name: "Club DB", logoUrl: null };
+  return { id: "club-1", name: "Club DB", logoUrl: null, ageBandPolicy: null };
 }
 
 function fakeTeam(id: string) {
@@ -60,6 +60,8 @@ function fakeTeam(id: string) {
     preSessionReminderMinutes: 30,
     postSessionReminderMinutes: 60,
     wellnessLimits: null,
+    ageBandPolicy: null,
+    reminderConsentPolicy: null,
   };
 }
 

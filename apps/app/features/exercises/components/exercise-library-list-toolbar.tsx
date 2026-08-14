@@ -45,7 +45,7 @@ export function ExerciseLibraryListToolbar({
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-      <div className="relative min-w-0 flex-1 lg:max-w-xl border-b">
+      <div className="relative min-w-0 flex-1 lg:max-w-xl">
         <MagnifyingGlassIcon
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-secondary"
@@ -65,6 +65,13 @@ export function ExerciseLibraryListToolbar({
 
       <div className="ml-auto mr-0 flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end lg:min-w-0">
         <Select
+          items={[
+            {
+              value: EXERCISE_LIBRARY_FILTER_NONE,
+              label: "Todas las estrategias",
+            },
+            ...STRATEGY_OPTIONS,
+          ]}
           onValueChange={(next) => {
             if (!next) return;
             if (next === EXERCISE_LIBRARY_FILTER_NONE) {
@@ -77,8 +84,8 @@ export function ExerciseLibraryListToolbar({
         >
           <SelectTrigger
             aria-label="Filtrar por estrategia"
-            className="min-w-36 max-w-[min(100vw-2rem,14rem)] border-border-secondary font-medium text-text-primary shadow-none"
-            size="sm"
+            className="min-w-36 max-w-[min(100vw-2rem,14rem)]"
+            size="default"
           >
             <SelectValue placeholder="Estrategia" />
           </SelectTrigger>
@@ -95,6 +102,7 @@ export function ExerciseLibraryListToolbar({
         </Select>
 
         <Select
+          items={EXERCISE_LIBRARY_GENERAL_SORT_OPTIONS}
           onValueChange={(v) => {
             onSortKeyChange(v as ExerciseLibrarySortKey);
           }}
@@ -103,7 +111,7 @@ export function ExerciseLibraryListToolbar({
           <SelectTrigger
             aria-label="Ordenar lista de ejercicios"
             className="min-w-30 max-w-48 truncate border-border-secondary font-medium text-text-primary shadow-none sm:min-w-32"
-            size="sm"
+            size="default"
           >
             <SortAscendingIcon
               aria-hidden

@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import { FireIcon, PlusIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/button";
@@ -60,6 +61,7 @@ const PlayersPage = async () => {
       token: true,
       status: true,
       currentStreak: true,
+      streakSeasonId: true,
       entries: {
         orderBy: { date: "desc" },
         take: 1,
@@ -70,6 +72,11 @@ const PlayersPage = async () => {
   });
   const playersWithResolvedImages = players.map((player) => ({
     ...player,
+    currentStreak: effectiveCurrentStreak({
+      currentStreak: player.currentStreak,
+      streakSeasonId: player.streakSeasonId,
+      activeSeasonId: staffContext.activeSeason?.id ?? null,
+    }),
     imageUrl: resolveStorageUrl(player.imageUrl),
   }));
 

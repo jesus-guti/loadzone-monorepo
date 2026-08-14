@@ -30,18 +30,41 @@ export function useCompactBoardLayout(): boolean {
   )
 }
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+const MOBILE_MEDIA = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`
 
+function subscribeMobile(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {}
+  }
+  const mq = window.matchMedia(MOBILE_MEDIA)
+  mq.addEventListener("change", onStoreChange)
+  return () => mq.removeEventListener("change", onStoreChange)
+}
+
+function getMobileSnapshot(): boolean {
+  if (typeof window === "undefined") {
+    return false
+  }
+  return window.matchMedia(MOBILE_MEDIA).matches
+}
+
+/**
+ * False on the server and during the client's first paint that must match SSR,
+ * then true after mount. Prefer this over reading `window` during render when
+ * Base UI `useId` hosts should stay out of the hydrated tree.
+ */
+export function useIsHydrated(): boolean {
+  const [hydrated, setHydrated] = React.useState(false)
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    setHydrated(true)
   }, [])
+  return hydrated
+}
 
-  return !!isMobile
+export function useIsMobile(): boolean {
+  return React.useSyncExternalStore(
+    subscribeMobile,
+    getMobileSnapshot,
+    () => false
+  )
 }

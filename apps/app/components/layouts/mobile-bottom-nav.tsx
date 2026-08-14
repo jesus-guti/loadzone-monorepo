@@ -3,22 +3,22 @@
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { primaryNavigation } from "@/lib/admin-navigation";
+import { operationalNavigation } from "@/lib/admin-navigation";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 bg-bg-tertiary/50 backdrop-blur md:hidden">
-      <ul className="grid grid-cols-4">
-        {primaryNavigation.map((item) => {
+      <ul className="grid grid-cols-5">
+        {operationalNavigation.map((item) => {
           const isActive = Boolean(item.match(pathname));
 
           return (
             <li key={item.href}>
               <Link
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-2 py-3 font-medium text-[11px] text-text-secondary transition-colors",
+                  "flex flex-col items-center justify-center gap-1 px-1 py-3 font-medium text-[11px] text-text-secondary transition-colors",
                   isActive ? "text-text-primary" : false
                 )}
                 href={item.href}
@@ -29,6 +29,7 @@ export function MobileBottomNav() {
                     "size-4",
                     isActive ? "text-brand" : "text-text-tertiary"
                   )}
+                  weight="fill"
                 />
                 {item.label}
               </Link>

@@ -1,26 +1,21 @@
 import { database } from "@repo/database";
+import {
+  BODY_REGION_IDS,
+  bodyRegionById,
+  type BodyRegionCatalogId,
+} from "@repo/database/body-region-catalog";
+import {
+  effectiveCurrentStreak,
+  toCivilDateString,
+} from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
-import { FireIcon } from "@phosphor-icons/react/ssr";
-import { Badge } from "@repo/design-system/components/badge";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/design-system/components/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/card";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Header } from "@/components/layouts/header";
-import {
-  CopyTokenButton,
-  PlayerCharts,
-  PlayerHistoryTable,
-} from "@/features/players";
+import type { InjuryListItem } from "@/features/injuries/types";
+import { CopyTokenButton } from "@/features/players/components/copy-token-button";
+import { PlayerDetailShell } from "@/features/players/components/player-detail-shell";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
@@ -39,16 +34,36 @@ const STATUS_LABELS: Record<string, string> = {
   UNAVAILABLE: "No disponible",
 };
 
-function getInitials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
+function isBodyRegionCatalogId(value: string): value is BodyRegionCatalogId {
+  return (BODY_REGION_IDS as readonly string[]).includes(value);
 }
 
-const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
+function mapInjuryToListItem(injury: {
+  id: string;
+  startDate: Date;
+  endDate: Date | null;
+  cause: string;
+  regionDetail: string | null;
+  regions: Array<{ regionId: string }>;
+}): InjuryListItem {
+  const regionIds = injury.regions
+    .map((region) => region.regionId)
+    .filter(isBodyRegionCatalogId);
+
+  return {
+    id: injury.id,
+    startDate: injury.startDate.toISOString().slice(0, 10),
+    endDate: injury.endDate ? injury.endDate.toISOString().slice(0, 10) : null,
+    cause: injury.cause,
+    regionDetail: injury.regionDetail,
+    regionIds,
+    regionLabels: regionIds.map((id) => bodyRegionById.get(id)?.labelEs ?? id),
+  };
+}
+
+const PlayerDetailPage = async ({
+  params,
+}: PlayerDetailPageProperties): Promise<React.JSX.Element> => {
   const { id } = await params;
   const staffContext = await getCurrentStaffContext();
   if (!staffContext?.activeTeam) notFound();
@@ -63,11 +78,50 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
       status: true,
       currentStreak: true,
       longestStreak: true,
+      streakSeasonId: true,
     },
   });
 
   if (!player) notFound();
   const playerImageUrl = resolveStorageUrl(player.imageUrl);
+
+  const displayStreak = effectiveCurrentStreak({
+    currentStreak: player.currentStreak,
+    streakSeasonId: player.streakSeasonId,
+    activeSeasonId: staffContext.activeSeason?.id ?? null,
+  });
+
+  const teamTimezone = staffContext.activeTeam.timezone || "Europe/Madrid";
+  const todayCivil = toCivilDateString(new Date(), teamTimezone);
+
+  const injuryRows = await database.injury.findMany({
+    where: { playerId: player.id, teamId: staffContext.activeTeam.id },
+    orderBy: { startDate: "desc" },
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      cause: true,
+      regionDetail: true,
+      regions: { select: { regionId: true } },
+    },
+  });
+
+  const allInjuries = injuryRows.map(mapInjuryToListItem);
+  const openInjuries = allInjuries.filter((injury) => injury.endDate === null);
+  const closedInjuries = allInjuries.filter(
+    (injury) => injury.endDate !== null
+  );
+
+  const excusedAbsences = await database.excusedAbsence.findMany({
+    where: { playerId: player.id },
+    orderBy: { date: "desc" },
+    take: 30,
+    select: { date: true },
+  });
+  const excusedDates = excusedAbsences.map(
+    (excuse) => new Date(excuse.date).toISOString().split("T")[0] ?? ""
+  );
 
   const entries = await database.dailyEntry.findMany({
     where: { playerId: player.id },
@@ -102,26 +156,26 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
     },
   });
 
-  const chartEntries = entries.map((e) => ({
-    date: new Date(e.date).toISOString().split("T")[0],
-    recovery: e.recovery,
-    energy: e.energy,
-    soreness: e.soreness,
-    sleepHours: e.sleepHours ? Number(e.sleepHours) : null,
-    sleepQuality: e.sleepQuality,
-    rpe: e.rpe,
-    duration: e.duration,
-    srpe: e.rpe && e.duration ? e.rpe * e.duration : null,
+  const chartEntries = entries.map((entry) => ({
+    date: new Date(entry.date).toISOString().split("T")[0],
+    recovery: entry.recovery,
+    energy: entry.energy,
+    soreness: entry.soreness,
+    sleepHours: entry.sleepHours ? Number(entry.sleepHours) : null,
+    sleepQuality: entry.sleepQuality,
+    rpe: entry.rpe,
+    duration: entry.duration,
+    srpe: entry.rpe && entry.duration ? entry.rpe * entry.duration : null,
   }));
 
-  const chartStats = stats.map((s) => ({
-    date: new Date(s.date).toISOString().split("T")[0],
-    acwr: s.acwr ? Number(s.acwr) : null,
-    acuteLoad: s.acuteLoad ? Number(s.acuteLoad) : null,
-    chronicLoad: s.chronicLoad ? Number(s.chronicLoad) : null,
-    riskLevel: s.riskLevel,
-    tqrAvg7d: s.tqrAvg7d ? Number(s.tqrAvg7d) : null,
-    rpeAvg7d: s.rpeAvg7d ? Number(s.rpeAvg7d) : null,
+  const chartStats = stats.map((stat) => ({
+    date: new Date(stat.date).toISOString().split("T")[0],
+    acwr: stat.acwr ? Number(stat.acwr) : null,
+    acuteLoad: stat.acuteLoad ? Number(stat.acuteLoad) : null,
+    chronicLoad: stat.chronicLoad ? Number(stat.chronicLoad) : null,
+    riskLevel: stat.riskLevel,
+    tqrAvg7d: stat.tqrAvg7d ? Number(stat.tqrAvg7d) : null,
+    rpeAvg7d: stat.rpeAvg7d ? Number(stat.rpeAvg7d) : null,
   }));
 
   const today = new Date();
@@ -132,27 +186,25 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
   const statsByDate = new Map(
     stats.map((stat) => [new Date(stat.date).toISOString().split("T")[0], stat])
   );
-  const historyRows = [...entries]
-    .reverse()
-    .map((entry) => {
-      const dateKey = new Date(entry.date).toISOString().split("T")[0];
-      const stat = statsByDate.get(dateKey);
+  const historyRows = [...entries].reverse().map((entry) => {
+    const dateKey = new Date(entry.date).toISOString().split("T")[0];
+    const stat = statsByDate.get(dateKey);
 
-      return {
-        date: dateKey,
-        preFilledAt: entry.preFilledAt,
-        postFilledAt: entry.postFilledAt,
-        recovery: entry.recovery,
-        energy: entry.energy,
-        soreness: entry.soreness,
-        sleepHours: entry.sleepHours ? Number(entry.sleepHours) : null,
-        sleepQuality: entry.sleepQuality,
-        rpe: entry.rpe,
-        duration: entry.duration,
-        physioAlert: entry.physioAlert,
-        riskLevel: stat?.riskLevel ?? null,
-      };
-    });
+    return {
+      date: dateKey,
+      preFilledAt: entry.preFilledAt,
+      postFilledAt: entry.postFilledAt,
+      recovery: entry.recovery,
+      energy: entry.energy,
+      soreness: entry.soreness,
+      sleepHours: entry.sleepHours ? Number(entry.sleepHours) : null,
+      sleepQuality: entry.sleepQuality,
+      rpe: entry.rpe,
+      duration: entry.duration,
+      physioAlert: entry.physioAlert,
+      riskLevel: stat?.riskLevel ?? null,
+    };
+  });
 
   return (
     <>
@@ -162,76 +214,37 @@ const PlayerDetailPage = async ({ params }: PlayerDetailPageProperties) => {
         </div>
       </Header>
 
-      <div className="space-y-6 p-4 pt-0">
-        <div className="flex flex-wrap items-center gap-3">
-          <Avatar className="size-12 rounded-2xl border border-border-secondary">
-            {playerImageUrl ? (
-              <AvatarImage
-                alt={player.name}
-                className="object-cover"
-                src={playerImageUrl}
-              />
-            ) : null}
-            <AvatarFallback className="rounded-2xl bg-bg-secondary text-sm font-semibold text-text-primary">
-              {getInitials(player.name)}
-            </AvatarFallback>
-          </Avatar>
-          <Badge>{STATUS_LABELS[player.status]}</Badge>
-          <Badge variant={todayEntry?.preFilledAt ? "default" : "outline"}>
-            Pre hoy {todayEntry?.preFilledAt ? "ok" : "pendiente"}
-          </Badge>
-          <Badge variant={todayEntry?.postFilledAt ? "default" : "outline"}>
-            Post hoy {todayEntry?.postFilledAt ? "ok" : "pendiente"}
-          </Badge>
-          {todayEntry?.physioAlert && (
-            <Badge variant="destructive">Alerta</Badge>
-          )}
-          <span className="flex items-center gap-1 text-sm text-text-secondary">
-            <FireIcon className="size-3 text-premium" />
-            Racha: {player.currentStreak} días (máx: {player.longestStreak})
-          </span>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Registros totales
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{entries.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Último RPE
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {entries.at(-1)?.rpe ?? "—"}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Último ACWR
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {chartStats.at(-1)?.acwr?.toFixed(2) ?? "—"}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <PlayerCharts entries={chartEntries} stats={chartStats} />
-        <PlayerHistoryTable rows={historyRows} />
-      </div>
+      <Suspense
+        fallback={
+          <div className="space-y-6 p-4 pt-0">
+            <div className="h-12 animate-pulse rounded-md bg-bg-secondary" />
+            <div className="h-8 w-48 animate-pulse rounded-md bg-bg-secondary" />
+          </div>
+        }
+      >
+        <PlayerDetailShell
+          allInjuries={allInjuries}
+          chartEntries={chartEntries}
+          chartStats={chartStats}
+          closedInjuries={closedInjuries}
+          displayStreak={displayStreak}
+          entryCount={entries.length}
+          excusedDates={excusedDates}
+          historyRows={historyRows}
+          lastAcwr={chartStats.at(-1)?.acwr ?? null}
+          lastRpe={entries.at(-1)?.rpe ?? null}
+          longestStreak={player.longestStreak}
+          openInjuries={openInjuries}
+          physioAlertToday={Boolean(todayEntry?.physioAlert)}
+          playerId={player.id}
+          playerImageUrl={playerImageUrl}
+          playerName={player.name}
+          postDoneToday={Boolean(todayEntry?.postFilledAt)}
+          preDoneToday={Boolean(todayEntry?.preFilledAt)}
+          statusLabel={STATUS_LABELS[player.status] ?? player.status}
+          todayCivil={todayCivil}
+        />
+      </Suspense>
     </>
   );
 };

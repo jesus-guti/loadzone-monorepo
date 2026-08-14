@@ -1,6 +1,7 @@
 # LoadZone Bootstrap
 
-Flujo pensado para entornos donde puedes resetear la base de datos sin conservar datos previos.
+Flujo para entornos nuevos donde la base de datos aún no tiene las tablas creadas.
+**Este flujo NO borra datos. Usa `prisma db push` (no destructivo).**
 
 ## Comandos
 
@@ -8,10 +9,10 @@ Flujo pensado para entornos donde puedes resetear la base de datos sin conservar
 pnpm db:setup
 ```
 
-Esto hace dos pasos:
+Esto hace:
 
-1. `pnpm db:reset`
-2. `pnpm db:bootstrap`
+1. `prisma db push` — crea/actualiza las tablas sin borrar datos existentes
+2. `pnpm db:bootstrap` — inserta datos iniciales (admin, club, equipo, jugador demo)
 
 ## Qué crea el bootstrap
 

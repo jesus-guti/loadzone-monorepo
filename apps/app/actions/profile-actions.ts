@@ -66,7 +66,7 @@ export async function updateCurrentUserProfile(
         previousUrl: currentDatabaseUser.image,
       });
 
-      nextImage = imageUpload.pathname;
+      nextImage = imageUpload.url;
     }
 
     const updatedUser = await database.user.update({
@@ -82,6 +82,7 @@ export async function updateCurrentUserProfile(
     });
 
     revalidatePath("/");
+    revalidatePath("/settings/cuenta");
     revalidatePath("/settings");
 
     return {

@@ -1,10 +1,31 @@
 import type { PlayerStatus, RiskLevel } from "@repo/database";
+import {
+  evaluateImmediateWellnessFlags,
+  type ImmediateWellnessFlag,
+  type WellnessLimits,
+  type WellnessMetric,
+} from "@/lib/wellness-limits";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
-import type { WellnessLimits } from "@/lib/wellness-limits";
+
+const WELLNESS_ALERT_LABELS: Record<WellnessMetric, string> = {
+  recovery: "Recuperación",
+  energy: "Energía",
+  soreness: "Agujetas",
+  sleepHours: "Sueño",
+  sleepQuality: "Calidad del sueño",
+};
+
+export type WellnessAlertDisplay = ImmediateWellnessFlag & {
+  label: string;
+};
 
 const NAME_WORD_SPLIT_PATTERN = /\s+/;
 
-export type DailyPlayerState = "ALERT" | "COMPLETED" | "NOT_COMPLETED";
+export type DailyPlayerState =
+  | "ALERT"
+  | "COMPLETED"
+  | "EXEMPTED"
+  | "NOT_COMPLETED";
 
 export type TeamWellnessWorkspaceSummary = {
   alertCount: number;
@@ -94,6 +115,22 @@ export function wellnessLabelClass(tone: WellnessTrafficTone): string {
       return "text-text-tertiary";
     default:
       return "text-text-tertiary";
+  }
+}
+
+/** Fill class for summary average meters (same traffic map as value/label). */
+export function wellnessAverageFillClass(tone: WellnessTrafficTone): string {
+  switch (tone) {
+    case "good":
+      return "bg-success";
+    case "watch":
+      return "bg-premium";
+    case "bad":
+      return "bg-danger";
+    case "neutral":
+      return "bg-text-secondary";
+    default:
+      return "bg-text-secondary";
   }
 }
 
@@ -234,46 +271,11 @@ export function isPlayerActiveToday(player: TeamWellnessPlayer): boolean {
 export function getWellnessAlerts(
   entry: TeamWellnessPlayer["entries"][number] | undefined,
   wellnessLimits?: WellnessLimits | null
-): string[] {
-  if (!(entry && wellnessLimits)) {
-    return [];
-  }
-
-  const alerts: string[] = [];
-
-  if (
-    typeof wellnessLimits.recovery === "number" &&
-    entry.recovery !== null &&
-    entry.recovery <= wellnessLimits.recovery
-  ) {
-    alerts.push("Recuperación");
-  }
-
-  if (
-    typeof wellnessLimits.energy === "number" &&
-    entry.energy !== null &&
-    entry.energy <= wellnessLimits.energy
-  ) {
-    alerts.push("Energía");
-  }
-
-  if (
-    typeof wellnessLimits.soreness === "number" &&
-    entry.soreness !== null &&
-    entry.soreness >= wellnessLimits.soreness
-  ) {
-    alerts.push("Agujetas");
-  }
-
-  if (
-    typeof wellnessLimits.sleepHours === "number" &&
-    entry.sleepHours !== null &&
-    Number(entry.sleepHours) < wellnessLimits.sleepHours
-  ) {
-    alerts.push("Sueño");
-  }
-
-  return alerts;
+): WellnessAlertDisplay[] {
+  return evaluateImmediateWellnessFlags(entry, wellnessLimits).map((flag) => ({
+    ...flag,
+    label: WELLNESS_ALERT_LABELS[flag.metric],
+  }));
 }
 
 export function getDailyPlayerState(
@@ -297,7 +299,24 @@ export function getDailyPlayerState(
     return "COMPLETED";
   }
 
+  if (player.injuryExemptOnEvaluatedDay) {
+    return "EXEMPTED";
+  }
+
   return "NOT_COMPLETED";
+}
+
+export function getDailyStateLabel(state: DailyPlayerState): string {
+  switch (state) {
+    case "ALERT":
+      return "Alerta";
+    case "COMPLETED":
+      return "Completado";
+    case "EXEMPTED":
+      return "Exento";
+    case "NOT_COMPLETED":
+      return "Pendiente";
+  }
 }
 
 export function formatAverage(value: number | null): string {
@@ -306,6 +325,52 @@ export function formatAverage(value: number | null): string {
   }
 
   return value.toFixed(1);
+}
+
+/** Bootstrap form bounds for visual average fill (not new metrics). */
+export const WELLNESS_AVERAGE_SCALE = {
+  recovery: 10,
+  energy: 5,
+  soreness: 5,
+} as const;
+
+export type WellnessAverageMetric = keyof typeof WELLNESS_AVERAGE_SCALE;
+
+/**
+ * Progress percent for a team mean against the form template max.
+ * Returns null when there is no average to render.
+ */
+export function averageProgressPercent(
+  value: number | null,
+  metric: WellnessAverageMetric
+): number | null {
+  if (value === null) {
+    return null;
+  }
+
+  const max = WELLNESS_AVERAGE_SCALE[metric];
+  if (max <= 0) {
+    return null;
+  }
+
+  return Math.max(0, Math.min(100, (value / max) * 100));
+}
+
+/**
+ * Players who still owe pre and/or post (post expected).
+ * Workspace has no session-end signal; pending = missing either fill.
+ * Injury-exempt players (JES-53) are not pending — they do not owe check-in.
+ */
+export function listPendingPlayers(
+  players: TeamWellnessPlayer[]
+): TeamWellnessPlayer[] {
+  return players.filter((player) => {
+    if (player.injuryExemptOnEvaluatedDay) {
+      return false;
+    }
+    const entry = getLatestEntry(player);
+    return !(entry?.preFilledAt && entry?.postFilledAt);
+  });
 }
 
 function average(values: number[]): number | null {
@@ -333,6 +398,7 @@ export function buildWellnessSummary(
   const sorenessValues = todayEntries
     .map((entry) => entry.soreness)
     .filter((value): value is number => typeof value === "number");
+  const pendingPlayers = listPendingPlayers(players);
 
   return {
     alertCount: players.filter((player) => {
@@ -340,10 +406,7 @@ export function buildWellnessSummary(
       return state === "ALERT";
     }).length,
     energyAverage: average(energyValues),
-    pendingCount: players.filter((player) => {
-      const entry = getLatestEntry(player);
-      return !(entry?.preFilledAt && entry?.postFilledAt);
-    }).length,
+    pendingCount: pendingPlayers.length,
     postCompletedCount: players.filter((player) =>
       Boolean(getLatestEntry(player)?.postFilledAt)
     ).length,

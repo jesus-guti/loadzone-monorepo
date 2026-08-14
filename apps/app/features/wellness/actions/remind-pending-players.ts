@@ -1,13 +1,40 @@
 "use server";
 
 import { database } from "@repo/database";
-import { sendPushToPlayer } from "@repo/push-notifications";
+import {
+  resolveAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
+import { mapInjuryRowsToIntervals } from "@repo/database/injury-status";
+import {
+  civilDateToUtcMidnight,
+  shouldSkipWellnessReminderForInjury,
+  type InjuryInterval,
+} from "@repo/database/recoverable-streak";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  type PlayerReminderConsentState,
+} from "@repo/database/reminder-consent";
+import {
+  PLAYER_REMINDER_COPY,
+  STAFF_QUIET_HOURS_MESSAGE,
+  assertCanSendReminder,
+  isInQuietHours,
+  isObligationComplete,
+  mayDeliverPlayerReminder,
+  sendPushToPlayer,
+  type ReminderDispatchKind,
+} from "@repo/push-notifications";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
-type ReminderResult = {
+export type ReminderResult = {
   targetedPlayers: number;
   sentNotifications: number;
   failedNotifications: number;
+  skippedAlreadyNudged: number;
+  skippedNoSession: number;
+  blockedReason?: "quiet_hours";
+  blockedMessage?: string;
 };
 
 function parseDateValue(dateValue: string): Date {
@@ -24,18 +51,75 @@ function parseDateValue(dateValue: string): Date {
   return parsedDate;
 }
 
-function formatReminderLabel(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+function localYmd(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
 
-  if (today.getTime() === date.getTime()) {
-    return "hoy";
+type SessionCandidate = {
+  id: string;
+  title: string;
+  timezone: string;
+  startsAt: Date;
+  appliesToAllPlayers: boolean;
+  playerLinkIds: Set<string>;
+};
+
+function resolveSessionForPlayer(
+  playerId: string,
+  entryTeamSessionId: string | null | undefined,
+  sessionsOnDate: SessionCandidate[]
+): SessionCandidate | null {
+  if (entryTeamSessionId) {
+    const linked = sessionsOnDate.find(
+      (session) => session.id === entryTeamSessionId
+    );
+    if (linked) {
+      return linked;
+    }
   }
 
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "2-digit",
-    month: "long",
-  }).format(date);
+  const matching = sessionsOnDate.filter((session) =>
+    session.appliesToAllPlayers
+      ? true
+      : session.playerLinkIds.has(playerId)
+  );
+
+  if (matching.length === 0) {
+    return null;
+  }
+
+  return matching[0] ?? null;
+}
+
+function owedKinds(input: {
+  preFilledAt: Date | null | undefined;
+  postFilledAt: Date | null | undefined;
+}): ReminderDispatchKind[] {
+  const kinds: ReminderDispatchKind[] = [];
+  if (
+    !isObligationComplete({
+      kind: "PRE_SESSION",
+      preFilledAt: input.preFilledAt,
+      postFilledAt: input.postFilledAt,
+    })
+  ) {
+    kinds.push("PRE_SESSION");
+  }
+  if (
+    !isObligationComplete({
+      kind: "POST_SESSION",
+      preFilledAt: input.preFilledAt,
+      postFilledAt: input.postFilledAt,
+    })
+  ) {
+    kinds.push("POST_SESSION");
+  }
+  return kinds;
 }
 
 export async function remindPendingWellnessPlayers(
@@ -47,6 +131,59 @@ export async function remindPendingWellnessPlayers(
   }
 
   const evaluatedDate = parseDateValue(evaluatedDateValue);
+  const teamTimezone = staffContext.activeTeam.timezone || "Europe/Madrid";
+  const now = new Date();
+  const evaluatedYmd = evaluatedDateValue;
+
+  const dayStart = new Date(evaluatedDate.getTime() - 14 * 60 * 60 * 1000);
+  const dayEnd = new Date(evaluatedDate.getTime() + 38 * 60 * 60 * 1000);
+
+  const teamSessions = await database.teamSession.findMany({
+    where: {
+      teamId: staffContext.activeTeam.id,
+      startsAt: { gte: dayStart, lte: dayEnd },
+    },
+    select: {
+      id: true,
+      title: true,
+      timezone: true,
+      startsAt: true,
+      appliesToAllPlayers: true,
+      playerLinks: { select: { playerId: true } },
+    },
+  });
+
+  const sessionsOnDate: SessionCandidate[] = teamSessions
+    .filter((session) => {
+      const tz = session.timezone || teamTimezone;
+      return localYmd(session.startsAt, tz) === evaluatedYmd;
+    })
+    .map((session) => ({
+      id: session.id,
+      title: session.title,
+      timezone: session.timezone || teamTimezone,
+      startsAt: session.startsAt,
+      appliesToAllPlayers: session.appliesToAllPlayers,
+      playerLinkIds: new Set(
+        session.playerLinks.map((link) => link.playerId)
+      ),
+    }));
+
+  // Quiet hours: block the whole staff action (no silent send / no queue).
+  const quietSampleTz =
+    sessionsOnDate[0]?.timezone ?? teamTimezone;
+  if (isInQuietHours(now, quietSampleTz)) {
+    return {
+      targetedPlayers: 0,
+      sentNotifications: 0,
+      failedNotifications: 0,
+      skippedAlreadyNudged: 0,
+      skippedNoSession: 0,
+      blockedReason: "quiet_hours",
+      blockedMessage: STAFF_QUIET_HOURS_MESSAGE,
+    };
+  }
+
   const pendingPlayers = await database.player.findMany({
     where: {
       teamId: staffContext.activeTeam.id,
@@ -54,6 +191,18 @@ export async function remindPendingWellnessPlayers(
     },
     select: {
       id: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
+      reminderConsentState: true,
+      team: {
+        select: {
+          timezone: true,
+          ageBandPolicy: true,
+          reminderConsentPolicy: true,
+          club: { select: { ageBandPolicy: true } },
+        },
+      },
+      subscriptions: { select: { id: true }, take: 1 },
       entries: {
         where: staffContext.activeSeason
           ? {
@@ -67,34 +216,161 @@ export async function remindPendingWellnessPlayers(
         select: {
           preFilledAt: true,
           postFilledAt: true,
+          teamSessionId: true,
+        },
+      },
+      pushDispatches: {
+        where: {
+          origin: "STAFF_RE_NUDGE",
+          teamSessionId: { in: sessionsOnDate.map((s) => s.id) },
+        },
+        select: {
+          teamSessionId: true,
+          kind: true,
         },
       },
     },
   });
 
+  const evaluatedCivilDate = civilDateToUtcMidnight(evaluatedYmd);
+
+  const injuryRows = await database.injury.findMany({
+    where: {
+      teamId: staffContext.activeTeam.id,
+      startDate: { lte: evaluatedCivilDate },
+      OR: [{ endDate: null }, { endDate: { gte: evaluatedCivilDate } }],
+    },
+    select: {
+      playerId: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
+
+  const injuryIntervalsByPlayerId = new Map<string, InjuryInterval[]>();
+  for (const injury of injuryRows) {
+    const mapped = mapInjuryRowsToIntervals([injury]);
+    const existing = injuryIntervalsByPlayerId.get(injury.playerId) ?? [];
+    injuryIntervalsByPlayerId.set(injury.playerId, [...existing, ...mapped]);
+  }
+
   const playersToNotify = pendingPlayers.filter((player) => {
+    const intervals = injuryIntervalsByPlayerId.get(player.id) ?? [];
+    if (
+      shouldSkipWellnessReminderForInjury({
+        injuryIntervals: intervals,
+        civilDayIso: evaluatedYmd,
+      })
+    ) {
+      return false;
+    }
     const entry = player.entries[0];
-    return !entry?.preFilledAt || !entry?.postFilledAt;
+    return owedKinds({
+      preFilledAt: entry?.preFilledAt,
+      postFilledAt: entry?.postFilledAt,
+    }).length > 0;
   });
 
   let sentNotifications = 0;
   let failedNotifications = 0;
-  const dateLabel = formatReminderLabel(evaluatedDate);
+  let skippedAlreadyNudged = 0;
+  let skippedNoSession = 0;
 
   for (const player of playersToNotify) {
-    const result = await sendPushToPlayer(player.id, {
-      title: "Completa tu wellness",
-      body: `Todavía tienes pendiente el wellness de ${dateLabel}. Te llevará muy poco tiempo.`,
-      url: "/",
+    const entry = player.entries[0];
+    const session = resolveSessionForPlayer(
+      player.id,
+      entry?.teamSessionId,
+      sessionsOnDate
+    );
+
+    if (!session) {
+      skippedNoSession += 1;
+      failedNotifications += 1;
+      continue;
+    }
+
+    const kinds = owedKinds({
+      preFilledAt: entry?.preFilledAt,
+      postFilledAt: entry?.postFilledAt,
     });
 
-    sentNotifications += result.sent;
-    failedNotifications += result.failed;
+    const effectiveAgePolicy = resolveEffectiveAgeBandPolicy({
+      teamPolicy: player.team.ageBandPolicy,
+      clubPolicy: player.team.club.ageBandPolicy,
+    });
+    const resolvedAge = resolveAgeBandPolicy({
+      policy: effectiveAgePolicy.policy,
+      policySource: effectiveAgePolicy.source,
+      dateOfBirth: player.dateOfBirth,
+      ageBandOverride: player.ageBandOverride,
+      teamTimezone: player.team.timezone,
+      now,
+    });
+    const { policy: reminderConsentPolicy } =
+      resolveEffectiveReminderConsentPolicy({
+        teamPolicy: player.team.reminderConsentPolicy,
+      });
+    const consentOk = mayDeliverPlayerReminder({
+      resolvedAge,
+      reminderConsentPolicy,
+      playerConsentState:
+        player.reminderConsentState as PlayerReminderConsentState,
+      hasActiveSubscription: player.subscriptions.length > 0,
+    });
+
+    for (const kind of kinds) {
+      const hasStaffDispatch = player.pushDispatches.some(
+        (dispatch) =>
+          dispatch.teamSessionId === session.id && dispatch.kind === kind
+      );
+
+      const gate = assertCanSendReminder({
+        origin: "STAFF_RE_NUDGE",
+        now,
+        timeZone: session.timezone,
+        obligationComplete: false,
+        hasOriginDispatch: hasStaffDispatch,
+        mayDeliverByConsent: consentOk,
+      });
+
+      if (!gate.ok) {
+        if (gate.reason === "already_dispatched") {
+          skippedAlreadyNudged += 1;
+        } else if (gate.reason === "consent_denied") {
+          failedNotifications += 1;
+        }
+        continue;
+      }
+
+      const copy = PLAYER_REMINDER_COPY[kind];
+      const result = await sendPushToPlayer(player.id, {
+        title: copy.title,
+        body: copy.body(session.title),
+        url: "/",
+      });
+
+      if (result.sent > 0) {
+        await database.pushDispatch.create({
+          data: {
+            teamSessionId: session.id,
+            playerId: player.id,
+            kind,
+            origin: "STAFF_RE_NUDGE",
+          },
+        });
+        sentNotifications += result.sent;
+      } else {
+        failedNotifications += result.failed > 0 ? result.failed : 1;
+      }
+    }
   }
 
   return {
     targetedPlayers: playersToNotify.length,
     sentNotifications,
     failedNotifications,
+    skippedAlreadyNudged,
+    skippedNoSession,
   };
 }

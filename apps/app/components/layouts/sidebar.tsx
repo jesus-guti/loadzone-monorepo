@@ -1,8 +1,5 @@
 "use client";
 
-import { BellIcon, ListIcon } from "@phosphor-icons/react/ssr";
-import { ModeToggle } from "@repo/design-system/components/mode-toggle";
-import { Button } from "@repo/design-system/components/button";
 import {
   Sidebar,
   SidebarContent,
@@ -15,17 +12,23 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@repo/design-system/components/sidebar";
-import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect } from "react";
-import { primaryNavigation, secondaryNavigation } from "@/lib/admin-navigation";
+import { Fragment, type ReactNode, useEffect } from "react";
+import { PrimerosPasosPanel } from "@/features/primeros-pasos";
+import {
+  configurationNavItem,
+  operationalNavigation,
+} from "@/lib/admin-navigation";
 import type { StaffContext } from "@/lib/auth-context";
+import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
+import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { MobileSidebarFab } from "./mobile-sidebar-fab";
+import { OperationalRouteMemory } from "./operational-route-memory";
+import { SettingsVolverLink } from "./settings-volver-link";
 import { SidebarUserMenu } from "./sidebar-user-menu";
 import { TeamBranding } from "./team-branding";
 
@@ -41,39 +44,19 @@ type GlobalSidebarProperties = {
     | "role"
     | "teams"
   >;
+  readonly userId: string;
+  readonly recommendedSetupFacts: RecommendedSetupClubFacts;
 };
 
 const sidebarPrefetchHrefs = Array.from(
   new Set(
-    [...primaryNavigation, ...secondaryNavigation].map((item) => item.href)
+    [
+      ...operationalNavigation,
+      configurationNavItem,
+      ...settingsNavigation,
+    ].map((item) => item.href)
   )
 );
-
-function DesktopSidebarOpener() {
-  const { toggleSidebar, state } = useSidebar();
-  const tooltip =
-    state === "collapsed" ? "Expandir barra lateral" : "Contraer barra lateral";
-
-  return (
-    <div className="shrink-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            aria-label={tooltip}
-            className="w-fit"
-            onClick={() => {
-              toggleSidebar();
-            }}
-            tooltip={tooltip}
-            type="button"
-          >
-            <ListIcon className="size-4 shrink-0 text-text-secondary" />
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </div>
-  );
-}
 
 function SidebarBrandingHeader({
   staffContext,
@@ -82,24 +65,17 @@ function SidebarBrandingHeader({
 }) {
   return (
     <SidebarHeader className="gap-2 p-2">
-      <div
-        className={cn(
-          "flex flex-row items-center justify-between gap-2",
-          "group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-1"
-        )}
-      >
-        <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center">
+      <div className="flex flex-row items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
           <TeamBranding
             clubLogoUrl={staffContext.club.logoUrl}
             clubName={staffContext.club.name}
-            detailsClassName="group-data-[collapsible=icon]:hidden"
             logoTreatment="ambient"
             showClubOnly
             teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
             teamName={staffContext.activeTeam?.name ?? null}
           />
         </div>
-        <DesktopSidebarOpener />
       </div>
     </SidebarHeader>
   );
@@ -108,9 +84,12 @@ function SidebarBrandingHeader({
 export const GlobalSidebar = ({
   children,
   staffContext,
+  userId,
+  recommendedSetupFacts,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
   const router = useRouter();
+  const inSettings = isSettingsPath(pathname);
 
   useEffect(() => {
     for (const href of sidebarPrefetchHrefs) {
@@ -120,70 +99,112 @@ export const GlobalSidebar = ({
 
   return (
     <AppShellProvider value={staffContext}>
-      <Sidebar collapsible="icon" variant="inset">
-        <SidebarBrandingHeader staffContext={staffContext} />
+      <OperationalRouteMemory />
+      <Sidebar collapsible="offcanvas" variant="inset">
+        {inSettings ? (
+          <Fragment />
+        ) : (
+          <SidebarBrandingHeader staffContext={staffContext} />
+        )}
 
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Operación</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {primaryNavigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      isActive={item.match(pathname)}
-                      tooltip={item.label}
-                      render={
-                        <Link href={item.href} prefetch>
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {inSettings ? (
+            <>
+              <div className="p-2" />
+              <SettingsVolverLink />
 
-          <SidebarGroup className="pt-2">
-            <SidebarGroupLabel>Accesos</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {secondaryNavigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      isActive={item.match(pathname)}
-                      tooltip={item.label}
-                      render={
-                        <Link href={item.href} prefetch>
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+              <SidebarGroup className="pt-2">
+                <SidebarGroupLabel>Ajustes</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {settingsNavigation.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          isActive={item.match(pathname)}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon weight="fill" />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                          tooltip={item.label}
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          ) : (
+            <>
+              <SidebarGroup>
+                <SidebarGroupLabel>Operación</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {operationalNavigation.map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          isActive={item.match(pathname)}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon weight="fill" />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                          tooltip={item.label}
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              <SidebarGroup className="mt-auto pt-2">
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {[configurationNavItem].map((item) => (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          isActive={item.match(pathname)}
+                          render={
+                            <Link href={item.href} prefetch>
+                              <item.icon weight="fill" />
+                              <span>{item.label}</span>
+                            </Link>
+                          }
+                          tooltip={item.label}
+                        />
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          )}
         </SidebarContent>
 
-        <SidebarFooter className="gap-2">
-          <div className="flex items-center justify-between gap-2 border-border-secondary border-t px-2 pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:justify-center">
-            <Button aria-label="Notificaciones" size="icon" variant="ghost">
-              <BellIcon className="size-5" weight="fill" />
-            </Button>
-            <ModeToggle />
-          </div>
-          <SidebarUserMenu />
-        </SidebarFooter>
+        {inSettings ? null : (
+          <SidebarFooter className="gap-2">
+            <PrimerosPasosPanel
+              activeTeam={{
+                hasActiveSeason: staffContext.activeSeason !== null,
+                // Player count is Club-fact driven for the checklist; active-Team
+                // baseline for Wellness empty states lands in JES-84.
+                hasPlayers: false,
+              }}
+              clubFacts={recommendedSetupFacts}
+              clubId={staffContext.club.id}
+              userId={userId}
+            />
+            <SidebarUserMenu />
+          </SidebarFooter>
+        )}
       </Sidebar>
       <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-0 md:pb-0">
         <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain">
           {children}
         </div>
-        <MobileBottomNav />
+        {inSettings ? null : <MobileBottomNav />}
         <MobileSidebarFab />
       </SidebarInset>
     </AppShellProvider>

@@ -1,8 +1,13 @@
 "use client";
 
 import { cn } from "@repo/design-system/lib/utils";
-import { useEffect, useRef, type ChangeEvent } from "react";
+import { useEffect, useRef, type ChangeEvent, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
+import {
+  sliderReadoutDigit,
+  sliderThumbOffsetPercent,
+} from "../lib/slider-readout";
+import "./slider-input.css";
 
 type SliderInputProperties = {
   readonly name: string;
@@ -27,6 +32,9 @@ const RELEASE_COMMIT_MS = 300;
 /** Evita doble disparo pointerup + touchend con el mismo valor. */
 const RELEASE_DEDUP_MS = 380;
 
+/** Matches thumb geometry in slider-input.css (`3rem`). */
+const THUMB_SIZE = "3rem";
+
 const KEYS_THAT_MOVE_RANGE = new Set([
   "ArrowLeft",
   "ArrowRight",
@@ -37,6 +45,12 @@ const KEYS_THAT_MOVE_RANGE = new Set([
   "PageUp",
   "PageDown",
 ]);
+
+const RANGE_APPEARANCE_STYLE = {
+  WebkitAppearance: "none",
+  appearance: "none",
+  background: "transparent",
+} as CSSProperties;
 
 function defaultColor(): string {
   return "text-text-primary";
@@ -55,7 +69,9 @@ export function SliderInput({
   colorForValue = defaultColor,
   gradientClassName = "from-danger via-premium to-brand",
 }: SliderInputProperties) {
-  const displayValue = value ?? Math.round((min + max) / 2);
+  const isUnset = value === null;
+  const readoutDigit = sliderReadoutDigit(value, min, max);
+  const thumbPercent = sliderThumbOffsetPercent(readoutDigit, min, max);
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef = useRef(0);
   const latestRef = useRef<number | null>(null);
@@ -166,10 +182,10 @@ export function SliderInput({
         <span
           className={cn(
             "text-7xl font-black leading-none tabular-nums transition-colors",
-            value === null ? "text-text-tertiary" : colorForValue(value)
+            isUnset ? "text-text-tertiary" : colorForValue(value)
           )}
         >
-          {value ?? "–"}
+          {readoutDigit}
         </span>
         {value !== null && labelForValue ? (
           <span className="text-sm font-medium uppercase tracking-wider text-text-secondary">
@@ -177,12 +193,12 @@ export function SliderInput({
           </span>
         ) : (
           <span className="text-sm text-text-tertiary">
-            Desliza para elegir
+            Pulsa o desliza para elegir
           </span>
         )}
       </div>
 
-      <div className="relative">
+      <div className="group relative min-h-12 py-2">
         <div
           aria-hidden
           className={cn(
@@ -190,24 +206,44 @@ export function SliderInput({
             gradientClassName
           )}
         />
+        <div
+          aria-hidden
+          data-slider-thumb=""
+          data-unset={isUnset ? "true" : undefined}
+          className="player-slider-thumb"
+          style={{
+            left: `calc(${thumbPercent / 100} * (100% - ${THUMB_SIZE}))`,
+            width: THUMB_SIZE,
+            height: THUMB_SIZE,
+            boxSizing: "border-box",
+            borderRadius: 9999,
+            borderStyle: "solid",
+            borderWidth: 3,
+            borderColor: isUnset
+              ? "var(--text-secondary)"
+              : "var(--text-primary)",
+            backgroundColor: "var(--bg-primary)",
+            opacity: isUnset ? 0.7 : 1,
+            position: "absolute",
+            top: "50%",
+            zIndex: 20,
+            pointerEvents: "none",
+            transform: "translateY(-50%)",
+          }}
+        />
         <input
           type="range"
           min={min}
           max={max}
           step={step}
-          value={displayValue}
+          value={readoutDigit}
           onChange={handleChange}
           onPointerUp={handlePointerUp}
           onTouchEnd={handleTouchEnd}
           onMouseUp={handleMouseUp}
           onKeyUp={handleKeyUp}
-          className={cn(
-            "relative z-10 h-7 w-full cursor-pointer appearance-none bg-transparent focus-visible:outline-none",
-            "[&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent",
-            "[&::-moz-range-track]:h-2 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-transparent",
-            "[&::-webkit-slider-thumb]:mt-[-10px] [&::-webkit-slider-thumb]:size-7 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-text-primary [&::-webkit-slider-thumb]:bg-bg-primary [&::-webkit-slider-thumb]:shadow-elevated [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110",
-            "[&::-moz-range-thumb]:size-7 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-text-primary [&::-moz-range-thumb]:bg-bg-primary [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:active:scale-110"
-          )}
+          style={RANGE_APPEARANCE_STYLE}
+          className="player-slider-range relative z-10 h-12 w-full cursor-pointer"
           aria-label={`Valor de ${min} a ${max}`}
         />
       </div>

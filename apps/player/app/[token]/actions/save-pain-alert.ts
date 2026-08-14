@@ -1,0 +1,127 @@
+"use server";
+
+import { database } from "@repo/database";
+import {
+  evaluateAndEmitCareAlert,
+  PLAYER_CARE_CONFIRM_MESSAGE,
+} from "@repo/database/care-alerts";
+import { createPlayerPainAlert } from "@repo/database/pain-alert";
+import { z } from "zod";
+
+const painAlertSchema = z.object({
+  token: z.string(),
+  title: z.string().min(2).max(100),
+  bodyPart: z.string().max(100).optional(),
+  severity: z.enum(["UNKNOWN", "MINOR", "MODERATE", "MAJOR"]),
+  description: z.string().max(1000).optional(),
+});
+
+type PainAlertActionResult = {
+  success: boolean;
+  error?: string;
+  careConfirm?: boolean;
+  careConfirmMessage?: string;
+};
+
+/**
+ * Player intake → Pain Alert only; never creates an official Injury (JES-54).
+ * Care Alert: evaluate after successful persist when Parental Supervision allows
+ * (JES-47 HITL A). Staff promote / Injury create must not call this path (HITL C).
+ */
+export async function savePainAlert(
+  _prev: PainAlertActionResult,
+  formData: FormData
+): Promise<PainAlertActionResult> {
+  try {
+    const parsed = painAlertSchema.safeParse({
+      token: formData.get("token"),
+      title: formData.get("title"),
+      bodyPart: formData.get("bodyPart") || undefined,
+      severity: formData.get("severity"),
+      description: formData.get("description") || undefined,
+    });
+
+    if (!parsed.success) {
+      return { success: false, error: "Datos no válidos." };
+    }
+
+    const player = await database.player.findUnique({
+      where: { token: parsed.data.token, isArchived: false },
+      select: {
+        id: true,
+        name: true,
+        teamId: true,
+        dateOfBirth: true,
+        ageBandOverride: true,
+        team: {
+          select: {
+            timezone: true,
+            ageBandPolicy: true,
+            reminderConsentPolicy: true,
+            club: {
+              select: {
+                ageBandPolicy: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!player) {
+      return { success: false, error: "Jugador no encontrado." };
+    }
+
+    const bodyPart =
+      parsed.data.bodyPart && parsed.data.bodyPart.length > 0
+        ? parsed.data.bodyPart
+        : null;
+
+    const painAlert = await createPlayerPainAlert(database, {
+      playerId: player.id,
+      teamId: player.teamId,
+      title: parsed.data.title,
+      bodyPart,
+      severity: parsed.data.severity,
+      description:
+        parsed.data.description && parsed.data.description.length > 0
+          ? parsed.data.description
+          : null,
+    });
+
+    // Care Alert table (JES-54 / JES-47 HITL C):
+    // - Player Pain Alert save → may emit INJURY_PAIN (policy-gated)
+    // - Staff promote → Injury → never emit
+    // - Staff Registrar lesión → never emit
+    // Guardian slice: structured location only (JES-49) — never title/description/severity.
+    const careResult = await evaluateAndEmitCareAlert({
+      playerId: player.id,
+      playerDisplayName: player.name,
+      teamTimezone: player.team.timezone,
+      teamAgeBandPolicy: player.team.ageBandPolicy,
+      clubAgeBandPolicy: player.team.club.ageBandPolicy,
+      reminderConsentPolicy: player.team.reminderConsentPolicy,
+      dateOfBirth: player.dateOfBirth,
+      ageBandOverride: player.ageBandOverride,
+      signals: {
+        painAlert: {
+          bodyPart,
+          side: painAlert.side,
+          injuryType: painAlert.injuryType,
+          reportedAt: painAlert.reportedAt,
+        },
+      },
+      checkInCompleted: false,
+    });
+
+    return {
+      success: true,
+      careConfirm: careResult.careFlagPresent,
+      careConfirmMessage: careResult.careFlagPresent
+        ? PLAYER_CARE_CONFIRM_MESSAGE
+        : undefined,
+    };
+  } catch {
+    return { success: false, error: "No se pudo guardar el aviso de dolor." };
+  }
+}

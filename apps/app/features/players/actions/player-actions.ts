@@ -1,7 +1,14 @@
 "use server";
 
 import { database } from "@repo/database";
-import type { PlayerStatus } from "@repo/database";
+import type { AgeBand, PlayerStatus } from "@repo/database";
+import { ageBandOverrideSchema } from "@repo/database/age-band-policy";
+import {
+  isPlayerStatusOverrideBlocked,
+  playerHasActiveInjury,
+} from "@repo/database/injury-status";
+import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
+import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { buildObjectKey, uploadImage } from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -17,16 +24,79 @@ type PhotoActionResult = ActionResult & {
   imageUrl?: string | null;
 };
 
-async function getTeamId(): Promise<string> {
+async function getStaffTeamContext(): Promise<{
+  teamId: string;
+  timeZone: string;
+}> {
   const staffContext = await getCurrentStaffContext();
   if (!staffContext?.activeTeam) {
     throw new Error("Equipo no encontrado");
   }
-  return staffContext.activeTeam.id;
+  return {
+    teamId: staffContext.activeTeam.id,
+    timeZone: staffContext.activeTeam.timezone || "Europe/Madrid",
+  };
 }
+
+async function getTeamId(): Promise<string> {
+  const { teamId } = await getStaffTeamContext();
+  return teamId;
+}
+
+const optionalDateOfBirth = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    if (!value || value.trim().length === 0) {
+      return null;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La fecha de nacimiento debe tener formato AAAA-MM-DD.",
+      });
+      return z.NEVER;
+    }
+    const date = new Date(`${value}T12:00:00.000Z`);
+    if (Number.isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La fecha de nacimiento no es válida.",
+      });
+      return z.NEVER;
+    }
+    return date;
+  });
+
+const optionalAgeBandOverride = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    if (!value || value.trim().length === 0 || value === "NONE") {
+      return null;
+    }
+    const parsed = ageBandOverrideSchema.safeParse(value);
+    if (!parsed.success) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El tramo de edad manual no es válido.",
+      });
+      return z.NEVER;
+    }
+    return parsed.data;
+  });
+
+const reminderConsentActionSchema = z.enum([
+  "LEAVE",
+  "GRANT_ASSISTED",
+  "REVOKE_SUPERVISION",
+  "CLEAR_TO_ELIGIBLE",
+]);
 
 const createPlayerSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
+  dateOfBirth: optionalDateOfBirth,
+  ageBandOverride: optionalAgeBandOverride,
 });
 
 export async function createPlayer(
@@ -36,6 +106,8 @@ export async function createPlayer(
   try {
     const parsed = createPlayerSchema.safeParse({
       name: formData.get("name"),
+      dateOfBirth: formData.get("dateOfBirth") || undefined,
+      ageBandOverride: formData.get("ageBandOverride") || undefined,
     });
 
     if (!parsed.success) {
@@ -48,6 +120,8 @@ export async function createPlayer(
       data: {
         name: parsed.data.name,
         teamId,
+        dateOfBirth: parsed.data.dateOfBirth,
+        ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
       },
     });
 
@@ -69,6 +143,9 @@ const updatePlayerSchema = z.object({
     "ILL",
     "UNAVAILABLE",
   ]),
+  dateOfBirth: optionalDateOfBirth,
+  ageBandOverride: optionalAgeBandOverride,
+  reminderConsentAction: reminderConsentActionSchema.default("LEAVE"),
 });
 
 export async function updatePlayer(
@@ -80,20 +157,66 @@ export async function updatePlayer(
       id: formData.get("id"),
       name: formData.get("name"),
       status: formData.get("status"),
+      dateOfBirth: formData.get("dateOfBirth") || undefined,
+      ageBandOverride: formData.get("ageBandOverride") || undefined,
+      reminderConsentAction: formData.get("reminderConsentAction") || "LEAVE",
     });
 
     if (!parsed.success) {
       return { success: false, error: parsed.error.issues[0]?.message };
     }
 
-    const teamId = await getTeamId();
+    const { teamId, timeZone } = await getStaffTeamContext();
 
-    await database.player.update({
-      where: { id: parsed.data.id, teamId },
-      data: {
-        name: parsed.data.name,
-        status: parsed.data.status as PlayerStatus,
-      },
+    let nextConsentState: PlayerReminderConsentState | undefined;
+    const action = parsed.data.reminderConsentAction;
+    if (action === "GRANT_ASSISTED") {
+      nextConsentState = "ASSISTED_GUARDIAN_GRANTED";
+    } else if (action === "REVOKE_SUPERVISION") {
+      nextConsentState = "GUARDIAN_BLOCKED";
+    } else if (action === "CLEAR_TO_ELIGIBLE") {
+      nextConsentState = "ELIGIBLE";
+    }
+
+    const todayCivil = toCivilDateString(new Date(), timeZone);
+    const hasActiveInjury = await playerHasActiveInjury(
+      database,
+      parsed.data.id,
+      todayCivil,
+      timeZone
+    );
+    if (
+      isPlayerStatusOverrideBlocked({
+        hasActiveInjury,
+        requestedStatus: parsed.data.status as PlayerStatus,
+      })
+    ) {
+      return {
+        success: false,
+        error:
+          "No se puede cambiar el estado mientras haya una lesión abierta. Cierra la lesión primero.",
+      };
+    }
+
+    await database.$transaction(async (tx) => {
+      await tx.player.update({
+        where: { id: parsed.data.id, teamId },
+        data: {
+          name: parsed.data.name,
+          status: parsed.data.status as PlayerStatus,
+          dateOfBirth: parsed.data.dateOfBirth,
+          ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
+          ...(nextConsentState
+            ? { reminderConsentState: nextConsentState }
+            : {}),
+        },
+      });
+
+      if (action === "REVOKE_SUPERVISION") {
+        await tx.pushSubscription.deleteMany({
+          where: { playerId: parsed.data.id },
+        });
+      }
     });
 
     revalidatePath("/players");
@@ -160,7 +283,7 @@ export async function updatePlayerPhoto(
     await database.player.update({
       where: { id: player.id, teamId },
       data: {
-        imageUrl: imageUpload.pathname,
+        imageUrl: imageUpload.url,
       },
     });
 
@@ -176,7 +299,9 @@ export async function updatePlayerPhoto(
     return {
       success: false,
       error:
-        error instanceof Error ? error.message : "No se pudo subir la foto del jugador.",
+        error instanceof Error
+          ? error.message
+          : "No se pudo subir la foto del jugador.",
     };
   }
 }

@@ -12,6 +12,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -81,7 +82,7 @@ export function SidebarUserMenu() {
                       {getInitials(user?.name, user?.email ?? null)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold text-text-primary">
                       {user?.name ?? "Usuario"}
                     </span>
@@ -93,16 +94,18 @@ export function SidebarUserMenu() {
               }
             />
             <DropdownMenuContent align="start" className="w-64" side="top">
-              <DropdownMenuLabel>
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-sm text-text-primary">
-                    {user?.name ?? "Usuario"}
-                  </p>
-                  <p className="truncate text-xs text-text-secondary">
-                    {user?.email ?? ""}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-sm text-text-primary">
+                      {user?.name ?? "Usuario"}
+                    </p>
+                    <p className="truncate text-xs text-text-secondary">
+                      {user?.email ?? ""}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"

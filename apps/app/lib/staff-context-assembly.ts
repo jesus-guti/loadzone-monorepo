@@ -13,6 +13,15 @@ import {
   resolveSeasonFromCookie,
   staffCanCreateTeam,
 } from "./staff-workspace-rules";
+import {
+  parseAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+  type AgeBandPolicy,
+} from "@repo/database/age-band-policy";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  type ReminderConsentPolicy,
+} from "@repo/database/reminder-consent";
 import { parseWellnessLimits, type WellnessLimits } from "./wellness-limits";
 
 export type SeasonSummary = {
@@ -32,6 +41,14 @@ export type TeamSummary = {
   preSessionReminderMinutes: number | null;
   postSessionReminderMinutes: number | null;
   wellnessLimits: WellnessLimits | null;
+  /** Raw Team override JSON (null = inherit Club / package defaults). */
+  ageBandPolicyOverride: AgeBandPolicy | null;
+  /** Effective policy after Club inheritance. */
+  ageBandPolicy: AgeBandPolicy;
+  ageBandPolicySource: "team" | "club" | "defaults";
+  /** Effective Reminder Consent policy (Team JSON or package defaults). */
+  reminderConsentPolicy: ReminderConsentPolicy;
+  reminderConsentPolicySource: "team" | "defaults";
 };
 
 export type StaffContext = {
@@ -44,6 +61,7 @@ export type StaffContext = {
     id: string;
     name: string;
     logoUrl: string | null;
+    ageBandPolicy: AgeBandPolicy | null;
   };
   teams: TeamSummary[];
   activeTeam: TeamSummary | null;
@@ -78,17 +96,34 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
 
   const defaultTeam = rawTeams[0] ?? null;
   const activeTeam = resolveActiveTeamSnapshot(rawTeams, requestedTeamId);
+  const clubAgeBandPolicy = club
+    ? parseAgeBandPolicy(club.ageBandPolicy)
+    : null;
 
-  const transformedTeams: TeamSummary[] = rawTeams.map((team) => ({
-    id: team.id,
-    name: team.name,
-    category: team.category,
-    logoUrl: team.logoUrl,
-    timezone: team.timezone,
-    preSessionReminderMinutes: team.preSessionReminderMinutes,
-    postSessionReminderMinutes: team.postSessionReminderMinutes,
-    wellnessLimits: parseWellnessLimits(team.wellnessLimits),
-  }));
+  const transformedTeams: TeamSummary[] = rawTeams.map((team) => {
+    const effective = resolveEffectiveAgeBandPolicy({
+      teamPolicy: team.ageBandPolicy,
+      clubPolicy: club?.ageBandPolicy ?? null,
+    });
+    const reminderConsent = resolveEffectiveReminderConsentPolicy({
+      teamPolicy: team.reminderConsentPolicy,
+    });
+    return {
+      id: team.id,
+      name: team.name,
+      category: team.category,
+      logoUrl: team.logoUrl,
+      timezone: team.timezone,
+      preSessionReminderMinutes: team.preSessionReminderMinutes,
+      postSessionReminderMinutes: team.postSessionReminderMinutes,
+      wellnessLimits: parseWellnessLimits(team.wellnessLimits),
+      ageBandPolicyOverride: parseAgeBandPolicy(team.ageBandPolicy),
+      ageBandPolicy: effective.policy,
+      ageBandPolicySource: effective.source,
+      reminderConsentPolicy: reminderConsent.policy,
+      reminderConsentPolicySource: reminderConsent.source,
+    };
+  });
 
   const transformedDefaultTeam =
     transformedTeams.find((team) => team.id === defaultTeam?.id) ?? null;
@@ -124,6 +159,7 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
       id: membership.clubId,
       name: club?.name ?? membership.clubName,
       logoUrl: club?.logoUrl ?? null,
+      ageBandPolicy: clubAgeBandPolicy,
     },
     teams: transformedTeams,
     activeTeam: transformedActiveTeam,

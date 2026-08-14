@@ -1,11 +1,28 @@
 import { database } from "@repo/database";
+import {
+  resolveAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
+import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
+import {
+  resolveEffectiveReminderConsentPolicy,
+  resolvePushConsent,
+  type PlayerReminderConsentState,
+} from "@repo/database/reminder-consent";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
+import {
+  isPrototypeLabToken,
+  parseBand,
+  parseVariant,
+} from "./prototype-dd-05/constants";
+import { PrototypeCheckinLab } from "./prototype-dd-05";
 
 type PageProperties = {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; variant?: string; band?: string }>;
 };
 
 function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
@@ -27,7 +44,71 @@ function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
 
 const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   const { token } = await params;
-  const { date } = await searchParams;
+  const resolvedSearch = await searchParams;
+  const { date, variant: variantRaw, band: bandRaw } = resolvedSearch;
+  const variant = parseVariant(variantRaw);
+
+  // PROTOTYPE lab: ?variant= swaps the subtree; production SessionPage untouched otherwise.
+  if (variant) {
+    const band = parseBand(bandRaw);
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-[100dvh] items-center justify-center text-sm text-text-secondary">
+            Cargando prototipo…
+          </div>
+        }
+      >
+        <PrototypeCheckinLab
+          token={token}
+          initialVariant={variant}
+          initialBand={band}
+        />
+      </Suspense>
+    );
+  }
+
+  if (isPrototypeLabToken(token)) {
+    return (
+      <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col justify-center gap-4 px-5 text-text-primary">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-premium">
+          PROTOTIPO · DD-05
+        </p>
+        <h1 className="text-2xl font-semibold">Lab de check-in</h1>
+        <p className="text-sm text-text-secondary">
+          Añade{" "}
+          <code className="rounded bg-bg-tertiary px-1.5 py-0.5 text-xs">
+            ?variant=A&amp;band=assisted
+          </code>{" "}
+          para abrir el prototipo. Sin ese parámetro no se sustituye el check-in
+          de producción.
+        </p>
+        <ul className="space-y-2 text-sm text-text-secondary">
+          <li>
+            <a
+              className="underline"
+              href={`/${token}?variant=A&band=assisted`}
+            >
+              Variante A · Focus · Asistida
+            </a>
+          </li>
+          <li>
+            <a className="underline" href={`/${token}?variant=B&band=guided`}>
+              Variante B · Timeline · Guiada
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline"
+              href={`/${token}?variant=C&band=independent`}
+            >
+              Variante C · Reward · Independiente
+            </a>
+          </li>
+        </ul>
+      </div>
+    );
+  }
 
   const player = await database.player.findUnique({
     where: { token, isArchived: false },
@@ -35,10 +116,22 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       id: true,
       name: true,
       currentStreak: true,
+      streakSeasonId: true,
       teamId: true,
+      dateOfBirth: true,
+      ageBandOverride: true,
+      reminderConsentState: true,
       team: {
         select: {
           name: true,
+          timezone: true,
+          ageBandPolicy: true,
+          reminderConsentPolicy: true,
+          club: {
+            select: {
+              ageBandPolicy: true,
+            },
+          },
           forms: {
             where: {
               teamSessionId: null,
@@ -67,6 +160,15 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
               },
             },
           },
+          seasons: {
+            where: {
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
+            orderBy: { startDate: "desc" },
+            take: 1,
+            select: { id: true },
+          },
         },
       },
     },
@@ -75,6 +177,37 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   if (!player) {
     notFound();
   }
+
+  const effectiveAgePolicy = resolveEffectiveAgeBandPolicy({
+    teamPolicy: player.team.ageBandPolicy,
+    clubPolicy: player.team.club.ageBandPolicy,
+  });
+  const resolvedAge = resolveAgeBandPolicy({
+    policy: effectiveAgePolicy.policy,
+    policySource: effectiveAgePolicy.source,
+    dateOfBirth: player.dateOfBirth,
+    ageBandOverride: player.ageBandOverride,
+    teamTimezone: player.team.timezone,
+  });
+  const { policy: reminderConsentPolicy } =
+    resolveEffectiveReminderConsentPolicy({
+      teamPolicy: player.team.reminderConsentPolicy,
+    });
+  const subscriptionCount = await database.pushSubscription.count({
+    where: { playerId: player.id },
+  });
+  const pushConsent = resolvePushConsent({
+    resolvedAge,
+    reminderConsentPolicy,
+    playerConsentState:
+      player.reminderConsentState as PlayerReminderConsentState,
+    hasActiveSubscription: subscriptionCount > 0,
+  });
+  const displayStreak = effectiveCurrentStreak({
+    currentStreak: player.currentStreak,
+    streakSeasonId: player.streakSeasonId,
+    activeSeasonId: player.team.seasons[0]?.id ?? null,
+  });
 
   const selectedDate = resolveSelectedDate(date);
   const nextDay = new Date(selectedDate.value);
@@ -197,9 +330,16 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       token={token}
       playerName={player.name}
       teamName={player.team.name}
-      currentStreak={player.currentStreak}
+      currentStreak={displayStreak}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
+      ageBand={resolvedAge.ageBand}
+      parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
+      pushConsent={{
+        uiMode: pushConsent.uiMode,
+        canSubscribe: pushConsent.canSubscribe,
+        canOptOut: pushConsent.canOptOut,
+      }}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession

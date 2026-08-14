@@ -15,6 +15,7 @@ export type StaffClubRow = {
   id: string;
   name: string;
   logoUrl: string | null;
+  ageBandPolicy: unknown;
 };
 
 export type StaffTeamRow = {
@@ -26,6 +27,8 @@ export type StaffTeamRow = {
   preSessionReminderMinutes: number | null;
   postSessionReminderMinutes: number | null;
   wellnessLimits: unknown;
+  ageBandPolicy: unknown;
+  reminderConsentPolicy: unknown;
 };
 
 export type StaffSeasonRow = {
@@ -49,7 +52,7 @@ export function createPrismaStaffDataAdapter(): StaffDataAdapter {
       const [club, teams] = await Promise.all([
         database.club.findUnique({
           where: { id: membership.clubId },
-          select: { id: true, name: true, logoUrl: true },
+          select: { id: true, name: true, logoUrl: true, ageBandPolicy: true },
         }),
         database.team.findMany({
           where: membership.hasAllTeams
@@ -64,6 +67,8 @@ export function createPrismaStaffDataAdapter(): StaffDataAdapter {
             preSessionReminderMinutes: true,
             postSessionReminderMinutes: true,
             wellnessLimits: true,
+            ageBandPolicy: true,
+            reminderConsentPolicy: true,
           },
           orderBy: { name: "asc" },
         }),
@@ -75,6 +80,7 @@ export function createPrismaStaffDataAdapter(): StaffDataAdapter {
               id: club.id,
               name: club.name,
               logoUrl: resolveStorageUrl(club.logoUrl),
+              ageBandPolicy: club.ageBandPolicy,
             }
           : null,
         teams: teams.map((team) => ({

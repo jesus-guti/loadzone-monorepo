@@ -1,9 +1,9 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/input";
 import { Switch } from "@repo/design-system/components/switch";
 import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useState } from "react";
+import { DatePicker } from "@/components/date-picker";
 import { FieldLabel } from "./form-section";
 
 const WEEKDAYS = [
@@ -126,11 +126,10 @@ export function RecurrencePicker({
 
           <div className="space-y-3">
             <FieldLabel htmlFor="recurrence-until">Repetir hasta</FieldLabel>
-            <Input
+            <DatePicker
               className="w-full sm:max-w-[200px]"
               id="recurrence-until"
-              onChange={(event) => setUntil(event.target.value)}
-              type="date"
+              onChange={setUntil}
               value={until}
             />
           </div>

@@ -582,7 +582,13 @@ function EnumSelect({ name, label, defaultValue, options }: EnumSelectProps) {
     <div className="space-y-2">
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
       <input name={name} type="hidden" value={value} />
-      <Select onValueChange={(val) => { if (val) setValue(val); }} value={value}>
+      <Select
+        items={options}
+        onValueChange={(val) => {
+          if (val) setValue(val);
+        }}
+        value={value}
+      >
         <SelectTrigger className="w-full bg-bg-secondary" id={name}>
           <SelectValue />
         </SelectTrigger>

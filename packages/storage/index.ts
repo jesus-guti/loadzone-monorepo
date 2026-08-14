@@ -3,9 +3,12 @@ import "server-only";
 import { del, get, put } from "@vercel/blob";
 import { validateImageFile } from "./image-validation";
 import { keys } from "./keys";
-import { resolveStorageUrl } from "./shared";
+import { resolveStorageUrl, toBlobDeleteTarget } from "./shared";
 
 export const DEFAULT_CACHE_MAX_AGE = 60 * 60 * 24 * 30;
+
+/** Store access mode — must match the Vercel Blob store (private, immutable after create). */
+const BLOB_STORE_ACCESS = "private" as const;
 
 type ImageTarget = "club" | "player" | "user";
 
@@ -86,23 +89,28 @@ export async function uploadImage({
   await validateImageFile(file);
 
   const result = await put(objectKey, file, {
-  access: "public",
-  addRandomSuffix: false,
+    access: BLOB_STORE_ACCESS,
+    addRandomSuffix: false,
     cacheControlMaxAge,
     contentType: file.type,
   });
 
-  if (previousUrl && previousUrl !== result.url) {
-    try {
-      await del(previousUrl);
-    } catch {
-      // Ignore cleanup errors to avoid failing the primary upload flow.
+  const displayUrl = resolveStorageUrl(result.pathname) ?? result.pathname;
+
+  if (previousUrl) {
+    const previousTarget = toBlobDeleteTarget(previousUrl);
+    if (previousTarget !== result.pathname && previousTarget !== result.url) {
+      try {
+        await del(previousTarget);
+      } catch {
+        // Ignore cleanup errors to avoid failing the primary upload flow.
+      }
     }
   }
 
   return {
     pathname: result.pathname,
-    url: resolveStorageUrl(result.pathname) ?? result.url,
+    url: displayUrl,
   };
 }
 
@@ -113,7 +121,7 @@ export async function deleteObject(url: string | null | undefined): Promise<void
     return;
   }
 
-  await del(url);
+  await del(toBlobDeleteTarget(url));
 }
 
 export function getPrivateBlob(
@@ -123,10 +131,10 @@ export function getPrivateBlob(
   ensureBlobToken();
 
   return get(pathname, {
-    access: "public",
+    access: BLOB_STORE_ACCESS,
     ifNoneMatch,
   });
 }
 
 // biome-ignore lint/performance/noBarrelFile: re-exporting
-export { isPrivateImagePathname, resolveStorageUrl } from "./shared";
+export { isPrivateImagePathname, resolveStorageUrl, toBlobDeleteTarget } from "./shared";

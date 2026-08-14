@@ -13,8 +13,9 @@ import {
 } from "@repo/design-system/components/select";
 import { cn } from "@repo/design-system/lib/utils";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { setActiveTeam } from "@/actions/active-team";
+import { CreateTeamDialog } from "@/features/settings/components/create-team-dialog";
 import { useAppShell } from "./app-shell-context";
 
 const CREATE_TEAM_VALUE = "__create_team__";
@@ -22,9 +23,11 @@ const CREATE_TEAM_VALUE = "__create_team__";
 export function ActiveTeamSwitcher() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [createOpen, setCreateOpen] = useState(false);
   const { activeTeam, canCreateTeam, teams } = useAppShell();
 
   const activeValue = activeTeam?.id ?? "";
+  const defaultTimezone = activeTeam?.timezone ?? "Europe/Madrid";
 
   return (
     <div className="flex min-w-0 items-center gap-2 ">
@@ -32,9 +35,11 @@ export function ActiveTeamSwitcher() {
         disabled={isPending || teams.length === 0}
         value={activeValue}
         onValueChange={(teamId: string | null) => {
-          if (!teamId) return;
+          if (!teamId) {
+            return;
+          }
           if (teamId === CREATE_TEAM_VALUE) {
-            router.push("/settings?createTeam=1");
+            setCreateOpen(true);
             return;
           }
 
@@ -99,6 +104,13 @@ export function ActiveTeamSwitcher() {
           ) : null}
         </SelectContent>
       </Select>
+      {canCreateTeam ? (
+        <CreateTeamDialog
+          defaultTimezone={defaultTimezone}
+          onOpenChange={setCreateOpen}
+          open={createOpen}
+        />
+      ) : null}
     </div>
   );
 }
