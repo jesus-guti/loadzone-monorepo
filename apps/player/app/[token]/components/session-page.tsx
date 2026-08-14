@@ -26,6 +26,7 @@ import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { PainAlertForm } from "./pain-alert-form";
+import { StreakCromo } from "./streak-cromo";
 import {
   FOCUS_COPY,
   shouldShowAssistedPresence,
@@ -319,22 +320,16 @@ export function SessionPage({
             <p className="text-base text-text-secondary">
               {FOCUS_COPY.completionBody[focusAgeBand]}
             </p>
-            {isTodaySelected && streakCount > 0 ? (
-              <div className="flex flex-col items-center gap-1">
-                <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
-                  {FOCUS_COPY.streakCalm(streakCount)}
-                </span>
-                {streakRestarted ? (
-                  <p className="text-sm text-text-secondary">
-                    {FOCUS_COPY.streakRestart}
-                  </p>
-                ) : null}
-              </div>
-            ) : !isTodaySelected ? (
+            {isTodaySelected ? (
+              <StreakCromo
+                streakCount={streakCount}
+                restarted={streakRestarted}
+              />
+            ) : (
               <p className="text-sm text-text-tertiary">
                 {FOCUS_COPY.pastDateDone}
               </p>
-            ) : null}
+            )}
             {showCareNote ? (
               <p className="rounded-2xl bg-bg-tertiary px-4 py-3 text-sm text-text-secondary">
                 {FOCUS_COPY.careSilentNote}

@@ -23,7 +23,7 @@ export const VARIANT_META: Record<
   },
   C: {
     name: "Reward-forward",
-    thesis: "Cierre centrado en identidad futbolística (sin puntuación)",
+    thesis: "Cierre con Streak Cromo (tiers reales, sin puntuación)",
   },
 };
 
@@ -239,7 +239,10 @@ export const STUB_QUESTIONS: readonly StubQuestion[] = [
   },
 ];
 
-export const DEMO_STREAK = 4;
+export const DEMO_STREAK = 3;
+
+/** Lab presets that land on cromo tiers 1–4 (days 0 / 3 / 7 / 14). */
+export const LAB_CROMO_STREAKS = [0, 3, 7, 14] as const;
 export const DEMO_PLAYER_NAME = "Alex";
 export const DEMO_TEAM_NAME = "Cadete A";
 
@@ -255,6 +258,17 @@ export function parseBand(raw: string | undefined): AgeBand {
     return raw;
   }
   return "assisted";
+}
+
+export function parseLabStreak(raw: string | undefined): number {
+  if (raw === undefined || raw === "") {
+    return DEMO_STREAK;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return DEMO_STREAK;
+  }
+  return parsed;
 }
 
 export function isPrototypeLabToken(token: string): boolean {
