@@ -1,6 +1,5 @@
 import { Badge } from "@repo/design-system/components/badge";
 import { Button } from "@repo/design-system/components/button";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   playerProfileHref,
@@ -11,14 +10,7 @@ import type {
   TeamInjuryListItem,
   TeamPainAlertListItem,
 } from "../types";
-
-const PromotePainAlertForm = dynamic(
-  () =>
-    import("./promote-pain-alert-form").then(
-      (mod) => mod.PromotePainAlertForm
-    ),
-  { ssr: false }
-);
+import { PromotePainAlertForm } from "./promote-pain-alert-form-lazy";
 
 function formatCivilDateEs(civilYmd: string): string {
   const [year, month, day] = civilYmd.split("-").map(Number);
