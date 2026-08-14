@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Header } from "@/components/layouts/header";
+import { TeamInjuriesList } from "@/features/injuries/components/team-injuries-list";
 import { getTeamInjuriesList } from "@/features/injuries/queries/get-team-injuries-list";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
@@ -13,23 +15,15 @@ const InjuriesPage = async () => {
     notFound();
   }
 
-  let data: Awaited<ReturnType<typeof getTeamInjuriesList>>;
-  try {
-    data = await getTeamInjuriesList(staffContext.activeTeam.id);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : "";
-    return (
-      <pre className="whitespace-pre-wrap p-4 text-xs">
-        {`[DEBUG-a4f2] injuries-query\n${message}\n${stack}`}
-      </pre>
-    );
-  }
+  const data = await getTeamInjuriesList(staffContext.activeTeam.id);
 
   return (
-    <div className="p-4 text-sm">
-      injuries-ok {data.activeInjuries.length}
-    </div>
+    <>
+      <Header page="Lesiones" pages={["LoadZone"]} />
+      <div className="mx-auto max-w-4xl p-4 pt-0">
+        <TeamInjuriesList data={data} />
+      </div>
+    </>
   );
 };
 
