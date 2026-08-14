@@ -192,8 +192,8 @@ const PlayerDetailPage = async ({
 
     return {
       date: dateKey,
-      preFilledAt: entry.preFilledAt,
-      postFilledAt: entry.postFilledAt,
+      preFilledAt: entry.preFilledAt ? entry.preFilledAt.toISOString() : null,
+      postFilledAt: entry.postFilledAt ? entry.postFilledAt.toISOString() : null,
       recovery: entry.recovery,
       energy: entry.energy,
       soreness: entry.soreness,

@@ -19,8 +19,8 @@ import {
 
 type PlayerHistoryRow = {
   readonly date: string;
-  readonly preFilledAt: Date | null;
-  readonly postFilledAt: Date | null;
+  readonly preFilledAt: string | null;
+  readonly postFilledAt: string | null;
   readonly recovery: number | null;
   readonly energy: number | null;
   readonly soreness: number | null;
