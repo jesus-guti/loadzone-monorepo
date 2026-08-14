@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JES-92 — Ambient PWA icon prototype (vimenor)</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    background: #f4f5f3;
+    color: #1c231f;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fde68a;
+    color: #713f12;
+    margin-bottom: 12px;
+  }
+  .subtitle { color: #555; font-size: 14px; margin: 0 0 20px; max-width: 68ch; }
+  .palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid #e2e4df;
+    border-radius: 10px;
+    margin-bottom: 28px;
+  }
+  .swatch { display: flex; align-items: center; gap: 8px; }
+  .swatch-color { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+  .swatch-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .swatch-value { font-size: 11px; color: #666; font-variant-numeric: tabular-nums; }
+  section.variant {
+    background: #fff;
+    border: 1px solid #e2e4df;
+    border-radius: 14px;
+    padding: 20px 22px 24px;
+    margin-bottom: 20px;
+  }
+  section.variant h2 { font-size: 16px; margin: 0 0 4px; }
+  section.variant > header > p { margin: 0 0 10px; font-size: 13px; color: #444; max-width: 70ch; }
+  ul.meta { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0; margin: 0 0 16px; font-size: 12px; color: #555; }
+  ul.meta li { background: #f1f2ef; padding: 3px 9px; border-radius: 999px; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+  .tile { margin: 0; text-align: center; }
+  .tile figcaption { margin-top: 8px; font-size: 11px; color: #666; line-height: 1.4; }
+  .tile figcaption code { font-size: 10px; color: #888; }
+  .frame { display: flex; align-items: center; justify-content: center; overflow: hidden; background: repeating-conic-gradient(#eee 0% 25%, #fafafa 0% 50%) 50% / 14px 14px; }
+  .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frame-circle { border-radius: 50%; }
+  .frame-squircle { border-radius: 26%; }
+  footer { margin-top: 32px; font-size: 12px; color: #777; }
+  footer code { background: #eceeea; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge">Prototype · JES-92 · throwaway</span>
+    <h1>Ambient-gradient PWA install icon — variant gallery</h1>
+    <p class="subtitle">
+      Test asset: <strong>vimenor</strong> (CF Vimenor shield). Palette extracted from the logo
+      pixels, same method family as
+      <code>apps/app/components/layouts/team-branding.tsx</code> (dominant colors →
+      boostSaturation → layered radial gradients), ported to Node + sharp for static PNG export.
+      Checkerboard = transparency in the source frame (not present in final opaque PNGs, shown
+      only where relevant).
+    </p>
+    <div class="palette">
+        <div class="swatch">
+          <span class="swatch-color" style="background:#00ad3a"></span>
+          <div>
+            <div class="swatch-name">primary</div>
+            <div class="swatch-value">#00ad3a · rgb(0, 173, 58)</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <span class="swatch-color" style="background:#ff094c"></span>
+          <div>
+            <div class="swatch-name">secondary</div>
+            <div class="swatch-value">#ff094c · rgb(255, 9, 76)</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <span class="swatch-color" style="background:#1fb752"></span>
+          <div>
+            <div class="swatch-name">highlight</div>
+            <div class="swatch-value">#1fb752 · rgb(31, 183, 82)</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <span class="swatch-color" style="background:#004216"></span>
+          <div>
+            <div class="swatch-name">deep</div>
+            <div class="swatch-value">#004216 · rgb(0, 66, 22)</div>
+          </div>
+        </div></div>
+    
+      <section class="variant">
+        <header>
+          <h2>A — Tight padding, soft ambient</h2>
+          <p>Logo fills most of the canvas; the ambient glow is a quiet backdrop, not a focal point.</p>
+          <ul class="meta">
+            <li>Logo fraction: 82% of canvas</li>
+            <li>Gradient intensity: soft</li>
+            <li>Plate: no</li>
+            <li>Maskable-safe by design: no (see dedicated maskable-512)</li>
+          </ul>
+        </header>
+        <div class="tiles">
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:72px;height:72px;">
+                <img src="icons/A-180.png" alt="Tight padding, soft ambient — iOS home screen (60pt @3x = 180)" width="72" height="72" />
+              </div>
+              <figcaption>iOS home screen (60pt @3x = 180)<br /><code>A-180.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:72px;height:72px;">
+                <img src="icons/A-192.png" alt="Tight padding, soft ambient — Android adaptive (192)" width="72" height="72" />
+              </div>
+              <figcaption>Android adaptive (192)<br /><code>A-192.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:128px;height:128px;">
+                <img src="icons/A-512.png" alt="Tight padding, soft ambient — Install / splash (512)" width="128" height="128" />
+              </div>
+              <figcaption>Install / splash (512)<br /><code>A-512.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:128px;height:128px;">
+                <img src="icons/A-512-maskable.png" alt="Tight padding, soft ambient — Maskable 512 (circle-masked preview)" width="128" height="128" />
+              </div>
+              <figcaption>Maskable 512 (circle-masked preview)<br /><code>A-512-maskable.png</code></figcaption>
+            </figure></div>
+      </section>
+
+      <section class="variant">
+        <header>
+          <h2>B — Larger logo, stronger gradient</h2>
+          <p>Logo pushed almost edge to edge; the ambient glow is saturated and layered for a punchier home-screen presence.</p>
+          <ul class="meta">
+            <li>Logo fraction: 92% of canvas</li>
+            <li>Gradient intensity: strong</li>
+            <li>Plate: no</li>
+            <li>Maskable-safe by design: no (see dedicated maskable-512)</li>
+          </ul>
+        </header>
+        <div class="tiles">
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:72px;height:72px;">
+                <img src="icons/B-180.png" alt="Larger logo, stronger gradient — iOS home screen (60pt @3x = 180)" width="72" height="72" />
+              </div>
+              <figcaption>iOS home screen (60pt @3x = 180)<br /><code>B-180.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:72px;height:72px;">
+                <img src="icons/B-192.png" alt="Larger logo, stronger gradient — Android adaptive (192)" width="72" height="72" />
+              </div>
+              <figcaption>Android adaptive (192)<br /><code>B-192.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:128px;height:128px;">
+                <img src="icons/B-512.png" alt="Larger logo, stronger gradient — Install / splash (512)" width="128" height="128" />
+              </div>
+              <figcaption>Install / splash (512)<br /><code>B-512.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:128px;height:128px;">
+                <img src="icons/B-512-maskable.png" alt="Larger logo, stronger gradient — Maskable 512 (circle-masked preview)" width="128" height="128" />
+              </div>
+              <figcaption>Maskable 512 (circle-masked preview)<br /><code>B-512-maskable.png</code></figcaption>
+            </figure></div>
+      </section>
+
+      <section class="variant">
+        <header>
+          <h2>C — Opaque plate, ambient behind</h2>
+          <p>A rounded, opaque plate sits on top of the ambient glow (visible in the margin) and holds the logo — classic app-icon sticker feel.</p>
+          <ul class="meta">
+            <li>Logo fraction: 60% of canvas</li>
+            <li>Gradient intensity: medium</li>
+            <li>Plate: yes (opaque, rounded)</li>
+            <li>Maskable-safe by design: no (see dedicated maskable-512)</li>
+          </ul>
+        </header>
+        <div class="tiles">
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:72px;height:72px;">
+                <img src="icons/C-180.png" alt="Opaque plate, ambient behind — iOS home screen (60pt @3x = 180)" width="72" height="72" />
+              </div>
+              <figcaption>iOS home screen (60pt @3x = 180)<br /><code>C-180.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:72px;height:72px;">
+                <img src="icons/C-192.png" alt="Opaque plate, ambient behind — Android adaptive (192)" width="72" height="72" />
+              </div>
+              <figcaption>Android adaptive (192)<br /><code>C-192.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:128px;height:128px;">
+                <img src="icons/C-512.png" alt="Opaque plate, ambient behind — Install / splash (512)" width="128" height="128" />
+              </div>
+              <figcaption>Install / splash (512)<br /><code>C-512.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:128px;height:128px;">
+                <img src="icons/C-512-maskable.png" alt="Opaque plate, ambient behind — Maskable 512 (circle-masked preview)" width="128" height="128" />
+              </div>
+              <figcaption>Maskable 512 (circle-masked preview)<br /><code>C-512-maskable.png</code></figcaption>
+            </figure></div>
+      </section>
+
+      <section class="variant">
+        <header>
+          <h2>D — Maskable-safe zone</h2>
+          <p>Logo deliberately confined to the ~80% safe-zone circle so Android's circle/squircle/rounded-square masks never clip it.</p>
+          <ul class="meta">
+            <li>Logo fraction: 56% of canvas</li>
+            <li>Gradient intensity: medium</li>
+            <li>Plate: no</li>
+            <li>Maskable-safe by design: yes</li>
+          </ul>
+        </header>
+        <div class="tiles">
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:72px;height:72px;">
+                <img src="icons/D-180.png" alt="Maskable-safe zone — iOS home screen (60pt @3x = 180)" width="72" height="72" />
+              </div>
+              <figcaption>iOS home screen (60pt @3x = 180)<br /><code>D-180.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:72px;height:72px;">
+                <img src="icons/D-192.png" alt="Maskable-safe zone — Android adaptive (192)" width="72" height="72" />
+              </div>
+              <figcaption>Android adaptive (192)<br /><code>D-192.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-squircle" style="width:128px;height:128px;">
+                <img src="icons/D-512.png" alt="Maskable-safe zone — Install / splash (512)" width="128" height="128" />
+              </div>
+              <figcaption>Install / splash (512)<br /><code>D-512.png</code></figcaption>
+            </figure>
+            <figure class="tile">
+              <div class="frame frame-circle" style="width:128px;height:128px;">
+                <img src="icons/D-512-maskable.png" alt="Maskable-safe zone — Maskable 512 (circle-masked preview)" width="128" height="128" />
+              </div>
+              <figcaption>Maskable 512 (circle-masked preview)<br /><code>D-512-maskable.png</code></figcaption>
+            </figure></div>
+      </section>
+    <footer>
+      Regenerate with <code>node generate.mjs</code> (or <code>node generate.mjs path/to/other-logo.png</code>) from this folder.
+      See <code>README.md</code> for setup.
+    </footer>
+  </div>
+</body>
+</html>

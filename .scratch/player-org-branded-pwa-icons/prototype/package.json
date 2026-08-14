@@ -1,0 +1,12 @@
+{
+  "name": "pwa-ambient-icon-prototype",
+  "private": true,
+  "type": "module",
+  "description": "PROTOTYPE / throwaway — JES-92. Not part of the pnpm workspace. Run `node generate.mjs` to regenerate icons.",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  }
+}

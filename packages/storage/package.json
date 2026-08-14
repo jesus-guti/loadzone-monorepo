@@ -7,14 +7,22 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "test": "NODE_ENV=test vitest run"
   },
+  "exports": {
+    ".": "./index.ts",
+    "./keys": "./keys.ts",
+    "./pwa-icon-paths": "./pwa-icon-paths.ts",
+    "./pwa-icon-publish": "./pwa-icon-publish.ts"
+  },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.8",
     "@vercel/blob": "^2.3.3",
     "server-only": "^0.0.1",
+    "sharp": "^0.34.5",
     "zod": "^4.1.13"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "24.10.1",
     "vitest": "^4.0.15"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "logo": "vimenor",
+  "palette": {
+    "primary": {
+      "hex": "#00ad3a",
+      "rgb": "rgb(0, 173, 58)"
+    },
+    "secondary": {
+      "hex": "#ff094c",
+      "rgb": "rgb(255, 9, 76)"
+    },
+    "highlight": {
+      "hex": "#1fb752",
+      "rgb": "rgb(31, 183, 82)"
+    },
+    "deep": {
+      "hex": "#004216",
+      "rgb": "rgb(0, 66, 22)"
+    }
+  }
+}
