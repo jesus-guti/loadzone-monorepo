@@ -61,7 +61,7 @@ export function ScaleSlider({
       <div
         aria-hidden
         className={cn(
-          "overflow-hidden rounded-full bg-bg-tertiary",
+          "overflow-hidden rounded-full bg-border-tertiary",
           sizeClass(size, "h-1.5 w-14", "h-2 w-20")
         )}
         role="presentation"

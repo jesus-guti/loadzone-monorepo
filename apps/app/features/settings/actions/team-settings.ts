@@ -2,13 +2,11 @@
 
 import { database, Prisma } from "@repo/database";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
+import { buildObjectKey, deleteObject, uploadImage } from "@repo/storage";
 import {
-  buildObjectKey,
-  deleteObject,
   tryDeleteOrgPwaIcons,
   tryPublishOrgPwaIcons,
-  uploadImage,
-} from "@repo/storage";
+} from "@repo/storage/pwa-icon-publish";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

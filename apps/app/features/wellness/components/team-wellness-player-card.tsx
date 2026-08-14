@@ -187,16 +187,16 @@ export function TeamWellnessPlayerCard({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
+                  <p className="text-xs text-text-tertiary">RPE</p>
+                  <RpeScale size="md" value={entry?.rpe ?? null} />
+                </div>
+                <div className="space-y-1">
                   <p className="text-xs text-text-tertiary">Riesgo</p>
                   <RiskScale
                     label={riskLevel ? getRiskLabel(riskLevel) : undefined}
                     riskLevel={riskLevel}
                     size="md"
                   />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-text-tertiary">RPE</p>
-                  <RpeScale size="md" value={entry?.rpe ?? null} />
                 </div>
               </div>
             </div>

@@ -137,13 +137,6 @@ export function getPrivateBlob(
 }
 
 export {
-  deleteOrgPwaIcons,
-  publishOrgPwaIcons,
-  tryDeleteOrgPwaIcons,
-  tryPublishOrgPwaIcons,
-} from "./pwa-icon-publish";
-export { deletePublicPwaIcon, uploadPublicPwaIcon } from "./pwa-public";
-export {
   brandedPwaIconUrls,
   LOADZONE_PWA_ICON_URLS,
   pwaIconOpaqueHash,

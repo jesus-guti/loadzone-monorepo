@@ -10,7 +10,8 @@
   "exports": {
     ".": "./index.ts",
     "./keys": "./keys.ts",
-    "./pwa-icon-paths": "./pwa-icon-paths.ts"
+    "./pwa-icon-paths": "./pwa-icon-paths.ts",
+    "./pwa-icon-publish": "./pwa-icon-publish.ts"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.8",
