@@ -50,7 +50,7 @@ describe("team wellness workspace utils", () => {
     const player = createPlayer({
       entries: [
         {
-          date: new Date("2026-05-03T00:00:00Z"),
+          date: "2026-05-03T00:00:00.000Z",
           recovery: 3,
           energy: 2,
           soreness: 4,
@@ -58,8 +58,8 @@ describe("team wellness workspace utils", () => {
           sleepQuality: 2,
           rpe: 7,
           duration: 90,
-          preFilledAt: new Date("2026-05-03T07:00:00Z"),
-          postFilledAt: new Date("2026-05-03T21:00:00Z"),
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
           physioAlert: false,
         },
       ],
@@ -79,7 +79,7 @@ describe("team wellness workspace utils", () => {
     const player = createPlayer({
       entries: [
         {
-          date: new Date("2026-05-03T00:00:00Z"),
+          date: "2026-05-03T00:00:00.000Z",
           recovery: 3,
           energy: 4,
           soreness: 5,
@@ -87,8 +87,8 @@ describe("team wellness workspace utils", () => {
           sleepQuality: 4,
           rpe: 5,
           duration: 80,
-          preFilledAt: new Date("2026-05-03T07:00:00Z"),
-          postFilledAt: new Date("2026-05-03T21:00:00Z"),
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
           physioAlert: false,
         },
       ],
@@ -109,7 +109,7 @@ describe("team wellness workspace utils", () => {
         id: "player_alert",
         entries: [
           {
-            date: new Date("2026-05-03T00:00:00Z"),
+            date: "2026-05-03T00:00:00.000Z",
             recovery: 3,
             energy: 3,
             soreness: 2,
@@ -117,8 +117,8 @@ describe("team wellness workspace utils", () => {
             sleepQuality: 4,
             rpe: 5,
             duration: 80,
-            preFilledAt: new Date("2026-05-03T07:00:00Z"),
-            postFilledAt: new Date("2026-05-03T21:00:00Z"),
+            preFilledAt: "2026-05-03T07:00:00.000Z",
+            postFilledAt: "2026-05-03T21:00:00.000Z",
             physioAlert: true,
           },
         ],
@@ -127,7 +127,7 @@ describe("team wellness workspace utils", () => {
         id: "player_pending",
         entries: [
           {
-            date: new Date("2026-05-03T00:00:00Z"),
+            date: "2026-05-03T00:00:00.000Z",
             recovery: 7,
             energy: 4,
             soreness: 2,
@@ -135,7 +135,7 @@ describe("team wellness workspace utils", () => {
             sleepQuality: 4,
             rpe: null,
             duration: null,
-            preFilledAt: new Date("2026-05-03T07:00:00Z"),
+            preFilledAt: "2026-05-03T07:00:00.000Z",
             postFilledAt: null,
             physioAlert: false,
           },
@@ -162,7 +162,7 @@ describe("team wellness workspace utils", () => {
       id: "missing_pre",
       entries: [
         {
-          date: new Date("2026-05-03T00:00:00Z"),
+          date: "2026-05-03T00:00:00.000Z",
           recovery: null,
           energy: null,
           soreness: null,
@@ -180,7 +180,7 @@ describe("team wellness workspace utils", () => {
       id: "complete",
       entries: [
         {
-          date: new Date("2026-05-03T00:00:00Z"),
+          date: "2026-05-03T00:00:00.000Z",
           recovery: 7,
           energy: 4,
           soreness: 2,
@@ -188,8 +188,8 @@ describe("team wellness workspace utils", () => {
           sleepQuality: 4,
           rpe: 5,
           duration: 80,
-          preFilledAt: new Date("2026-05-03T07:00:00Z"),
-          postFilledAt: new Date("2026-05-03T21:00:00Z"),
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
           physioAlert: false,
         },
       ],
@@ -226,15 +226,15 @@ describe("team wellness workspace utils", () => {
         injuryExemptOnEvaluatedDay: true,
         entries: [
           {
-            date: new Date("2026-05-03T00:00:00Z"),
+            date: "2026-05-03T00:00:00.000Z",
             ...emptyEntryFields,
             recovery: 7,
             energy: 4,
             soreness: 2,
             sleepHours: 8,
             sleepQuality: 4,
-            preFilledAt: new Date("2026-05-03T07:00:00Z"),
-            postFilledAt: new Date("2026-05-03T21:00:00Z"),
+            preFilledAt: "2026-05-03T07:00:00.000Z",
+            postFilledAt: "2026-05-03T21:00:00.000Z",
           },
         ],
       });
@@ -248,11 +248,11 @@ describe("team wellness workspace utils", () => {
         injuryExemptOnEvaluatedDay: true,
         entries: [
           {
-            date: new Date("2026-05-03T00:00:00Z"),
+            date: "2026-05-03T00:00:00.000Z",
             ...emptyEntryFields,
             recovery: 7,
             energy: 4,
-            preFilledAt: new Date("2026-05-03T07:00:00Z"),
+            preFilledAt: "2026-05-03T07:00:00.000Z",
             postFilledAt: null,
           },
         ],
@@ -267,7 +267,7 @@ describe("team wellness workspace utils", () => {
         injuryExemptOnEvaluatedDay: true,
         entries: [
           {
-            date: new Date("2026-05-03T00:00:00Z"),
+            date: "2026-05-03T00:00:00.000Z",
             recovery: 3,
             energy: 4,
             soreness: 2,
@@ -275,8 +275,8 @@ describe("team wellness workspace utils", () => {
             sleepQuality: 4,
             rpe: 5,
             duration: 80,
-            preFilledAt: new Date("2026-05-03T07:00:00Z"),
-            postFilledAt: new Date("2026-05-03T21:00:00Z"),
+            preFilledAt: "2026-05-03T07:00:00.000Z",
+            postFilledAt: "2026-05-03T21:00:00.000Z",
             physioAlert: false,
           },
         ],
@@ -314,15 +314,15 @@ describe("team wellness workspace utils", () => {
           injuryExemptOnEvaluatedDay: false,
           entries: [
             {
-              date: new Date("2026-05-03T00:00:00Z"),
+              date: "2026-05-03T00:00:00.000Z",
               ...emptyEntryFields,
               recovery: 7,
               energy: 4,
               soreness: 1,
               sleepHours: 8,
               sleepQuality: 4,
-              preFilledAt: new Date("2026-05-03T07:00:00Z"),
-              postFilledAt: new Date("2026-05-03T21:00:00Z"),
+              preFilledAt: "2026-05-03T07:00:00.000Z",
+              postFilledAt: "2026-05-03T21:00:00.000Z",
             },
           ],
         }),

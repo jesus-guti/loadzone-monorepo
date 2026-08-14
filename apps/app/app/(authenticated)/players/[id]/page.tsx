@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Header } from "@/components/layouts/header";
+import { toCivilYmd, toIsoTimestamp } from "@/features/injuries/lib/team-injuries-list";
 import type { InjuryListItem } from "@/features/injuries/types";
 import { CopyTokenButton } from "@/features/players/components/copy-token-button";
 import { PlayerDetailShell } from "@/features/players/components/player-detail-shell";
@@ -52,8 +53,8 @@ function mapInjuryToListItem(injury: {
 
   return {
     id: injury.id,
-    startDate: injury.startDate.toISOString().slice(0, 10),
-    endDate: injury.endDate ? injury.endDate.toISOString().slice(0, 10) : null,
+    startDate: toCivilYmd(injury.startDate),
+    endDate: injury.endDate ? toCivilYmd(injury.endDate) : null,
     cause: injury.cause,
     regionDetail: injury.regionDetail,
     regionIds,
@@ -192,8 +193,10 @@ const PlayerDetailPage = async ({
 
     return {
       date: dateKey,
-      preFilledAt: entry.preFilledAt,
-      postFilledAt: entry.postFilledAt,
+      preFilledAt: entry.preFilledAt ? toIsoTimestamp(entry.preFilledAt) : null,
+      postFilledAt: entry.postFilledAt
+        ? toIsoTimestamp(entry.postFilledAt)
+        : null,
       recovery: entry.recovery,
       energy: entry.energy,
       soreness: entry.soreness,

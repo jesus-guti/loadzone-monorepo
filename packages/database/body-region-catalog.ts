@@ -3,7 +3,7 @@
  * Ids must match artifacts/body-region-catalog.json and Prisma BodyRegionId.
  */
 
-import catalogJson from "./body-region-catalog.json" with { type: "json" };
+import catalogJson from "./body-region-catalog.json";
 
 export const BODY_REGION_IDS = [
   "HEAD",

@@ -17,7 +17,8 @@ export type TeamWellnessPlayer = {
   /** Official Injury active on evaluated civil day D (Team.timezone). */
   injuryExemptOnEvaluatedDay: boolean;
   entries: Array<{
-    date: Date;
+    /** Civil UTC ISO date (`YYYY-MM-DDTHH:mm:ss.sssZ`). Plain string for RSC client props. */
+    date: string;
     recovery: number | null;
     energy: number | null;
     soreness: number | null;
@@ -25,8 +26,8 @@ export type TeamWellnessPlayer = {
     sleepQuality: number | null;
     rpe: number | null;
     duration: number | null;
-    preFilledAt: Date | null;
-    postFilledAt: Date | null;
+    preFilledAt: string | null;
+    postFilledAt: string | null;
     physioAlert: boolean;
   }>;
   stats: Array<{
@@ -68,6 +69,25 @@ function average(values: number[]): number | null {
 
   const total = values.reduce((sum: number, value: number) => sum + value, 0);
   return total / values.length;
+}
+
+function toIsoOrNull(value: Date | string | null | undefined): string | null {
+  if (value == null || value === "") {
+    return null;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
+function toIsoRequired(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return new Date(0).toISOString();
+  }
+  return date.toISOString();
 }
 
 function civilYmdFromLocalDate(date: Date): string {
@@ -236,7 +256,7 @@ export async function getTeamWellnessWorkspaceData(
         evaluatedCivil
       ),
       entries: player.entries.map((entry) => ({
-        date: entry.date,
+        date: toIsoRequired(entry.date),
         recovery: entry.recovery,
         energy: entry.energy,
         soreness: entry.soreness,
@@ -247,8 +267,8 @@ export async function getTeamWellnessWorkspaceData(
         sleepQuality: entry.sleepQuality,
         rpe: entry.rpe,
         duration: entry.duration,
-        preFilledAt: entry.preFilledAt,
-        postFilledAt: entry.postFilledAt,
+        preFilledAt: toIsoOrNull(entry.preFilledAt),
+        postFilledAt: toIsoOrNull(entry.postFilledAt),
         physioAlert: entry.physioAlert,
       })),
       stats: player.stats.map((stat) => ({

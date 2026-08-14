@@ -136,5 +136,12 @@ export function getPrivateBlob(
   });
 }
 
+export {
+  brandedPwaIconUrls,
+  LOADZONE_PWA_ICON_URLS,
+  pwaIconOpaqueHash,
+  resolvePwaIconUrls,
+} from "./pwa-icon-paths";
+
 // biome-ignore lint/performance/noBarrelFile: re-exporting
 export { isPrivateImagePathname, resolveStorageUrl, toBlobDeleteTarget } from "./shared";

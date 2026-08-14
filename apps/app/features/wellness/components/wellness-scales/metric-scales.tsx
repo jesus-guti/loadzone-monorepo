@@ -235,7 +235,7 @@ export function RpeScale({
   value,
   size = "md",
   className,
-  showLabel = true,
+  showLabel = false,
 }: MetricScaleProps & {
   readonly value: number | null | undefined;
   readonly showLabel?: boolean;

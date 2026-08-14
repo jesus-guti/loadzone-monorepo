@@ -8,6 +8,8 @@ import {
   sortClosedInjuriesNewestFirst,
   sortOpenInjuriesNewestFirst,
   takeSectionCap,
+  toCivilYmd,
+  toIsoTimestamp,
 } from "@/features/injuries/lib/team-injuries-list";
 import type { TeamInjuryListItem } from "@/features/injuries/types";
 
@@ -120,5 +122,19 @@ describe("takeSectionCap", () => {
     const ids = Array.from({ length: 60 }, (_, index) => `id-${index}`);
     expect(takeSectionCap(ids, 50)).toHaveLength(50);
     expect(takeSectionCap(ids, 50)[0]).toBe("id-0");
+  });
+});
+
+describe("toCivilYmd / toIsoTimestamp", () => {
+  it("accepts Date and ISO/civil strings without calling missing toISOString", () => {
+    expect(toCivilYmd("2026-08-10")).toBe("2026-08-10");
+    expect(toCivilYmd("2026-08-10T00:00:00.000Z")).toBe("2026-08-10");
+    expect(toCivilYmd(new Date("2026-08-10T00:00:00.000Z"))).toBe("2026-08-10");
+    expect(toIsoTimestamp("2026-08-14T10:00:00.000Z")).toBe(
+      "2026-08-14T10:00:00.000Z"
+    );
+    expect(toIsoTimestamp(new Date("2026-08-14T10:00:00.000Z"))).toBe(
+      "2026-08-14T10:00:00.000Z"
+    );
   });
 });
