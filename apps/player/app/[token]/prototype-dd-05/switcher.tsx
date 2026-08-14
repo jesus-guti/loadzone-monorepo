@@ -8,6 +8,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import {
   BAND_KEYS,
   BAND_META,
+  LAB_CROMO_STREAKS,
   VARIANT_KEYS,
   VARIANT_META,
   type AgeBand,
@@ -17,6 +18,7 @@ import {
 type PrototypeSwitcherProperties = {
   readonly variant: PrototypeVariant;
   readonly band: AgeBand;
+  readonly streakCount: number;
   readonly simulateMiss: boolean;
   readonly onToggleMiss: () => void;
 };
@@ -24,6 +26,7 @@ type PrototypeSwitcherProperties = {
 export function PrototypeSwitcher({
   variant,
   band,
+  streakCount,
   simulateMiss,
   onToggleMiss,
 }: PrototypeSwitcherProperties) {
@@ -32,10 +35,15 @@ export function PrototypeSwitcher({
   const searchParams = useSearchParams();
 
   const replaceParams = useCallback(
-    (next: { variant?: PrototypeVariant; band?: AgeBand }) => {
+    (next: {
+      variant?: PrototypeVariant;
+      band?: AgeBand;
+      streak?: number;
+    }) => {
       const params = new URLSearchParams(searchParams.toString());
       if (next.variant) params.set("variant", next.variant);
       if (next.band) params.set("band", next.band);
+      if (next.streak !== undefined) params.set("streak", String(next.streak));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams]
@@ -109,6 +117,23 @@ export function PrototypeSwitcher({
         >
           {simulateMiss ? "Día perdido ON" : "Simular día perdido"}
         </button>
+        {variant === "C"
+          ? LAB_CROMO_STREAKS.map((days) => (
+              <button
+                key={days}
+                type="button"
+                onClick={() => replaceParams({ streak: days })}
+                className={cn(
+                  "min-h-10 rounded-full px-3 text-xs font-semibold transition",
+                  streakCount === days && !simulateMiss
+                    ? "bg-brand text-brand-foreground"
+                    : "bg-bg-tertiary/95 text-text-secondary backdrop-blur"
+                )}
+              >
+                {days}d
+              </button>
+            ))
+          : null}
       </div>
 
       <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-text-primary px-2 py-1.5 text-bg-primary shadow-floating">

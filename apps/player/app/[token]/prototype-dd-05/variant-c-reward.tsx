@@ -4,13 +4,12 @@ import type { JSX } from "react";
 
 import { Button } from "@repo/design-system/components/button";
 import type { AgeBand } from "./constants";
-import { DEMO_STREAK, STUB_QUESTIONS } from "./constants";
+import { STUB_QUESTIONS } from "./constants";
 import { COPY, optionLabel, questionPrompt } from "./copy";
+import { StreakCromo } from "../components/streak-cromo";
 import {
   AnswerGrid,
   BandCaption,
-  CalmStreakChip,
-  FootballTeaser,
   ProgressDots,
   PrototypeMark,
 } from "./shared";
@@ -21,6 +20,7 @@ type VariantCProperties = {
   readonly answers: Record<string, number>;
   readonly completed: boolean;
   readonly simulateMiss: boolean;
+  readonly streakCount: number;
   readonly careTriggered: boolean;
   readonly onAnswer: (questionId: string, value: number) => void;
   readonly onRestart: () => void;
@@ -32,10 +32,12 @@ export function VariantCReward({
   answers: _answers,
   completed,
   simulateMiss,
+  streakCount,
   careTriggered,
   onAnswer,
   onRestart,
 }: VariantCProperties): JSX.Element {
+  const cromoCount = simulateMiss ? 0 : streakCount;
   const question = STUB_QUESTIONS[step];
   const total = STUB_QUESTIONS.length;
   const showDeferred =
@@ -46,14 +48,16 @@ export function VariantCReward({
       <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col gap-5 px-5 pb-36 pt-6">
         <PrototypeMark />
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
-          <FootballTeaser prominent />
+          <StreakCromo
+            streakCount={cromoCount}
+            restarted={simulateMiss}
+          />
           <p className="text-center text-xl font-semibold text-text-primary">
             {COPY.completionTitle[band]}
           </p>
           <p className="max-w-xs text-center text-sm text-text-secondary">
             {COPY.completionBody[band]}
           </p>
-          <CalmStreakChip days={DEMO_STREAK} simulateMiss={simulateMiss} />
           {careTriggered && band !== "independent" && COPY.careSilentNote ? (
             <p className="text-center text-xs text-text-tertiary">
               {COPY.careSilentNote}
@@ -77,7 +81,9 @@ export function VariantCReward({
     );
   }
 
-  if (!question) return <div />;
+  if (!question) {
+    return <div />;
+  }
 
   const options = question.options.map((option) => ({
     value: option.value,
@@ -88,6 +94,12 @@ export function VariantCReward({
   return (
     <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-36 pt-6">
       <PrototypeMark />
+      <div className="mt-4">
+        <StreakCromo
+          streakCount={cromoCount}
+          restarted={simulateMiss}
+        />
+      </div>
 
       {showDeferred && COPY.deferredBanner ? (
         <p className="mt-4 rounded-2xl border border-dashed border-border-secondary bg-bg-secondary px-4 py-3 text-sm text-text-secondary">

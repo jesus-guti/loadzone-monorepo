@@ -2,8 +2,9 @@
 
 /**
  * PROTOTYPE (DD-05): three variants of player check-in + calm reward loop,
- * switchable via ?variant=A|B|C and ?band=assisted|guided|independent
- * on the existing /[token] route. In-memory stubs only — no save-entry.
+ * switchable via ?variant=A|B|C, ?band=assisted|guided|independent,
+ * and ?streak= (lab cromo days) on the existing /[token] route.
+ * In-memory stubs only — no save-entry.
  */
 
 import { useCallback, useEffect, useMemo, useState, type JSX } from "react";
@@ -13,6 +14,7 @@ import {
   DEMO_TEAM_NAME,
   STUB_QUESTIONS,
   parseBand,
+  parseLabStreak,
   parseVariant,
   type AgeBand,
   type PrototypeVariant,
@@ -37,6 +39,7 @@ export function PrototypeCheckinLab({
   const variant =
     parseVariant(searchParams.get("variant") ?? undefined) ?? initialVariant;
   const band = parseBand(searchParams.get("band") ?? initialBand);
+  const streakCount = parseLabStreak(searchParams.get("streak") ?? undefined);
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -99,11 +102,14 @@ export function PrototypeCheckinLab({
 
       {variant === "A" ? <VariantAFocus {...shared} /> : null}
       {variant === "B" ? <VariantBTimeline {...shared} /> : null}
-      {variant === "C" ? <VariantCReward {...shared} /> : null}
+      {variant === "C" ? (
+        <VariantCReward {...shared} streakCount={streakCount} />
+      ) : null}
 
       <PrototypeSwitcher
         variant={variant}
         band={band}
+        streakCount={streakCount}
         simulateMiss={simulateMiss}
         onToggleMiss={() => setSimulateMiss((value) => !value)}
       />
