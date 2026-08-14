@@ -19,6 +19,7 @@
     "@repo/database": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",
+    "@repo/storage": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.8",
     "framer-motion": "^12.38.0",
     "next": "16.0.10",

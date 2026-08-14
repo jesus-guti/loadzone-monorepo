@@ -2,7 +2,13 @@
 
 import { database, Prisma } from "@repo/database";
 import { ensureBaseFormTemplates } from "@repo/database/bootstrap";
-import { buildObjectKey, deleteObject, uploadImage } from "@repo/storage";
+import {
+  buildObjectKey,
+  deleteObject,
+  tryDeleteOrgPwaIcons,
+  tryPublishOrgPwaIcons,
+  uploadImage,
+} from "@repo/storage";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -286,6 +292,8 @@ export async function updateClubBranding(
       return { success: false, error: "Selecciona una imagen válida." };
     }
 
+    const logoBytes = Buffer.from(await file.arrayBuffer());
+
     const currentClub = await database.club.findUnique({
       where: { id: staffContext.club.id },
       select: {
@@ -313,6 +321,12 @@ export async function updateClubBranding(
       data: {
         logoUrl: imageUpload.url,
       },
+    });
+
+    await tryPublishOrgPwaIcons({
+      kind: "club",
+      entityId: currentClub.id,
+      logoBytes,
     });
 
     revalidatePath("/settings/club");
@@ -369,6 +383,8 @@ export async function clearClubBrandingLogo(): Promise<ClubBrandingResult> {
         logoUrl: null,
       },
     });
+
+    await tryDeleteOrgPwaIcons("club", currentClub.id);
 
     revalidatePath("/settings/club");
     revalidatePath("/settings");
