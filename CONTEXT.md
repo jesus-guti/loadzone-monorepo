@@ -61,8 +61,8 @@ Season-scoped expected-day habit: increments on completing expected **DailyEntry
 _Avoid_: “Streak punishment,” competitive adherence boards, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:
-Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos.
-_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards.
+Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo (calm silhouette when missing) and **Club** crest from `Club.logoUrl` only (omit when null; never **Team** logo). Vivid per-tier chrome is player-local CSS — not a second staff / design-system brand hue. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos.
+_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; using Team logo as the crest source.
 
 **Excused Absence**:
 A day that freezes the **Recoverable Streak** (neither increments nor breaks). Exact staff vs Assisted Guardian-request workflow is deferred.

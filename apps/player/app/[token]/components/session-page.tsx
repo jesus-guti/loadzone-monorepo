@@ -88,6 +88,12 @@ type SessionPageProperties = {
     canSubscribe: boolean;
     canOptOut: boolean;
   };
+  /** Token-scoped display URL when Player.imageUrl is set. */
+  readonly imageUrl?: string | null;
+  /** Club.logoUrl crest only — null omits crest (never Team logo). */
+  readonly clubCrestUrl?: string | null;
+  /** JES-110 Playing Position when present on this branch. */
+  readonly playingPosition?: string | null;
 };
 
 function formatShortDate(value: Date): string {
@@ -116,6 +122,9 @@ export function SessionPage({
   ageBand,
   parentalSupervisionActive,
   pushConsent,
+  imageUrl = null,
+  clubCrestUrl = null,
+  playingPosition = null,
 }: SessionPageProperties) {
   const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
@@ -274,7 +283,13 @@ export function SessionPage({
             ) : null}
           </div>
 
-          <RachaSheet streakCount={streakCount} restarted={streakRestarted} />
+          <RachaSheet
+            streakCount={streakCount}
+            restarted={streakRestarted}
+            imageUrl={imageUrl}
+            clubCrestUrl={clubCrestUrl}
+            playingPosition={playingPosition}
+          />
         </div>
 
         {shouldShowAssistedPresence(focusAgeBand) ? (
@@ -321,6 +336,9 @@ export function SessionPage({
               <StreakCromo
                 streakCount={streakCount}
                 restarted={streakRestarted}
+                imageUrl={imageUrl}
+                clubCrestUrl={clubCrestUrl}
+                playingPosition={playingPosition}
               />
             ) : (
               <p className="text-sm text-text-tertiary">

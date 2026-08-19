@@ -4,6 +4,7 @@ import {
   CROMO_CLAIM,
   CROMO_TIER_LABEL,
   CROMO_TIER_SHELL,
+  cromoMediaUrl,
   streakCountToCromoTier,
 } from "../app/[token]/lib/streak-cromo";
 import {
@@ -35,21 +36,40 @@ describe("Streak Cromo Spanish copy", () => {
     expect(CROMO_CLAIM).toBe("Tu constancia fuera del campo");
   });
 
-  it("gives each tier a distinct sage mix so 0d and 14d cannot share a shell", () => {
+  it("wires each tier to distinct player-local vivid CSS tokens (not sage brand mix)", () => {
     const tops = ([1, 2, 3, 4] as const).map(
       (tier) => CROMO_TIER_SHELL[tier]["--cromo-top"]
     );
     expect(new Set(tops).size).toBe(4);
-    expect(CROMO_TIER_SHELL[1]["--cromo-top"]).toContain("22%");
-    expect(CROMO_TIER_SHELL[4]["--cromo-top"]).toContain("88%");
-  });
-
-  it("keeps the radial highlight a whisper so it does not read as a spotlight on dark shells", () => {
+    expect(CROMO_TIER_SHELL[1]["--cromo-top"]).toBe("var(--cromo-1-top)");
+    expect(CROMO_TIER_SHELL[2]["--cromo-top"]).toBe("var(--cromo-2-top)");
+    expect(CROMO_TIER_SHELL[3]["--cromo-top"]).toBe("var(--cromo-3-top)");
+    expect(CROMO_TIER_SHELL[4]["--cromo-top"]).toBe("var(--cromo-4-top)");
     for (const tier of [1, 2, 3, 4] as const) {
-      expect(Number.parseFloat(CROMO_TIER_SHELL[tier]["--cromo-glow"])).toBeLessThan(
-        0.1
+      expect(CROMO_TIER_SHELL[tier]["--cromo-top"]).not.toContain("var(--brand)");
+      expect(CROMO_TIER_SHELL[tier]["--cromo-bottom"]).not.toContain(
+        "var(--brand)"
       );
     }
+  });
+
+  it("keeps glow tokens as CSS vars so shells stay whisper-highlight", () => {
+    for (const tier of [1, 2, 3, 4] as const) {
+      expect(CROMO_TIER_SHELL[tier]["--cromo-glow"]).toBe(
+        `var(--cromo-${tier}-glow)`
+      );
+    }
+  });
+});
+
+describe("cromoMediaUrl", () => {
+  it("builds token-scoped photo and crest proxy URLs", () => {
+    expect(cromoMediaUrl("tok_abc", "photo")).toBe(
+      "/api/cromo-media?token=tok_abc&kind=photo"
+    );
+    expect(cromoMediaUrl("tok_abc", "crest")).toBe(
+      "/api/cromo-media?token=tok_abc&kind=crest"
+    );
   });
 });
 

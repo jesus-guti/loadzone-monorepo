@@ -48,6 +48,39 @@
   --chart-3: oklch(0.7 0.08 220);
   --chart-4: oklch(0.72 0.1 145);
   --chart-5: oklch(0.65 0.12 32);
+
+  /*
+   * Streak Cromo vivid tiers (player-local only).
+   * Progression: cool/neutral → amber → saturated warm → high.
+   * Do not fork @repo/design-system brand sage for staff.
+   */
+  --cromo-1-top: oklch(0.94 0.025 230);
+  --cromo-1-bottom: oklch(0.86 0.04 220);
+  --cromo-1-glow: 0.05;
+  --cromo-1-edge: 0.24;
+  --cromo-1-inset: 0.08;
+  --cromo-1-fg: oklch(0.28 0.03 230);
+
+  --cromo-2-top: oklch(0.93 0.09 88);
+  --cromo-2-bottom: oklch(0.8 0.13 78);
+  --cromo-2-glow: 0.06;
+  --cromo-2-edge: 0.32;
+  --cromo-2-inset: 0.1;
+  --cromo-2-fg: oklch(0.3 0.05 70);
+
+  --cromo-3-top: oklch(0.74 0.17 48);
+  --cromo-3-bottom: oklch(0.56 0.19 36);
+  --cromo-3-glow: 0.07;
+  --cromo-3-edge: 0.42;
+  --cromo-3-inset: 0.16;
+  --cromo-3-fg: oklch(0.985 0.01 85);
+
+  --cromo-4-top: oklch(0.58 0.21 28);
+  --cromo-4-bottom: oklch(0.4 0.18 18);
+  --cromo-4-glow: 0.09;
+  --cromo-4-edge: 0.55;
+  --cromo-4-inset: 0.22;
+  --cromo-4-fg: oklch(0.99 0.01 80);
 }
 
 .dark {
@@ -97,5 +130,33 @@
   --chart-3: oklch(0.76 0.08 220);
   --chart-4: oklch(0.79 0.1 145);
   --chart-5: oklch(0.73 0.12 32);
+
+  --cromo-1-top: oklch(0.32 0.04 230);
+  --cromo-1-bottom: oklch(0.24 0.035 220);
+  --cromo-1-glow: 0.06;
+  --cromo-1-edge: 0.35;
+  --cromo-1-inset: 0.12;
+  --cromo-1-fg: oklch(0.94 0.02 230);
+
+  --cromo-2-top: oklch(0.42 0.1 88);
+  --cromo-2-bottom: oklch(0.32 0.11 78);
+  --cromo-2-glow: 0.07;
+  --cromo-2-edge: 0.4;
+  --cromo-2-inset: 0.14;
+  --cromo-2-fg: oklch(0.95 0.03 90);
+
+  --cromo-3-top: oklch(0.58 0.16 48);
+  --cromo-3-bottom: oklch(0.42 0.17 36);
+  --cromo-3-glow: 0.08;
+  --cromo-3-edge: 0.48;
+  --cromo-3-inset: 0.18;
+  --cromo-3-fg: oklch(0.98 0.01 85);
+
+  --cromo-4-top: oklch(0.5 0.19 28);
+  --cromo-4-bottom: oklch(0.34 0.16 18);
+  --cromo-4-glow: 0.1;
+  --cromo-4-edge: 0.58;
+  --cromo-4-inset: 0.24;
+  --cromo-4-fg: oklch(0.99 0.01 80);
 }
 

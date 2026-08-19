@@ -17,6 +17,9 @@ import { StreakCromo } from "./streak-cromo";
 type RachaSheetProperties = {
   readonly streakCount: number;
   readonly restarted: boolean;
+  readonly imageUrl?: string | null;
+  readonly clubCrestUrl?: string | null;
+  readonly playingPosition?: string | null;
 };
 
 /**
@@ -26,6 +29,9 @@ type RachaSheetProperties = {
 export function RachaSheet({
   streakCount,
   restarted,
+  imageUrl = null,
+  clubCrestUrl = null,
+  playingPosition = null,
 }: RachaSheetProperties): JSX.Element {
   return (
     <Sheet>
@@ -66,7 +72,13 @@ export function RachaSheet({
             </p>
           </div>
 
-          <StreakCromo streakCount={streakCount} restarted={restarted} />
+          <StreakCromo
+            streakCount={streakCount}
+            restarted={restarted}
+            imageUrl={imageUrl}
+            clubCrestUrl={clubCrestUrl}
+            playingPosition={playingPosition}
+          />
 
           {/* JES-112: insert week row (L–D) + Team Session banner here */}
           <div
