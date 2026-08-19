@@ -79,13 +79,6 @@ export function RachaSheet({
             clubCrestUrl={clubCrestUrl}
             playingPosition={playingPosition}
           />
-
-          {/* JES-112: insert week row (L–D) + Team Session banner here */}
-          <div
-            data-slot="jes-112-week-and-banner"
-            className="w-full min-h-0"
-            aria-hidden
-          />
         </div>
       </SheetContent>
     </Sheet>
