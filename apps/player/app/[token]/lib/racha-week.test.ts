@@ -7,27 +7,9 @@ import {
   projectRachaWeek,
   rachaWeekQueryWindow,
   RACHA_WEEKDAY_LETTERS,
-  toRachaCivilDateString,
 } from "./racha-week";
 
 const MADRID = "Europe/Madrid";
-
-describe("toRachaCivilDateString", () => {
-  it("projects Instants into Team timezone civil days", () => {
-    // 2026-01-15 00:30 UTC → still 15th in Madrid (UTC+1 winter)
-    expect(
-      toRachaCivilDateString(new Date("2026-01-15T00:30:00.000Z"), MADRID)
-    ).toBe("2026-01-15");
-    // Late evening Madrid → next UTC day still same Madrid civil day
-    expect(
-      toRachaCivilDateString(new Date("2026-01-15T22:30:00.000Z"), MADRID)
-    ).toBe("2026-01-15");
-    // Just after midnight Madrid (23:30 UTC previous) → 16th Madrid
-    expect(
-      toRachaCivilDateString(new Date("2026-01-15T23:30:00.000Z"), MADRID)
-    ).toBe("2026-01-16");
-  });
-});
 
 describe("civil week helpers", () => {
   it("maps civil ISO dates onto Monday-based indices L–D", () => {

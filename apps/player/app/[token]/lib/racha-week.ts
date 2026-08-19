@@ -3,6 +3,9 @@
  * Marks = all Team Sessions that civil week — not Recoverable Streak expected days.
  */
 
+import type { TeamSessionStatus } from "@repo/database";
+import { toCivilDateString } from "@repo/database/recoverable-streak";
+
 export const RACHA_WEEKDAY_LETTERS = [
   "L",
   "M",
@@ -17,8 +20,8 @@ export type RachaWeekdayLetter = (typeof RACHA_WEEKDAY_LETTERS)[number];
 
 export type RachaWeekSessionInput = {
   readonly startsAt: Date;
-  /** TeamSessionStatus; CANCELLED is omitted from marks and count. */
-  readonly status: string;
+  /** CANCELLED is omitted from marks and count. */
+  readonly status: TeamSessionStatus;
 };
 
 export type RachaWeekDay = {
@@ -41,16 +44,6 @@ export type ProjectRachaWeekResult = {
   readonly mondayIso: string;
   readonly sundayIso: string;
 };
-
-/** YYYY-MM-DD in the given IANA timezone. */
-export function toRachaCivilDateString(date: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
 
 /** 0 = Monday … 6 = Sunday for a Gregorian civil ISO date. */
 export function mondayBasedIndexFromCivilIso(civilIso: string): number {
@@ -76,7 +69,7 @@ export function rachaWeekQueryWindow(
   asOf: Date,
   timeZone: string
 ): { readonly gte: Date; readonly lt: Date } {
-  const asOfCivil = toRachaCivilDateString(asOf, timeZone);
+  const asOfCivil = toCivilDateString(asOf, timeZone);
   const monday = mondayOfCivilWeek(asOfCivil);
   const nextMonday = addCivilDays(monday, 7);
   const rangeStart = new Date(`${monday}T00:00:00.000Z`);
@@ -87,14 +80,14 @@ export function rachaWeekQueryWindow(
   };
 }
 
-function isCancelledStatus(status: string): boolean {
+function isCancelledStatus(status: TeamSessionStatus): boolean {
   return status === "CANCELLED";
 }
 
 export function projectRachaWeek(
   input: ProjectRachaWeekInput
 ): ProjectRachaWeekResult {
-  const asOfCivil = toRachaCivilDateString(input.asOf, input.timeZone);
+  const asOfCivil = toCivilDateString(input.asOf, input.timeZone);
   const mondayIso = mondayOfCivilWeek(asOfCivil);
   const sundayIso = addCivilDays(mondayIso, 6);
 
@@ -103,7 +96,7 @@ export function projectRachaWeek(
     if (isCancelledStatus(session.status)) {
       continue;
     }
-    const civil = toRachaCivilDateString(session.startsAt, input.timeZone);
+    const civil = toCivilDateString(session.startsAt, input.timeZone);
     if (civil < mondayIso || civil > sundayIso) {
       continue;
     }
