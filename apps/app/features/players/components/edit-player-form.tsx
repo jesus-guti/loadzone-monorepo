@@ -12,6 +12,8 @@ import {
 } from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
 import type { AgeBand, PlayerStatus } from "@repo/database";
+import type { PlayingPosition } from "@repo/database/playing-position";
+import { PLAYING_POSITION_STAFF_LABEL } from "@repo/database/playing-position";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { useActionState, useEffect } from "react";
 import { DatePicker } from "@/components/date-picker";
@@ -24,6 +26,7 @@ type EditPlayerFormProperties = {
     status: PlayerStatus;
     dateOfBirth: string | null;
     ageBandOverride: AgeBand | null;
+    playingPosition: PlayingPosition | null;
     reminderConsentState: PlayerReminderConsentState;
     resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
@@ -55,6 +58,14 @@ const AGE_BAND_OPTIONS = [
   { value: "ASSISTED", label: "Asistida" },
   { value: "GUIDED", label: "Guiada" },
   { value: "INDEPENDENT", label: "Independiente" },
+] as const;
+
+const PLAYING_POSITION_OPTIONS = [
+  { value: "NONE", label: "Sin posición" },
+  { value: "POR", label: PLAYING_POSITION_STAFF_LABEL.POR },
+  { value: "DEF", label: PLAYING_POSITION_STAFF_LABEL.DEF },
+  { value: "MED", label: PLAYING_POSITION_STAFF_LABEL.MED },
+  { value: "DEL", label: PLAYING_POSITION_STAFF_LABEL.DEL },
 ] as const;
 
 const REMINDER_CONSENT_ACTION_OPTIONS = [
@@ -172,6 +183,29 @@ export function EditPlayerForm({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="playingPosition">Posición de juego</Label>
+        <Select
+          defaultValue={player.playingPosition ?? "NONE"}
+          items={PLAYING_POSITION_OPTIONS}
+          name="playingPosition"
+        >
+          <SelectTrigger className="w-full" id="playingPosition">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PLAYING_POSITION_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-text-secondary">
+          Opcional. Vacío no muestra línea en el cromo de racha.
+        </p>
       </div>
 
       <div className="space-y-2 border-t border-border-secondary pt-4">

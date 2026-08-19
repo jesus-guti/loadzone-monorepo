@@ -69,8 +69,12 @@ Season-scoped expected-day habit. An expected day is a civil day with a non-canc
 _Avoid_: “Streak punishment,” competitive adherence boards, calendar-consecutive days, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:
-Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo when present, **Club** crest, and optional **Playing Position**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos.
+Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo when present, **Club** crest, and optional **Playing Position**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos. Empty **Playing Position** omits the line (no «Sin posición» placeholder).
 _Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; Team logo as the cromo crest.
+
+**Playing Position**:
+Optional coarse football line on a **Player**: **POR**, **DEF**, **MED**, or **DEL**. Staff set or clear it on create/edit; **Streak Cromo** shows that Spanish abbreviation only when set. Not fine pitch slots (LB, CM, ST, …).
+_Avoid_: Treating empty as a displayed «Sin posición» on the cromo; inventing per-slot pitch coordinates.
 
 **Excused Absence**:
 A day that freezes the **Recoverable Streak** (neither increments nor breaks). Exact staff vs Assisted Guardian-request workflow is deferred.
@@ -125,7 +129,7 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**; expected days come from **Sessions** that player is on, not from every **Session** on the Team.
-- A **Streak Cromo** reflects that **Player**’s **Recoverable Streak** on the player check-in surface (photo, **Club** crest, optional **Playing Position**); it is not a staff Wellness Tarjeta. The DD-05 lab (`prototype-dd-05`, variant C) reuses the same app-local component.
+- A **Streak Cromo** reflects that **Player**’s **Recoverable Streak** on the player check-in surface (photo, **Club** crest, optional **Playing Position**); it is not a staff Wellness Tarjeta. The DD-05 lab (`prototype-dd-05`, variant C) reuses the same app-local component. Optional **Playing Position** (`Player.playingPosition`) feeds the cromo identity line only when set (see `@repo/database/playing-position`).
 - An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
 - A **Pain Alert** belongs to a **Player** and is triage input for staff; it is not an **Injury** until staff promotes it.
 - A **Team** reaches **Operational Baseline** when it has an active **Season** and at least one **Player**; Club + Team creation precedes that via hard onboarding.

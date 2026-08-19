@@ -3,6 +3,8 @@
 import type { JSX } from "react";
 
 import { cn } from "@repo/design-system/lib/utils";
+import { formatPlayingPositionCromoLine } from "@repo/database/playing-position";
+import type { PlayingPosition } from "@repo/database/playing-position";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
 import {
@@ -16,14 +18,18 @@ import {
 type StreakCromoProperties = {
   readonly streakCount: number;
   readonly restarted: boolean;
+  /** Optional Player Playing Position; omitted line when null/undefined. */
+  readonly playingPosition?: PlayingPosition | null;
 };
 
 export function StreakCromo({
   streakCount,
   restarted,
+  playingPosition = null,
 }: StreakCromoProperties): JSX.Element {
   const tier = streakCountToCromoTier(streakCount);
   const showRestart = restarted || streakCount === 0;
+  const positionLine = formatPlayingPositionCromoLine(playingPosition);
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
@@ -63,9 +69,16 @@ export function StreakCromo({
         >
           <div className="mb-3 h-14 w-14 rounded-full bg-bg-primary/45" />
         </div>
-        <p className="relative z-10 text-center text-xs font-medium leading-snug opacity-90">
-          {CROMO_CLAIM}
-        </p>
+        <div className="relative z-10 space-y-1 text-center">
+          {positionLine ? (
+            <p className="text-sm font-semibold uppercase tracking-[0.12em]">
+              {positionLine}
+            </p>
+          ) : null}
+          <p className="text-xs font-medium leading-snug opacity-90">
+            {CROMO_CLAIM}
+          </p>
+        </div>
       </article>
       {showRestart ? (
         <p className="text-sm text-text-secondary">{FOCUS_COPY.streakRestart}</p>
