@@ -255,6 +255,14 @@ enum AgeBand {
   INDEPENDENT
 }
 
+/// Coarse football line for Player identity (Streak Cromo). Not fine pitch slots.
+enum PlayingPosition {
+  POR
+  DEF
+  MED
+  DEL
+}
+
 /// Per-Player Reminder Consent ledger (PushSubscription is transport only — JES-45).
 enum PlayerReminderConsentState {
   ELIGIBLE
@@ -446,6 +454,8 @@ model Player {
   dateOfBirth      DateTime?           @db.Date
   /// Manual Age Band override when DOB is unknown or category exceptions apply.
   ageBandOverride  AgeBand?
+  /// Optional coarse playing line for Streak Cromo identity (POR/DEF/MED/DEL).
+  playingPosition  PlayingPosition?
   /// Compact Reminder Consent state; PushSubscription rows are transport only.
   reminderConsentState PlayerReminderConsentState @default(ELIGIBLE)
   entries             DailyEntry[]

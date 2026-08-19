@@ -26,6 +26,7 @@ import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { PainAlertForm } from "./pain-alert-form";
+import type { PlayingPosition } from "@repo/database/playing-position";
 import { RachaSheet } from "./racha-sheet";
 import { StreakCromo } from "./streak-cromo";
 import {
@@ -66,6 +67,7 @@ type SessionPageProperties = {
   readonly playerName: string;
   readonly teamName: string;
   readonly currentStreak: number;
+  readonly playingPosition: PlayingPosition | null;
   readonly apiUrl: string;
   readonly selectedDate: string;
   readonly selectedEntry: {
@@ -111,6 +113,7 @@ export function SessionPage({
   playerName,
   teamName,
   currentStreak,
+  playingPosition,
   apiUrl,
   selectedDate,
   selectedEntry,
@@ -332,6 +335,7 @@ export function SessionPage({
               <StreakCromo
                 streakCount={streakCount}
                 restarted={streakRestarted}
+                playingPosition={playingPosition}
               />
             ) : (
               <p className="text-sm text-text-tertiary">

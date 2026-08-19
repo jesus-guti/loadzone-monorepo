@@ -124,6 +124,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       teamId: true,
       dateOfBirth: true,
       ageBandOverride: true,
+      playingPosition: true,
       reminderConsentState: true,
       team: {
         select: {
@@ -362,6 +363,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       playerName={player.name}
       teamName={player.team.name}
       currentStreak={displayStreak}
+      playingPosition={player.playingPosition}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
       ageBand={resolvedAge.ageBand}
