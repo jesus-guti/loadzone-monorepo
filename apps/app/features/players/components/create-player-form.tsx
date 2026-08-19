@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
+import { PLAYING_POSITION_STAFF_LABEL } from "@repo/database/playing-position";
 import { useActionState, useEffect } from "react";
 import { DatePicker } from "@/components/date-picker";
 import { createPlayer } from "../actions/player-actions";
@@ -20,6 +21,14 @@ const AGE_BAND_OPTIONS = [
   { value: "ASSISTED", label: "Asistida" },
   { value: "GUIDED", label: "Guiada" },
   { value: "INDEPENDENT", label: "Independiente" },
+] as const;
+
+const PLAYING_POSITION_OPTIONS = [
+  { value: "NONE", label: "Sin posición" },
+  { value: "POR", label: PLAYING_POSITION_STAFF_LABEL.POR },
+  { value: "DEF", label: PLAYING_POSITION_STAFF_LABEL.DEF },
+  { value: "MED", label: PLAYING_POSITION_STAFF_LABEL.MED },
+  { value: "DEL", label: PLAYING_POSITION_STAFF_LABEL.DEL },
 ] as const;
 
 export function CreatePlayerForm() {
@@ -77,6 +86,29 @@ export function CreatePlayerForm() {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="playingPosition">Posición de juego</Label>
+        <Select
+          defaultValue="NONE"
+          items={PLAYING_POSITION_OPTIONS}
+          name="playingPosition"
+        >
+          <SelectTrigger className="w-full" id="playingPosition">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PLAYING_POSITION_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-text-secondary">
+          Opcional. Línea gruesa (POR / DEF / MED / DEL) para el cromo de racha.
+        </p>
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">
