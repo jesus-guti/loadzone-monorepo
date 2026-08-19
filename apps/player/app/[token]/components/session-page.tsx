@@ -27,6 +27,7 @@ import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { PainAlertForm } from "./pain-alert-form";
 import type { PlayingPosition } from "@repo/database/playing-position";
+import { RachaSheet } from "./racha-sheet";
 import { StreakCromo } from "./streak-cromo";
 import {
   FOCUS_COPY,
@@ -276,11 +277,7 @@ export function SessionPage({
             ) : null}
           </div>
 
-          {streakCount > 0 ? (
-            <span className="inline-flex min-h-10 items-center rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground">
-              {FOCUS_COPY.streakCalm(streakCount)}
-            </span>
-          ) : null}
+          <RachaSheet streakCount={streakCount} restarted={streakRestarted} />
         </div>
 
         {shouldShowAssistedPresence(focusAgeBand) ? (
