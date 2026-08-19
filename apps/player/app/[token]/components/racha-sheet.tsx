@@ -14,6 +14,7 @@ import { cn } from "@repo/design-system/lib/utils";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
+import type { PlayingPosition } from "@repo/database/playing-position";
 import { StreakCromo } from "./streak-cromo";
 
 type RachaSheetProperties = {
@@ -21,6 +22,9 @@ type RachaSheetProperties = {
   readonly restarted: boolean;
   readonly weekDays: readonly RachaWeekDay[];
   readonly weekSessionCount: number;
+  readonly imageUrl?: string | null;
+  readonly clubCrestUrl?: string | null;
+  readonly playingPosition?: PlayingPosition | null;
 };
 
 /**
@@ -33,6 +37,9 @@ export function RachaSheet({
   restarted,
   weekDays,
   weekSessionCount,
+  imageUrl = null,
+  clubCrestUrl = null,
+  playingPosition = null,
 }: RachaSheetProperties): JSX.Element {
   return (
     <Sheet>
@@ -109,7 +116,13 @@ export function RachaSheet({
             </p>
           </div>
 
-          <StreakCromo streakCount={streakCount} restarted={restarted} />
+          <StreakCromo
+            streakCount={streakCount}
+            restarted={restarted}
+            imageUrl={imageUrl}
+            clubCrestUrl={clubCrestUrl}
+            playingPosition={playingPosition}
+          />
         </div>
       </SheetContent>
     </Sheet>

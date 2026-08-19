@@ -87,10 +87,14 @@ type SessionPageProperties = {
   readonly ageBand: PolicyAgeBand;
   readonly parentalSupervisionActive: boolean;
   readonly pushConsent: {
-    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" | "blocked" | "needs_guardian_consent";
+    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" |     "blocked" | "needs_guardian_consent";
     canSubscribe: boolean;
     canOptOut: boolean;
   };
+  /** Token-scoped display URL when Player.imageUrl is set. */
+  readonly imageUrl?: string | null;
+  /** Club.logoUrl crest only — null omits crest (never Team logo). */
+  readonly clubCrestUrl?: string | null;
   /** Monday–Sunday Team Session week chrome for the Racha sheet (JES-112). */
   readonly rachaWeekDays: readonly RachaWeekDay[];
   readonly rachaWeekSessionCount: number;
@@ -123,6 +127,8 @@ export function SessionPage({
   ageBand,
   parentalSupervisionActive,
   pushConsent,
+  imageUrl = null,
+  clubCrestUrl = null,
   rachaWeekDays,
   rachaWeekSessionCount,
 }: SessionPageProperties) {
@@ -288,6 +294,9 @@ export function SessionPage({
             restarted={streakRestarted}
             weekDays={rachaWeekDays}
             weekSessionCount={rachaWeekSessionCount}
+            imageUrl={imageUrl}
+            clubCrestUrl={clubCrestUrl}
+            playingPosition={playingPosition}
           />
         </div>
 
@@ -335,6 +344,8 @@ export function SessionPage({
               <StreakCromo
                 streakCount={streakCount}
                 restarted={streakRestarted}
+                imageUrl={imageUrl}
+                clubCrestUrl={clubCrestUrl}
                 playingPosition={playingPosition}
               />
             ) : (

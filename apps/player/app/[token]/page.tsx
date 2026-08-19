@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
+import { cromoMediaUrl } from "./lib/streak-cromo";
 import {
   isPrototypeLabToken,
   parseBand,
@@ -119,6 +120,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     select: {
       id: true,
       name: true,
+      imageUrl: true,
       currentStreak: true,
       streakSeasonId: true,
       teamId: true,
@@ -135,6 +137,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
           club: {
             select: {
               ageBandPolicy: true,
+              logoUrl: true,
             },
           },
           forms: {
@@ -213,6 +216,10 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     streakSeasonId: player.streakSeasonId,
     activeSeasonId: player.team.seasons[0]?.id ?? null,
   });
+  const imageUrl = player.imageUrl ? cromoMediaUrl("photo") : null;
+  const clubCrestUrl = player.team.club.logoUrl
+    ? cromoMediaUrl("crest")
+    : null;
 
   const teamTimezone = player.team.timezone || "Europe/Madrid";
   const rachaAsOf = new Date();
@@ -364,6 +371,8 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       teamName={player.team.name}
       currentStreak={displayStreak}
       playingPosition={player.playingPosition}
+      imageUrl={imageUrl}
+      clubCrestUrl={clubCrestUrl}
       apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
       selectedDate={selectedDate.iso}
       ageBand={resolvedAge.ageBand}

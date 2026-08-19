@@ -69,8 +69,8 @@ Season-scoped expected-day habit. An expected day is a civil day with a non-canc
 _Avoid_: “Streak punishment,” competitive adherence boards, calendar-consecutive days, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:
-Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo when present, **Club** crest, and optional **Playing Position**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos. Empty **Playing Position** omits the line (no «Sin posición» placeholder).
-_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; Team logo as the cromo crest.
+Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo (calm silhouette when missing) and **Club** crest from `Club.logoUrl` only (omit when null; never **Team** logo). Optional **Playing Position** line when set. Vivid per-tier chrome is player-local CSS — not a second staff / design-system brand hue. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos. Empty **Playing Position** omits the line (no «Sin posición» placeholder).
+_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; using Team logo as the crest source.
 
 **Playing Position**:
 Optional coarse football line on a **Player**: **POR**, **DEF**, **MED**, or **DEL**. Staff set or clear it on create/edit; **Streak Cromo** shows that Spanish abbreviation only when set. Not fine pitch slots (LB, CM, ST, …).
