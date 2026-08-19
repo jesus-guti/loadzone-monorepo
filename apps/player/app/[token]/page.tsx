@@ -238,12 +238,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     },
   });
   const rachaWeek = projectRachaWeek({
-    sessions: weekSessions.map(
-      (session: { startsAt: Date; status: string }) => ({
-        startsAt: session.startsAt,
-        status: session.status,
-      })
-    ),
+    sessions: weekSessions,
     timeZone: teamTimezone,
     asOf: rachaAsOf,
   });
