@@ -1,10 +1,10 @@
-import { Button } from "@repo/design-system/components/button";
+import { toCivilDateString } from "@repo/database/recoverable-streak";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layouts/header";
 import {
+  ExportWellnessCsvDialog,
   TeamWellnessWorkspace,
   WellnessBaselineEmptyStates,
   WellnessDateFilter,
@@ -74,13 +74,22 @@ const WellnessPage = async () => {
   });
 
   const showBaselineEmpty = needsSeason || needsPlayers;
+  const defaultStartDate = staffContext.activeSeason
+    ? toCivilDateString(staffContext.activeSeason.startDate, "UTC")
+    : "";
+  const defaultEndDate = staffContext.activeSeason
+    ? toCivilDateString(staffContext.activeSeason.endDate, "UTC")
+    : "";
 
   return (
     <>
       <Header page="Wellness" pages={["LoadZone"]}>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <WellnessDateFilter initialDate={data.evaluatedDate} />
-          <Button size="sm" variant="outline" render={<Link href="/settings/wellness#formularios">Editar wellness</Link>} />
+          <ExportWellnessCsvDialog
+            defaultEndDate={defaultEndDate}
+            defaultStartDate={defaultStartDate}
+          />
         </div>
       </Header>
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2 md:gap-8 md:px-6">

@@ -26,6 +26,7 @@ import { PreSessionForm } from "./pre-session-form";
 import { PostSessionForm } from "./post-session-form";
 import { PushPrompt } from "./push-prompt";
 import { PainAlertForm } from "./pain-alert-form";
+import type { PlayingPosition } from "@repo/database/playing-position";
 import { RachaSheet } from "./racha-sheet";
 import { StreakCromo } from "./streak-cromo";
 import {
@@ -35,6 +36,7 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { toFocusAgeBand } from "../lib/age-band";
+import type { RachaWeekDay } from "../lib/racha-week";
 import {
   sessionPageBottomPaddingClass,
   sessionPageBottomStyle,
@@ -65,6 +67,7 @@ type SessionPageProperties = {
   readonly playerName: string;
   readonly teamName: string;
   readonly currentStreak: number;
+  readonly playingPosition: PlayingPosition | null;
   readonly apiUrl: string;
   readonly selectedDate: string;
   readonly selectedEntry: {
@@ -84,7 +87,7 @@ type SessionPageProperties = {
   readonly ageBand: PolicyAgeBand;
   readonly parentalSupervisionActive: boolean;
   readonly pushConsent: {
-    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" | "blocked" | "needs_guardian_consent";
+    uiMode: "offer_opt_in" | "offer_assisted_adult" | "subscribed" |     "blocked" | "needs_guardian_consent";
     canSubscribe: boolean;
     canOptOut: boolean;
   };
@@ -92,8 +95,9 @@ type SessionPageProperties = {
   readonly imageUrl?: string | null;
   /** Club.logoUrl crest only — null omits crest (never Team logo). */
   readonly clubCrestUrl?: string | null;
-  /** JES-110 Playing Position when present on this branch. */
-  readonly playingPosition?: string | null;
+  /** Monday–Sunday Team Session week chrome for the Racha sheet (JES-112). */
+  readonly rachaWeekDays: readonly RachaWeekDay[];
+  readonly rachaWeekSessionCount: number;
 };
 
 function formatShortDate(value: Date): string {
@@ -113,6 +117,7 @@ export function SessionPage({
   playerName,
   teamName,
   currentStreak,
+  playingPosition,
   apiUrl,
   selectedDate,
   selectedEntry,
@@ -124,7 +129,8 @@ export function SessionPage({
   pushConsent,
   imageUrl = null,
   clubCrestUrl = null,
-  playingPosition = null,
+  rachaWeekDays,
+  rachaWeekSessionCount,
 }: SessionPageProperties) {
   const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
@@ -286,6 +292,8 @@ export function SessionPage({
           <RachaSheet
             streakCount={streakCount}
             restarted={streakRestarted}
+            weekDays={rachaWeekDays}
+            weekSessionCount={rachaWeekSessionCount}
             imageUrl={imageUrl}
             clubCrestUrl={clubCrestUrl}
             playingPosition={playingPosition}

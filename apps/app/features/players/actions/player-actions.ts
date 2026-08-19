@@ -7,6 +7,8 @@ import {
   isPlayerStatusOverrideBlocked,
   playerHasActiveInjury,
 } from "@repo/database/injury-status";
+import { optionalPlayingPositionSchema } from "@repo/database/playing-position";
+import type { PlayingPosition } from "@repo/database/playing-position";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { buildObjectKey, uploadImage } from "@repo/storage";
@@ -97,6 +99,7 @@ const createPlayerSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
   dateOfBirth: optionalDateOfBirth,
   ageBandOverride: optionalAgeBandOverride,
+  playingPosition: optionalPlayingPositionSchema,
 });
 
 export async function createPlayer(
@@ -108,6 +111,7 @@ export async function createPlayer(
       name: formData.get("name"),
       dateOfBirth: formData.get("dateOfBirth") || undefined,
       ageBandOverride: formData.get("ageBandOverride") || undefined,
+      playingPosition: formData.get("playingPosition") || undefined,
     });
 
     if (!parsed.success) {
@@ -122,6 +126,7 @@ export async function createPlayer(
         teamId,
         dateOfBirth: parsed.data.dateOfBirth,
         ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
+        playingPosition: parsed.data.playingPosition as PlayingPosition | null,
       },
     });
 
@@ -145,6 +150,7 @@ const updatePlayerSchema = z.object({
   ]),
   dateOfBirth: optionalDateOfBirth,
   ageBandOverride: optionalAgeBandOverride,
+  playingPosition: optionalPlayingPositionSchema,
   reminderConsentAction: reminderConsentActionSchema.default("LEAVE"),
 });
 
@@ -159,6 +165,7 @@ export async function updatePlayer(
       status: formData.get("status"),
       dateOfBirth: formData.get("dateOfBirth") || undefined,
       ageBandOverride: formData.get("ageBandOverride") || undefined,
+      playingPosition: formData.get("playingPosition") || undefined,
       reminderConsentAction: formData.get("reminderConsentAction") || "LEAVE",
     });
 
@@ -206,6 +213,7 @@ export async function updatePlayer(
           status: parsed.data.status as PlayerStatus,
           dateOfBirth: parsed.data.dateOfBirth,
           ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
+          playingPosition: parsed.data.playingPosition as PlayingPosition | null,
           ...(nextConsentState
             ? { reminderConsentState: nextConsentState }
             : {}),

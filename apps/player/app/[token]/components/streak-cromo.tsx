@@ -4,6 +4,8 @@ import { useEffect, useState, type JSX } from "react";
 import { UserIcon } from "@phosphor-icons/react/User";
 
 import { cn } from "@repo/design-system/lib/utils";
+import { formatPlayingPositionCromoLine } from "@repo/database/playing-position";
+import type { PlayingPosition } from "@repo/database/playing-position";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
 import {
@@ -20,8 +22,8 @@ type StreakCromoProperties = {
   readonly imageUrl?: string | null;
   /** Club.logoUrl crest only — omit when null; never Team logo. */
   readonly clubCrestUrl?: string | null;
-  /** JES-110 Playing Position — show only when already present. */
-  readonly playingPosition?: string | null;
+  /** Optional Player Playing Position; omitted line when null/undefined. */
+  readonly playingPosition?: PlayingPosition | null;
 };
 
 function CromoSilhouette(): JSX.Element {
@@ -44,10 +46,7 @@ export function StreakCromo({
 }: StreakCromoProperties): JSX.Element {
   const tier = streakCountToCromoTier(streakCount);
   const showRestart = restarted || streakCount === 0;
-  const positionLine =
-    typeof playingPosition === "string" && playingPosition.trim().length > 0
-      ? playingPosition.trim()
-      : null;
+  const positionLine = formatPlayingPositionCromoLine(playingPosition);
   const [photoFailed, setPhotoFailed] = useState(false);
 
   useEffect(() => {
