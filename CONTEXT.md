@@ -64,6 +64,10 @@ _Avoid_: “Streak punishment,” competitive adherence boards, or geo-based att
 Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos.
 _Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards.
 
+**Session** (Team Session):
+A scheduled team block (`TeamSession`: training / match / recovery / other) on a **Team**, with an absolute `startsAt` interpreted on civil days in the **Team** timezone. Racha sheet week chrome marks every non-cancelled Team Session that Monday–Sunday week (one mark per civil day; CANCELLED omitted). **Recoverable Streak** expected days stay player-applicable Sessions only — week marks are not DailyEntry done/miss.
+_Avoid_: Painting check-in complete/miss on weekday letters; using CANCELLED Sessions as week marks; treating week chrome as the streak habit engine.
+
 **Excused Absence**:
 A day that freezes the **Recoverable Streak** (neither increments nor breaks). Exact staff vs Assisted Guardian-request workflow is deferred.
 
@@ -118,6 +122,7 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
 - A **Streak Cromo** reflects that **Player**’s **Recoverable Streak** on the player check-in surface; it is not a staff Wellness Tarjeta. The DD-05 lab (`prototype-dd-05`, variant C) reuses the same app-local component.
+- A **Session** (Team Session) belongs to a **Team**; Racha week chrome uses all non-cancelled Sessions that civil week, while Recoverable Streak expected days use player-applicable Sessions only.
 - An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
 - A **Pain Alert** belongs to a **Player** and is triage input for staff; it is not an **Injury** until staff promotes it.
 - A **Team** reaches **Operational Baseline** when it has an active **Season** and at least one **Player**; Club + Team creation precedes that via hard onboarding.
@@ -134,4 +139,3 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
 - **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).
-- **Session** (staff training session scheduling) is used in product surfaces but is not yet a glossary term here — define it when scheduling semantics are locked.

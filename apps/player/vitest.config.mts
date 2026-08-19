@@ -4,7 +4,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["__tests__/**/*.{test,spec}.{ts,tsx}"],
+    include: [
+      "__tests__/**/*.{test,spec}.{ts,tsx}",
+      "app/**/*.{test,spec}.{ts,tsx}",
+    ],
     exclude: ["**/node_modules/**", "**/e2e/**", "**/.next/**"],
   },
   resolve: {

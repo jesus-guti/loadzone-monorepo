@@ -10,22 +10,29 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@repo/design-system/components/sheet";
+import { cn } from "@repo/design-system/lib/utils";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
+import type { RachaWeekDay } from "../lib/racha-week";
 import { StreakCromo } from "./streak-cromo";
 
 type RachaSheetProperties = {
   readonly streakCount: number;
   readonly restarted: boolean;
+  readonly weekDays: readonly RachaWeekDay[];
+  readonly weekSessionCount: number;
 };
 
 /**
  * Header Recoverable Streak pill → tall Racha overlay (no new route).
  * Guardian is not an operator of this sheet; Age Bands share the same chrome.
+ * Week marks = all Team Sessions that civil week (not streak expected days).
  */
 export function RachaSheet({
   streakCount,
   restarted,
+  weekDays,
+  weekSessionCount,
 }: RachaSheetProperties): JSX.Element {
   return (
     <Sheet>
@@ -66,14 +73,43 @@ export function RachaSheet({
             </p>
           </div>
 
-          <StreakCromo streakCount={streakCount} restarted={restarted} />
+          <div className="flex w-full max-w-sm flex-col items-center gap-3">
+            <div
+              className="flex w-full justify-between gap-1"
+              role="list"
+              aria-label="Sesiones del equipo esta semana"
+            >
+              {weekDays.map((day) => (
+                <div
+                  key={day.weekday}
+                  role="listitem"
+                  className="flex flex-1 flex-col items-center gap-1.5"
+                >
+                  <span
+                    className={cn(
+                      "text-xs font-medium text-text-secondary",
+                      day.isToday &&
+                        "text-text-primary underline decoration-brand underline-offset-4"
+                    )}
+                  >
+                    {day.weekday}
+                  </span>
+                  <span
+                    className={cn(
+                      "h-1 w-4 rounded-full",
+                      day.hasSession ? "bg-brand" : "bg-transparent"
+                    )}
+                    aria-hidden
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-sm text-text-secondary">
+              {FOCUS_COPY.streakWeekBanner(weekSessionCount)}
+            </p>
+          </div>
 
-          {/* JES-112: insert week row (L–D) + Team Session banner here */}
-          <div
-            data-slot="jes-112-week-and-banner"
-            className="w-full min-h-0"
-            aria-hidden
-          />
+          <StreakCromo streakCount={streakCount} restarted={restarted} />
         </div>
       </SheetContent>
     </Sheet>
