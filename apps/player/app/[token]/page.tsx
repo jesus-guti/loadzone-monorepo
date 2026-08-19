@@ -19,6 +19,10 @@ import {
   parseVariant,
 } from "./prototype-dd-05/constants";
 import { PrototypeCheckinLab } from "./prototype-dd-05";
+import {
+  projectRachaWeek,
+  rachaWeekQueryWindow,
+} from "./lib/racha-week";
 
 type PageProperties = {
   params: Promise<{ token: string }>;
@@ -210,6 +214,33 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     activeSeasonId: player.team.seasons[0]?.id ?? null,
   });
 
+  const teamTimezone = player.team.timezone || "Europe/Madrid";
+  const rachaAsOf = new Date();
+  const weekWindow = rachaWeekQueryWindow(rachaAsOf, teamTimezone);
+  const weekSessions = await database.teamSession.findMany({
+    where: {
+      teamId: player.teamId,
+      startsAt: {
+        gte: weekWindow.gte,
+        lt: weekWindow.lt,
+      },
+    },
+    select: {
+      startsAt: true,
+      status: true,
+    },
+  });
+  const rachaWeek = projectRachaWeek({
+    sessions: weekSessions.map(
+      (session: { startsAt: Date; status: string }) => ({
+        startsAt: session.startsAt,
+        status: session.status,
+      })
+    ),
+    timeZone: teamTimezone,
+    asOf: rachaAsOf,
+  });
+
   const selectedDate = resolveSelectedDate(date);
   const nextDay = new Date(selectedDate.value);
   nextDay.setDate(nextDay.getDate() + 1);
@@ -342,6 +373,8 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
         canSubscribe: pushConsent.canSubscribe,
         canOptOut: pushConsent.canOptOut,
       }}
+      rachaWeekDays={rachaWeek.days}
+      rachaWeekSessionCount={rachaWeek.sessionCount}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession

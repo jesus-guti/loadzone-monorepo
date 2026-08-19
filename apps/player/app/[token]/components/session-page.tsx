@@ -36,6 +36,7 @@ import {
   type AgeBand,
 } from "../lib/focus-copy";
 import { toFocusAgeBand } from "../lib/age-band";
+import type { RachaWeekDay } from "../lib/racha-week";
 import {
   sessionPageBottomPaddingClass,
   sessionPageBottomStyle,
@@ -90,6 +91,9 @@ type SessionPageProperties = {
     canSubscribe: boolean;
     canOptOut: boolean;
   };
+  /** Monday–Sunday Team Session week chrome for the Racha sheet (JES-112). */
+  readonly rachaWeekDays: readonly RachaWeekDay[];
+  readonly rachaWeekSessionCount: number;
 };
 
 function formatShortDate(value: Date): string {
@@ -119,6 +123,8 @@ export function SessionPage({
   ageBand,
   parentalSupervisionActive,
   pushConsent,
+  rachaWeekDays,
+  rachaWeekSessionCount,
 }: SessionPageProperties) {
   const focusAgeBand = toFocusAgeBand(ageBand);
   const todayIso = new Date().toISOString().split("T")[0];
@@ -277,7 +283,12 @@ export function SessionPage({
             ) : null}
           </div>
 
-          <RachaSheet streakCount={streakCount} restarted={streakRestarted} />
+          <RachaSheet
+            streakCount={streakCount}
+            restarted={streakRestarted}
+            weekDays={rachaWeekDays}
+            weekSessionCount={rachaWeekSessionCount}
+          />
         </div>
 
         {shouldShowAssistedPresence(focusAgeBand) ? (

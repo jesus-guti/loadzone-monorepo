@@ -87,4 +87,10 @@ describe("FOCUS_COPY calm completion", () => {
       /perd|romp|fall|culpa|urgencia/
     );
   });
+
+  it("describes the Team Session week with invitational count copy", () => {
+    expect(FOCUS_COPY.streakWeekBanner(0)).toBe("Sin sesiones esta semana");
+    expect(FOCUS_COPY.streakWeekBanner(1)).toBe("1 sesión esta semana");
+    expect(FOCUS_COPY.streakWeekBanner(3)).toBe("3 sesiones esta semana");
+  });
 });
