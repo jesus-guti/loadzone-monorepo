@@ -79,11 +79,10 @@ export const CROMO_TIER_SHELL: Record<CromoTier, CromoShellVars> = {
 
 export type CromoMediaKind = "photo" | "crest";
 
-/** Display URL for token-scoped cromo media; omit when the source field is null. */
-export function cromoMediaUrl(
-  token: string,
-  kind: CromoMediaKind
-): string {
-  const params = new URLSearchParams({ token, kind });
-  return `/api/cromo-media?${params.toString()}`;
+/**
+ * Same-origin display URL for cromo media.
+ * Auth is the `lz_player_token` cookie — never put the player token in the URL.
+ */
+export function cromoMediaUrl(kind: CromoMediaKind): string {
+  return `/api/cromo-media?kind=${kind}`;
 }

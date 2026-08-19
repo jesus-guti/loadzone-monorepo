@@ -3,6 +3,9 @@ import { getPrivateBlob } from "@repo/storage";
 import { toBlobDeleteTarget } from "@repo/storage/shared";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Must match `middleware.ts` and `app/lib/token-storage.ts`. */
+const TOKEN_COOKIE = "lz_player_token";
+
 type CromoMediaKind = "photo" | "crest";
 
 function parseKind(raw: string | null): CromoMediaKind | null {
@@ -13,16 +16,19 @@ function parseKind(raw: string | null): CromoMediaKind | null {
 }
 
 /**
- * Token-scoped private blob proxy for Streak Cromo identity chrome.
+ * Cookie-authed private blob proxy for Streak Cromo identity chrome.
  * Serves only this Player's photo or their Club crest — never Team logo.
- * Do not log the player token.
+ * Auth via `lz_player_token` (SameSite=Lax); never accept or log the token from the query string.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const token = request.nextUrl.searchParams.get("token");
   const kind = parseKind(request.nextUrl.searchParams.get("kind"));
-
-  if (!token || !kind) {
+  if (!kind) {
     return NextResponse.json({ error: "Solicitud no válida." }, { status: 400 });
+  }
+
+  const token = request.cookies.get(TOKEN_COOKIE)?.value;
+  if (!token) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
   const player = await database.player.findUnique({

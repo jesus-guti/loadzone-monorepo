@@ -63,13 +63,11 @@ describe("Streak Cromo Spanish copy", () => {
 });
 
 describe("cromoMediaUrl", () => {
-  it("builds token-scoped photo and crest proxy URLs", () => {
-    expect(cromoMediaUrl("tok_abc", "photo")).toBe(
-      "/api/cromo-media?token=tok_abc&kind=photo"
-    );
-    expect(cromoMediaUrl("tok_abc", "crest")).toBe(
-      "/api/cromo-media?token=tok_abc&kind=crest"
-    );
+  it("builds kind-only same-origin proxy URLs without the player token", () => {
+    expect(cromoMediaUrl("photo")).toBe("/api/cromo-media?kind=photo");
+    expect(cromoMediaUrl("crest")).toBe("/api/cromo-media?kind=crest");
+    expect(cromoMediaUrl("photo")).not.toContain("token=");
+    expect(cromoMediaUrl("crest")).not.toContain("token=");
   });
 });
 

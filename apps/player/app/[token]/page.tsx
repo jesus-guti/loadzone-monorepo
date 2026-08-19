@@ -211,11 +211,9 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     streakSeasonId: player.streakSeasonId,
     activeSeasonId: player.team.seasons[0]?.id ?? null,
   });
-  const imageUrl = player.imageUrl
-    ? cromoMediaUrl(token, "photo")
-    : null;
+  const imageUrl = player.imageUrl ? cromoMediaUrl("photo") : null;
   const clubCrestUrl = player.team.club.logoUrl
-    ? cromoMediaUrl(token, "crest")
+    ? cromoMediaUrl("crest")
     : null;
 
   const selectedDate = resolveSelectedDate(date);

@@ -1,6 +1,6 @@
 "use client";
 
-import type { JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { UserIcon } from "@phosphor-icons/react/User";
 
 import { cn } from "@repo/design-system/lib/utils";
@@ -24,6 +24,17 @@ type StreakCromoProperties = {
   readonly playingPosition?: string | null;
 };
 
+function CromoSilhouette(): JSX.Element {
+  return (
+    <div className="mb-2 flex flex-col items-center gap-1 opacity-70">
+      <div className="flex size-16 items-center justify-center rounded-full bg-bg-primary/45">
+        <UserIcon className="size-9" weight="regular" />
+      </div>
+      <div className="h-8 w-14 rounded-t-[1.5rem] bg-bg-primary/45" />
+    </div>
+  );
+}
+
 export function StreakCromo({
   streakCount,
   restarted,
@@ -37,6 +48,13 @@ export function StreakCromo({
     typeof playingPosition === "string" && playingPosition.trim().length > 0
       ? playingPosition.trim()
       : null;
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  useEffect(() => {
+    setPhotoFailed(false);
+  }, [imageUrl]);
+
+  const showPhoto = Boolean(imageUrl) && !photoFailed;
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
@@ -50,13 +68,13 @@ export function StreakCromo({
         style={{
           ...CROMO_TIER_SHELL[tier],
           backgroundImage: [
-            "radial-gradient(ellipse 80% 55% at 50% 12%, oklch(0.95 0.02 160 / var(--cromo-glow)) 0%, transparent 72%)",
+            "radial-gradient(ellipse 80% 55% at 50% 12%, color-mix(in oklch, var(--cromo-top) calc(var(--cromo-glow) * 100%), transparent) 0%, transparent 72%)",
             "linear-gradient(180deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%)",
           ].join(", "),
           boxShadow: [
             "inset 0 1.5px 1px 0 oklch(1 0 0 / 0.7)",
-            "inset 0 -4px 8px 0 oklch(0.2 0.02 160 / var(--cromo-inset))",
-            "0 16px 32px -8px oklch(0.2 0.02 160 / var(--cromo-edge))",
+            "inset 0 -4px 8px 0 color-mix(in oklch, var(--cromo-bottom) calc(var(--cromo-inset) * 100%), transparent)",
+            "0 16px 32px -8px color-mix(in oklch, var(--cromo-bottom) calc(var(--cromo-edge) * 100%), transparent)",
           ].join(", "),
         }}
       >
@@ -66,8 +84,8 @@ export function StreakCromo({
         />
 
         {clubCrestUrl ? (
-          <div className="absolute right-4 top-4 z-20 size-10 overflow-hidden rounded-full bg-bg-primary/85 p-1 shadow-sm">
-            {/* biome-ignore lint/performance/noImgElement: token-scoped private blob proxy */}
+          <div className="absolute right-4 top-4 z-20 size-10 overflow-hidden rounded-full bg-bg-primary/85 p-1">
+            {/* biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy */}
             <img
               src={clubCrestUrl}
               alt=""
@@ -90,20 +108,18 @@ export function StreakCromo({
           aria-hidden
           className="relative z-10 mb-2 flex h-28 w-24 items-end justify-center overflow-hidden rounded-[1.25rem] bg-bg-primary/20"
         >
-          {imageUrl ? (
-            // biome-ignore lint/performance/noImgElement: token-scoped private blob proxy
+          {showPhoto && imageUrl ? (
+            // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
             <img
               src={imageUrl}
               alt=""
               className="absolute inset-0 size-full object-cover"
+              onError={() => {
+                setPhotoFailed(true);
+              }}
             />
           ) : (
-            <div className="mb-2 flex flex-col items-center gap-1 opacity-70">
-              <div className="flex size-16 items-center justify-center rounded-full bg-bg-primary/45">
-                <UserIcon className="size-9" weight="regular" />
-              </div>
-              <div className="h-8 w-14 rounded-t-[1.5rem] bg-bg-primary/45" />
-            </div>
+            <CromoSilhouette />
           )}
         </div>
 
