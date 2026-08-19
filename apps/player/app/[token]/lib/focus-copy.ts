@@ -86,6 +86,10 @@ export const FOCUS_COPY = {
   assistedPresence: "Un adulto puede acompañarte.",
   careSilentNote: "El club puede enterarse.",
   streakCalm: (n: number): string => `${n} días`,
+  /** Header pill → Racha sheet (Age Band–agnostic chrome). */
+  streakSheetTitle: "Racha",
+  streakSheetOpenLabel: "Ver racha",
+  streakHero: (n: number): string => `Racha de ${n} días`,
   /** Calm restart after an unexcused miss — no guilt framing. */
   streakRestart: "Empezamos de nuevo.",
   stepOf: (current: number, total: number): string => `${current}/${total}`,
