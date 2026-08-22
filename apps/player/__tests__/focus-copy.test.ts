@@ -74,6 +74,23 @@ describe("FOCUS_COPY calm completion", () => {
     expect(FOCUS_COPY.completionTitle.guided).toBe("¡Listo!");
     expect(FOCUS_COPY.completionBody.guided).toBe("Gracias.");
     expect(FOCUS_COPY.streakCalm(3)).toBe("3 días");
+    expect(FOCUS_COPY.streakCalm(0)).toBe("0 días");
     expect(FOCUS_COPY.streakRestart).toBe("Empezamos de nuevo.");
+  });
+
+  it("keeps Racha sheet copy Age Band–agnostic and calm at zero", () => {
+    expect(FOCUS_COPY.streakSheetTitle).toBe("Racha");
+    expect(FOCUS_COPY.streakSheetOpenLabel).toBe("Ver racha");
+    expect(FOCUS_COPY.streakHero(0)).toBe("Racha de 0 días");
+    expect(FOCUS_COPY.streakHero(7)).toBe("Racha de 7 días");
+    expect(FOCUS_COPY.streakHero(0).toLowerCase()).not.toMatch(
+      /perd|romp|fall|culpa|urgencia/
+    );
+  });
+
+  it("describes the Team Session week with invitational count copy", () => {
+    expect(FOCUS_COPY.streakWeekBanner(0)).toBe("Sin sesiones esta semana");
+    expect(FOCUS_COPY.streakWeekBanner(1)).toBe("1 sesión esta semana");
+    expect(FOCUS_COPY.streakWeekBanner(3)).toBe("3 sesiones esta semana");
   });
 });

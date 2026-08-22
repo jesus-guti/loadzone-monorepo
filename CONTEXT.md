@@ -20,9 +20,17 @@ _Avoid_: “Campaign” unless product copy standardises it over **Season**.
 A person on a team roster who submits wellness check-ins. May link to a **User** account or operate via the player’s public access token (do not confuse that token with push subscriptions). Primary daily operator of `apps/player` across all **Age Bands**.
 _Avoid_: “User” when you only mean the roster record—that is **Player**.
 
+**Playing Position**:
+Optional coarse line on a **Player**: POR, DEF, MED, or DEL. Identity on the **Streak Cromo** only — not a rating, attribute, or selection rule.
+_Avoid_: Fine pitch slots (LD, MCD, …) as required roster data; FUT-style attributes; treating missing position as an error.
+
+**Session**:
+A scheduled **Team** event (training, match, recovery, or other) on a civil calendar day in the team’s timezone. May apply to the whole Team or a subset of **Players**.
+_Avoid_: Auth/login “session”; using Session as a synonym for **DailyEntry**; treating a cancelled Session as an expected streak day.
+
 **DailyEntry**:
-One wellness record for a **Player** on a given calendar day within a **Season** (sleep, fatigue, RPE, etc.); the model allows at most one row per player and date.
-_Avoid_: “Diary” if it suggests a generic journal outside this domain.
+One wellness record for a **Player** on a given calendar day within a **Season** (sleep, fatigue, RPE, etc.); the model allows at most one row per player and date. The same record may be filled **PRE-session**, **POST-session**, or both (distinct fill moments, not two DailyEntries). Staff **Team** history (reports, CSV export) still includes past **DailyEntry** rows after the **Player** is archived — archive stops live workspace and reminders, not club history.
+_Avoid_: “Diary” if it suggests a generic journal outside this domain; treating archive as deletion of past check-ins; modelling PRE and POST as separate DailyEntries.
 
 **PlayerDailyStats**:
 Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios).
@@ -57,12 +65,20 @@ _Avoid_: Treating subscription presence alone as the consent record.
 Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
 
 **Recoverable Streak**:
-Season-scoped expected-day habit: increments on completing expected **DailyEntry** obligations; breaks on miss without **Excused Absence** (calm restart, no guilt UI). Never public shame boards.
-_Avoid_: “Streak punishment,” competitive adherence boards, or geo-based attendance as the streak signal.
+Season-scoped expected-day habit. An expected day is a civil day with a non-cancelled **Session** the **Player** is on and PRE/POST **DailyEntry** obligations. Increments on completing those fills; breaks on an unexcused miss; days with no such Session neither increment nor break. Never public shame boards. Attendance GPS is not the signal.
+_Avoid_: “Streak punishment,” competitive adherence boards, calendar-consecutive days, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:
-Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos.
-_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards.
+Player-facing identity card in `apps/player` that visually evolves with the **Recoverable Streak**. Shows staff-uploaded **Player** photo (calm silhouette when missing) and **Club** crest from `Club.logoUrl` only (omit when null; never **Team** logo). Optional **Playing Position** line when set. Vivid per-tier chrome is player-local CSS — not a second staff / design-system brand hue. Football-identity teaser only — never claims real performance / health scoring. Distinct from staff Wellness Tarjetas / admin cromos. Empty **Playing Position** omits the line (no «Sin posición» placeholder).
+_Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; using Team logo as the crest source.
+
+**Playing Position**:
+Optional coarse football line on a **Player**: **POR**, **DEF**, **MED**, or **DEL**. Staff set or clear it on create/edit; **Streak Cromo** shows that Spanish abbreviation only when set. Not fine pitch slots (LB, CM, ST, …).
+_Avoid_: Treating empty as a displayed «Sin posición» on the cromo; inventing per-slot pitch coordinates.
+
+**Session** (Team Session):
+A scheduled team block (`TeamSession`: training / match / recovery / other) on a **Team**, with an absolute `startsAt` interpreted on civil days in the **Team** timezone. Racha sheet week chrome marks every non-cancelled Team Session that Monday–Sunday week (one mark per civil day; CANCELLED omitted). **Recoverable Streak** expected days stay player-applicable Sessions only — week marks are not DailyEntry done/miss.
+_Avoid_: Painting check-in complete/miss on weekday letters; using CANCELLED Sessions as week marks; treating week chrome as the streak habit engine.
 
 **Excused Absence**:
 A day that freezes the **Recoverable Streak** (neither increments nor breaks). Exact staff vs Assisted Guardian-request workflow is deferred.
@@ -108,16 +124,17 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 ## Relationships
 
 - A **Club** has many **Teams** (and club-scoped exercises and other shared entities).
-- A **Team** belongs to a **Club** and has many **Seasons** and many **Players**.
+- A **Team** belongs to a **Club** and has many **Seasons**, many **Players**, and many **Sessions**.
 - A **Season** belongs to a **Team**; it groups that season’s **DailyEntry** and **PlayerDailyStats**.
-- A **Player** belongs to a **Team**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
+- A **Player** belongs to a **Team**; has an optional **Playing Position**; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
 - A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
 - **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
-- A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**.
-- A **Streak Cromo** reflects that **Player**’s **Recoverable Streak** on the player check-in surface; it is not a staff Wellness Tarjeta. The DD-05 lab (`prototype-dd-05`, variant C) reuses the same app-local component.
+- A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**; expected days come from **Sessions** that player is on, not from every **Session** on the Team.
+- A **Streak Cromo** reflects that **Player**’s **Recoverable Streak** on the player check-in surface (photo, **Club** crest, optional **Playing Position**); it is not a staff Wellness Tarjeta. The DD-05 lab (`prototype-dd-05`, variant C) reuses the same app-local component. Optional **Playing Position** (`Player.playingPosition`) feeds the cromo identity line only when set (see `@repo/database/playing-position`).
+- A **Session** (Team Session) belongs to a **Team**; Racha week chrome uses all non-cancelled Sessions that civil week, while Recoverable Streak expected days use player-applicable Sessions only.
 - An **Injury** belongs to a **Player** and associates to one or more **BodyRegion**s; a **Team** lists Injuries via its Players (Injury is not Season-scoped).
 - A **Pain Alert** belongs to a **Player** and is triage input for staff; it is not an **Injury** until staff promotes it.
 - A **Team** reaches **Operational Baseline** when it has an active **Season** and at least one **Player**; Club + Team creation precedes that via hard onboarding.
@@ -134,4 +151,5 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
 - **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).
-- **Session** (staff training session scheduling) is used in product surfaces but is not yet a glossary term here — define it when scheduling semantics are locked.
+- **Session** subset vs whole-Team: a Session may list a subset of Players; Recoverable Streak uses only Sessions that Player is on. Player week chrome may still show all Team Sessions that week.
+- **Preseason**: not a domain entity. Staff scope history with **Season** and calendar dates. Persistence may store an optional `preSeasonEnd` on **Season**; that is not product language and is not a filter object.

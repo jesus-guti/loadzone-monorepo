@@ -12,6 +12,11 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
+  // API routes are not player-token pages (cookie auth happens in the route).
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   if (pathname === "/") {
     const savedToken = request.cookies.get(TOKEN_COOKIE)?.value;
 
@@ -26,6 +31,18 @@ export function middleware(request: NextRequest): NextResponse {
 
   if (token && !CUID_PATTERN.test(token)) {
     return NextResponse.rewrite(new URL("/not-found", request.url));
+  }
+
+  // Persist token for same-origin subresources (e.g. cromo `<img>`) before hydration.
+  if (token && CUID_PATTERN.test(token)) {
+    const response = NextResponse.next();
+    response.cookies.set(TOKEN_COOKIE, token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+    });
+    return response;
   }
 
   return NextResponse.next();

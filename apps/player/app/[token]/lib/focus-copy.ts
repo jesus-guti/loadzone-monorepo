@@ -86,6 +86,23 @@ export const FOCUS_COPY = {
   assistedPresence: "Un adulto puede acompañarte.",
   careSilentNote: "El club puede enterarse.",
   streakCalm: (n: number): string => `${n} días`,
+  /** Header pill → Racha sheet (Age Band–agnostic chrome). */
+  streakSheetTitle: "Racha",
+  streakSheetOpenLabel: "Ver racha",
+  streakHero: (n: number): string => `Racha de ${n} días`,
+  /**
+   * Racha sheet week banner — same Monday–Sunday Team Session week as the row.
+   * Count is invitational; empty weeks stay calm (not a title list).
+   */
+  streakWeekBanner: (sessionCount: number): string => {
+    if (sessionCount <= 0) {
+      return "Sin sesiones esta semana";
+    }
+    if (sessionCount === 1) {
+      return "1 sesión esta semana";
+    }
+    return `${sessionCount} sesiones esta semana`;
+  },
   /** Calm restart after an unexcused miss — no guilt framing. */
   streakRestart: "Empezamos de nuevo.",
   stepOf: (current: number, total: number): string => `${current}/${total}`,

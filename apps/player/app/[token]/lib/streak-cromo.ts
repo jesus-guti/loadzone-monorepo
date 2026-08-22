@@ -35,51 +35,54 @@ export type CromoShellVars = {
   readonly "--cromo-glow": string;
   readonly "--cromo-edge": string;
   readonly "--cromo-inset": string;
+  readonly "--cromo-fg": string;
 };
 
 /**
- * Inline CSS variables — not Tailwind arbitrary properties.
- * `color-mix(...)` commas break Tailwind class parsing, which left the
- * card with an invalid gradient (empty shell, identical across tiers).
+ * Shell chrome reads player-local vivid tier tokens from `globals.css`.
+ * Do not mix brand sage into these shells — staff / design-system hue stays untouched.
  */
 export const CROMO_TIER_SHELL: Record<CromoTier, CromoShellVars> = {
   1: {
-    "--cromo-top":
-      "color-mix(in oklch, var(--brand) 22%, var(--bg-primary))",
-    "--cromo-bottom":
-      "color-mix(in oklch, var(--brand) 38%, var(--bg-tertiary))",
-    "--cromo-glow": "0.04",
-    "--cromo-edge": "0.28",
-    "--cromo-inset": "0.08",
+    "--cromo-top": "var(--cromo-1-top)",
+    "--cromo-bottom": "var(--cromo-1-bottom)",
+    "--cromo-glow": "var(--cromo-1-glow)",
+    "--cromo-edge": "var(--cromo-1-edge)",
+    "--cromo-inset": "var(--cromo-1-inset)",
+    "--cromo-fg": "var(--cromo-1-fg)",
   },
   2: {
-    "--cromo-top":
-      "color-mix(in oklch, var(--brand) 42%, var(--bg-primary))",
-    "--cromo-bottom":
-      "color-mix(in oklch, var(--brand) 62%, var(--bg-quaternary))",
-    "--cromo-glow": "0.05",
-    "--cromo-edge": "0.38",
-    "--cromo-inset": "0.12",
+    "--cromo-top": "var(--cromo-2-top)",
+    "--cromo-bottom": "var(--cromo-2-bottom)",
+    "--cromo-glow": "var(--cromo-2-glow)",
+    "--cromo-edge": "var(--cromo-2-edge)",
+    "--cromo-inset": "var(--cromo-2-inset)",
+    "--cromo-fg": "var(--cromo-2-fg)",
   },
   3: {
-    "--cromo-top": "color-mix(in oklch, var(--brand) 78%, black)",
-    "--cromo-bottom": "color-mix(in oklch, var(--brand) 92%, black)",
-    "--cromo-glow": "0.06",
-    "--cromo-edge": "0.45",
-    "--cromo-inset": "0.18",
+    "--cromo-top": "var(--cromo-3-top)",
+    "--cromo-bottom": "var(--cromo-3-bottom)",
+    "--cromo-glow": "var(--cromo-3-glow)",
+    "--cromo-edge": "var(--cromo-3-edge)",
+    "--cromo-inset": "var(--cromo-3-inset)",
+    "--cromo-fg": "var(--cromo-3-fg)",
   },
   4: {
-    "--cromo-top": "color-mix(in oklch, var(--brand) 88%, black)",
-    "--cromo-bottom": "color-mix(in oklch, var(--brand) 100%, black)",
-    "--cromo-glow": "0.08",
-    "--cromo-edge": "0.55",
-    "--cromo-inset": "0.22",
+    "--cromo-top": "var(--cromo-4-top)",
+    "--cromo-bottom": "var(--cromo-4-bottom)",
+    "--cromo-glow": "var(--cromo-4-glow)",
+    "--cromo-edge": "var(--cromo-4-edge)",
+    "--cromo-inset": "var(--cromo-4-inset)",
+    "--cromo-fg": "var(--cromo-4-fg)",
   },
 };
 
-export const CROMO_TIER_TEXT_CLASS: Record<CromoTier, string> = {
-  1: "text-text-primary",
-  2: "text-text-primary",
-  3: "text-brand-foreground",
-  4: "text-brand-foreground",
-};
+export type CromoMediaKind = "photo" | "crest";
+
+/**
+ * Same-origin display URL for cromo media.
+ * Auth is the `lz_player_token` cookie — never put the player token in the URL.
+ */
+export function cromoMediaUrl(kind: CromoMediaKind): string {
+  return `/api/cromo-media?kind=${kind}`;
+}
