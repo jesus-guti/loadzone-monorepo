@@ -8,6 +8,7 @@ const stubs = vi.hoisted(() => ({
   injuryCreate: vi.fn(),
   injuryFindFirst: vi.fn(),
   injuryUpdate: vi.fn(),
+  injuryDelete: vi.fn(),
   injuryBodyRegionDeleteMany: vi.fn(),
   injuryBodyRegionCreateMany: vi.fn(),
   syncPlayerStatusFromInjuries: vi.fn(),
@@ -40,6 +41,7 @@ vi.mock("@repo/database", () => ({
       create: stubs.injuryCreate,
       findFirst: stubs.injuryFindFirst,
       update: stubs.injuryUpdate,
+      delete: stubs.injuryDelete,
     },
     injuryBodyRegion: {
       deleteMany: stubs.injuryBodyRegionDeleteMany,
@@ -52,6 +54,7 @@ vi.mock("@repo/database", () => ({
 import {
   closeInjury,
   createInjury,
+  deleteInjury,
   reopenInjury,
   updateInjury,
 } from "@/features/injuries/actions/injury-actions";
@@ -265,5 +268,38 @@ describe("injury actions (JES-51)", () => {
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/jugador/i);
     expect(stubs.injuryCreate).not.toHaveBeenCalled();
+  });
+
+  it("deleteInjury removes open or closed injury and syncs", async () => {
+    stubs.injuryFindFirst.mockResolvedValue({
+      id: "inj-1",
+      playerId: "player-1",
+    });
+    stubs.injuryDelete.mockResolvedValue({});
+    stubs.syncPlayerStatusFromInjuries.mockResolvedValue("AVAILABLE");
+
+    const fd = new FormData();
+    fd.set("injuryId", "inj-1");
+
+    const result = await deleteInjury(noopPrev, fd);
+
+    expect(result.success).toBe(true);
+    expect(stubs.injuryDelete).toHaveBeenCalledWith({
+      where: { id: "inj-1" },
+    });
+    expect(stubs.syncPlayerStatusFromInjuries).toHaveBeenCalledWith(
+      expect.anything(),
+      "player-1",
+      { timeZone: "Europe/Madrid" }
+    );
+  });
+
+  it("deleteInjury rejects missing team access", async () => {
+    stubs.injuryFindFirst.mockResolvedValue(null);
+    const fd = new FormData();
+    fd.set("injuryId", "inj-1");
+    const result = await deleteInjury(noopPrev, fd);
+    expect(result.success).toBe(false);
+    expect(stubs.injuryDelete).not.toHaveBeenCalled();
   });
 });

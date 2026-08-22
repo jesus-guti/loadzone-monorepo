@@ -27,6 +27,7 @@ import {
 } from "../lib/injury-history-filters";
 import type { InjuryListItem } from "../types";
 import { CloseInjuryDialog } from "./close-injury-dialog";
+import { DeleteInjuryButton } from "./delete-injury-button";
 import { InjuryLogForm } from "./injury-log-form";
 
 type PanelMode =
@@ -316,6 +317,7 @@ export function PlayerInjuriesPanel({
                         >
                           Dar de alta
                         </Button>
+                        <DeleteInjuryButton injury={injury} />
                       </>
                     }
                     injury={injury}
@@ -347,6 +349,7 @@ export function PlayerInjuriesPanel({
                           Editar
                         </Button>
                         <ReopenButton injuryId={injury.id} />
+                        <DeleteInjuryButton injury={injury} />
                       </>
                     }
                     injury={injury}

@@ -18,6 +18,7 @@ export {
   closeInjury,
   updateInjury,
   reopenInjury,
+  deleteInjury,
   updateInjuryTriage,
   promotePainAlert,
 } from "./actions/injury-actions";

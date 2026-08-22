@@ -6,7 +6,9 @@ import {
 import {
   derivePlayerStatusFromActiveInjuries,
   isInjuryActiveOnCivilDay,
+  isOpenInjuryOnCivilDay,
   isPlayerStatusOverrideBlocked,
+  syncPlayerStatusFromInjuries,
 } from "../injury-status";
 import {
   buildOrphanRegionDetail,
@@ -40,6 +42,53 @@ describe("isInjuryActiveOnCivilDay", () => {
         requestedStatus: "AVAILABLE",
       })
     ).toBe(false);
+  });
+});
+
+describe("isOpenInjuryOnCivilDay (Player.status / alta)", () => {
+  it("treats inclusive endDate today as closed for Lesionado", () => {
+    expect(
+      isOpenInjuryOnCivilDay("2026-08-01", "2026-08-22", "2026-08-22")
+    ).toBe(false);
+    expect(isInjuryActiveOnCivilDay("2026-08-01", "2026-08-22", "2026-08-22")).toBe(
+      true
+    );
+  });
+
+  it("keeps open episodes Lesionado", () => {
+    expect(isOpenInjuryOnCivilDay("2026-08-01", null, "2026-08-22")).toBe(true);
+  });
+});
+
+describe("syncPlayerStatusFromInjuries after alta", () => {
+  it("clears INJURED when no open episode remains (endDate set)", async () => {
+    const injuryCount = vi.fn().mockResolvedValue(0);
+    const playerUpdate = vi.fn().mockResolvedValue({});
+    const db = {
+      injury: { count: injuryCount },
+      player: {
+        findUnique: vi.fn().mockResolvedValue({ status: "INJURED" }),
+        update: playerUpdate,
+      },
+    };
+
+    const next = await syncPlayerStatusFromInjuries(db, "player-1", {
+      timeZone: "Europe/Madrid",
+      asOf: "2026-08-22",
+    });
+
+    expect(injuryCount).toHaveBeenCalledWith({
+      where: {
+        playerId: "player-1",
+        startDate: { lte: new Date("2026-08-22T00:00:00.000Z") },
+        endDate: null,
+      },
+    });
+    expect(next).toBe("AVAILABLE");
+    expect(playerUpdate).toHaveBeenCalledWith({
+      where: { id: "player-1" },
+      data: { status: "AVAILABLE" },
+    });
   });
 });
 

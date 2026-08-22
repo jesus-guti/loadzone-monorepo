@@ -289,15 +289,18 @@ export function SessionPage({
             ) : null}
           </div>
 
-          <RachaSheet
-            streakCount={streakCount}
-            restarted={streakRestarted}
-            weekDays={rachaWeekDays}
-            weekSessionCount={rachaWeekSessionCount}
-            imageUrl={imageUrl}
-            clubCrestUrl={clubCrestUrl}
-            playingPosition={playingPosition}
-          />
+          <div className="shrink-0">
+            <RachaSheet
+              streakCount={streakCount}
+              restarted={streakRestarted}
+              weekDays={rachaWeekDays}
+              weekSessionCount={rachaWeekSessionCount}
+              imageUrl={imageUrl}
+              clubCrestUrl={clubCrestUrl}
+              playingPosition={playingPosition}
+              playerName={playerName}
+            />
+          </div>
         </div>
 
         {shouldShowAssistedPresence(focusAgeBand) ? (
@@ -347,6 +350,7 @@ export function SessionPage({
                 imageUrl={imageUrl}
                 clubCrestUrl={clubCrestUrl}
                 playingPosition={playingPosition}
+                playerName={playerName}
               />
             ) : (
               <p className="text-sm text-text-tertiary">

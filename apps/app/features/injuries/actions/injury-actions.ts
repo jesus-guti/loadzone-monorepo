@@ -66,6 +66,10 @@ const reopenInjurySchema = z.object({
   injuryId: z.string().min(1),
 });
 
+const deleteInjurySchema = z.object({
+  injuryId: z.string().min(1),
+});
+
 /** Interim team `/injuries` triage until JES-52. */
 const triageInjurySchema = z.object({
   injuryId: z.string(),
@@ -285,7 +289,8 @@ export async function updateInjury(
 }
 
 /**
- * Dar de alta — sets inclusive endDate; last close may clear Lesionado.
+ * Dar de alta — sets inclusive endDate for calendar coverage; last open
+ * episode close clears Lesionado (status uses open rows only).
  */
 export async function closeInjury(
   _prev: InjuryActionResult,
@@ -406,6 +411,64 @@ export async function reopenInjury(
     return { success: true, injuryId: existing.id };
   } catch {
     return { success: false, error: "No se pudo reabrir la lesión." };
+  }
+}
+
+/**
+ * Remove an open or closed Injury. Pain Alerts that pointed at it keep the
+ * aviso (promotedInjuryId is cleared). Recalculates Lesionado / streak.
+ */
+export async function deleteInjury(
+  _prev: InjuryActionResult,
+  formData: FormData
+): Promise<InjuryActionResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.activeTeam) {
+      return { success: false, error: "Equipo no encontrado." };
+    }
+
+    const parsed = deleteInjurySchema.safeParse({
+      injuryId: formData.get("injuryId"),
+    });
+
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? "Datos no válidos.",
+      };
+    }
+
+    const teamId = staffContext.activeTeam.id;
+    const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
+
+    const existing = await database.injury.findFirst({
+      where: { id: parsed.data.injuryId, teamId },
+      select: { id: true, playerId: true },
+    });
+
+    if (!existing) {
+      return { success: false, error: "No tienes acceso a esta lesión." };
+    }
+
+    await database.injury.delete({
+      where: { id: existing.id },
+    });
+
+    await syncPlayerStatusFromInjuries(database, existing.playerId, {
+      timeZone,
+    });
+    await recomputeStreakAfterInjury(
+      existing.playerId,
+      teamId,
+      timeZone,
+      staffContext.activeSeason?.id
+    );
+    revalidateInjuryPaths(existing.playerId);
+
+    return { success: true, injuryId: existing.id };
+  } catch {
+    return { success: false, error: "No se pudo eliminar la lesión." };
   }
 }
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { CaretDownIcon, FireIcon } from "@phosphor-icons/react";
+import { CaretDownIcon } from "@phosphor-icons/react";
+import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
+import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import {
   Avatar,
   AvatarFallback,
@@ -123,7 +125,11 @@ export function PlayerDetailShell(
         </span>
 
         <span className="flex items-center gap-1 text-sm text-text-secondary">
-          <FireIcon className="size-3 text-premium" />
+          <StreakFireIcon
+            className="size-3"
+            backColor={STREAK_FIRE_TONE.back}
+            frontColor={STREAK_FIRE_TONE.front}
+          />
           Racha {properties.displayStreak} días (máx. {properties.longestStreak}
           )
         </span>

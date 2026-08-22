@@ -1,7 +1,7 @@
 "use client";
 
-import type { JSX } from "react";
-import { FireIcon } from "@phosphor-icons/react/Fire";
+import { useState, type JSX } from "react";
+import { UserIcon } from "@phosphor-icons/react/User";
 import {
   Sheet,
   SheetContent,
@@ -10,6 +10,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@repo/design-system/components/sheet";
+import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
+import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
@@ -25,7 +27,41 @@ type RachaSheetProperties = {
   readonly imageUrl?: string | null;
   readonly clubCrestUrl?: string | null;
   readonly playingPosition?: PlayingPosition | null;
+  readonly playerName?: string | null;
 };
+
+function HeaderPhotoDisc({
+  imageUrl,
+}: {
+  readonly imageUrl: string | null;
+}): JSX.Element {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = imageUrl !== null && imageUrl !== "" && !photoFailed;
+
+  return (
+    <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-full bg-bg-secondary">
+      {showPhoto ? (
+        // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
+        // biome-ignore lint/a11y/noNoninteractiveElementInteractions: photo load fallback to silhouette
+        <img
+          src={imageUrl}
+          alt=""
+          width={32}
+          height={32}
+          className="block h-8 w-8 max-h-8 max-w-8 object-cover"
+          onError={() => {
+            setPhotoFailed(true);
+          }}
+        />
+      ) : (
+        <UserIcon
+          className="absolute inset-0 m-auto h-4 w-4 text-text-secondary"
+          weight="regular"
+        />
+      )}
+    </span>
+  );
+}
 
 /**
  * Header Recoverable Streak pill → tall Racha overlay (no new route).
@@ -40,6 +76,7 @@ export function RachaSheet({
   imageUrl = null,
   clubCrestUrl = null,
   playingPosition = null,
+  playerName = null,
 }: RachaSheetProperties): JSX.Element {
   return (
     <Sheet>
@@ -48,13 +85,28 @@ export function RachaSheet({
           <button
             type="button"
             aria-label={FOCUS_COPY.streakSheetOpenLabel}
-            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-premium/15 px-4 text-sm font-medium text-premium-foreground transition hover:bg-premium/25"
-          >
-            <FireIcon className="size-3.5" weight="fill" aria-hidden />
-            {FOCUS_COPY.streakCalm(streakCount)}
-          </button>
+            className="inline-flex shrink-0 rounded-full p-0"
+          />
         }
-      />
+      >
+        <span className="flex h-10 items-center overflow-hidden rounded-full border border-text-primary/20 bg-bg-primary pl-2.5 pr-1">
+          <StreakFireIcon
+            className="h-3.5 w-3.5"
+            backColor={STREAK_FIRE_TONE.back}
+            frontColor={STREAK_FIRE_TONE.front}
+          />
+          <span className="pl-1 pr-2.5 text-sm font-semibold tabular-nums text-text-primary">
+            {streakCount}
+          </span>
+          <span className="h-4 w-px shrink-0 bg-text-primary/20" aria-hidden />
+          <span className="py-1 pl-2 pr-0.5">
+            <HeaderPhotoDisc
+              key={imageUrl ?? "none"}
+              imageUrl={imageUrl}
+            />
+          </span>
+        </span>
+      </SheetTrigger>
       <SheetContent
         side="bottom"
         className="flex h-[90dvh] max-h-[90dvh] flex-col gap-0 overflow-y-auto rounded-t-3xl bg-bg-primary"
@@ -70,10 +122,10 @@ export function RachaSheet({
 
         <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-2">
           <div className="flex flex-col items-center gap-2 text-center">
-            <FireIcon
-              className="size-10 text-premium"
-              weight="fill"
-              aria-hidden
+            <StreakFireIcon
+              className="size-10"
+              backColor={STREAK_FIRE_TONE.back}
+              frontColor={STREAK_FIRE_TONE.front}
             />
             <p className="text-2xl font-semibold tracking-tight text-text-primary">
               {FOCUS_COPY.streakHero(streakCount)}
@@ -122,6 +174,7 @@ export function RachaSheet({
             imageUrl={imageUrl}
             clubCrestUrl={clubCrestUrl}
             playingPosition={playingPosition}
+            playerName={playerName}
           />
         </div>
       </SheetContent>
