@@ -13,7 +13,7 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-import type { JSX } from "react";
+import { useState, type JSX } from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
 import { StreakCromo } from "./streak-cromo";
@@ -32,12 +32,39 @@ type RachaSheetProperties = {
   readonly teammateStreaks?: readonly number[];
 };
 
-function HeaderPhotoDisc(): JSX.Element {
+function HeaderPhotoDisc({
+  imageUrl,
+}: {
+  readonly imageUrl: string | null;
+}): JSX.Element {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = imageUrl !== null && imageUrl !== "" && !photoFailed;
+
+  if (!showPhoto) {
+    return (
+      <UserCircleIcon
+        className="relative m-auto block h-5.5 w-5.5 text-text-primary"
+        weight="fill"
+      />
+    );
+  }
+
   return (
-    <UserCircleIcon
-      className="relative block m-auto h-5.5 w-5.5 text-text-primary"
-      weight="fill"
-    />
+    <span className="relative block size-7 overflow-hidden rounded-full">
+      {/* biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy */}
+      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: photo load fallback to silhouette */}
+      <img
+        alt=""
+        className="size-full object-cover object-[50%_18%]"
+        decoding="async"
+        height={28}
+        onError={() => {
+          setPhotoFailed(true);
+        }}
+        src={imageUrl}
+        width={28}
+      />
+    </span>
   );
 }
 
@@ -122,22 +149,21 @@ export function RachaSheet({
           </div>
 
           <div className="flex w-full max-w-sm flex-col items-center gap-3 mb-auto mt-0">
-            <div
+            <ul
               aria-label="Sesiones del equipo esta semana"
-              className="flex w-full justify-between gap-1"
-              role="list"
+              className="m-0 flex w-full list-none justify-between gap-1 p-0"
             >
               {weekDays.map((day) => (
-                <div
+                <li
                   className="flex flex-1 flex-col items-center gap-1.5"
                   key={day.weekday}
-                  role="listitem"
                 >
                   <span
                     className={cn(
-                      "text-xs font-medium text-text-secondary",
-                      day.isToday &&
-                        "text-text-primary underline decoration-brand underline-offset-4"
+                      "text-xs font-medium",
+                      day.isToday
+                        ? "text-text-primary underline decoration-brand underline-offset-4"
+                        : "text-text-secondary"
                     )}
                   >
                     {day.weekday}
@@ -149,9 +175,9 @@ export function RachaSheet({
                       day.hasSession ? "bg-brand" : "bg-transparent"
                     )}
                   />
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
             <p className="text-center text-sm text-text-secondary">
               {FOCUS_COPY.streakWeekBanner(weekSessionCount)}
             </p>
