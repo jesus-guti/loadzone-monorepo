@@ -1,7 +1,6 @@
-import type { CSSProperties, JSX } from "react";
 import { FireIcon } from "@phosphor-icons/react/ssr";
-
 import { cn } from "@repo/design-system/lib/utils";
+import type { CSSProperties, JSX } from "react";
 
 type StreakFireIconProperties = {
   readonly className?: string;
@@ -26,18 +25,18 @@ export function StreakFireIcon({
 
   return (
     <span
-      className={cn("relative block size-3.5 shrink-0", className)}
       aria-hidden
+      className={cn("relative block size-3.5 shrink-0", className)}
     >
       <FireIcon
         className="absolute inset-0 block h-full w-full"
-        weight="fill"
         style={backStyle}
+        weight="fill"
       />
       <FireIcon
-        className="absolute left-[12%] top-[6%] block h-[78%] w-[78%]"
-        weight="fill"
+        className="absolute left-[15%] bottom-[7%] block h-[70%] w-[70%]"
         style={frontStyle}
+        weight="fill"
       />
     </span>
   );

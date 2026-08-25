@@ -68,6 +68,9 @@ type SessionPageProperties = {
   readonly teamName: string;
   readonly currentStreak: number;
   readonly playingPosition: PlayingPosition | null;
+  readonly shirtNumber: number | null;
+  /** Other non-archived teammates’ Recoverable Streaks (this Player excluded). */
+  readonly teammateStreaks: readonly number[];
   readonly apiUrl: string;
   readonly selectedDate: string;
   readonly selectedEntry: {
@@ -118,6 +121,8 @@ export function SessionPage({
   teamName,
   currentStreak,
   playingPosition,
+  shirtNumber,
+  teammateStreaks,
   apiUrl,
   selectedDate,
   selectedEntry,
@@ -299,6 +304,9 @@ export function SessionPage({
               clubCrestUrl={clubCrestUrl}
               playingPosition={playingPosition}
               playerName={playerName}
+              shirtNumber={shirtNumber}
+              teamName={teamName}
+              teammateStreaks={teammateStreaks}
             />
           </div>
         </div>
@@ -351,6 +359,9 @@ export function SessionPage({
                 clubCrestUrl={clubCrestUrl}
                 playingPosition={playingPosition}
                 playerName={playerName}
+                shirtNumber={shirtNumber}
+                teamName={teamName}
+                teammateStreaks={teammateStreaks}
               />
             ) : (
               <p className="text-sm text-text-tertiary">

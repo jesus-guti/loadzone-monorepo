@@ -5,30 +5,61 @@ import {
 } from "@repo/database/age-band-policy";
 import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import {
+  type PlayerReminderConsentState,
   resolveEffectiveReminderConsentPolicy,
   resolvePushConsent,
-  type PlayerReminderConsentState,
 } from "@repo/database/reminder-consent";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { env } from "@/env";
 import { SessionPage } from "./components/session-page";
+import {
+  type ProjectRachaWeekResult,
+  projectRachaWeek,
+  rachaWeekQueryWindow,
+} from "./lib/racha-week";
 import { cromoMediaUrl } from "./lib/streak-cromo";
+import { PrototypeCheckinLab } from "./prototype-dd-05";
 import {
   isPrototypeLabToken,
   parseBand,
   parseVariant,
 } from "./prototype-dd-05/constants";
-import { PrototypeCheckinLab } from "./prototype-dd-05";
-import {
-  projectRachaWeek,
-  rachaWeekQueryWindow,
-} from "./lib/racha-week";
 
 type PageProperties = {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ date?: string; variant?: string; band?: string }>;
+  searchParams: Promise<{
+    date?: string;
+    variant?: string;
+    band?: string;
+  }>;
 };
+
+/** Prisma Decimal columns reach the client as plain numbers. */
+function toNumberOrNull(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  return Number(value);
+}
+
+async function loadRachaWeek(
+  teamId: string,
+  rawTimezone: string
+): Promise<ProjectRachaWeekResult> {
+  const timeZone = rawTimezone || "Europe/Madrid";
+  const asOf = new Date();
+  const window = rachaWeekQueryWindow(asOf, timeZone);
+  const sessions = await database.teamSession.findMany({
+    where: {
+      teamId,
+      startsAt: { gte: window.gte, lt: window.lt },
+    },
+    select: { startsAt: true, status: true },
+  });
+
+  return projectRachaWeek({ sessions, timeZone, asOf });
+}
 
 function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
   if (rawDate) {
@@ -50,7 +81,11 @@ function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
 const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   const { token } = await params;
   const resolvedSearch = await searchParams;
-  const { date, variant: variantRaw, band: bandRaw } = resolvedSearch;
+  const {
+    date,
+    variant: variantRaw,
+    band: bandRaw,
+  } = resolvedSearch;
   const variant = parseVariant(variantRaw);
 
   // PROTOTYPE lab: ?variant= swaps the subtree; production SessionPage untouched otherwise.
@@ -65,9 +100,9 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
         }
       >
         <PrototypeCheckinLab
-          token={token}
-          initialVariant={variant}
           initialBand={band}
+          initialVariant={variant}
+          token={token}
         />
       </Suspense>
     );
@@ -90,10 +125,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
         </p>
         <ul className="space-y-2 text-sm text-text-secondary">
           <li>
-            <a
-              className="underline"
-              href={`/${token}?variant=A&band=assisted`}
-            >
+            <a className="underline" href={`/${token}?variant=A&band=assisted`}>
               Variante A · Focus · Asistida
             </a>
           </li>
@@ -127,6 +159,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       dateOfBirth: true,
       ageBandOverride: true,
       playingPosition: true,
+      shirtNumber: true,
       reminderConsentState: true,
       team: {
         select: {
@@ -211,37 +244,32 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       player.reminderConsentState as PlayerReminderConsentState,
     hasActiveSubscription: subscriptionCount > 0,
   });
+  const activeSeasonId = player.team.seasons[0]?.id ?? null;
   const displayStreak = effectiveCurrentStreak({
     currentStreak: player.currentStreak,
     streakSeasonId: player.streakSeasonId,
-    activeSeasonId: player.team.seasons[0]?.id ?? null,
+    activeSeasonId,
   });
   const imageUrl = player.imageUrl ? cromoMediaUrl("photo") : null;
-  const clubCrestUrl = player.team.club.logoUrl
-    ? cromoMediaUrl("crest")
-    : null;
+  const clubCrestUrl = player.team.club.logoUrl ? cromoMediaUrl("crest") : null;
 
-  const teamTimezone = player.team.timezone || "Europe/Madrid";
-  const rachaAsOf = new Date();
-  const weekWindow = rachaWeekQueryWindow(rachaAsOf, teamTimezone);
-  const weekSessions = await database.teamSession.findMany({
+  const teammates = await database.player.findMany({
     where: {
       teamId: player.teamId,
-      startsAt: {
-        gte: weekWindow.gte,
-        lt: weekWindow.lt,
-      },
+      isArchived: false,
+      id: { not: player.id },
     },
-    select: {
-      startsAt: true,
-      status: true,
-    },
+    select: { currentStreak: true, streakSeasonId: true },
   });
-  const rachaWeek = projectRachaWeek({
-    sessions: weekSessions,
-    timeZone: teamTimezone,
-    asOf: rachaAsOf,
-  });
+  const teammateStreaks = teammates.map((teammate) =>
+    effectiveCurrentStreak({
+      currentStreak: teammate.currentStreak,
+      streakSeasonId: teammate.streakSeasonId,
+      activeSeasonId,
+    })
+  );
+
+  const rachaWeek = await loadRachaWeek(player.teamId, player.team.timezone);
 
   const selectedDate = resolveSelectedDate(date);
   const nextDay = new Date(selectedDate.value);
@@ -302,8 +330,9 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
   });
 
   const fallbackPreTemplate =
-    player.team.forms.find((assignment) => assignment.fillMoment === "PRE_SESSION")
-      ?.template ??
+    player.team.forms.find(
+      (assignment) => assignment.fillMoment === "PRE_SESSION"
+    )?.template ??
     (await database.formTemplate.findUnique({
       where: { code: "system-wellness-pre" },
       select: {
@@ -326,8 +355,9 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     }));
 
   const fallbackPostTemplate =
-    player.team.forms.find((assignment) => assignment.fillMoment === "POST_SESSION")
-      ?.template ??
+    player.team.forms.find(
+      (assignment) => assignment.fillMoment === "POST_SESSION"
+    )?.template ??
     (await database.formTemplate.findUnique({
       where: { code: "system-rpe-post" },
       select: {
@@ -361,33 +391,31 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
 
   return (
     <SessionPage
-      token={token}
-      playerName={player.name}
-      teamName={player.team.name}
-      currentStreak={displayStreak}
-      playingPosition={player.playingPosition}
-      imageUrl={imageUrl}
-      clubCrestUrl={clubCrestUrl}
-      apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
-      selectedDate={selectedDate.iso}
       ageBand={resolvedAge.ageBand}
+      apiUrl={env.NEXT_PUBLIC_API_URL ?? ""}
+      clubCrestUrl={clubCrestUrl}
+      currentStreak={displayStreak}
+      imageUrl={imageUrl}
       parentalSupervisionActive={resolvedAge.parentalSupervisionActive}
-      pushConsent={{
-        uiMode: pushConsent.uiMode,
-        canSubscribe: pushConsent.canSubscribe,
-        canOptOut: pushConsent.canOptOut,
-      }}
-      rachaWeekDays={rachaWeek.days}
-      rachaWeekSessionCount={rachaWeek.sessionCount}
-      selectedEntry={selectedEntry}
-      selectedSession={
-        selectedSession
+      playerName={player.name}
+      playingPosition={player.playingPosition}
+      shirtNumber={player.shirtNumber}
+      teammateStreaks={teammateStreaks}
+      postTemplate={
+        postTemplate
           ? {
-              id: selectedSession.id,
-              title: selectedSession.title,
-              type: selectedSession.type,
-              startsAt: selectedSession.startsAt.toISOString(),
-              endsAt: selectedSession.endsAt.toISOString(),
+              id: postTemplate.id,
+              name: postTemplate.name,
+              questions: postTemplate.questions.map((question) => ({
+                id: question.id,
+                key: question.key,
+                label: question.label,
+                type: question.type,
+                mappingKey: question.mappingKey,
+                minValue: toNumberOrNull(question.minValue),
+                maxValue: toNumberOrNull(question.maxValue),
+                step: toNumberOrNull(question.step),
+              })),
             }
           : null
       }
@@ -402,35 +430,35 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
                 label: question.label,
                 type: question.type,
                 mappingKey: question.mappingKey,
-                minValue:
-                  question.minValue == null ? null : Number(question.minValue),
-                maxValue:
-                  question.maxValue == null ? null : Number(question.maxValue),
-                step: question.step == null ? null : Number(question.step),
+                minValue: toNumberOrNull(question.minValue),
+                maxValue: toNumberOrNull(question.maxValue),
+                step: toNumberOrNull(question.step),
               })),
             }
           : null
       }
-      postTemplate={
-        postTemplate
+      pushConsent={{
+        uiMode: pushConsent.uiMode,
+        canSubscribe: pushConsent.canSubscribe,
+        canOptOut: pushConsent.canOptOut,
+      }}
+      rachaWeekDays={rachaWeek.days}
+      rachaWeekSessionCount={rachaWeek.sessionCount}
+      selectedDate={selectedDate.iso}
+      selectedEntry={selectedEntry}
+      selectedSession={
+        selectedSession
           ? {
-              id: postTemplate.id,
-              name: postTemplate.name,
-              questions: postTemplate.questions.map((question) => ({
-                id: question.id,
-                key: question.key,
-                label: question.label,
-                type: question.type,
-                mappingKey: question.mappingKey,
-                minValue:
-                  question.minValue == null ? null : Number(question.minValue),
-                maxValue:
-                  question.maxValue == null ? null : Number(question.maxValue),
-                step: question.step == null ? null : Number(question.step),
-              })),
+              id: selectedSession.id,
+              title: selectedSession.title,
+              type: selectedSession.type,
+              startsAt: selectedSession.startsAt.toISOString(),
+              endsAt: selectedSession.endsAt.toISOString(),
             }
           : null
       }
+      teamName={player.team.name}
+      token={token}
     />
   );
 };

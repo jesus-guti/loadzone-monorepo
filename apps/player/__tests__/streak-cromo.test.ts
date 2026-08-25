@@ -2,9 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   CROMO_CLAIM,
+  CROMO_SEAL_ARC_TOP,
+  CROMO_SHIRT_OVERPRINT_ROTATION_DEG,
+  CROMO_SHIRT_SEAL_ROTATION_DEG,
   CROMO_TIER_LABEL,
   CROMO_TIER_SHELL,
+  CROMO_TIERS,
+  cromoFoilKind,
   cromoMediaUrl,
+  cromoSealArcBottom,
+  cromoShirtOverprintLabel,
+  cromoTeamRankLabel,
+  resolveCromoShirtNumber,
+  resolveTeamStreakRank,
   streakCountToCromoTier,
 } from "../app/[token]/lib/streak-cromo";
 import {
@@ -23,29 +33,34 @@ describe("streakCountToCromoTier", () => {
     expect(streakCountToCromoTier(7)).toBe(3);
     expect(streakCountToCromoTier(13)).toBe(3);
     expect(streakCountToCromoTier(14)).toBe(4);
-    expect(streakCountToCromoTier(40)).toBe(4);
+    expect(streakCountToCromoTier(29)).toBe(4);
+    expect(streakCountToCromoTier(30)).toBe(5);
+    expect(streakCountToCromoTier(59)).toBe(5);
+    expect(streakCountToCromoTier(60)).toBe(6);
+    expect(streakCountToCromoTier(400)).toBe(6);
   });
 });
 
 describe("Streak Cromo Spanish copy", () => {
-  it("uses habit-framed tier labels and claim without performance scoring", () => {
-    expect(CROMO_TIER_LABEL[1]).toBe("Calentamiento");
-    expect(CROMO_TIER_LABEL[2]).toBe("En racha");
-    expect(CROMO_TIER_LABEL[3]).toBe("En forma");
-    expect(CROMO_TIER_LABEL[4]).toBe("Leyenda");
+  it("uses material tier labels and claim without performance scoring", () => {
+    expect(CROMO_TIER_LABEL[1]).toBe("Bronce");
+    expect(CROMO_TIER_LABEL[2]).toBe("Plata");
+    expect(CROMO_TIER_LABEL[3]).toBe("Oro");
+    expect(CROMO_TIER_LABEL[4]).toBe("Platino");
+    expect(CROMO_TIER_LABEL[5]).toBe("Esmeralda");
+    expect(CROMO_TIER_LABEL[6]).toBe("Diamante");
     expect(CROMO_CLAIM).toBe("Tu constancia fuera del campo");
   });
 
   it("wires each tier to distinct player-local vivid CSS tokens (not sage brand mix)", () => {
-    const tops = ([1, 2, 3, 4] as const).map(
+    const tops = CROMO_TIERS.map(
       (tier) => CROMO_TIER_SHELL[tier]["--cromo-top"]
     );
-    expect(new Set(tops).size).toBe(4);
-    expect(CROMO_TIER_SHELL[1]["--cromo-top"]).toBe("var(--cromo-1-top)");
-    expect(CROMO_TIER_SHELL[2]["--cromo-top"]).toBe("var(--cromo-2-top)");
-    expect(CROMO_TIER_SHELL[3]["--cromo-top"]).toBe("var(--cromo-3-top)");
-    expect(CROMO_TIER_SHELL[4]["--cromo-top"]).toBe("var(--cromo-4-top)");
-    for (const tier of [1, 2, 3, 4] as const) {
+    expect(new Set(tops).size).toBe(CROMO_TIERS.length);
+    for (const tier of CROMO_TIERS) {
+      expect(CROMO_TIER_SHELL[tier]["--cromo-top"]).toBe(
+        `var(--cromo-${tier}-top)`
+      );
       expect(CROMO_TIER_SHELL[tier]["--cromo-top"]).not.toContain("var(--brand)");
       expect(CROMO_TIER_SHELL[tier]["--cromo-bottom"]).not.toContain(
         "var(--brand)"
@@ -53,12 +68,93 @@ describe("Streak Cromo Spanish copy", () => {
     }
   });
 
+  it("paints each tier on the card article via data-streak-cromo-tier CSS", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { fileURLToPath } = await import("node:url");
+    const cssPath = fileURLToPath(
+      new URL("../app/globals.css", import.meta.url)
+    );
+    const css = await readFile(cssPath, "utf8");
+    for (const tier of CROMO_TIERS) {
+      expect(css).toContain(`[data-streak-cromo-tier="${tier}"]`);
+      expect(css).toContain(`--cromo-${tier}-top:`);
+    }
+    expect(css).toContain("background-image:");
+    expect(css).toContain("linear-gradient(180deg, var(--cromo-top)");
+    expect(css).toContain('[data-cromo-foil="plate"]');
+    expect(css).toContain('[data-cromo-foil="holo"]');
+    expect(css).toContain(".cromo-foil-holo");
+  });
+
+  it("uses plate foil on Bronce/Plata and holographic foil from Oro up", () => {
+    expect(cromoFoilKind(1)).toBe("plate");
+    expect(cromoFoilKind(2)).toBe("plate");
+    expect(cromoFoilKind(3)).toBe("holo");
+    expect(cromoFoilKind(4)).toBe("holo");
+    expect(cromoFoilKind(5)).toBe("holo");
+    expect(cromoFoilKind(6)).toBe("holo");
+  });
+
   it("keeps glow tokens as CSS vars so shells stay whisper-highlight", () => {
-    for (const tier of [1, 2, 3, 4] as const) {
+    for (const tier of CROMO_TIERS) {
       expect(CROMO_TIER_SHELL[tier]["--cromo-glow"]).toBe(
         `var(--cromo-${tier}-glow)`
       );
     }
+  });
+});
+
+describe("resolveCromoShirtNumber", () => {
+  it("omits the portrait overprint when the Player has no shirt number", () => {
+    expect(resolveCromoShirtNumber(null)).toBeNull();
+    expect(resolveCromoShirtNumber(undefined)).toBeNull();
+  });
+
+  it("uses Player.shirtNumber for the overprint, not streak rank", () => {
+    expect(resolveCromoShirtNumber(10)).toBe(10);
+    expect(resolveCromoShirtNumber(1)).toBe(1);
+  });
+});
+
+describe("resolveTeamStreakRank", () => {
+  it("gives #1 to the longest Recoverable Streak on the Team", () => {
+    expect(
+      resolveTeamStreakRank({
+        playerStreak: 30,
+        teamStreaks: [3, 0, 30, 12],
+      })
+    ).toEqual({ position: 1, teamSize: 4 });
+  });
+
+  it("omits a rank when this Player’s streak is 0", () => {
+    expect(
+      resolveTeamStreakRank({
+        playerStreak: 0,
+        teamStreaks: [0, 5],
+      })
+    ).toEqual({ position: null, teamSize: 2 });
+  });
+
+  it("shares the best place on a tie (competition ranking)", () => {
+    expect(
+      resolveTeamStreakRank({
+        playerStreak: 7,
+        teamStreaks: [14, 7, 7],
+      })
+    ).toEqual({ position: 2, teamSize: 3 });
+  });
+});
+
+describe("cromo shirt seal copy", () => {
+  it("labels team rank for assistive tech and keeps circular copy on rank", () => {
+    expect(cromoTeamRankLabel(1, 9)).toBe(
+      "Puesto 1 de 9 por racha en el equipo"
+    );
+    expect(cromoShirtOverprintLabel(10)).toBe("Dorsal 10");
+    expect(CROMO_SEAL_ARC_TOP).toBe("RACHA DEL EQUIPO");
+    expect(cromoSealArcBottom(9)).toBe("DE 9");
+    expect(CROMO_SHIRT_SEAL_ROTATION_DEG).toBe(25);
+    expect(CROMO_SHIRT_OVERPRINT_ROTATION_DEG).toBe(25);
   });
 });
 
@@ -80,7 +176,9 @@ describe("parseLabStreak", () => {
     expect(parseLabStreak("14")).toBe(14);
   });
 
-  it("lab presets land on all four cromo tiers", () => {
-    expect(LAB_CROMO_STREAKS.map(streakCountToCromoTier)).toEqual([1, 2, 3, 4]);
+  it("lab presets land on all six cromo tiers", () => {
+    expect(LAB_CROMO_STREAKS.map(streakCountToCromoTier)).toEqual([
+      ...CROMO_TIERS,
+    ]);
   });
 });

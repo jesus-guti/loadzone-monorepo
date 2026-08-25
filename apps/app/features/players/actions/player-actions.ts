@@ -9,6 +9,7 @@ import {
 } from "@repo/database/injury-status";
 import { optionalPlayingPositionSchema } from "@repo/database/playing-position";
 import type { PlayingPosition } from "@repo/database/playing-position";
+import { optionalShirtNumberSchema } from "@repo/database/shirt-number";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { buildObjectKey, uploadImage } from "@repo/storage";
@@ -100,6 +101,7 @@ const createPlayerSchema = z.object({
   dateOfBirth: optionalDateOfBirth,
   ageBandOverride: optionalAgeBandOverride,
   playingPosition: optionalPlayingPositionSchema,
+  shirtNumber: optionalShirtNumberSchema,
 });
 
 export async function createPlayer(
@@ -112,6 +114,7 @@ export async function createPlayer(
       dateOfBirth: formData.get("dateOfBirth") || undefined,
       ageBandOverride: formData.get("ageBandOverride") || undefined,
       playingPosition: formData.get("playingPosition") || undefined,
+      shirtNumber: formData.get("shirtNumber") || undefined,
     });
 
     if (!parsed.success) {
@@ -127,6 +130,7 @@ export async function createPlayer(
         dateOfBirth: parsed.data.dateOfBirth,
         ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
         playingPosition: parsed.data.playingPosition as PlayingPosition | null,
+        shirtNumber: parsed.data.shirtNumber,
       },
     });
 
@@ -151,6 +155,7 @@ const updatePlayerSchema = z.object({
   dateOfBirth: optionalDateOfBirth,
   ageBandOverride: optionalAgeBandOverride,
   playingPosition: optionalPlayingPositionSchema,
+  shirtNumber: optionalShirtNumberSchema,
   reminderConsentAction: reminderConsentActionSchema.default("LEAVE"),
 });
 
@@ -166,6 +171,7 @@ export async function updatePlayer(
       dateOfBirth: formData.get("dateOfBirth") || undefined,
       ageBandOverride: formData.get("ageBandOverride") || undefined,
       playingPosition: formData.get("playingPosition") || undefined,
+      shirtNumber: formData.get("shirtNumber") || undefined,
       reminderConsentAction: formData.get("reminderConsentAction") || "LEAVE",
     });
 
@@ -214,6 +220,7 @@ export async function updatePlayer(
           dateOfBirth: parsed.data.dateOfBirth,
           ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
           playingPosition: parsed.data.playingPosition as PlayingPosition | null,
+          shirtNumber: parsed.data.shirtNumber,
           ...(nextConsentState
             ? { reminderConsentState: nextConsentState }
             : {}),

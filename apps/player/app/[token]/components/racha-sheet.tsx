@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type JSX } from "react";
 import { UserIcon } from "@phosphor-icons/react/User";
+import type { PlayingPosition } from "@repo/database/playing-position";
 import {
   Sheet,
   SheetContent,
@@ -13,10 +13,9 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-
+import { type JSX, useState } from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
-import type { PlayingPosition } from "@repo/database/playing-position";
 import { StreakCromo } from "./streak-cromo";
 
 type RachaSheetProperties = {
@@ -28,6 +27,9 @@ type RachaSheetProperties = {
   readonly clubCrestUrl?: string | null;
   readonly playingPosition?: PlayingPosition | null;
   readonly playerName?: string | null;
+  readonly teamName?: string | null;
+  readonly shirtNumber?: number | null;
+  readonly teammateStreaks?: readonly number[];
 };
 
 function HeaderPhotoDisc({
@@ -44,14 +46,14 @@ function HeaderPhotoDisc({
         // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
         // biome-ignore lint/a11y/noNoninteractiveElementInteractions: photo load fallback to silhouette
         <img
-          src={imageUrl}
           alt=""
-          width={32}
-          height={32}
           className="block h-8 w-8 max-h-8 max-w-8 object-cover"
+          height={32}
           onError={() => {
             setPhotoFailed(true);
           }}
+          src={imageUrl}
+          width={32}
         />
       ) : (
         <UserIcon
@@ -77,42 +79,42 @@ export function RachaSheet({
   clubCrestUrl = null,
   playingPosition = null,
   playerName = null,
+  teamName = null,
+  shirtNumber = null,
+  teammateStreaks = [],
 }: RachaSheetProperties): JSX.Element {
   return (
     <Sheet>
       <SheetTrigger
         render={
           <button
-            type="button"
             aria-label={FOCUS_COPY.streakSheetOpenLabel}
             className="inline-flex shrink-0 rounded-full p-0"
+            type="button"
           />
         }
       >
-        <span className="flex h-10 items-center overflow-hidden rounded-full border border-text-primary/20 bg-bg-primary pl-2.5 pr-1">
+        <span className="flex h-10 items-center overflow-hidden rounded-full border-2 border-text-primary/20 bg-bg-primary pl-2.5 pr-1">
           <StreakFireIcon
-            className="h-3.5 w-3.5"
             backColor={STREAK_FIRE_TONE.back}
+            className="h-3.5 w-3.5"
             frontColor={STREAK_FIRE_TONE.front}
           />
           <span className="pl-1 pr-2.5 text-sm font-semibold tabular-nums text-text-primary">
             {streakCount}
           </span>
-          <span className="h-4 w-px shrink-0 bg-text-primary/20" aria-hidden />
+          <span aria-hidden className="h-6 w-0.5 shrink-0 bg-text-primary/20" />
           <span className="py-1 pl-2 pr-0.5">
-            <HeaderPhotoDisc
-              key={imageUrl ?? "none"}
-              imageUrl={imageUrl}
-            />
+            <HeaderPhotoDisc imageUrl={imageUrl} key={imageUrl ?? "none"} />
           </span>
         </span>
       </SheetTrigger>
       <SheetContent
+        className="flex min-h-[95dvh] flex-col gap-0 overflow-y-auto rounded-t-3xl bg-bg-primary"
         side="bottom"
-        className="flex h-[90dvh] max-h-[90dvh] flex-col gap-0 overflow-y-auto rounded-t-3xl bg-bg-primary"
       >
         <SheetHeader className="space-y-1 pb-2">
-          <SheetTitle className="text-lg text-text-primary">
+          <SheetTitle className="text-center text-lg text-text-primary">
             {FOCUS_COPY.streakSheetTitle}
           </SheetTitle>
           <SheetDescription className="sr-only">
@@ -121,10 +123,21 @@ export function RachaSheet({
         </SheetHeader>
 
         <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-2">
-          <div className="flex flex-col items-center gap-2 text-center">
+          <StreakCromo
+            clubCrestUrl={clubCrestUrl}
+            imageUrl={imageUrl}
+            playerName={playerName}
+            playingPosition={playingPosition}
+            restarted={restarted}
+            shirtNumber={shirtNumber}
+            streakCount={streakCount}
+            teamName={teamName}
+            teammateStreaks={teammateStreaks}
+          />
+          <div className="flex flex-col items-center gap-2 text-center mt-auto mb-0">
             <StreakFireIcon
-              className="size-10"
               backColor={STREAK_FIRE_TONE.back}
+              className="size-10"
               frontColor={STREAK_FIRE_TONE.front}
             />
             <p className="text-2xl font-semibold tracking-tight text-text-primary">
@@ -132,17 +145,17 @@ export function RachaSheet({
             </p>
           </div>
 
-          <div className="flex w-full max-w-sm flex-col items-center gap-3">
+          <div className="flex w-full max-w-sm flex-col items-center gap-3 mb-auto mt-0">
             <div
+              aria-label="Sesiones del equipo esta semana"
               className="flex w-full justify-between gap-1"
               role="list"
-              aria-label="Sesiones del equipo esta semana"
             >
               {weekDays.map((day) => (
                 <div
+                  className="flex flex-1 flex-col items-center gap-1.5"
                   key={day.weekday}
                   role="listitem"
-                  className="flex flex-1 flex-col items-center gap-1.5"
                 >
                   <span
                     className={cn(
@@ -154,11 +167,11 @@ export function RachaSheet({
                     {day.weekday}
                   </span>
                   <span
+                    aria-hidden
                     className={cn(
                       "h-1 w-4 rounded-full",
                       day.hasSession ? "bg-brand" : "bg-transparent"
                     )}
-                    aria-hidden
                   />
                 </div>
               ))}
@@ -167,15 +180,6 @@ export function RachaSheet({
               {FOCUS_COPY.streakWeekBanner(weekSessionCount)}
             </p>
           </div>
-
-          <StreakCromo
-            streakCount={streakCount}
-            restarted={restarted}
-            imageUrl={imageUrl}
-            clubCrestUrl={clubCrestUrl}
-            playingPosition={playingPosition}
-            playerName={playerName}
-          />
         </div>
       </SheetContent>
     </Sheet>

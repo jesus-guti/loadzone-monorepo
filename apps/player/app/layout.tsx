@@ -1,10 +1,12 @@
 import "./styles.css";
 import { Toaster } from "@repo/design-system/components/sonner";
 import { fonts } from "@repo/design-system/lib/fonts";
+import { cn } from "@repo/design-system/lib/utils";
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { ServiceWorkerRegister } from "./components/sw-register";
+import { cromoFraunces, cromoInstrument } from "../lib/cromo-fonts";
 
 export const metadata: Metadata = {
   title: "LoadZone",
@@ -37,7 +39,11 @@ type RootLayoutProperties = {
 };
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
-  <html className={fonts} lang="es" suppressHydrationWarning>
+  <html
+    className={cn(fonts, cromoInstrument.variable, cromoFraunces.variable)}
+    lang="es"
+    suppressHydrationWarning
+  >
     <body className="bg-background text-foreground">
       <ThemeProvider
         attribute="class"

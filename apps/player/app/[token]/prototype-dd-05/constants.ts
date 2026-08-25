@@ -241,8 +241,8 @@ export const STUB_QUESTIONS: readonly StubQuestion[] = [
 
 export const DEMO_STREAK = 3;
 
-/** Lab presets that land on cromo tiers 1–4 (days 0 / 3 / 7 / 14). */
-export const LAB_CROMO_STREAKS = [0, 3, 7, 14] as const;
+/** Lab presets that land on cromo tiers 1–6 (days 0 / 3 / 7 / 14 / 30 / 60). */
+export const LAB_CROMO_STREAKS = [0, 3, 7, 14, 30, 60] as const;
 export const DEMO_PLAYER_NAME = "Alex";
 export const DEMO_TEAM_NAME = "Cadete A";
 

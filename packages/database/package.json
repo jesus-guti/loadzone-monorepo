@@ -11,6 +11,7 @@
     "./risk-thresholds": "./risk-thresholds.ts",
     "./age-band-policy": "./age-band-policy.ts",
     "./playing-position": "./playing-position.ts",
+    "./shirt-number": "./shirt-number.ts",
     "./wellness-limits": "./wellness-limits.ts",
     "./recoverable-streak": "./recoverable-streak.ts",
     "./recompute-player-streak": "./recompute-player-streak.ts",

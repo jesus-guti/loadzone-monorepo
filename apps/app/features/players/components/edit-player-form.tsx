@@ -27,6 +27,7 @@ type EditPlayerFormProperties = {
     dateOfBirth: string | null;
     ageBandOverride: AgeBand | null;
     playingPosition: PlayingPosition | null;
+    shirtNumber: number | null;
     reminderConsentState: PlayerReminderConsentState;
     resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
@@ -205,6 +206,23 @@ export function EditPlayerForm({
         </Select>
         <p className="text-xs text-text-secondary">
           Opcional. Vacío no muestra línea en el cromo de racha.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="shirtNumber">Dorsal</Label>
+        <Input
+          defaultValue={player.shirtNumber ?? ""}
+          id="shirtNumber"
+          inputMode="numeric"
+          max={99}
+          min={1}
+          name="shirtNumber"
+          placeholder="Ej: 10"
+          type="number"
+        />
+        <p className="text-xs text-text-secondary">
+          Opcional. Vacío no muestra el sello en el cromo de racha.
         </p>
       </div>
 

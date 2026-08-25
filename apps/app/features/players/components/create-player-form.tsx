@@ -111,6 +111,22 @@ export function CreatePlayerForm() {
         </p>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="shirtNumber">Dorsal</Label>
+        <Input
+          id="shirtNumber"
+          inputMode="numeric"
+          max={99}
+          min={1}
+          name="shirtNumber"
+          placeholder="Ej: 10"
+          type="number"
+        />
+        <p className="text-xs text-text-secondary">
+          Opcional. Vacío no muestra el sello en el cromo de racha.
+        </p>
+      </div>
+
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? "Creando..." : "Crear jugador"}
       </Button>

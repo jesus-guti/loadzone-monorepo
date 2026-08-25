@@ -74,6 +74,14 @@ type SeedPlayerSpec = {
   ageYears: number | null;
   ageBandOverride: AgeBand | null;
   reminderConsentState: PlayerReminderConsentState;
+  /** Optional dorsal; cromo seal omitted when we leave this unset — always set in QA. */
+  shirtNumber: number;
+  /**
+   * Recoverable streak days. `assisted` is 30 so local cromo shows stamp + holo
+   * (Oro+). `guided` stays 3 for checklist D1 (Plata = plate, not holo).
+   */
+  currentStreak: number;
+  longestStreak: number;
   caseIds: string[];
   notes: string;
 };
@@ -85,8 +93,12 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 8,
     ageBandOverride: null,
     reminderConsentState: "ELIGIBLE",
+    shirtNumber: 10,
+    currentStreak: 30,
+    longestStreak: 30,
     caseIds: ["A1", "C1"],
-    notes: "Assisted copy + presence; GUARDIAN_CONSENTS reminders",
+    notes:
+      "Assisted copy + presence; GUARDIAN_CONSENTS reminders. Cromo: dorsal 10 + Esmeralda/holo (30d).",
   },
   {
     key: "guided",
@@ -94,8 +106,11 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 12,
     ageBandOverride: null,
     reminderConsentState: "ELIGIBLE",
+    shirtNumber: 12,
+    currentStreak: 3,
+    longestStreak: 5,
     caseIds: ["A2", "C2", "B1", "B4"],
-    notes: "Guided default; opt-in required for player push",
+    notes: "Guided default; opt-in required for player push. Cromo: dorsal 12 + Plata/plate (3d).",
   },
   {
     key: "guided-opted-in",
@@ -103,6 +118,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 12,
     ageBandOverride: null,
     reminderConsentState: "OPTED_IN",
+    shirtNumber: 8,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["C3", "C6"],
     notes: "Cron / anti-nag eligible once push subscribed",
   },
@@ -112,6 +130,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 12,
     ageBandOverride: null,
     reminderConsentState: "OPTED_OUT",
+    shirtNumber: 22,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["C4"],
     notes: "No player reminders",
   },
@@ -121,6 +142,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 12,
     ageBandOverride: null,
     reminderConsentState: "GUARDIAN_BLOCKED",
+    shirtNumber: 5,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["C4"],
     notes: "Guardian blocked ledger state",
   },
@@ -130,6 +154,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 15,
     ageBandOverride: null,
     reminderConsentState: "ELIGIBLE",
+    shirtNumber: 15,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["A3", "C5-youth"],
     notes: "Independent 14–15; parental supervision ON via team policy",
   },
@@ -139,6 +166,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 18,
     ageBandOverride: null,
     reminderConsentState: "ELIGIBLE",
+    shirtNumber: 9,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["A4", "C5"],
     notes: "Independent majority; no care silent note; guardian miss off",
   },
@@ -148,6 +178,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: 12,
     ageBandOverride: "ASSISTED",
     reminderConsentState: "ASSISTED_GUARDIAN_GRANTED",
+    shirtNumber: 1,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["A5"],
     notes: "DOB guided-age + ASSISTED override",
   },
@@ -157,6 +190,9 @@ const PLAYER_SPECS: SeedPlayerSpec[] = [
     ageYears: null,
     ageBandOverride: null,
     reminderConsentState: "ELIGIBLE",
+    shirtNumber: 99,
+    currentStreak: 0,
+    longestStreak: 0,
     caseIds: ["A6"],
     notes: "UNASSIGNED → Focus fallback guided",
   },
@@ -401,8 +437,9 @@ async function main(): Promise<void> {
             isArchived: false,
             status: "AVAILABLE",
             streakSeasonId: season.id,
-            currentStreak: spec.key === "guided" ? 3 : 0,
-            longestStreak: spec.key === "guided" ? 5 : 0,
+            shirtNumber: spec.shirtNumber,
+            currentStreak: spec.currentStreak,
+            longestStreak: spec.longestStreak,
           },
           select: {
             id: true,
@@ -422,8 +459,9 @@ async function main(): Promise<void> {
             reminderConsentState: spec.reminderConsentState,
             status: "AVAILABLE",
             streakSeasonId: season.id,
-            currentStreak: spec.key === "guided" ? 3 : 0,
-            longestStreak: spec.key === "guided" ? 5 : 0,
+            shirtNumber: spec.shirtNumber,
+            currentStreak: spec.currentStreak,
+            longestStreak: spec.longestStreak,
           },
           select: {
             id: true,
@@ -558,6 +596,7 @@ async function main(): Promise<void> {
       "B4 Green check-in → no care alert",
       "C2/C3 Push prompt modes per consent state",
       "D1 Guided player has currentStreak=3 chip",
+      "D2 Assisted player cromo: dorsal 10 + Esmeralda holographic foil (30d)",
       "E1 Staff /settings age-band + reminder consent fields",
       "E2 Staff /players edit shows DOB / override / resolved band",
     ],

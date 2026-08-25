@@ -456,6 +456,8 @@ model Player {
   ageBandOverride  AgeBand?
   /// Optional coarse playing line for Streak Cromo identity (POR/DEF/MED/DEL).
   playingPosition  PlayingPosition?
+  /// Optional shirt (dorsal) number for Streak Cromo ink seal; omit seal when null.
+  shirtNumber      Int?
   /// Compact Reminder Consent state; PushSubscription rows are transport only.
   reminderConsentState PlayerReminderConsentState @default(ELIGIBLE)
   entries             DailyEntry[]

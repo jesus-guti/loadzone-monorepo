@@ -50,37 +50,52 @@
   --chart-5: oklch(0.65 0.12 32);
 
   /*
-   * Streak Cromo vivid tiers (player-local only).
-   * Progression: cool/neutral → amber → saturated warm → high.
+   * Streak Cromo material tiers (player-local only).
+   * Progression: bronce → plata → oro → platino → esmeralda → diamante,
+   * light metals first, then darker shells with brighter edges.
    * Do not fork @repo/design-system brand sage for staff.
    */
-  --cromo-1-top: oklch(0.94 0.025 230);
-  --cromo-1-bottom: oklch(0.86 0.04 220);
+  --cromo-1-top: oklch(0.87 0.055 68);
+  --cromo-1-bottom: oklch(0.71 0.085 55);
   --cromo-1-glow: 0.05;
-  --cromo-1-edge: 0.24;
+  --cromo-1-edge: 0.26;
   --cromo-1-inset: 0.08;
-  --cromo-1-fg: oklch(0.28 0.03 230);
+  --cromo-1-fg: oklch(0.27 0.05 55);
 
-  --cromo-2-top: oklch(0.93 0.09 88);
-  --cromo-2-bottom: oklch(0.8 0.13 78);
+  --cromo-2-top: oklch(0.94 0.006 250);
+  --cromo-2-bottom: oklch(0.82 0.012 250);
   --cromo-2-glow: 0.06;
-  --cromo-2-edge: 0.32;
+  --cromo-2-edge: 0.3;
   --cromo-2-inset: 0.1;
-  --cromo-2-fg: oklch(0.3 0.05 70);
+  --cromo-2-fg: oklch(0.3 0.012 250);
 
-  --cromo-3-top: oklch(0.74 0.17 48);
-  --cromo-3-bottom: oklch(0.56 0.19 36);
+  --cromo-3-top: oklch(0.91 0.1 94);
+  --cromo-3-bottom: oklch(0.76 0.145 82);
   --cromo-3-glow: 0.07;
-  --cromo-3-edge: 0.42;
-  --cromo-3-inset: 0.16;
-  --cromo-3-fg: oklch(0.985 0.01 85);
+  --cromo-3-edge: 0.36;
+  --cromo-3-inset: 0.13;
+  --cromo-3-fg: oklch(0.29 0.06 75);
 
-  --cromo-4-top: oklch(0.58 0.21 28);
-  --cromo-4-bottom: oklch(0.4 0.18 18);
+  --cromo-4-top: oklch(0.56 0.03 248);
+  --cromo-4-bottom: oklch(0.38 0.028 256);
   --cromo-4-glow: 0.09;
-  --cromo-4-edge: 0.55;
-  --cromo-4-inset: 0.22;
-  --cromo-4-fg: oklch(0.99 0.01 80);
+  --cromo-4-edge: 0.46;
+  --cromo-4-inset: 0.17;
+  --cromo-4-fg: oklch(0.97 0.008 240);
+
+  --cromo-5-top: oklch(0.53 0.14 158);
+  --cromo-5-bottom: oklch(0.34 0.12 162);
+  --cromo-5-glow: 0.11;
+  --cromo-5-edge: 0.54;
+  --cromo-5-inset: 0.2;
+  --cromo-5-fg: oklch(0.98 0.02 160);
+
+  --cromo-6-top: oklch(0.66 0.12 210);
+  --cromo-6-bottom: oklch(0.4 0.13 252);
+  --cromo-6-glow: 0.14;
+  --cromo-6-edge: 0.62;
+  --cromo-6-inset: 0.24;
+  --cromo-6-fg: oklch(0.99 0.01 220);
 }
 
 .dark {
@@ -131,32 +146,289 @@
   --chart-4: oklch(0.79 0.1 145);
   --chart-5: oklch(0.73 0.12 32);
 
-  --cromo-1-top: oklch(0.32 0.04 230);
-  --cromo-1-bottom: oklch(0.24 0.035 220);
+  --cromo-1-top: oklch(0.42 0.06 62);
+  --cromo-1-bottom: oklch(0.28 0.05 52);
   --cromo-1-glow: 0.06;
-  --cromo-1-edge: 0.35;
+  --cromo-1-edge: 0.34;
   --cromo-1-inset: 0.12;
-  --cromo-1-fg: oklch(0.94 0.02 230);
+  --cromo-1-fg: oklch(0.94 0.03 70);
 
-  --cromo-2-top: oklch(0.42 0.1 88);
-  --cromo-2-bottom: oklch(0.32 0.11 78);
+  --cromo-2-top: oklch(0.44 0.008 250);
+  --cromo-2-bottom: oklch(0.3 0.008 250);
   --cromo-2-glow: 0.07;
-  --cromo-2-edge: 0.4;
+  --cromo-2-edge: 0.38;
   --cromo-2-inset: 0.14;
-  --cromo-2-fg: oklch(0.95 0.03 90);
+  --cromo-2-fg: oklch(0.95 0.005 250);
 
-  --cromo-3-top: oklch(0.58 0.16 48);
-  --cromo-3-bottom: oklch(0.42 0.17 36);
+  --cromo-3-top: oklch(0.52 0.11 90);
+  --cromo-3-bottom: oklch(0.36 0.1 78);
   --cromo-3-glow: 0.08;
-  --cromo-3-edge: 0.48;
-  --cromo-3-inset: 0.18;
-  --cromo-3-fg: oklch(0.98 0.01 85);
+  --cromo-3-edge: 0.44;
+  --cromo-3-inset: 0.16;
+  --cromo-3-fg: oklch(0.97 0.03 90);
 
-  --cromo-4-top: oklch(0.5 0.19 28);
-  --cromo-4-bottom: oklch(0.34 0.16 18);
+  --cromo-4-top: oklch(0.5 0.035 248);
+  --cromo-4-bottom: oklch(0.33 0.03 256);
   --cromo-4-glow: 0.1;
-  --cromo-4-edge: 0.58;
-  --cromo-4-inset: 0.24;
-  --cromo-4-fg: oklch(0.99 0.01 80);
+  --cromo-4-edge: 0.5;
+  --cromo-4-inset: 0.18;
+  --cromo-4-fg: oklch(0.97 0.01 240);
+
+  --cromo-5-top: oklch(0.46 0.13 158);
+  --cromo-5-bottom: oklch(0.29 0.11 162);
+  --cromo-5-glow: 0.12;
+  --cromo-5-edge: 0.56;
+  --cromo-5-inset: 0.21;
+  --cromo-5-fg: oklch(0.98 0.02 160);
+
+  --cromo-6-top: oklch(0.56 0.12 212);
+  --cromo-6-bottom: oklch(0.33 0.12 252);
+  --cromo-6-glow: 0.15;
+  --cromo-6-edge: 0.64;
+  --cromo-6-inset: 0.25;
+  --cromo-6-fg: oklch(0.99 0.01 220);
+}
+
+/*
+ * Streak Cromo card chrome — paint on the article so the tier is visible
+ * around the photo (the portrait otherwise covers an inner-well gradient).
+ */
+[data-streak-cromo-tier="1"] {
+  --cromo-top: var(--cromo-1-top);
+  --cromo-bottom: var(--cromo-1-bottom);
+  --cromo-glow: var(--cromo-1-glow);
+  --cromo-edge: var(--cromo-1-edge);
+  --cromo-inset: var(--cromo-1-inset);
+  --cromo-fg: var(--cromo-1-fg);
+}
+
+[data-streak-cromo-tier="2"] {
+  --cromo-top: var(--cromo-2-top);
+  --cromo-bottom: var(--cromo-2-bottom);
+  --cromo-glow: var(--cromo-2-glow);
+  --cromo-edge: var(--cromo-2-edge);
+  --cromo-inset: var(--cromo-2-inset);
+  --cromo-fg: var(--cromo-2-fg);
+}
+
+[data-streak-cromo-tier="3"] {
+  --cromo-top: var(--cromo-3-top);
+  --cromo-bottom: var(--cromo-3-bottom);
+  --cromo-glow: var(--cromo-3-glow);
+  --cromo-edge: var(--cromo-3-edge);
+  --cromo-inset: var(--cromo-3-inset);
+  --cromo-fg: var(--cromo-3-fg);
+}
+
+[data-streak-cromo-tier="4"] {
+  --cromo-top: var(--cromo-4-top);
+  --cromo-bottom: var(--cromo-4-bottom);
+  --cromo-glow: var(--cromo-4-glow);
+  --cromo-edge: var(--cromo-4-edge);
+  --cromo-inset: var(--cromo-4-inset);
+  --cromo-fg: var(--cromo-4-fg);
+}
+
+[data-streak-cromo-tier="5"] {
+  --cromo-top: var(--cromo-5-top);
+  --cromo-bottom: var(--cromo-5-bottom);
+  --cromo-glow: var(--cromo-5-glow);
+  --cromo-edge: var(--cromo-5-edge);
+  --cromo-inset: var(--cromo-5-inset);
+  --cromo-fg: var(--cromo-5-fg);
+}
+
+[data-streak-cromo-tier="6"] {
+  --cromo-top: var(--cromo-6-top);
+  --cromo-bottom: var(--cromo-6-bottom);
+  --cromo-glow: var(--cromo-6-glow);
+  --cromo-edge: var(--cromo-6-edge);
+  --cromo-inset: var(--cromo-6-inset);
+  --cromo-fg: var(--cromo-6-fg);
+}
+
+[data-streak-cromo-tier] {
+  color: var(--cromo-fg);
+}
+
+.cromo-shell {
+  background-color: var(--cromo-bottom);
+  background-image:
+    radial-gradient(
+      ellipse 80% 55% at 50% 12%,
+      color-mix(
+        in oklch,
+        var(--cromo-top) calc(var(--cromo-glow) * 100%),
+        transparent
+      )
+        0%,
+      transparent 72%
+    ),
+    linear-gradient(180deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%);
+}
+
+.cromo-foil-frame {
+  --cromo-radius: 0.5rem;
+  --cromo-radius-inner: calc(var(--cromo-radius) - 3px);
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 16.5rem);
+  padding: 3px;
+  overflow: hidden;
+  border-radius: var(--cromo-radius);
+}
+
+.cromo-shell,
+.cromo-foil-holo,
+.cromo-foil-brushed {
+  border-radius: var(--cromo-radius-inner);
+}
+
+[data-cromo-foil="plate"] {
+  background-color: var(--cromo-bottom);
+  background-image: linear-gradient(
+    145deg,
+    oklch(1 0 0 / calc(0.25 + 0.7 * var(--cromo-foil-intensity, 0.3))) 0%,
+    color-mix(in oklch, var(--cromo-top) 55%, transparent) 26%,
+    oklch(0 0 0 / 0.3) 50%,
+    color-mix(in oklch, var(--cromo-bottom) 70%, transparent) 74%,
+    oklch(1 0 0 / calc(0.2 + 0.6 * var(--cromo-foil-intensity, 0.3))) 100%
+  );
+}
+
+[data-cromo-foil="holo"] {
+  background-image: repeating-linear-gradient(
+    108deg,
+    oklch(0.68 0.19 25) 0%,
+    oklch(0.82 0.17 95) 7%,
+    oklch(0.8 0.19 150) 14%,
+    oklch(0.74 0.15 220) 21%,
+    oklch(0.66 0.19 300) 28%,
+    oklch(0.68 0.19 25) 35%
+  );
+  background-size: 220% 220%;
+  animation: cromo-foil-rim 8s ease-in-out infinite alternate;
+}
+
+.cromo-foil-brushed {
+  background-image: repeating-linear-gradient(
+    96deg,
+    oklch(1 0 0 / 0.07) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: soft-light;
+}
+
+.cromo-foil-holo {
+  isolation: isolate;
+  mix-blend-mode: plus-lighter;
+  overflow: hidden;
+}
+
+.cromo-foil-holo-layer {
+  position: absolute;
+  inset: -25%;
+  animation: cromo-foil-drift 7s ease-in-out infinite alternate;
+}
+
+.cromo-foil-holo-rainbow {
+  background-image: repeating-linear-gradient(
+    108deg,
+    oklch(0.68 0.19 25) 0%,
+    oklch(0.82 0.17 95) 7%,
+    oklch(0.8 0.19 150) 14%,
+    oklch(0.74 0.15 220) 21%,
+    oklch(0.66 0.19 300) 28%,
+    oklch(0.68 0.19 25) 35%
+  );
+  filter: saturate(1.35) contrast(1.1);
+}
+
+.cromo-foil-holo-sparkle {
+  background-image:
+    radial-gradient(
+      circle at 30% 30%,
+      oklch(1 0 0 / 0.7) 0,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 72% 64%,
+      oklch(1 0 0 / 0.45) 0,
+      transparent 38%
+    );
+  background-size: 74px 74px, 118px 118px;
+  mix-blend-mode: screen;
+}
+
+.cromo-foil-holo-glare {
+  position: absolute;
+  inset: -18%;
+  background-image: radial-gradient(
+    farthest-side circle at 42% 36%,
+    oklch(1 0 0 / 0.75) 0%,
+    oklch(1 0 0 / 0.18) 26%,
+    transparent 62%
+  );
+  animation: cromo-foil-glare 9s ease-in-out infinite alternate;
+}
+
+.cromo-foil-holo-mask {
+  position: absolute;
+  inset: -12%;
+  overflow: hidden;
+  mask-image: radial-gradient(
+    farthest-side circle at 48% 40%,
+    oklch(0 0 0) 0%,
+    oklch(0 0 0 / 0.55) 34%,
+    transparent 78%
+  );
+  animation: cromo-foil-mask 11s ease-in-out infinite alternate;
+}
+
+@keyframes cromo-foil-rim {
+  from { background-position: 18% 22%; }
+  to { background-position: 82% 78%; }
+}
+
+@keyframes cromo-foil-drift {
+  from { transform: translate3d(-9%, -7%, 0); }
+  to { transform: translate3d(9%, 7%, 0); }
+}
+
+@keyframes cromo-foil-glare {
+  from { transform: translate3d(-8%, -6%, 0); }
+  to { transform: translate3d(10%, 8%, 0); }
+}
+
+@keyframes cromo-foil-mask {
+  from { transform: translate3d(-6%, 5%, 0); }
+  to { transform: translate3d(7%, -4%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cromo-foil="holo"],
+  .cromo-foil-holo-layer,
+  .cromo-foil-holo-glare,
+  .cromo-foil-holo-mask {
+    animation: none;
+  }
+}
+
+.cromo-tier-label {
+  font-family: var(--font-cromo-instrument), ui-serif, Georgia, serif;
+}
+
+.cromo-team-name {
+  font-family: var(--font-cromo-instrument), ui-serif, Georgia, serif;
+  font-size: clamp(0.55rem, 2.6vw, 0.75rem);
+  line-height: 1.15;
+  max-width: 9.5rem;
+  overflow-wrap: anywhere;
+}
+
+[data-streak-cromo-tier="4"] .cromo-tier-label,
+[data-streak-cromo-tier="5"] .cromo-tier-label,
+[data-streak-cromo-tier="6"] .cromo-tier-label {
+  font-family: var(--font-cromo-fraunces), ui-serif, Georgia, serif;
 }
 
