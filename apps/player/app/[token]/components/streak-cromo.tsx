@@ -13,7 +13,6 @@ import {
   CROMO_SEAL_ARC_TOP,
   CROMO_SHIRT_OVERPRINT_ROTATION_DEG,
   CROMO_SHIRT_SEAL_ROTATION_DEG,
-  CROMO_TIER_LABEL,
   type CromoFoilKind,
   type CromoTier,
   cromoFoilKind,
@@ -264,11 +263,9 @@ function cromoFooterSignals({
 function CromoPortrait({
   imageUrl,
   dorsal,
-  tier,
 }: {
   readonly imageUrl: string | null;
   readonly dorsal: number | null;
-  readonly tier: CromoTier;
 }): JSX.Element {
   const [photoFailed, setPhotoFailed] = useState(false);
   const [photoRevealed, setPhotoRevealed] = useState(false);
@@ -323,18 +320,6 @@ function CromoPortrait({
         className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/45 to-transparent"
       />
       {dorsal === null ? null : <ShirtOverprint shirtNumber={dorsal} />}
-      <p
-        className={cn(
-          "cromo-tier-label pointer-events-none absolute right-2.5 bottom-2 z-10 max-w-[85%] text-right italic leading-[0.95] text-white",
-          tier <= 3 ? "text-[1.35rem]" : "text-[1.5rem] font-semibold"
-        )}
-        style={{
-          textShadow:
-            "0 1px 1px oklch(0 0 0 / 0.45), 0 8px 18px oklch(0 0 0 / 0.4)",
-        }}
-      >
-        {CROMO_TIER_LABEL[tier]}
-      </p>
     </div>
   );
 }
@@ -431,7 +416,7 @@ export function StreakCromo({
         foilKind={foilKind}
         tier={tier}
       >
-        <CromoPortrait dorsal={dorsal} imageUrl={imageUrl} tier={tier} />
+        <CromoPortrait dorsal={dorsal} imageUrl={imageUrl} />
 
         {playerName || positionLine ? (
           <header className="space-y-0.5 px-0.5">

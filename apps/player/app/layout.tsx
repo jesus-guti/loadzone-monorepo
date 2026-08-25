@@ -6,7 +6,7 @@ import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { ServiceWorkerRegister } from "./components/sw-register";
-import { cromoFraunces, cromoInstrument } from "../lib/cromo-fonts";
+import { cromoInstrument } from "../lib/cromo-fonts";
 
 export const metadata: Metadata = {
   title: "LoadZone",
@@ -40,7 +40,7 @@ type RootLayoutProperties = {
 
 const RootLayout = ({ children }: RootLayoutProperties) => (
   <html
-    className={cn(fonts, cromoInstrument.variable, cromoFraunces.variable)}
+    className={cn(fonts, cromoInstrument.variable)}
     lang="es"
     suppressHydrationWarning
   >

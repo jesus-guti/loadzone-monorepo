@@ -414,21 +414,11 @@
   }
 }
 
-.cromo-tier-label {
-  font-family: var(--font-cromo-instrument), ui-serif, Georgia, serif;
-}
-
 .cromo-team-name {
   font-family: var(--font-cromo-instrument), ui-serif, Georgia, serif;
   font-size: clamp(0.55rem, 2.6vw, 0.75rem);
   line-height: 1.15;
   max-width: 9.5rem;
   overflow-wrap: anywhere;
-}
-
-[data-streak-cromo-tier="4"] .cromo-tier-label,
-[data-streak-cromo-tier="5"] .cromo-tier-label,
-[data-streak-cromo-tier="6"] .cromo-tier-label {
-  font-family: var(--font-cromo-fraunces), ui-serif, Georgia, serif;
 }
 

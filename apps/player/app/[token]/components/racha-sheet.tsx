@@ -1,6 +1,6 @@
 "use client";
 
-import { UserIcon } from "@phosphor-icons/react/User";
+import { UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import type { PlayingPosition } from "@repo/database/playing-position";
 import {
   Sheet,
@@ -13,7 +13,7 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-import { type JSX, useState } from "react";
+import type { JSX } from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
 import { StreakCromo } from "./streak-cromo";
@@ -32,36 +32,12 @@ type RachaSheetProperties = {
   readonly teammateStreaks?: readonly number[];
 };
 
-function HeaderPhotoDisc({
-  imageUrl,
-}: {
-  readonly imageUrl: string | null;
-}): JSX.Element {
-  const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = imageUrl !== null && imageUrl !== "" && !photoFailed;
-
+function HeaderPhotoDisc(): JSX.Element {
   return (
-    <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-full bg-bg-secondary">
-      {showPhoto ? (
-        // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
-        // biome-ignore lint/a11y/noNoninteractiveElementInteractions: photo load fallback to silhouette
-        <img
-          alt=""
-          className="block h-8 w-8 max-h-8 max-w-8 object-cover"
-          height={32}
-          onError={() => {
-            setPhotoFailed(true);
-          }}
-          src={imageUrl}
-          width={32}
-        />
-      ) : (
-        <UserIcon
-          className="absolute inset-0 m-auto h-4 w-4 text-text-secondary"
-          weight="regular"
-        />
-      )}
-    </span>
+    <UserCircleIcon
+      className="relative block m-auto h-5.5 w-5.5 text-text-primary"
+      weight="fill"
+    />
   );
 }
 
@@ -97,7 +73,7 @@ export function RachaSheet({
         <span className="flex h-10 items-center overflow-hidden rounded-full border-2 border-text-primary/20 bg-bg-primary pl-2.5 pr-1">
           <StreakFireIcon
             backColor={STREAK_FIRE_TONE.back}
-            className="h-3.5 w-3.5"
+            className="h-5 w-5"
             frontColor={STREAK_FIRE_TONE.front}
           />
           <span className="pl-1 pr-2.5 text-sm font-semibold tabular-nums text-text-primary">
@@ -131,8 +107,8 @@ export function RachaSheet({
             restarted={restarted}
             shirtNumber={shirtNumber}
             streakCount={streakCount}
-            teamName={teamName}
             teammateStreaks={teammateStreaks}
+            teamName={teamName}
           />
           <div className="flex flex-col items-center gap-2 text-center mt-auto mb-0">
             <StreakFireIcon
