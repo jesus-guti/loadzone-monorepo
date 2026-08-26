@@ -13,9 +13,13 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-import { useState, type JSX } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState, type JSX } from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
+import { parseCromoRarity } from "../prototype-cromo-tcg/constants";
+import { CromoTcgSwitcher } from "../prototype-cromo-tcg/switcher";
+import { TcgPrototypeCromo } from "../prototype-cromo-tcg/tcg-cromo";
 import { StreakCromo } from "./streak-cromo";
 
 type RachaSheetProperties = {
@@ -31,6 +35,11 @@ type RachaSheetProperties = {
   readonly shirtNumber?: number | null;
   readonly teammateStreaks?: readonly number[];
 };
+
+type CromoProperties = Omit<
+  RachaSheetProperties,
+  "weekDays" | "weekSessionCount"
+>;
 
 function HeaderPhotoDisc({
   imageUrl,
@@ -68,6 +77,46 @@ function HeaderPhotoDisc({
   );
 }
 
+function ProductionCromo(properties: CromoProperties): JSX.Element {
+  return (
+    <StreakCromo
+      clubCrestUrl={properties.clubCrestUrl}
+      imageUrl={properties.imageUrl}
+      playerName={properties.playerName}
+      playingPosition={properties.playingPosition}
+      restarted={properties.restarted}
+      shirtNumber={properties.shirtNumber}
+      streakCount={properties.streakCount}
+      teammateStreaks={properties.teammateStreaks}
+      teamName={properties.teamName}
+    />
+  );
+}
+
+function RachaCromoHost(properties: CromoProperties): JSX.Element {
+  const searchParams = useSearchParams();
+  const rarity = parseCromoRarity(searchParams.get("rarity"));
+
+  if (process.env.NODE_ENV !== "production" && rarity) {
+    return (
+      <TcgPrototypeCromo
+        clubCrestUrl={properties.clubCrestUrl}
+        imageUrl={properties.imageUrl}
+        playerName={properties.playerName}
+        playingPosition={properties.playingPosition}
+        rarity={rarity}
+        restarted={properties.restarted}
+        shirtNumber={properties.shirtNumber}
+        streakCount={properties.streakCount}
+        teammateStreaks={properties.teammateStreaks}
+        teamName={properties.teamName}
+      />
+    );
+  }
+
+  return <ProductionCromo {...properties} />;
+}
+
 /**
  * Header Recoverable Streak pill → tall Racha overlay (no new route).
  * Guardian is not an operator of this sheet; Age Bands share the same chrome.
@@ -86,6 +135,18 @@ export function RachaSheet({
   shirtNumber = null,
   teammateStreaks = [],
 }: RachaSheetProperties): JSX.Element {
+  const cromoProperties: CromoProperties = {
+    clubCrestUrl,
+    imageUrl,
+    playerName,
+    playingPosition,
+    restarted,
+    shirtNumber,
+    streakCount,
+    teammateStreaks,
+    teamName,
+  };
+
   return (
     <Sheet>
       <SheetTrigger
@@ -125,19 +186,11 @@ export function RachaSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-8 pt-2">
-          <StreakCromo
-            clubCrestUrl={clubCrestUrl}
-            imageUrl={imageUrl}
-            playerName={playerName}
-            playingPosition={playingPosition}
-            restarted={restarted}
-            shirtNumber={shirtNumber}
-            streakCount={streakCount}
-            teammateStreaks={teammateStreaks}
-            teamName={teamName}
-          />
-          <div className="flex flex-col items-center gap-2 text-center mt-auto mb-0">
+        <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-28 pt-2">
+          <Suspense fallback={<ProductionCromo {...cromoProperties} />}>
+            <RachaCromoHost {...cromoProperties} />
+          </Suspense>
+          <div className="mb-0 mt-auto flex flex-col items-center gap-2 text-center">
             <StreakFireIcon
               backColor={STREAK_FIRE_TONE.back}
               className="size-10"
@@ -148,7 +201,7 @@ export function RachaSheet({
             </p>
           </div>
 
-          <div className="flex w-full max-w-sm flex-col items-center gap-3 mb-auto mt-0">
+          <div className="mb-auto mt-0 flex w-full max-w-sm flex-col items-center gap-3">
             <ul
               aria-label="Sesiones del equipo esta semana"
               className="m-0 flex w-full list-none justify-between gap-1 p-0"
@@ -184,6 +237,11 @@ export function RachaSheet({
           </div>
         </div>
       </SheetContent>
+      {process.env.NODE_ENV === "production" ? null : (
+        <Suspense fallback={null}>
+          <CromoTcgSwitcher />
+        </Suspense>
+      )}
     </Sheet>
   );
 }

@@ -1,0 +1,519 @@
+/* PROTOTYPE only — one rarity foil per CromoTier on Bezel A. Inspired rewrite; no GPL CSS. */
+
+.lz-tcg-lab {
+  --lz-pointer-x: 50%;
+  --lz-pointer-y: 50%;
+  --lz-from-center: 0;
+  --lz-from-left: 0.5;
+  --lz-from-top: 0.5;
+  --lz-rotate-x: 0deg;
+  --lz-rotate-y: 0deg;
+  --lz-bg-x: 50%;
+  --lz-bg-y: 50%;
+  --lz-card-opacity: 0.38;
+  --lz-foil-brightness: 0.72;
+  --lz-interacting: 0;
+}
+
+.lz-tcg-stage {
+  perspective: 600px;
+  perspective-origin: 50% 40%;
+  width: min(100%, 17.5rem);
+}
+
+.lz-tcg-rotator {
+  transform: rotateX(var(--lz-rotate-x)) rotateY(var(--lz-rotate-y));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Quiet tier chrome — kill production globals rainbow bleed. */
+.lz-tcg-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--cromo-fg);
+  background-color: var(--cromo-bottom);
+  background-image: linear-gradient(
+    165deg,
+    var(--cromo-top) 0%,
+    var(--cromo-bottom) 100%
+  );
+  animation: none;
+  --lz-tcg-bezel: 0.85rem;
+  padding: var(--lz-tcg-bezel);
+  border-radius: 0.28rem;
+  box-shadow: 0 16px 36px oklch(0 0 0 / 0.28);
+}
+
+.lz-tcg-mat {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  border-radius: 0.12rem;
+  padding: 0.35rem 0.35rem 0.7rem;
+  gap: 0.7rem;
+  background-color: var(--cromo-bottom);
+  background-image:
+    radial-gradient(
+      ellipse 80% 55% at 50% 12%,
+      color-mix(
+        in oklch,
+        var(--cromo-top) calc(var(--cromo-glow) * 100%),
+        transparent
+      )
+        0%,
+      transparent 72%
+    ),
+    linear-gradient(180deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%);
+}
+
+.lz-tcg-window {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  aspect-ratio: 5 / 5.05;
+  border-radius: 50% 50% 0.2rem 0.2rem / 42% 42% 0.2rem 0.2rem;
+  background: oklch(0.22 0.02 160);
+}
+
+.lz-tcg-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.lz-tcg-shine::before,
+.lz-tcg-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Shared soft sleeve glare — highlight only (no black wash). */
+.lz-tcg-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: inherit;
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--lz-card-opacity) * 0.5);
+  background-image: radial-gradient(
+    farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+    oklch(1 0 0 / 0.5) 0%,
+    oklch(1 0 0 / 0.14) 28%,
+    transparent 62%
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 1 · Bronce — common: no foil texture, sleeve glare only                    */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="reverse-holo"] .lz-tcg-shine::before,
+.lz-tcg-frame[data-rarity="reverse-holo"] .lz-tcg-shine::after {
+  content: none;
+  display: none;
+}
+
+.lz-tcg-frame[data-rarity="reverse-holo"] .lz-tcg-glare,
+.lz-tcg-frame[data-rarity="regular-holo"] .lz-tcg-glare {
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--lz-card-opacity) * 0.92);
+  background-image: radial-gradient(
+    farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+    oklch(1 0 0 / 0.82) 0%,
+    oklch(1 0 0 / 0.34) 24%,
+    transparent 56%
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 2 · shiny-rare (Plata) — cool silver bands                                 */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="shiny-rare"] .lz-tcg-shine::before {
+  opacity: 0.3;
+  mix-blend-mode: soft-light;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      oklch(0.95 0.01 250 / 0.28) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 8px,
+      oklch(0.55 0.02 250 / 0.1) 8px 9px
+    );
+}
+
+.lz-tcg-frame[data-rarity="shiny-rare"] .lz-tcg-shine::after {
+  mix-blend-mode: soft-light;
+  filter: brightness(0.85) contrast(1.12) saturate(0.7);
+  opacity: calc(
+    (0.8 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.15)
+  );
+  background-image:
+    repeating-linear-gradient(
+      133deg,
+      oklch(0.2 0.02 250) 0%,
+      oklch(0.72 0.02 220) 3.5%,
+      oklch(0.85 0.01 200) 4.5%,
+      oklch(0.72 0.02 220) 5.5%,
+      oklch(0.2 0.02 250) 10%,
+      oklch(0.2 0.02 250) 14%
+    ),
+    linear-gradient(
+      0deg,
+      oklch(0.75 0.04 250 / 0.35),
+      oklch(0.85 0.02 200 / 0.2),
+      oklch(0.7 0.03 280 / 0.3)
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+      oklch(1 0 0 / 0.35) 10%,
+      transparent 55%
+    );
+  background-size: 280% 100%, 100% 200%, 100% 100%;
+  background-position:
+    var(--lz-bg-x) var(--lz-bg-y),
+    0% var(--lz-bg-y),
+    center center;
+  background-blend-mode: soft-light, soft-light, normal;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3 · Oro — secret-rare gold plate (lab colors + burst asset, no cell foil)  */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="regular-holo"] {
+  /* Lab-only gold plate — does not touch production --cromo-3-* in globals. */
+  --cromo-top: oklch(0.9 0.12 92);
+  --cromo-bottom: oklch(0.62 0.14 78);
+  --cromo-glow: 0.22;
+  --cromo-fg: oklch(0.22 0.05 70);
+  background-color: oklch(0.58 0.13 75);
+  background-image:
+    linear-gradient(
+      165deg,
+      oklch(0.88 0.11 95) 0%,
+      oklch(0.72 0.14 85) 42%,
+      oklch(0.52 0.12 72) 100%
+    ),
+    url("/prototype-cromo-tcg/oro-gold-burst.jpg");
+  background-size: 100% 100%, 140% 140%;
+  background-position: center center, center center;
+  background-blend-mode: soft-light, normal;
+}
+
+.lz-tcg-frame[data-rarity="regular-holo"] .lz-tcg-mat {
+  background-color: oklch(0.7 0.13 85);
+  background-image:
+    radial-gradient(
+      farthest-corner circle at 50% 42%,
+      oklch(0.98 0.06 100 / 0.85) 0%,
+      oklch(0.88 0.12 92 / 0.45) 28%,
+      transparent 62%
+    ),
+    url("/prototype-cromo-tcg/oro-gold-burst.jpg"),
+    linear-gradient(
+      180deg,
+      oklch(0.9 0.12 95) 0%,
+      oklch(0.68 0.14 82) 55%,
+      oklch(0.52 0.12 72) 100%
+    );
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center center, center center, center;
+  background-blend-mode: screen, soft-light, normal;
+}
+
+/* No cell / scanline foil — the gold plate + burst carry the look. */
+.lz-tcg-frame[data-rarity="regular-holo"] .lz-tcg-shine::before,
+.lz-tcg-frame[data-rarity="regular-holo"] .lz-tcg-shine::after {
+  content: none;
+  display: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4 · Platino — reverse family: paper foil + figure stamps on tilt           */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="radiant-holo"] {
+  /* Lab-only platinum plate — does not touch production --cromo-4-* . */
+  --cromo-top: oklch(0.95 0.008 250);
+  --cromo-bottom: oklch(0.78 0.01 250);
+  --cromo-glow: 0.2;
+  --cromo-fg: oklch(0.28 0.02 250);
+  --lz-reverse-size: 192px 256px;
+  --lz-silver-plate: url("/prototype-cromo-tcg/platino-silver-plate.jpg");
+  --lz-iridescent-foil: url("/prototype-cromo-tcg/platino-foil.jpg");
+  --lz-reverse-mask: url("/prototype-cromo-tcg/platino-reverse-mask.svg");
+  background-color: oklch(0.72 0.01 250);
+  background-image:
+    linear-gradient(
+      165deg,
+      oklch(0.94 0.008 250) 0%,
+      oklch(0.8 0.01 250) 45%,
+      oklch(0.68 0.012 250) 100%
+    ),
+    var(--lz-silver-plate);
+  background-size: 100% 100%, cover;
+  background-position: center center, center center;
+  background-blend-mode: soft-light, normal;
+}
+
+/*
+ * Paper is the JPG: hammered silver + diagonal grain, registered.
+ * Hex/banner stamps are NOT printed here — they only live in the shine mask.
+ */
+.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat {
+  background-color: oklch(0.91 0.008 250);
+  background-image:
+    linear-gradient(
+      -45deg,
+      transparent 22%,
+      oklch(1 0 0 / 0.28) 46%,
+      oklch(1 0 0 / 0.08) 58%,
+      transparent 78%
+    ),
+    var(--lz-iridescent-foil),
+    linear-gradient(
+      180deg,
+      oklch(0.96 0.005 250) 0%,
+      oklch(0.88 0.008 250) 55%,
+      oklch(0.82 0.012 250) 100%
+    );
+  background-size: 140% 140%, cover, 100% 100%;
+  background-position: 42% 38%, center center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-blend-mode: screen, soft-light, normal;
+}
+
+.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat .lz-tcg-shine::before {
+  content: none;
+  display: none;
+}
+
+/*
+ * Paper is light platinum, so light maps stay white→transparent (no black).
+ * Black + difference + color-dodge on this mat reads as grey stickers, not foil.
+ * Foil JPG is fixed. Only the diagonal band follows the pointer.
+ */
+.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat .lz-tcg-shine::after {
+  mix-blend-mode: overlay;
+  filter: brightness(1.2) contrast(1.35) saturate(1.65);
+  opacity: calc((1.05 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12));
+  background-image:
+    radial-gradient(
+      circle at var(--lz-pointer-x) var(--lz-pointer-y),
+      oklch(1 0.02 220 / 0.9) 0%,
+      oklch(0.96 0.04 250 / 0.35) 32%,
+      transparent 64%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 16%,
+      oklch(0.94 0.05 250 / 0.45) 34%,
+      oklch(1 0.03 220 / 0.95) 48%,
+      oklch(1 0.04 300 / 0.85) 58%,
+      oklch(0.94 0.05 250 / 0.45) 72%,
+      transparent 88%
+    ),
+    var(--lz-iridescent-foil);
+  background-size: 160% 160%, 220% 220%, cover;
+  background-position:
+    center center,
+    calc(100% * var(--lz-from-left)) calc(100% * var(--lz-from-top)),
+    center center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-blend-mode: overlay, overlay, normal;
+  -webkit-mask-image: var(--lz-reverse-mask);
+  mask-image: var(--lz-reverse-mask);
+  -webkit-mask-size: var(--lz-reverse-size);
+  mask-size: var(--lz-reverse-size);
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-glare {
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--lz-card-opacity) * 1.05);
+  background-image: radial-gradient(
+    farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+    oklch(1 0 0 / 0.9) 0%,
+    oklch(1 0 0 / 0.42) 38%,
+    oklch(1 0 0 / 0.12) 62%,
+    transparent 78%
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5 · cosmos-holo (Esmeralda) — flecks + soft color band                     */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-shine::before {
+  opacity: 0.36;
+  mix-blend-mode: soft-light;
+  background-image:
+    radial-gradient(circle, oklch(1 0 0 / 0.5) 0 0.55px, transparent 1.1px),
+    radial-gradient(circle, oklch(0.9 0.08 145 / 0.4) 0 0.5px, transparent 1px),
+    radial-gradient(circle, oklch(0.88 0.07 230 / 0.35) 0 0.45px, transparent 0.95px);
+  background-size: 14px 18px, 22px 16px, 18px 24px;
+  background-position: 0 0, 7px 9px, 11px 4px;
+}
+
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-shine::after {
+  mix-blend-mode: soft-light;
+  filter: brightness(0.92) contrast(1.08) saturate(1.05);
+  opacity: calc(
+    (0.78 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12)
+  );
+  background-image:
+    radial-gradient(circle, oklch(1 0 0 / 0.85) 0 0.65px, transparent 1.2px),
+    radial-gradient(circle, oklch(0.92 0.1 145 / 0.7) 0 0.55px, transparent 1.1px),
+    radial-gradient(circle, oklch(0.9 0.08 85 / 0.55) 0 0.5px, transparent 1px),
+    repeating-linear-gradient(
+      82deg,
+      oklch(0.78 0.1 95 / 0.35) 0%,
+      oklch(0.72 0.1 145 / 0.3) 8%,
+      oklch(0.7 0.1 200 / 0.3) 16%,
+      oklch(0.68 0.1 280 / 0.28) 24%,
+      oklch(0.78 0.1 95 / 0.35) 32%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+      oklch(0.95 0.04 180 / 0.35) 5%,
+      transparent 55%
+    );
+  background-size:
+    12px 16px,
+    18px 14px,
+    15px 20px,
+    320% 600%,
+    100% 100%;
+  background-position:
+    0 0,
+    5px 7px,
+    9px 3px,
+    calc(10% + var(--lz-from-left) * 80%) calc(10% + var(--lz-from-top) * 80%),
+    center center;
+  background-blend-mode: screen, screen, screen, soft-light, normal;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6 · secret-rare (Diamante) — dual glitter + warm gold                      */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-shine::before {
+  opacity: 0.32;
+  mix-blend-mode: soft-light;
+  background-image:
+    radial-gradient(circle, oklch(1 0 0 / 0.7) 0 0.6px, transparent 1.15px),
+    radial-gradient(circle, oklch(0.92 0.1 95 / 0.55) 0 0.5px, transparent 1px);
+  background-size: 11px 14px, 17px 12px;
+  background-position:
+    calc(45% + var(--lz-from-left) * 8%) calc(45% + var(--lz-from-top) * 8%),
+    calc(55% - var(--lz-from-left) * 8%) calc(55% - var(--lz-from-top) * 8%);
+}
+
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-shine::after {
+  mix-blend-mode: soft-light;
+  filter: brightness(0.88) contrast(1.12) saturate(1.05);
+  opacity: calc(
+    (0.8 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12)
+  );
+  background-image:
+    radial-gradient(circle, oklch(1 0 0 / 0.9) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle, oklch(0.95 0.12 95 / 0.75) 0 0.55px, transparent 1.15px),
+    conic-gradient(
+      from calc(var(--lz-from-left) * 40deg),
+      oklch(0.75 0.08 200 / 0.35),
+      oklch(0.78 0.1 300 / 0.3),
+      oklch(0.82 0.12 85 / 0.4),
+      oklch(0.75 0.08 200 / 0.35)
+    ),
+    linear-gradient(
+      45deg,
+      oklch(0.78 0.12 85 / 0.35),
+      oklch(0.88 0.1 95 / 0.25)
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+      oklch(1 0 0 / 0.4) 8%,
+      transparent 55%
+    );
+  background-size:
+    10px 13px,
+    16px 11px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position:
+    calc(42% + var(--lz-from-left) * 10%) calc(42% + var(--lz-from-top) * 10%),
+    calc(58% - var(--lz-from-left) * 10%) calc(58% - var(--lz-from-top) * 10%),
+    center center,
+    center center,
+    center center;
+  background-blend-mode: screen, screen, soft-light, soft-light, normal;
+}
+
+/* Ink chrome chip */
+.lz-tcg-chip {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.lz-tcg-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: calc(0.1 + var(--lz-card-opacity) * 0.4);
+  background: linear-gradient(
+    125deg,
+    oklch(1 0 0 / 0.55),
+    transparent 42%,
+    oklch(0 0 0 / 0.28)
+  );
+  background-size: 180% 180%;
+  background-position: var(--lz-bg-x) var(--lz-bg-y);
+}
+
+.lz-tcg-dorsal {
+  background-size: 180% 180%;
+  background-position: var(--lz-bg-x) var(--lz-bg-y);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(
+    120deg,
+    oklch(1 0 0 / 0.95),
+    oklch(0.75 0.02 80 / 0.45) 45%,
+    oklch(1 0 0 / 0.9)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lz-tcg-rotator {
+    transform: none;
+  }
+
+  .lz-tcg-shine::after,
+  .lz-tcg-glare,
+  .lz-tcg-chip::before {
+    opacity: 0.08;
+  }
+}
