@@ -87,6 +87,13 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
     expect(
       within(screen.getByRole("table")).getByText("Jugador Uno")
     ).toBeDefined();
+    const table = screen.getByRole("table");
+    expect(within(table).queryByText("Sí")).toBeNull();
+    expect(within(table).getByText("Pre sesión")).toBeDefined();
+    expect(within(table).getByText("Post sesión")).toBeDefined();
+    expect(within(table).getByText("Sueño")).toBeDefined();
+    expect(within(table).getByText("Calidad")).toBeDefined();
+    expect(within(table).getByText("RPE")).toBeDefined();
     expect(
       screen.getByRole("button", { name: PLAYER_NAME_PATTERN })
     ).toBeDefined();

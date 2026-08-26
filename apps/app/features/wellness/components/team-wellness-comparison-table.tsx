@@ -8,18 +8,76 @@ import {
 } from "@repo/design-system/components/table";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
+import type { ReactElement } from "react";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
   getLatestEntry,
   getRiskLabel,
+  toneForLowerIsBetter,
+  wellnessValueClass,
 } from "./team-wellness-workspace.utils";
 import {
+  clampScaleLevel,
+  EmptyScale,
   EnergyScale,
   RecoveryScale,
   RiskScale,
+  SleepQualityScale,
   SorenessScale,
+  rpeTrafficTone,
 } from "./wellness-scales";
+
+function formatSleepHours(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function SleepHoursNumber({
+  value,
+  alertAtOrBelow,
+}: {
+  readonly value: number | null;
+  readonly alertAtOrBelow: number | null;
+}): ReactElement {
+  if (value === null) {
+    return <EmptyScale label="Sueño sin datos" />;
+  }
+
+  const tone = toneForLowerIsBetter(value, alertAtOrBelow);
+
+  return (
+    <div
+      aria-label={`Sueño ${formatSleepHours(value)} horas`}
+      className={cn(
+        "font-semibold text-sm tabular-nums",
+        wellnessValueClass(tone)
+      )}
+    >
+      {formatSleepHours(value)}
+    </div>
+  );
+}
+
+function RpeNumber({ value }: { readonly value: number | null }): ReactElement {
+  if (value === null) {
+    return <EmptyScale label="RPE sin datos" />;
+  }
+
+  const level = clampScaleLevel(value, 0, 10);
+  const tone = rpeTrafficTone(level);
+
+  return (
+    <div
+      aria-label={`RPE ${level} de 10`}
+      className={cn(
+        "font-semibold text-sm tabular-nums",
+        wellnessValueClass(tone)
+      )}
+    >
+      {level}
+    </div>
+  );
+}
 
 type TeamWellnessComparisonRowProperties = {
   readonly player: TeamWellnessPlayer;
@@ -44,24 +102,6 @@ function TeamWellnessComparisonRow({
           {player.name}
         </Link>
       </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          entry?.preFilledAt ? "font-medium text-success" : "text-text-tertiary"
-        )}
-      >
-        {entry?.preFilledAt ? "Sí" : "—"}
-      </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          entry?.postFilledAt
-            ? "font-medium text-success"
-            : "text-text-tertiary"
-        )}
-      >
-        {entry?.postFilledAt ? "Sí" : "—"}
-      </TableCell>
       <TableCell className="hidden py-2 md:table-cell">
         <RecoveryScale
           alertAtOrBelow={wellnessLimits?.recovery ?? null}
@@ -82,6 +122,18 @@ function TeamWellnessComparisonRow({
           size="sm"
           value={entry?.soreness ?? null}
         />
+      </TableCell>
+      <TableCell className="hidden py-2 tabular-nums md:table-cell">
+        <SleepHoursNumber
+          alertAtOrBelow={wellnessLimits?.sleepHours ?? null}
+          value={entry?.sleepHours ?? null}
+        />
+      </TableCell>
+      <TableCell className="hidden py-2 md:table-cell">
+        <SleepQualityScale size="sm" value={entry?.sleepQuality ?? null} />
+      </TableCell>
+      <TableCell className="hidden py-2 tabular-nums md:table-cell">
+        <RpeNumber value={entry?.rpe ?? null} />
       </TableCell>
       <TableCell className="py-2 pr-0">
         <RiskScale
@@ -107,13 +159,22 @@ export function TeamWellnessComparisonTable({
     <Table>
       <TableHeader>
         <TableRow className="border-0 hover:bg-transparent">
-          <TableHead className="pl-0">Jugador</TableHead>
-          <TableHead className="">Pre</TableHead>
-          <TableHead className="">Post</TableHead>
-          <TableHead className="">Recuperación</TableHead>
-          <TableHead className="">Energía</TableHead>
-          <TableHead className="">Agujetas</TableHead>
-          <TableHead className="">Riesgo</TableHead>
+          <TableHead className="pl-0" rowSpan={2}>
+            Jugador
+          </TableHead>
+          <TableHead className="text-center" colSpan={5}>
+            Pre sesión
+          </TableHead>
+          <TableHead className="text-center">Post sesión</TableHead>
+          <TableHead rowSpan={2}>Riesgo</TableHead>
+        </TableRow>
+        <TableRow className="border-0 hover:bg-transparent">
+          <TableHead>Recuperación</TableHead>
+          <TableHead>Energía</TableHead>
+          <TableHead>Agujetas</TableHead>
+          <TableHead>Sueño</TableHead>
+          <TableHead>Calidad</TableHead>
+          <TableHead>RPE</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

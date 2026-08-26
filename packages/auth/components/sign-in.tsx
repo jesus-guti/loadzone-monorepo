@@ -207,8 +207,7 @@ export const SignIn = () => {
             </span>
             <span className="mt-1 block text-xs leading-5 text-text-secondary">
               Mantiene la sesión abierta durante más tiempo en este dispositivo y
-              recuerda tu email. Tras entrar, el navegador o el llavero te
-              pedirán guardar la contraseña.
+              recuerda tu email.
             </span>
           </span>
         </label>

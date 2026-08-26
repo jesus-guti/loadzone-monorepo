@@ -3,6 +3,7 @@ import {
   clampScaleLevel,
   riskLevelToThermometerLevel,
   rpeLabel,
+  rpeTrafficTone,
 } from "@/features/wellness/components/wellness-scales";
 
 describe("wellness metric scales helpers", () => {
@@ -27,5 +28,13 @@ describe("wellness metric scales helpers", () => {
     expect(rpeLabel(6)).toBe("Moderado");
     expect(rpeLabel(8)).toBe("Exigente");
     expect(rpeLabel(10)).toBe("Máximo");
+  });
+
+  it("maps RPE to traffic tone by gravity band", () => {
+    expect(rpeTrafficTone(0)).toBe("good");
+    expect(rpeTrafficTone(4)).toBe("good");
+    expect(rpeTrafficTone(7)).toBe("watch");
+    expect(rpeTrafficTone(8)).toBe("bad");
+    expect(rpeTrafficTone(10)).toBe("bad");
   });
 });

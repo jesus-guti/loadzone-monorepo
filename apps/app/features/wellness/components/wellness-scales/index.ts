@@ -19,4 +19,5 @@ export {
   clampScaleLevel,
   riskLevelToThermometerLevel,
   rpeLabel,
+  rpeTrafficTone,
 } from "./metric-scales";
