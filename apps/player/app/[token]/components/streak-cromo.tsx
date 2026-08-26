@@ -1,39 +1,302 @@
 "use client";
 
-import { useEffect, useState, type JSX } from "react";
 import { UserIcon } from "@phosphor-icons/react/User";
-
-import { cn } from "@repo/design-system/lib/utils";
-import { formatPlayingPositionCromoLine } from "@repo/database/playing-position";
 import type { PlayingPosition } from "@repo/database/playing-position";
+import { formatPlayingPositionCromoLine } from "@repo/database/playing-position";
+import { cn } from "@repo/design-system/lib/utils";
+import {
+  type JSX,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 
 import { FOCUS_COPY } from "../lib/focus-copy";
 import {
   CROMO_CLAIM,
-  CROMO_TIER_LABEL,
-  CROMO_TIER_SHELL,
+  CROMO_SEAL_ARC_TOP,
+  CROMO_SHIRT_OVERPRINT_ROTATION_DEG,
+  CROMO_SHIRT_SEAL_ROTATION_DEG,
+  cromoFoilKind,
+  cromoSealArcBottom,
+  cromoShirtOverprintLabel,
+  cromoTeamRankLabel,
+  resolveCromoShirtNumber,
+  resolveTeamStreakRank,
   streakCountToCromoTier,
 } from "../lib/streak-cromo";
+import "./streak-cromo.css";
+import { usePointerTilt } from "./use-cromo-pointer-tilt";
 
 type StreakCromoProperties = {
   readonly streakCount: number;
   readonly restarted: boolean;
-  /** Staff-uploaded Player photo display URL; calm silhouette when null. */
   readonly imageUrl?: string | null;
-  /** Club.logoUrl crest only — omit when null; never Team logo. */
   readonly clubCrestUrl?: string | null;
-  /** Optional Player Playing Position; omitted line when null/undefined. */
   readonly playingPosition?: PlayingPosition | null;
+  readonly playerName?: string | null;
+  readonly teamName?: string | null;
+  readonly shirtNumber?: number | null;
+  readonly teammateStreaks?: readonly number[];
 };
+
+const SEAL_ARC_TOP = "M 10.5,50 A 39.5,39.5 0 1 1 89.5,50";
+const SEAL_ARC_BOTTOM = "M 3.5,50 A 46.5,46.5 0 1 0 96.5,50";
+
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = (): void => setReduced(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
+function ShirtInkSeal({
+  rank,
+  teamSize,
+}: {
+  readonly rank: number;
+  readonly teamSize: number;
+}): JSX.Element {
+  const arcId = useId();
+
+  return (
+    <div
+      className="relative size-9 shrink-0"
+      style={{ transform: `rotate(${CROMO_SHIRT_SEAL_ROTATION_DEG}deg)` }}
+    >
+      <svg
+        aria-hidden="true"
+        className="absolute inset-0 z-[1] size-full"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 100 100"
+      >
+        <defs>
+          <path d={SEAL_ARC_TOP} id={`${arcId}-top`} />
+          <path d={SEAL_ARC_BOTTOM} id={`${arcId}-bottom`} />
+        </defs>
+        <circle cx="50" cy="50" r="49" vectorEffect="non-scaling-stroke" />
+        <circle cx="50" cy="50" r="37" vectorEffect="non-scaling-stroke" />
+        <g
+          fill="currentColor"
+          fontSize="11"
+          fontWeight="700"
+          letterSpacing="0.35"
+          stroke="none"
+          textAnchor="middle"
+        >
+          <text>
+            <textPath href={`#${arcId}-top`} startOffset="50%">
+              {CROMO_SEAL_ARC_TOP}
+            </textPath>
+          </text>
+          <text>
+            <textPath href={`#${arcId}-bottom`} startOffset="50%">
+              {cromoSealArcBottom(teamSize)}
+            </textPath>
+          </text>
+        </g>
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="flex items-start leading-none">
+          <span className="mt-px text-[0.4rem] font-black">#</span>
+          <span className="text-[1rem] font-black leading-[0.8] tracking-[-0.04em] tabular-nums">
+            {rank}
+          </span>
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function ShirtOverprint({
+  shirtNumber,
+}: {
+  readonly shirtNumber: number;
+}): JSX.Element {
+  const twoDigits = shirtNumber >= 10;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      <p className="sr-only">{cromoShirtOverprintLabel(shirtNumber)}</p>
+      <div
+        aria-hidden
+        className="absolute -left-1 bottom-5"
+        style={{
+          transform: `rotate(${CROMO_SHIRT_OVERPRINT_ROTATION_DEG}deg)`,
+        }}
+      >
+        <span
+          className={cn(
+            "cromo-dorsal font-black leading-[0.72] tracking-[-0.07em] tabular-nums",
+            twoDigits ? "text-[3.6rem]" : "text-[4.5rem]"
+          )}
+        >
+          {shirtNumber}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function CromoSilhouette(): JSX.Element {
   return (
-    <div className="mb-2 flex flex-col items-center gap-1 opacity-70">
-      <div className="flex size-16 items-center justify-center rounded-full bg-bg-primary/45">
-        <UserIcon className="size-9" weight="regular" />
+    <div className="flex flex-col items-center gap-1 opacity-70">
+      <div className="flex size-20 items-center justify-center rounded-full bg-bg-primary/40">
+        <UserIcon className="size-11" weight="regular" />
       </div>
-      <div className="h-8 w-14 rounded-t-[1.5rem] bg-bg-primary/45" />
+      <div className="h-10 w-16 rounded-t-3xl bg-bg-primary/40" />
     </div>
+  );
+}
+
+function CromoPortrait({
+  imageUrl,
+  dorsal,
+}: {
+  readonly imageUrl: string | null;
+  readonly dorsal: number | null;
+}): JSX.Element {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const [photoRevealed, setPhotoRevealed] = useState(false);
+  const showPhoto = imageUrl !== null && imageUrl !== "" && !photoFailed;
+
+  return (
+    <div className="cromo-window w-full">
+      {showPhoto ? (
+        // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
+        // biome-ignore lint/a11y/noNoninteractiveElementInteractions: photo load fallback to silhouette
+        <img
+          alt=""
+          className={cn(
+            "absolute inset-0 size-full object-cover object-[50%_18%]",
+            "motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-out",
+            photoRevealed
+              ? "opacity-100 motion-safe:scale-100"
+              : "opacity-0 motion-safe:scale-[1.06]"
+          )}
+          decoding="async"
+          height={317}
+          key={imageUrl}
+          onError={() => {
+            setPhotoFailed(true);
+          }}
+          onLoad={() => {
+            setPhotoRevealed(true);
+          }}
+          ref={(node) => {
+            if (node?.complete) {
+              setPhotoRevealed(true);
+            }
+          }}
+          src={imageUrl}
+          width={264}
+        />
+      ) : (
+        <div className="flex size-full items-end justify-center pb-6">
+          <CromoSilhouette />
+        </div>
+      )}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/45 to-transparent"
+      />
+      {dorsal === null ? null : <ShirtOverprint shirtNumber={dorsal} />}
+    </div>
+  );
+}
+
+function IdentityHeader({
+  playerName,
+  positionLine,
+}: {
+  readonly playerName: string | null;
+  readonly positionLine: string | null;
+}): JSX.Element | null {
+  if (!(playerName || positionLine)) {
+    return null;
+  }
+
+  return (
+    <header className="relative z-1 space-y-0.5 px-0.5">
+      {playerName ? (
+        <p className="text-2xl font-bold leading-[1.05] tracking-[-0.02em]">
+          {playerName}
+        </p>
+      ) : null}
+      {positionLine ? (
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">
+          {positionLine}
+        </p>
+      ) : null}
+    </header>
+  );
+}
+
+function CromoCardFooter({
+  rank,
+  teamSize,
+  clubCrestUrl,
+  streakCount,
+  trimmedTeamName,
+}: {
+  readonly rank: number | null;
+  readonly teamSize: number;
+  readonly clubCrestUrl: string | null;
+  readonly streakCount: number;
+  readonly trimmedTeamName: string;
+}): JSX.Element {
+  return (
+    <footer className="relative z-1 mt-auto flex flex-col gap-2">
+      <div className="relative flex items-center justify-between gap-3">
+        {rank === null ? null : (
+          <div className="absolute top-3.5 left-1 flex items-end">
+            <p className="sr-only">{cromoTeamRankLabel(rank, teamSize)}</p>
+            <span aria-hidden>
+              <ShirtInkSeal rank={rank} teamSize={teamSize} />
+            </span>
+          </div>
+        )}
+        {clubCrestUrl ? (
+          <div className="ml-auto size-11 shrink-0 overflow-hidden rounded-full border border-border-secondary bg-bg-secondary p-1">
+            {/* biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy */}
+            <img
+              alt=""
+              className="size-full object-contain"
+              height={44}
+              src={clubCrestUrl}
+              width={44}
+            />
+          </div>
+        ) : (
+          <p className="ml-auto max-w-24 text-right text-[0.6rem] font-bold uppercase leading-tight tracking-widest opacity-70">
+            {CROMO_CLAIM}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="cromo-chip flex w-fit min-w-24 items-stretch overflow-hidden rounded-[4px] border border-current text-[0.45rem] font-bold uppercase tracking-[0.08em] opacity-80">
+          <span className="relative z-[1] shrink-0 px-1.5 py-1">LOADZONE</span>
+          <span
+            aria-hidden
+            className="relative z-[1] w-3.5 shrink-0 border-x border-current bg-[repeating-linear-gradient(-45deg,transparent,transparent_1px,currentColor_1px,currentColor_2px)]"
+          />
+          <span className="relative z-[1] min-w-0 flex-1 truncate px-1.5 py-1 text-right normal-case tracking-normal">
+            {FOCUS_COPY.streakCalm(streakCount)}
+          </span>
+        </div>
+        {trimmedTeamName ? (
+          <p className="cromo-team-name">{trimmedTeamName}</p>
+        ) : null}
+      </div>
+    </footer>
   );
 }
 
@@ -43,89 +306,58 @@ export function StreakCromo({
   imageUrl = null,
   clubCrestUrl = null,
   playingPosition = null,
+  playerName = null,
+  teamName = null,
+  shirtNumber = null,
+  teammateStreaks = [],
 }: StreakCromoProperties): JSX.Element {
+  const reducedMotion = useReducedMotion();
+  const tilt = usePointerTilt(reducedMotion);
   const tier = streakCountToCromoTier(streakCount);
+  const foilKind = cromoFoilKind(tier);
   const showRestart = restarted || streakCount === 0;
   const positionLine = formatPlayingPositionCromoLine(playingPosition);
-  const [photoFailed, setPhotoFailed] = useState(false);
-
-  useEffect(() => {
-    setPhotoFailed(false);
-  }, [imageUrl]);
-
-  const showPhoto = Boolean(imageUrl) && !photoFailed;
+  const teamRank = resolveTeamStreakRank({
+    playerStreak: streakCount,
+    teamStreaks: [...teammateStreaks, streakCount],
+  });
+  const dorsal = resolveCromoShirtNumber(shirtNumber);
+  const trimmedTeamName = teamName?.trim() ?? "";
+  const rootStyle = tilt.style;
 
   return (
-    <div className="flex w-full flex-col items-center gap-3">
-      <article
-        data-streak-cromo-tier={tier}
-        className={cn(
-          "relative flex h-80 w-60 flex-col items-center justify-between overflow-hidden rounded-[1.75rem] p-5",
-          "border border-white/30 motion-safe:transition-[box-shadow,filter] motion-safe:duration-300",
-          "text-[color:var(--cromo-fg)]"
-        )}
-        style={{
-          ...CROMO_TIER_SHELL[tier],
-          backgroundImage: [
-            "radial-gradient(ellipse 80% 55% at 50% 12%, color-mix(in oklch, var(--cromo-top) calc(var(--cromo-glow) * 100%), transparent) 0%, transparent 72%)",
-            "linear-gradient(180deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%)",
-          ].join(", "),
-          boxShadow: [
-            "inset 0 1.5px 1px 0 oklch(1 0 0 / 0.7)",
-            "inset 0 -4px 8px 0 color-mix(in oklch, var(--cromo-bottom) calc(var(--cromo-inset) * 100%), transparent)",
-            "0 16px 32px -8px color-mix(in oklch, var(--cromo-bottom) calc(var(--cromo-edge) * 100%), transparent)",
-          ].join(", "),
-        }}
-      >
+    <div className="cromo-root mb-3 mt-auto flex w-full flex-col items-center gap-3">
+      <div className="cromo-stage" style={rootStyle}>
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(45deg,transparent_45%,oklch(1_0_0/0.12)_50%,transparent_55%)] motion-reduce:hidden"
-        />
-
-        {clubCrestUrl ? (
-          <div className="absolute right-4 top-4 z-20 size-10 overflow-hidden rounded-full bg-bg-primary/85 p-1">
-            {/* biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy */}
-            <img
-              src={clubCrestUrl}
-              alt=""
-              className="size-full object-contain"
-            />
-          </div>
-        ) : null}
-
-        <header className="relative z-10 space-y-1 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
-            {CROMO_TIER_LABEL[tier]}
-          </p>
-          <p className="text-lg font-semibold">{FOCUS_COPY.streakCalm(streakCount)}</p>
-          {positionLine ? (
-            <p className="text-xs font-medium opacity-80">{positionLine}</p>
-          ) : null}
-        </header>
-
-        <div
-          aria-hidden
-          className="relative z-10 mb-2 flex h-28 w-24 items-end justify-center overflow-hidden rounded-[1.25rem] bg-bg-primary/20"
+          className="cromo-rotator"
+          onPointerEnter={tilt.onPointerEnter}
+          onPointerLeave={tilt.onPointerLeave}
+          onPointerMove={tilt.onPointerMove}
         >
-          {showPhoto && imageUrl ? (
-            // biome-ignore lint/performance/noImgElement: cookie-authed private blob proxy
-            <img
-              src={imageUrl}
-              alt=""
-              className="absolute inset-0 size-full object-cover"
-              onError={() => {
-                setPhotoFailed(true);
-              }}
-            />
-          ) : (
-            <CromoSilhouette />
-          )}
+          <article
+            className="cromo-frame"
+            data-cromo-foil={foilKind}
+            data-streak-cromo-tier={tier}
+          >
+            <div className="cromo-mat">
+              <span aria-hidden className="cromo-shine" />
+              <CromoPortrait dorsal={dorsal} imageUrl={imageUrl} />
+              <IdentityHeader
+                playerName={playerName}
+                positionLine={positionLine}
+              />
+              <CromoCardFooter
+                clubCrestUrl={clubCrestUrl}
+                rank={teamRank.position}
+                streakCount={streakCount}
+                teamSize={teamRank.teamSize}
+                trimmedTeamName={trimmedTeamName}
+              />
+            </div>
+            <span aria-hidden className="cromo-glare" />
+          </article>
         </div>
-
-        <p className="relative z-10 text-center text-xs font-medium leading-snug opacity-90">
-          {CROMO_CLAIM}
-        </p>
-      </article>
+      </div>
       {showRestart ? (
         <p className="text-sm text-text-secondary">{FOCUS_COPY.streakRestart}</p>
       ) : null}

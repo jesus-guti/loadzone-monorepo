@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/co
 import {
   CheckCircleIcon,
   WarningIcon,
-  FireIcon,
   ShieldWarningIcon,
   UsersIcon,
   ClockIcon,
@@ -11,6 +10,8 @@ import {
 import type { PlayerStatus, RiskLevel } from "@repo/database";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
+import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 
 type PlayerSummary = {
   id: string;
@@ -321,7 +322,11 @@ export function TeamOverview({
           </Badge>
           {player.currentStreak > 0 && (
             <span className="flex items-center gap-1 font-medium text-text-primary">
-              <FireIcon className="size-3 text-premium" />
+              <StreakFireIcon
+                className="size-3"
+                backColor={STREAK_FIRE_TONE.back}
+                frontColor={STREAK_FIRE_TONE.front}
+              />
               {player.currentStreak}
             </span>
           )}

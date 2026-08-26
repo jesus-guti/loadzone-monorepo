@@ -4,14 +4,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/design-system/components/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/table";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
@@ -21,8 +13,6 @@ import {
   averageProgressPercent,
   formatAverage,
   getInitials,
-  getLatestEntry,
-  getRiskLabel,
   listPendingPlayers,
   type TeamWellnessWorkspaceSummary,
   toneAlertDensity,
@@ -33,84 +23,6 @@ import {
   wellnessLabelClass,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
-import {
-  EnergyScale,
-  RecoveryScale,
-  RiskScale,
-  SorenessScale,
-} from "./wellness-scales";
-
-type TeamWellnessComparisonRowProperties = {
-  readonly player: TeamWellnessPlayer;
-  readonly wellnessLimits?: WellnessLimits | null;
-};
-
-function TeamWellnessComparisonRow({
-  player,
-  wellnessLimits,
-}: TeamWellnessComparisonRowProperties) {
-  const entry = getLatestEntry(player);
-  const riskLevel = player.stats[0]?.riskLevel;
-
-  return (
-    <TableRow className="border-0 hover:bg-bg-secondary/40">
-      <TableCell className="py-2 pl-0">
-        <Link
-          className="font-medium text-text-primary hover:text-brand"
-          href={`/players/${player.id}`}
-        >
-          {player.name}
-        </Link>
-      </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          entry?.preFilledAt ? "font-medium text-success" : "text-text-tertiary"
-        )}
-      >
-        {entry?.preFilledAt ? "Sí" : "—"}
-      </TableCell>
-      <TableCell
-        className={cn(
-          "hidden py-2 tabular-nums md:table-cell",
-          entry?.postFilledAt
-            ? "font-medium text-success"
-            : "text-text-tertiary"
-        )}
-      >
-        {entry?.postFilledAt ? "Sí" : "—"}
-      </TableCell>
-      <TableCell className="hidden py-2 md:table-cell">
-        <RecoveryScale
-          alertAtOrBelow={wellnessLimits?.recovery ?? null}
-          size="sm"
-          value={entry?.recovery ?? null}
-        />
-      </TableCell>
-      <TableCell className="hidden py-2 md:table-cell">
-        <EnergyScale
-          alertAtOrBelow={wellnessLimits?.energy ?? null}
-          size="sm"
-          value={entry?.energy ?? null}
-        />
-      </TableCell>
-      <TableCell className="hidden py-2 md:table-cell">
-        <SorenessScale
-          alertAtOrAbove={wellnessLimits?.soreness ?? null}
-          size="sm"
-          value={entry?.soreness ?? null}
-        />
-      </TableCell>
-      <TableCell className="py-2 pr-0">
-        <RiskScale
-          label={riskLevel ? getRiskLabel(riskLevel) : undefined}
-          riskLevel={riskLevel}
-          size="sm"
-        />
-      </TableCell>
-    </TableRow>
-  );
-}
 
 type AverageMeterProperties = {
   readonly label: string;
@@ -242,126 +154,93 @@ export function TeamWellnessOverview({
         );
 
   return (
-    <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)]">
-      <div className="min-w-0 space-y-6">
-        <div
-          className={cn(
-            "flex items-start justify-between gap-4 rounded-md",
-            hasPending ? "bg-bg-secondary/80 px-3 py-2.5" : null
+    <div className="min-w-0 space-y-6">
+      <div
+        className={cn(
+          "flex items-start justify-between gap-4 rounded-md",
+          hasPending ? "bg-bg-secondary/80 px-3 py-2.5" : null
+        )}
+      >
+        <div className="min-w-0 flex-1 space-y-2">
+          <p
+            className={cn(
+              "flex items-center gap-1.5 font-medium text-xs",
+              wellnessLabelClass(pendingTone)
+            )}
+          >
+            {hasPending ? (
+              <WarningIcon className="size-3.5 shrink-0" weight="fill" />
+            ) : (
+              <CheckCircleIcon className="size-3.5 shrink-0" weight="fill" />
+            )}
+            Formularios pendientes
+          </p>
+          {hasPending ? (
+            <div className="flex flex-wrap gap-1.5">
+              {pendingPlayers.map((player) => (
+                <PendingPlayerBubble key={player.id} player={player} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-success">Todo al día</p>
           )}
-        >
-          <div className="min-w-0 flex-1 space-y-2">
+        </div>
+        <PendingReminderDialog
+          evaluatedDate={evaluatedDate}
+          pendingCount={summary.pendingCount}
+        />
+      </div>
+
+      <div className="flex gap-4">
+        <AverageMeter
+          label="Recuperación media"
+          percent={averageProgressPercent(summary.recoveryAverage, "recovery")}
+          polarity="higherIsBetter"
+          tone={recoveryTone}
+          value={summary.recoveryAverage}
+        />
+        <AverageMeter
+          label="Energía media"
+          percent={averageProgressPercent(summary.energyAverage, "energy")}
+          polarity="higherIsBetter"
+          tone={energyTone}
+          value={summary.energyAverage}
+        />
+        <AverageMeter
+          label="Dolor muscular"
+          percent={averageProgressPercent(summary.sorenessAverage, "soreness")}
+          polarity="higherIsWorse"
+          tone={sorenessTone}
+          value={summary.sorenessAverage}
+        />
+      </div>
+
+      {summary.alertCount > 0 ? (
+        <div className="flex items-center gap-2">
+          <WarningIcon
+            className={cn("size-4 shrink-0", wellnessValueClass(alertTone))}
+            weight="fill"
+          />
+          <div className="min-w-0">
             <p
               className={cn(
-                "flex items-center gap-1.5 font-medium text-xs",
-                wellnessLabelClass(pendingTone)
+                "font-medium text-xs",
+                wellnessLabelClass(alertTone)
               )}
             >
-              {hasPending ? (
-                <WarningIcon className="size-3.5 shrink-0" weight="fill" />
-              ) : (
-                <CheckCircleIcon className="size-3.5 shrink-0" weight="fill" />
-              )}
-              Formularios pendientes
+              Alertas
             </p>
-            {hasPending ? (
-              <div className="flex flex-wrap gap-1.5">
-                {pendingPlayers.map((player) => (
-                  <PendingPlayerBubble key={player.id} player={player} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-success">Todo al día</p>
-            )}
+            <p
+              className={cn(
+                "font-semibold text-xl tabular-nums",
+                wellnessValueClass(alertTone)
+              )}
+            >
+              {summary.alertCount}
+            </p>
           </div>
-          <PendingReminderDialog
-            evaluatedDate={evaluatedDate}
-            pendingCount={summary.pendingCount}
-          />
         </div>
-
-        <div className="flex gap-4">
-          <AverageMeter
-            label="Recuperación media"
-            percent={averageProgressPercent(
-              summary.recoveryAverage,
-              "recovery"
-            )}
-            polarity="higherIsBetter"
-            tone={recoveryTone}
-            value={summary.recoveryAverage}
-          />
-          <AverageMeter
-            label="Energía media"
-            percent={averageProgressPercent(summary.energyAverage, "energy")}
-            polarity="higherIsBetter"
-            tone={energyTone}
-            value={summary.energyAverage}
-          />
-          <AverageMeter
-            label="Dolor muscular"
-            percent={averageProgressPercent(
-              summary.sorenessAverage,
-              "soreness"
-            )}
-            polarity="higherIsWorse"
-            tone={sorenessTone}
-            value={summary.sorenessAverage}
-          />
-        </div>
-
-        {summary.alertCount > 0 ? (
-          <div className="flex items-center gap-2">
-            <WarningIcon
-              className={cn("size-4 shrink-0", wellnessValueClass(alertTone))}
-              weight="fill"
-            />
-            <div className="min-w-0">
-              <p
-                className={cn(
-                  "font-medium text-xs",
-                  wellnessLabelClass(alertTone)
-                )}
-              >
-                Alertas
-              </p>
-              <p
-                className={cn(
-                  "font-semibold text-xl tabular-nums",
-                  wellnessValueClass(alertTone)
-                )}
-              >
-                {summary.alertCount}
-              </p>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="min-w-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-0 hover:bg-transparent">
-              <TableHead className="pl-0">Jugador</TableHead>
-              <TableHead className="">Pre</TableHead>
-              <TableHead className="">Post</TableHead>
-              <TableHead className="">Recuperación</TableHead>
-              <TableHead className="">Energía</TableHead>
-              <TableHead className="">Agujetas</TableHead>
-              <TableHead className="">Riesgo</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players.map((player) => (
-              <TeamWellnessComparisonRow
-                key={player.id}
-                player={player}
-                wellnessLimits={wellnessLimits}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      ) : null}
     </div>
   );
 }

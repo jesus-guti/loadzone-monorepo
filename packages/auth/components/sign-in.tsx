@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getCsrfToken } from "next-auth/react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   REMEMBERED_EMAIL_STORAGE_KEY,
@@ -16,7 +15,6 @@ type SignInState = {
   password: string;
   rememberMe: boolean;
   error: string | null;
-  isSubmitting: boolean;
 };
 
 function getCookieValue(name: string): string | undefined {
@@ -57,61 +55,31 @@ function persistRememberedSignInState(email: string, rememberMe: boolean): void 
   document.cookie = `${REMEMBER_ME_COOKIE_NAME}=; ${getCookieAttributes(0)}`;
 }
 
-type CredentialsContainerWithStore = CredentialsContainer & {
-  store?: (credential: Credential) => Promise<Credential | null>;
-};
-
-type PasswordCredentialConstructor = new (data: {
-  id: string;
-  password: string;
-  name?: string;
-}) => Credential;
-
-async function offerBrowserCredentialSave(
-  email: string,
-  password: string
-): Promise<void> {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const credentialsContainer = navigator.credentials as
-    | CredentialsContainerWithStore
-    | undefined;
-  const PasswordCredentialCtor = (
-    window as unknown as {
-      PasswordCredential?: PasswordCredentialConstructor;
-    }
-  ).PasswordCredential;
-
-  if (!credentialsContainer?.store || !PasswordCredentialCtor) {
-    return;
-  }
-
-  try {
-    const credential = new PasswordCredentialCtor({
-      id: email,
-      password,
-      name: email,
-    });
-
-    await credentialsContainer.store(credential);
-  } catch {
-    // Browsers without support or denied permissions just ignore this.
-  }
-}
-
 export const SignIn = () => {
-  const router = useRouter();
+  const [csrfToken, setCsrfToken] = useState("");
   const [state, setState] = useState<SignInState>({
     email: "",
     password: "",
     rememberMe: false,
     error: null,
-    isSubmitting: false,
   });
 
   useEffect(() => {
+    void getCsrfToken().then((token) => {
+      if (token) {
+        setCsrfToken(token);
+      }
+    });
+
+    const signInError = new URLSearchParams(window.location.search).get("error");
+
+    if (signInError) {
+      setState((currentState) => ({
+        ...currentState,
+        error: "Credenciales no válidas.",
+      }));
+    }
+
     try {
       const rememberedState = loadRememberedSignInState();
 
@@ -125,45 +93,23 @@ export const SignIn = () => {
     }
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+    const form = event.currentTarget;
+    const emailInput = form.elements.namedItem("email");
 
-    const normalizedEmail = state.email.trim().toLowerCase();
+    if (!(emailInput instanceof HTMLInputElement)) {
+      event.preventDefault();
+      return;
+    }
 
-    setState((currentState) => ({
-      ...currentState,
-      email: normalizedEmail,
-      error: null,
-      isSubmitting: true,
-    }));
+    const normalizedEmail = emailInput.value.trim().toLowerCase();
+    emailInput.value = normalizedEmail;
 
     try {
       persistRememberedSignInState(normalizedEmail, state.rememberMe);
     } catch {
       // Ignore storage access errors and continue with sign-in.
     }
-
-    const result = await signIn("credentials", {
-      email: normalizedEmail,
-      password: state.password,
-      rememberMe: state.rememberMe ? "true" : "false",
-      redirect: false,
-      callbackUrl: "/",
-    });
-
-    if (!result?.ok) {
-      setState((currentState) => ({
-        ...currentState,
-        error: "Credenciales no válidas.",
-        isSubmitting: false,
-      }));
-      return;
-    }
-
-    await offerBrowserCredentialSave(normalizedEmail, state.password);
-
-    router.push(result.url ?? "/");
-    router.refresh();
   }
 
   return (
@@ -184,6 +130,14 @@ export const SignIn = () => {
         action="/api/auth/callback/credentials"
         autoComplete="on"
       >
+        <input name="csrfToken" type="hidden" value={csrfToken} />
+        <input name="callbackUrl" type="hidden" value="/" />
+        <input
+          name="rememberMe"
+          type="hidden"
+          value={state.rememberMe ? "true" : "false"}
+        />
+
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium text-text-primary">
             Email
@@ -201,7 +155,7 @@ export const SignIn = () => {
             }
             className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
-            autoComplete="email"
+            autoComplete="username"
             autoCapitalize="none"
             autoCorrect="off"
             inputMode="email"
@@ -266,10 +220,10 @@ export const SignIn = () => {
 
         <button
           type="submit"
-          disabled={state.isSubmitting}
+          disabled={!csrfToken}
           className="h-12 w-full  bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {state.isSubmitting ? "Entrando..." : "Entrar"}
+          Entrar
         </button>
       </form>
 

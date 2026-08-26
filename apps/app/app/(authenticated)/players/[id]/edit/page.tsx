@@ -33,6 +33,7 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
       dateOfBirth: true,
       ageBandOverride: true,
       playingPosition: true,
+      shirtNumber: true,
       reminderConsentState: true,
       team: {
         select: {
@@ -86,6 +87,7 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
             dateOfBirth,
             ageBandOverride: player.ageBandOverride,
             playingPosition: player.playingPosition,
+            shirtNumber: player.shirtNumber,
             reminderConsentState: player.reminderConsentState,
             resolvedAgeBand: resolvedAge.ageBand,
           }}

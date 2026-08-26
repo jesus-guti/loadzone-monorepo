@@ -1,9 +1,10 @@
 import {
   CheckCircleIcon,
   WarningIcon,
-  FireIcon,
   ShieldWarningIcon,
 } from "@phosphor-icons/react/ssr";
+import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
+import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import {
   Avatar,
   AvatarFallback,
@@ -95,7 +96,11 @@ export function TeamWellnessPlayerCard({
             </CardTitle>
             {player.currentStreak > 0 ? (
               <span className="flex items-center gap-1 text-xs font-medium text-text-secondary">
-                <FireIcon className="size-3 text-premium" />
+                <StreakFireIcon
+                  className="size-3"
+                  backColor={STREAK_FIRE_TONE.back}
+                  frontColor={STREAK_FIRE_TONE.front}
+                />
                 {player.currentStreak}
               </span>
             ) : null}

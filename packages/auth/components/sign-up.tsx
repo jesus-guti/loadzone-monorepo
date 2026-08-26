@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { useState, type FormEvent } from "react";
+import { getCsrfToken } from "next-auth/react";
+import { useEffect, useState, type FormEvent } from "react";
 
 type SignUpState = {
   name: string;
@@ -13,53 +12,8 @@ type SignUpState = {
   isSubmitting: boolean;
 };
 
-type CredentialsContainerWithStore = CredentialsContainer & {
-  store?: (credential: Credential) => Promise<Credential | null>;
-};
-
-type PasswordCredentialConstructor = new (data: {
-  id: string;
-  password: string;
-  name?: string;
-}) => Credential;
-
-async function offerBrowserCredentialSave(
-  email: string,
-  password: string,
-  name: string
-): Promise<void> {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const credentialsContainer = navigator.credentials as
-    | CredentialsContainerWithStore
-    | undefined;
-  const PasswordCredentialCtor = (
-    window as unknown as {
-      PasswordCredential?: PasswordCredentialConstructor;
-    }
-  ).PasswordCredential;
-
-  if (!credentialsContainer?.store || !PasswordCredentialCtor) {
-    return;
-  }
-
-  try {
-    const credential = new PasswordCredentialCtor({
-      id: email,
-      password,
-      name: name || email,
-    });
-
-    await credentialsContainer.store(credential);
-  } catch {
-    // Browsers without support or denied permissions just ignore this.
-  }
-}
-
 export const SignUp = () => {
-  const router = useRouter();
+  const [csrfToken, setCsrfToken] = useState("");
   const [state, setState] = useState<SignUpState>({
     name: "",
     email: "",
@@ -68,11 +22,30 @@ export const SignUp = () => {
     isSubmitting: false,
   });
 
+  useEffect(() => {
+    void getCsrfToken().then((token) => {
+      if (token) {
+        setCsrfToken(token);
+      }
+    });
+  }, []);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
+    const form = event.currentTarget;
+    const emailInput = form.elements.namedItem("email");
+
+    if (!(emailInput instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const normalizedEmail = emailInput.value.trim().toLowerCase();
+    emailInput.value = normalizedEmail;
+
     setState((currentState) => ({
       ...currentState,
+      email: normalizedEmail,
       error: null,
       isSubmitting: true,
     }));
@@ -84,7 +57,7 @@ export const SignUp = () => {
       },
       body: JSON.stringify({
         name: state.name,
-        email: state.email,
+        email: normalizedEmail,
         password: state.password,
       }),
     });
@@ -100,26 +73,9 @@ export const SignUp = () => {
       return;
     }
 
-    const signInResult = await signIn("credentials", {
-      email: state.email,
-      password: state.password,
-      redirect: false,
-      callbackUrl: "/onboarding",
-    });
-
-    if (!signInResult?.ok) {
-      setState((currentState) => ({
-        ...currentState,
-        error: "La cuenta se creó, pero no se pudo iniciar sesión.",
-        isSubmitting: false,
-      }));
-      return;
-    }
-
-    await offerBrowserCredentialSave(state.email, state.password, state.name);
-
-    router.push(signInResult.url ?? "/onboarding");
-    router.refresh();
+    form.action = "/api/auth/callback/credentials";
+    form.method = "post";
+    HTMLFormElement.prototype.submit.call(form);
   }
 
   return (
@@ -140,6 +96,8 @@ export const SignUp = () => {
         action="/api/auth/register"
         autoComplete="on"
       >
+        <input name="csrfToken" type="hidden" value={csrfToken} />
+        <input name="callbackUrl" type="hidden" value="/onboarding" />
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-text-primary">
             Nombre
@@ -179,7 +137,7 @@ export const SignUp = () => {
             }
             className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
-            autoComplete="email"
+            autoComplete="username"
             autoCapitalize="none"
             autoCorrect="off"
             inputMode="email"
@@ -221,7 +179,7 @@ export const SignUp = () => {
 
         <button
           type="submit"
-          disabled={state.isSubmitting}
+          disabled={state.isSubmitting || !csrfToken}
           className="h-12 w-full  bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {state.isSubmitting ? "Creando..." : "Crear cuenta"}

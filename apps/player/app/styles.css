@@ -1,3 +1,7 @@
 @import "tailwindcss";
 @import "@repo/design-system/styles/globals.css";
 @import "./globals.css";
+
+/* Auto content detection resolves against the design-system entry, so app-only
+   utilities (e.g. Streak Cromo arch) are never emitted without this. */
+@source "../**/*.{ts,tsx}";

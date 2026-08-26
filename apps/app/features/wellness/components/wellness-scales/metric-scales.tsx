@@ -94,6 +94,18 @@ export function rpeLabel(value: number): string {
   return "Máximo";
 }
 
+/** Same gravity bands as the RPE slider fill (0–10, higher is worse). */
+export function rpeTrafficTone(value: number): WellnessTrafficTone {
+  const ratio = value / 10;
+  if (ratio <= 0.4) {
+    return "good";
+  }
+  if (ratio <= 0.7) {
+    return "watch";
+  }
+  return "bad";
+}
+
 export function RecoveryScale({
   value,
   size = "md",

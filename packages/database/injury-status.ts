@@ -16,8 +16,8 @@ export type InjuryDateBounds = {
 };
 
 /**
- * Active Injury on civil day D: startDate ≤ D and (endDate null or D ≤ endDate).
- * Inclusive endDate (JES-30).
+ * Calendar-day coverage (wellness exemption / streaks): startDate ≤ D and
+ * (endDate null or D ≤ endDate). Inclusive endDate (JES-30).
  */
 export function isInjuryActiveOnCivilDay(
   startDate: string,
@@ -31,6 +31,19 @@ export function isInjuryActiveOnCivilDay(
     return true;
   }
   return compareCivilDates(civilYmd, endDate) <= 0;
+}
+
+/**
+ * Open episode for Player.status (Lesionado): started by D and not yet given
+ * alta (`endDate` null). Closed rows stay on the calendar via
+ * {@link isInjuryActiveOnCivilDay} but must not keep status INJURED.
+ */
+export function isOpenInjuryOnCivilDay(
+  startDate: string,
+  endDate: string | null,
+  civilYmd: string
+): boolean {
+  return endDate === null && compareCivilDates(startDate, civilYmd) <= 0;
 }
 
 export function derivePlayerStatusFromActiveInjuries(args: {
@@ -62,7 +75,7 @@ export type InjuryStatusDbClient = {
       where: {
         playerId: string;
         startDate: { lte: Date };
-        OR: Array<{ endDate: null } | { endDate: { gte: Date } }>;
+        endDate: null;
       };
     }) => Promise<number>;
   };
@@ -93,7 +106,7 @@ export async function playerHasActiveInjury(
     where: {
       playerId,
       startDate: { lte: civilDate },
-      OR: [{ endDate: null }, { endDate: { gte: civilDate } }],
+      endDate: null,
     },
   });
   return count > 0;

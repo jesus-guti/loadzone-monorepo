@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import { TeamWellnessBubblesView } from "./team-wellness-bubbles-view";
+import { TeamWellnessComparisonTable } from "./team-wellness-comparison-table";
 import { TeamWellnessOverview } from "./team-wellness-overview";
 import { TeamWellnessPlayerCard } from "./team-wellness-player-card";
 import { buildWellnessSummary } from "./team-wellness-workspace.utils";
@@ -60,13 +61,6 @@ export function TeamWellnessWorkspace({
 
   return (
     <div className="space-y-6">
-      <TeamWellnessOverview
-        evaluatedDate={evaluatedDate}
-        players={filteredPlayers}
-        summary={summary}
-        wellnessLimits={wellnessLimits}
-      />
-
       <Tabs
         onValueChange={(value) => {
           if (isWellnessViewMode(value)) {
@@ -105,6 +99,13 @@ export function TeamWellnessWorkspace({
           </div>
         </div>
 
+        <TeamWellnessOverview
+          evaluatedDate={evaluatedDate}
+          players={filteredPlayers}
+          summary={summary}
+          wellnessLimits={wellnessLimits}
+        />
+
         <TabsContent className="mt-0 outline-none" value="cards">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {filteredPlayers.map((player) => (
@@ -118,12 +119,18 @@ export function TeamWellnessWorkspace({
         </TabsContent>
 
         <TabsContent className="mt-0 outline-none" value="bubbles">
-          <TeamWellnessBubblesView
-            onToggle={togglePlayerSelection}
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            wellnessLimits={wellnessLimits}
-          />
+          <div className="space-y-6">
+            <TeamWellnessBubblesView
+              onToggle={togglePlayerSelection}
+              players={players}
+              selectedPlayerIds={selectedPlayerIds}
+              wellnessLimits={wellnessLimits}
+            />
+            <TeamWellnessComparisonTable
+              players={filteredPlayers}
+              wellnessLimits={wellnessLimits}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

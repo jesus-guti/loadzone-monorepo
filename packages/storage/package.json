@@ -5,7 +5,8 @@
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "test": "NODE_ENV=test vitest run"
+    "test": "NODE_ENV=test vitest run",
+    "backfill-org-media": "tsx ./scripts/backfill-org-media.ts"
   },
   "exports": {
     ".": "./index.ts",
@@ -21,8 +22,15 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/adapter-neon": "7.1.0",
+    "@prisma/client": "7.1.0",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.10.1",
-    "vitest": "^4.0.15"
+    "@types/ws": "^8.18.1",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.21.0",
+    "vitest": "^4.0.15",
+    "ws": "^8.18.3"
   }
 }

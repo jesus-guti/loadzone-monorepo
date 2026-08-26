@@ -1,7 +1,9 @@
 import { database } from "@repo/database";
 import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
 import { resolveStorageUrl } from "@repo/storage/shared";
-import { FireIcon, PlusIcon } from "@phosphor-icons/react/ssr";
+import { PlusIcon } from "@phosphor-icons/react/ssr";
+import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
+import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { Button } from "@repo/design-system/components/button";
 import { Badge } from "@repo/design-system/components/badge";
 import {
@@ -149,7 +151,11 @@ const PlayersPage = async () => {
                   <TableCell>
                     {player.currentStreak > 0 && (
                       <span className="flex items-center gap-1 text-sm">
-                        <FireIcon className="size-3 text-premium" />
+                        <StreakFireIcon
+                          className="size-3"
+                          backColor={STREAK_FIRE_TONE.back}
+                          frontColor={STREAK_FIRE_TONE.front}
+                        />
                         {player.currentStreak}
                       </span>
                     )}

@@ -68,6 +68,9 @@ type SessionPageProperties = {
   readonly teamName: string;
   readonly currentStreak: number;
   readonly playingPosition: PlayingPosition | null;
+  readonly shirtNumber: number | null;
+  /** Other non-archived teammates’ Recoverable Streaks (this Player excluded). */
+  readonly teammateStreaks: readonly number[];
   readonly apiUrl: string;
   readonly selectedDate: string;
   readonly selectedEntry: {
@@ -118,6 +121,8 @@ export function SessionPage({
   teamName,
   currentStreak,
   playingPosition,
+  shirtNumber,
+  teammateStreaks,
   apiUrl,
   selectedDate,
   selectedEntry,
@@ -289,15 +294,21 @@ export function SessionPage({
             ) : null}
           </div>
 
-          <RachaSheet
-            streakCount={streakCount}
-            restarted={streakRestarted}
-            weekDays={rachaWeekDays}
-            weekSessionCount={rachaWeekSessionCount}
-            imageUrl={imageUrl}
-            clubCrestUrl={clubCrestUrl}
-            playingPosition={playingPosition}
-          />
+          <div className="shrink-0">
+            <RachaSheet
+              streakCount={streakCount}
+              restarted={streakRestarted}
+              weekDays={rachaWeekDays}
+              weekSessionCount={rachaWeekSessionCount}
+              imageUrl={imageUrl}
+              clubCrestUrl={clubCrestUrl}
+              playingPosition={playingPosition}
+              playerName={playerName}
+              shirtNumber={shirtNumber}
+              teamName={teamName}
+              teammateStreaks={teammateStreaks}
+            />
+          </div>
         </div>
 
         {shouldShowAssistedPresence(focusAgeBand) ? (
@@ -347,6 +358,10 @@ export function SessionPage({
                 imageUrl={imageUrl}
                 clubCrestUrl={clubCrestUrl}
                 playingPosition={playingPosition}
+                playerName={playerName}
+                shirtNumber={shirtNumber}
+                teamName={teamName}
+                teammateStreaks={teammateStreaks}
               />
             ) : (
               <p className="text-sm text-text-tertiary">

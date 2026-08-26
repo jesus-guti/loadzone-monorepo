@@ -61,6 +61,13 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (request.url.includes("/_next/")) {
+    const loopback =
+      self.location.hostname === "localhost" ||
+      self.location.hostname === "127.0.0.1";
+    if (loopback) {
+      event.respondWith(fetch(request));
+      return;
+    }
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
         const cached = await cache.match(request);

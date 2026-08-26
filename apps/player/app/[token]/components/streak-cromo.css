@@ -1,0 +1,516 @@
+/* Streak Cromo Bezel A + per-tier foil. Inspired rewrite; no GPL CSS. */
+
+.cromo-root {
+    --lz-pointer-x: 50%;
+    --lz-pointer-y: 50%;
+    --lz-from-center: 0;
+    --lz-from-left: 0.5;
+    --lz-from-top: 0.5;
+    --lz-rotate-x: 0deg;
+    --lz-rotate-y: 0deg;
+    --lz-bg-x: 50%;
+    --lz-bg-y: 50%;
+    --lz-card-opacity: 0.38;
+    --lz-foil-brightness: 0.72;
+    --lz-interacting: 0;
+}
+
+.cromo-stage {
+    perspective: 600px;
+    perspective-origin: 50% 40%;
+    width: min(100%, 17.5rem);
+}
+
+@media (max-height: 740px) {
+    .cromo-stage {
+        width: min(100%, 14.75rem);
+    }
+}
+
+.cromo-rotator {
+    transform: rotateX(var(--lz-rotate-x)) rotateY(var(--lz-rotate-y));
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+
+/* Quiet tier chrome — kill production globals rainbow bleed. */
+
+.cromo-frame {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: var(--cromo-fg);
+    background-color: var(--cromo-bottom);
+    background-image: linear-gradient( 165deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%);
+    animation: none;
+    --cromo-bezel: 0.85rem;
+    padding: var(--cromo-bezel);
+    border-radius: 0.58rem;
+    box-shadow: 0 16px 36px oklch(0 0 0 / 0.28);
+}
+
+.cromo-mat {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    border-radius: 0.32rem;
+    padding: 0.35rem 0.35rem 0.7rem;
+    gap: 0.7rem;
+    background-color: var(--cromo-bottom);
+    background-image: radial-gradient( ellipse 80% 55% at 50% 12%, color-mix( in oklch, var(--cromo-top) calc(var(--cromo-glow) * 100%), transparent) 0%, transparent 72%), linear-gradient(180deg, var(--cromo-top) 0%, var(--cromo-bottom) 100%);
+}
+
+.cromo-window {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    aspect-ratio: 5 / 5.05;
+    border-radius: 50% 50% 0.2rem 0.2rem / 42% 42% 0.2rem 0.2rem;
+    background: oklch(0.22 0.02 160);
+}
+
+.cromo-shine {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.cromo-shine::before,
+.cromo-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+
+/* Shared soft sleeve glare — highlight only (no black wash). */
+
+.cromo-glare {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    border-radius: inherit;
+    mix-blend-mode: soft-light;
+    opacity: calc(var(--lz-card-opacity) * 0.5);
+    background-image: radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0 0 / 0.5) 0%, oklch(1 0 0 / 0.14) 28%, transparent 62%);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 1 · Bronce — common: no foil texture, sleeve glare only                    */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="1"] .cromo-shine::before,
+.cromo-frame[data-streak-cromo-tier="1"] .cromo-shine::after {
+    content: none;
+    display: none;
+}
+
+.cromo-frame[data-streak-cromo-tier="1"] .cromo-glare,
+.cromo-frame[data-streak-cromo-tier="3"] .cromo-glare {
+    mix-blend-mode: soft-light;
+    opacity: calc(var(--lz-card-opacity) * 0.92);
+    background-image: radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0 0 / 0.82) 0%, oklch(1 0 0 / 0.34) 24%, transparent 56%);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 2 · Plata — cool silver bands                                              */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="2"] .cromo-shine::before {
+    opacity: 0.3;
+    mix-blend-mode: soft-light;
+    background-image: repeating-linear-gradient( 92deg, oklch(0.95 0.01 250 / 0.28) 0 1px, transparent 1px 4px), repeating-linear-gradient( 0deg, transparent 0 8px, oklch(0.55 0.02 250 / 0.1) 8px 9px);
+}
+
+.cromo-frame[data-streak-cromo-tier="2"] .cromo-shine::after {
+    mix-blend-mode: soft-light;
+    filter: brightness(0.85) contrast(1.12) saturate(0.7);
+    opacity: calc( (0.8 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.15));
+    background-image: repeating-linear-gradient( 133deg, oklch(0.2 0.02 250) 0%, oklch(0.72 0.02 220) 3.5%, oklch(0.85 0.01 200) 4.5%, oklch(0.72 0.02 220) 5.5%, oklch(0.2 0.02 250) 10%, oklch(0.2 0.02 250) 14%), linear-gradient( 0deg, oklch(0.75 0.04 250 / 0.35), oklch(0.85 0.02 200 / 0.2), oklch(0.7 0.03 280 / 0.3)), radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0 0 / 0.35) 10%, transparent 55%);
+    background-size: 280% 100%, 100% 200%, 100% 100%;
+    background-position: var(--lz-bg-x) var(--lz-bg-y), 0% var(--lz-bg-y), center center;
+    background-blend-mode: soft-light, soft-light, normal;
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 3 · Oro — gold plate + burst asset, no cell foil                           */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="3"] {
+    /* Oro plate — overrides globals --cromo-3-* on the frame. */
+    --cromo-top: oklch(0.9 0.12 92);
+    --cromo-bottom: oklch(0.62 0.14 78);
+    --cromo-glow: 0.22;
+    --cromo-fg: oklch(0.22 0.05 70);
+    background-color: oklch(0.58 0.13 75);
+    background-image: linear-gradient( 165deg, oklch(0.88 0.11 95) 0%, oklch(0.72 0.14 85) 42%, oklch(0.52 0.12 72) 100%), url("/cromo/oro-gold-burst.jpg");
+    background-size: 100% 100%, 140% 140%;
+    background-position: center center, center center;
+    background-blend-mode: soft-light, normal;
+}
+
+.cromo-frame[data-streak-cromo-tier="3"] .cromo-mat {
+    background-color: oklch(0.7 0.13 85);
+    background-image: radial-gradient( farthest-corner circle at 50% 42%, oklch(0.98 0.06 100 / 0.85) 0%, oklch(0.88 0.12 92 / 0.45) 28%, transparent 62%), url("/cromo/oro-gold-burst.jpg"), linear-gradient( 180deg, oklch(0.9 0.12 95) 0%, oklch(0.68 0.14 82) 55%, oklch(0.52 0.12 72) 100%);
+    background-size: 100% 100%, cover, 100% 100%;
+    background-position: center center, center center, center;
+    background-blend-mode: screen, soft-light, normal;
+}
+
+
+/* No cell / scanline foil — the gold plate + burst carry the look. */
+
+.cromo-frame[data-streak-cromo-tier="3"] .cromo-shine::before,
+.cromo-frame[data-streak-cromo-tier="3"] .cromo-shine::after {
+    content: none;
+    display: none;
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 4 · Platino — metallic rainbow + cursor shimmer                            */
+
+
+/* Inspired rewrite: 34deg / 6.25% period / steel-oil hues. Not GPL CSS.      */
+
+
+/* Foil on mat chrome only. Portrait stays matte.                             */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="4"] {
+    /* Platino plate — overrides globals --cromo-4-* on the frame. */
+    --cromo-top: oklch(0.62 0.03 248);
+    --cromo-bottom: oklch(0.44 0.022 256);
+    --cromo-glow: 0.18;
+    --cromo-fg: oklch(0.97 0.01 240);
+    --lz-silver-plate: url("/cromo/platino-silver-plate.jpg");
+    /* Wide oil bands — magenta / coral / gold / leaf / aqua / ice. */
+    --lz-tg-1: oklch(0.72 0.18 325 / 0.82);
+    --lz-tg-2: oklch(0.74 0.19 28 / 0.82);
+    --lz-tg-3: oklch(0.8 0.14 88 / 0.82);
+    --lz-tg-4: oklch(0.76 0.14 148 / 0.82);
+    --lz-tg-5: oklch(0.74 0.12 202 / 0.82);
+    --lz-tg-6: oklch(0.78 0.16 268 / 0.82);
+    background-color: oklch(0.42 0.02 252);
+    background-image: linear-gradient(oklch(1 0 0 / 0.18), oklch(1 0 0 / 0.18)), linear-gradient( 165deg, oklch(0.62 0.03 248) 0%, oklch(0.48 0.024 254) 48%, oklch(0.36 0.02 258) 100%), var(--lz-silver-plate);
+    background-size: 100% 100%, 100% 100%, cover;
+    background-position: center center, center center, center center;
+    background-blend-mode: screen, soft-light, normal;
+}
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-mat {
+    background-color: oklch(0.5 0.02 250);
+    background-image: linear-gradient(oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.08)), var(--lz-silver-plate), linear-gradient( 180deg, oklch(0.56 0.022 248) 0%, oklch(0.46 0.02 254) 55%, oklch(0.38 0.018 258) 100%);
+    background-size: 100% 100%, cover, 100% 100%;
+    background-position: center, center center, center;
+    background-repeat: no-repeat;
+    background-blend-mode: screen, overlay, normal;
+}
+
+
+/*
+ * Group: rainbow paints, hard-light radial modulates it, then the group
+ * color-dodges the steel plate. Isolation keeps the two layers together.
+ */
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-mat .cromo-shine {
+    isolation: isolate;
+    mix-blend-mode: color-dodge;
+    filter: brightness(calc(0.72 + var(--lz-from-center) * 0.28)) contrast(1.65) saturate(1.12);
+    opacity: calc(0.52 + var(--lz-card-opacity) * 0.5);
+}
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-mat .cromo-shine::before {
+    mix-blend-mode: normal;
+    background-image: repeating-linear-gradient( 34deg, var(--lz-tg-1) 0%, var(--lz-tg-2) 6.25%, var(--lz-tg-3) 12.5%, var(--lz-tg-4) 18.75%, var(--lz-tg-5) 25%, var(--lz-tg-6) 31.25%, var(--lz-tg-1) 37.5%);
+    background-size: 280% 360%;
+    background-position: var(--lz-bg-x) var(--lz-bg-y);
+}
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-mat .cromo-shine::after {
+    mix-blend-mode: hard-light;
+    filter: brightness(calc(0.62 + var(--lz-from-center) * 0.18)) contrast(0.95) saturate(1.08);
+    background-image: radial-gradient( farthest-corner ellipse at calc(var(--lz-pointer-x) * 0.5 + 28%) calc(var(--lz-pointer-y) * 0.5 + 28%), oklch(1 0 0 / 0.42) 5%, oklch(0.42 0.1 318 / 0.28) 32%, oklch(0.48 0.02 250 / 0.18) 100%);
+    background-size: 320% 420%;
+    background-position: center center;
+}
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-glare {
+    mix-blend-mode: soft-light;
+    opacity: calc(var(--lz-card-opacity) * 0.4);
+    background-image: radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0 0 / 0.38) 6%, oklch(1 0 0 / 0.14) 28%, oklch(0.42 0.03 200 / 0.28) 48%, transparent 62%);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 5 · Esmeralda — jewel plate + original criss-cross lattice (radiant idea)  */
+
+
+/* Inspired rewrite: not a copy of radiant-holo.css. Foil on mat chrome only. */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="5"] {
+    /* Esmeralda plate — overrides globals --cromo-5-* on the frame. */
+    --cromo-top: oklch(0.58 0.16 152);
+    --cromo-bottom: oklch(0.3 0.12 164);
+    --cromo-glow: 0.26;
+    --cromo-fg: oklch(0.97 0.03 148);
+    --lz-emerald-plate: url("/cromo/esmeralda-plate.jpg");
+    background-color: oklch(0.28 0.11 162);
+    background-image: linear-gradient( 165deg, oklch(0.56 0.17 150) 0%, oklch(0.38 0.14 158) 46%, oklch(0.22 0.1 168) 100%), var(--lz-emerald-plate);
+    background-size: 100% 100%, cover;
+    background-position: center center, center center;
+    background-blend-mode: soft-light, normal;
+}
+
+.cromo-frame[data-streak-cromo-tier="5"] .cromo-mat {
+    background-color: oklch(0.44 0.14 156);
+    background-image: var(--lz-emerald-plate), linear-gradient( 180deg, oklch(0.52 0.16 150) 0%, oklch(0.38 0.14 158) 58%, oklch(0.28 0.12 166) 100%);
+    background-size: cover, 100% 100%;
+    background-position: center center, center;
+    background-repeat: no-repeat;
+    background-blend-mode: soft-light, normal;
+}
+
+
+/*
+ * One diagonal per pseudo. Solid opacity plates, hard stops, 1:1 scale
+ * so the steps stay crisp. Green only on the beam — gaps stay empty.
+ */
+
+.cromo-frame[data-streak-cromo-tier="5"] .cromo-mat .cromo-shine::before {
+    mix-blend-mode: normal;
+    filter: none;
+    opacity: 1;
+    background-image: repeating-linear-gradient( 42deg, rgb(0 0 0 / 0) 0 20px, oklch(0.48 0.14 155 / 0.35) 20px 32px, oklch(0.58 0.16 152 / 0.55) 32px 42px, oklch(0.68 0.16 150 / 0.75) 42px 50px, oklch(0.76 0.15 148 / 0.9) 50px 56px, oklch(0.68 0.16 150 / 0.75) 56px 64px, oklch(0.58 0.16 152 / 0.55) 64px 74px, oklch(0.48 0.14 155 / 0.35) 74px 86px, rgb(0 0 0 / 0) 86px 110px);
+    background-size: 72rem 72rem;
+    background-position: calc(-12rem + var(--lz-from-left) * -18rem) calc(-12rem + var(--lz-from-top) * -18rem);
+    background-repeat: no-repeat;
+}
+
+.cromo-frame[data-streak-cromo-tier="5"] .cromo-mat .cromo-shine::after {
+    mix-blend-mode: normal;
+    filter: none;
+    opacity: 1;
+    background-image: repeating-linear-gradient( -48deg, rgb(0 0 0 / 0) 0 22px, oklch(0.46 0.14 158 / 0.32) 22px 34px, oklch(0.56 0.16 154 / 0.52) 34px 44px, oklch(0.66 0.16 151 / 0.72) 44px 52px, oklch(0.74 0.15 148 / 0.88) 52px 58px, oklch(0.66 0.16 151 / 0.72) 58px 66px, oklch(0.56 0.16 154 / 0.52) 66px 76px, oklch(0.46 0.14 158 / 0.32) 76px 88px, rgb(0 0 0 / 0) 88px 112px);
+    background-size: 72rem 72rem;
+    background-position: calc(-12rem + (1 - var(--lz-from-left)) * -18rem) calc(-12rem + (1 - var(--lz-from-top)) * -18rem);
+    background-repeat: no-repeat;
+}
+
+.cromo-frame[data-streak-cromo-tier="5"] .cromo-glare {
+    mix-blend-mode: soft-light;
+    opacity: calc(var(--lz-card-opacity) * 0.55);
+    background-image: radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(0.72 0.14 152 / 0.35) 0%, oklch(0.58 0.12 155 / 0.12) 38%, transparent 62%);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+/* 6 · Diamante — nacre bezel + crystal mat + iridescent oil (inspired)       */
+
+
+/* Diagonal rainbow over texture. Original 118deg / 7.5% period, no GPL.      */
+
+
+/* -------------------------------------------------------------------------- */
+
+.cromo-frame[data-streak-cromo-tier="6"] {
+    --cromo-top: oklch(0.96 0.03 80);
+    --cromo-bottom: oklch(0.86 0.04 70);
+    --cromo-glow: 0.12;
+    --cromo-fg: oklch(0.26 0.04 65);
+    --cromo-bezel: 0.95rem;
+    --lz-nacre: url("/cromo/diamante-nacre-plate.jpg");
+    --lz-crystal: url("/cromo/diamante-crystal.jpg");
+    /* Oil slick — magenta / gold / mint / cyan / violet / rose. */
+    --lz-oil-1: oklch(0.72 0.22 340);
+    --lz-oil-2: oklch(0.86 0.16 95);
+    --lz-oil-3: oklch(0.82 0.14 150);
+    --lz-oil-4: oklch(0.76 0.16 210);
+    --lz-oil-5: oklch(0.68 0.2 280);
+    --lz-oil-6: oklch(0.74 0.2 12);
+    background-color: oklch(0.88 0.03 75);
+    background-image: linear-gradient( 165deg, oklch(1 0.02 90 / 0.35) 0%, oklch(0.9 0.04 70 / 0.18) 100%), var(--lz-nacre);
+    background-size: 100% 100%, cover;
+    background-position: center center, center center;
+    background-blend-mode: soft-light, normal;
+    box-shadow: 0 16px 36px oklch(0 0 0 / 0.24), inset 0 1px 0 oklch(1 0 0 / 0.78);
+}
+
+
+/* Oil sheen on the nacre ring only — hole punched through the mat. */
+
+.cromo-frame[data-streak-cromo-tier="6"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    border-radius: inherit;
+    box-sizing: border-box;
+    padding: var(--cromo-bezel);
+    background-image: repeating-linear-gradient( 118deg, var(--lz-oil-1), var(--lz-oil-2), var(--lz-oil-3), var(--lz-oil-4), var(--lz-oil-5), var(--lz-oil-6), var(--lz-oil-1));
+    background-size: 240% 240%;
+    background-position: var(--lz-bg-x) var(--lz-bg-y);
+    mix-blend-mode: overlay;
+    opacity: calc(0.5 + var(--lz-card-opacity) * 0.45);
+    -webkit-mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0);
+    -webkit-mask-clip: content-box, border-box;
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0);
+    mask-clip: content-box, border-box;
+    mask-composite: exclude;
+}
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-mat {
+    background-color: oklch(0.97 0.01 85);
+    background-image: linear-gradient(oklch(1 0.008 85 / 0.28), oklch(1 0.008 85 / 0.28)), var(--lz-crystal), linear-gradient( 180deg, oklch(0.9 0.01 85) 0%, oklch(0.88 0.012 80) 52%, oklch(0.86 0.015 320) 100%);
+    background-size: 100% 100%, cover, 100% 100%;
+    background-position: center, 50% 54%, center;
+    background-repeat: no-repeat;
+    /*
+   * lighten = dark facets cannot go below the pearl floor.
+   * screen veil lifts the remaining charcoal toward ice.
+   */
+    background-blend-mode: screen, lighten, normal;
+    box-shadow: inset 0 0 0 1px oklch(0.55 0.05 75 / 0.22), inset 0 0 0 2px oklch(1 0 0 / 0.5);
+}
+
+
+/*
+ * Oil: chroma rainbow, then diagonal pearl bands.
+ * Period/angle invented (118deg / 7.5%) — not the VSTAR sheet.
+ * hard-light keeps chroma on the pearl floor (`hue`/`color` washed it).
+ */
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-mat .cromo-shine {
+    isolation: isolate;
+    mix-blend-mode: hard-light;
+    filter: saturate(1.55) contrast(1.18);
+    opacity: calc(0.48 + var(--lz-card-opacity) * 0.45);
+}
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-mat .cromo-shine::before {
+    mix-blend-mode: normal;
+    filter: brightness(calc(0.88 + var(--lz-from-center) * 0.22)) contrast(1.18) saturate(1.28);
+    opacity: 1;
+    background-image: repeating-linear-gradient( 0deg, var(--lz-oil-1) 0%, var(--lz-oil-2) 7.5%, var(--lz-oil-3) 15%, var(--lz-oil-4) 22.5%, var(--lz-oil-5) 30%, var(--lz-oil-6) 37.5%, var(--lz-oil-1) 45%), repeating-linear-gradient( 118deg, oklch(0.78 0.08 340) 0%, oklch(0.9 0.1 95) 2.8%, oklch(0.99 0.04 210) 3.7%, oklch(0.86 0.12 280) 4.6%, oklch(0.78 0.1 150) 8.5%, oklch(0.76 0.12 12) 12%), radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0.12 330 / 0.75) 6%, oklch(0.82 0.18 210 / 0.28) 34%, transparent 60%);
+    background-size: 170% 620%, 250% 100%, 140% 140%;
+    background-position: 0% var(--lz-bg-y), var(--lz-bg-x) var(--lz-bg-y), center center;
+    background-blend-mode: overlay, overlay, screen;
+}
+
+
+/*
+ * Inverse diagonal only — crystal stays on the mat so dark facets
+ * are not painted back on top of the pearl floor.
+ */
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-mat .cromo-shine::after {
+    mix-blend-mode: overlay;
+    filter: brightness(calc(1.04 + var(--lz-from-center) * 0.16)) contrast(1.1) saturate(1.15);
+    opacity: calc(0.28 + var(--lz-card-opacity) * 0.32);
+    background-image: repeating-linear-gradient( -118deg, oklch(0.86 0.02 75) 0%, oklch(0.94 0.025 88) 2.8%, oklch(1 0.01 95) 3.7%, oklch(0.94 0.025 88) 4.6%, oklch(0.86 0.02 75) 8.5%, oklch(0.86 0.02 75) 12%), radial-gradient(circle, oklch(1 0 0 / 0.9) 0 0.55px, transparent 1.1px);
+    background-size: 190% 100%, 12px 15px;
+    background-position: calc(100% - var(--lz-bg-x)) calc(100% - var(--lz-bg-y)), calc(40% + var(--lz-from-left) * 12%) calc(40% + var(--lz-from-top) * 12%);
+    background-repeat: repeat, repeat;
+    background-blend-mode: overlay, screen;
+}
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-glare {
+    mix-blend-mode: soft-light;
+    opacity: calc(var(--lz-card-opacity) * 1.05);
+    background-image: radial-gradient( farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y), oklch(1 0.08 330 / 0.9) 0%, oklch(0.86 0.16 210 / 0.38) 32%, oklch(0.88 0.1 280 / 0.14) 56%, transparent 72%);
+}
+
+
+/* Ink chrome chip */
+
+.cromo-chip {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.cromo-chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: calc(0.1 + var(--lz-card-opacity) * 0.4);
+    background: linear-gradient( 125deg, oklch(1 0 0 / 0.55), transparent 42%, oklch(0 0 0 / 0.28));
+    background-size: 180% 180%;
+    background-position: var(--lz-bg-x) var(--lz-bg-y);
+}
+
+.cromo-dorsal {
+    background-size: 180% 180%;
+    background-position: var(--lz-bg-x) var(--lz-bg-y);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1.5px oklch(1 0 0 / 0.85);
+    background-image: linear-gradient( 120deg, oklch(1 0 0 / 0.95), oklch(0.75 0.02 80 / 0.45) 45%, oklch(1 0 0 / 0.9));
+}
+
+.cromo-frame[data-streak-cromo-tier="5"] .cromo-dorsal {
+    background-image: linear-gradient( 120deg, oklch(1 0.04 148 / 0.96), oklch(0.78 0.14 155 / 0.5) 45%, oklch(1 0.03 140 / 0.92));
+}
+
+.cromo-frame[data-streak-cromo-tier="4"] .cromo-dorsal {
+    -webkit-text-stroke-color: oklch(1 0.02 250 / 0.72);
+    background-image: linear-gradient( 120deg, oklch(1 0.02 250 / 0.96), oklch(0.72 0.06 250 / 0.48) 45%, oklch(0.98 0.03 200 / 0.92));
+}
+
+.cromo-frame[data-streak-cromo-tier="6"] .cromo-dorsal {
+    -webkit-text-stroke-color: oklch(0.22 0.03 70 / 0.4);
+    background-image: linear-gradient( 120deg, oklch(0.22 0.04 70 / 0.92), oklch(0.42 0.05 320 / 0.55) 45%, oklch(0.2 0.03 80 / 0.9));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cromo-rotator {
+        transform: none;
+    }
+    .cromo-shine::after,
+    .cromo-glare,
+    .cromo-chip::before,
+    .cromo-frame[data-streak-cromo-tier="6"]::before,
+    .cromo-frame[data-streak-cromo-tier="4"] .cromo-mat .cromo-shine {
+        opacity: 0.08;
+    }
+}
