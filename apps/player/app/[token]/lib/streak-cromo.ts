@@ -14,6 +14,15 @@ export const CROMO_TIER_MIN_DAYS = {
 /** Plate (Bronce/Plata), holo (Oro–Esmeralda), spark (Diamante). Distinct CSS per tier. */
 export type CromoFoilKind = "plate" | "holo" | "spark";
 
+export const CROMO_FOIL_INTENSITY: Record<CromoTier, number> = {
+  1: 0.18,
+  2: 0.38,
+  3: 0.56,
+  4: 0.72,
+  5: 0.86,
+  6: 1,
+};
+
 export function cromoFoilKind(tier: CromoTier): CromoFoilKind {
   if (tier <= 2) {
     return "plate";

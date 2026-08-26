@@ -74,7 +74,7 @@ function HeaderPhotoDisc({
 }
 
 /**
- * Header Recoverable Streak pill → tall Racha overlay (no new route).
+ * Header Recoverable Streak pill → bottom Racha sheet (no new route).
  * Guardian is not an operator of this sheet; Age Bands share the same chrome.
  * Week marks = all Team Sessions that civil week (not streak expected days).
  */
@@ -130,11 +130,11 @@ export function RachaSheet({
         </span>
       </SheetTrigger>
       <SheetContent
-        className="flex min-h-[95dvh] flex-col gap-0 overflow-y-auto rounded-t-3xl bg-bg-primary"
+        className="flex max-h-[90dvh] flex-col gap-0 overflow-y-auto overscroll-contain rounded-t-3xl bg-bg-primary pb-[max(2rem,env(safe-area-inset-bottom))]"
         side="bottom"
       >
-        <SheetHeader className="space-y-1 pb-2">
-          <SheetTitle className="text-center text-lg text-text-primary">
+        <SheetHeader className="sticky top-0 z-10 space-y-1 bg-bg-primary pb-2">
+          <SheetTitle className="pr-10 text-center text-lg text-text-primary">
             {FOCUS_COPY.streakSheetTitle}
           </SheetTitle>
           <SheetDescription className="sr-only">
@@ -142,19 +142,22 @@ export function RachaSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-28 pt-2">
-          <StreakCromo
-            clubCrestUrl={cromoProperties.clubCrestUrl}
-            imageUrl={cromoProperties.imageUrl}
-            playerName={cromoProperties.playerName}
-            playingPosition={cromoProperties.playingPosition}
-            restarted={cromoProperties.restarted}
-            shirtNumber={cromoProperties.shirtNumber}
-            streakCount={cromoProperties.streakCount}
-            teammateStreaks={cromoProperties.teammateStreaks}
-            teamName={cromoProperties.teamName}
-          />
-          <div className="mb-0 mt-auto flex flex-col items-center gap-2 text-center">
+        <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-6 px-4 pt-1">
+          <div className="w-full [&_.cromo-root]:mb-0 [&_.cromo-root]:mt-0">
+            <StreakCromo
+              clubCrestUrl={cromoProperties.clubCrestUrl}
+              imageUrl={cromoProperties.imageUrl}
+              playerName={cromoProperties.playerName}
+              playingPosition={cromoProperties.playingPosition}
+              restarted={cromoProperties.restarted}
+              shirtNumber={cromoProperties.shirtNumber}
+              streakCount={cromoProperties.streakCount}
+              teammateStreaks={cromoProperties.teammateStreaks}
+              teamName={cromoProperties.teamName}
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-2 text-center">
             <StreakFireIcon
               backColor={STREAK_FIRE_TONE.back}
               className="size-10"
@@ -165,7 +168,7 @@ export function RachaSheet({
             </p>
           </div>
 
-          <div className="mb-auto mt-0 flex w-full max-w-sm flex-col items-center gap-3">
+          <div className="flex w-full flex-col items-center gap-3">
             <ul
               aria-label="Sesiones del equipo esta semana"
               className="m-0 flex w-full list-none justify-between gap-1 p-0"

@@ -21,6 +21,12 @@
     width: min(100%, 17.5rem);
 }
 
+@media (max-height: 740px) {
+    .cromo-stage {
+        width: min(100%, 14.75rem);
+    }
+}
+
 .cromo-rotator {
     transform: rotateX(var(--lz-rotate-x)) rotateY(var(--lz-rotate-y));
     transform-style: preserve-3d;
