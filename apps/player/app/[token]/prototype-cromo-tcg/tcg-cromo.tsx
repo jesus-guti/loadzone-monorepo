@@ -154,7 +154,6 @@ function ShirtOverprint({
             "lz-tcg-dorsal font-black leading-[0.72] tracking-[-0.07em] tabular-nums",
             twoDigits ? "text-[3.6rem]" : "text-[4.5rem]"
           )}
-          style={{ WebkitTextStroke: "1.5px oklch(1 0 0 / 0.85)" }}
         >
           {shirtNumber}
         </span>

@@ -244,228 +244,393 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* 4 · Platino — reverse family: paper foil + figure stamps on tilt           */
+/* 4 · Platino — trainer-gallery family: metallic rainbow + cursor shimmer    */
+/* Inspired rewrite: 34deg / 6.25% period / steel-oil hues. Not GPL CSS.      */
+/* Foil on mat chrome only. Portrait stays matte.                             */
 /* -------------------------------------------------------------------------- */
 
-.lz-tcg-frame[data-rarity="radiant-holo"] {
-  /* Lab-only platinum plate — does not touch production --cromo-4-* . */
-  --cromo-top: oklch(0.95 0.008 250);
-  --cromo-bottom: oklch(0.78 0.01 250);
-  --cromo-glow: 0.2;
-  --cromo-fg: oklch(0.28 0.02 250);
-  --lz-reverse-size: 192px 256px;
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] {
+  /* Lab-only steel plate — does not touch production --cromo-4-* . */
+  --cromo-top: oklch(0.62 0.03 248);
+  --cromo-bottom: oklch(0.44 0.022 256);
+  --cromo-glow: 0.18;
+  --cromo-fg: oklch(0.97 0.01 240);
   --lz-silver-plate: url("/prototype-cromo-tcg/platino-silver-plate.jpg");
-  --lz-iridescent-foil: url("/prototype-cromo-tcg/platino-foil.jpg");
-  --lz-reverse-mask: url("/prototype-cromo-tcg/platino-reverse-mask.svg");
-  background-color: oklch(0.72 0.01 250);
+  /* Wide oil bands — magenta / coral / gold / leaf / aqua / ice. */
+  --lz-tg-1: oklch(0.72 0.18 325 / 0.82);
+  --lz-tg-2: oklch(0.74 0.19 28 / 0.82);
+  --lz-tg-3: oklch(0.8 0.14 88 / 0.82);
+  --lz-tg-4: oklch(0.76 0.14 148 / 0.82);
+  --lz-tg-5: oklch(0.74 0.12 202 / 0.82);
+  --lz-tg-6: oklch(0.78 0.16 268 / 0.82);
+  background-color: oklch(0.42 0.02 252);
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.18), oklch(1 0 0 / 0.18)),
+    linear-gradient(
+      165deg,
+      oklch(0.62 0.03 248) 0%,
+      oklch(0.48 0.024 254) 48%,
+      oklch(0.36 0.02 258) 100%
+    ),
+    var(--lz-silver-plate);
+  background-size: 100% 100%, 100% 100%, cover;
+  background-position: center center, center center, center center;
+  background-blend-mode: screen, soft-light, normal;
+}
+
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-mat {
+  background-color: oklch(0.5 0.02 250);
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.12), oklch(1 0 0 / 0.08)),
+    var(--lz-silver-plate),
+    linear-gradient(
+      180deg,
+      oklch(0.56 0.022 248) 0%,
+      oklch(0.46 0.02 254) 55%,
+      oklch(0.38 0.018 258) 100%
+    );
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center, center center, center;
+  background-repeat: no-repeat;
+  background-blend-mode: screen, overlay, normal;
+}
+
+/*
+ * Group: rainbow paints, hard-light radial modulates it, then the group
+ * color-dodges the steel plate. Isolation keeps the two layers together.
+ */
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-mat .lz-tcg-shine {
+  isolation: isolate;
+  mix-blend-mode: color-dodge;
+  filter: brightness(calc(0.72 + var(--lz-from-center) * 0.28))
+    contrast(1.65)
+    saturate(1.12);
+  opacity: calc(0.52 + var(--lz-card-opacity) * 0.5);
+}
+
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-mat .lz-tcg-shine::before {
+  mix-blend-mode: normal;
+  background-image: repeating-linear-gradient(
+    34deg,
+    var(--lz-tg-1) 0%,
+    var(--lz-tg-2) 6.25%,
+    var(--lz-tg-3) 12.5%,
+    var(--lz-tg-4) 18.75%,
+    var(--lz-tg-5) 25%,
+    var(--lz-tg-6) 31.25%,
+    var(--lz-tg-1) 37.5%
+  );
+  background-size: 280% 360%;
+  background-position: var(--lz-bg-x) var(--lz-bg-y);
+}
+
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-mat .lz-tcg-shine::after {
+  mix-blend-mode: hard-light;
+  filter: brightness(calc(0.62 + var(--lz-from-center) * 0.18))
+    contrast(0.95)
+    saturate(1.08);
+  background-image: radial-gradient(
+    farthest-corner ellipse at
+      calc(var(--lz-pointer-x) * 0.5 + 28%)
+      calc(var(--lz-pointer-y) * 0.5 + 28%),
+    oklch(1 0 0 / 0.42) 5%,
+    oklch(0.42 0.1 318 / 0.28) 32%,
+    oklch(0.48 0.02 250 / 0.18) 100%
+  );
+  background-size: 320% 420%;
+  background-position: center center;
+}
+
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-glare {
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--lz-card-opacity) * 0.4);
+  background-image: radial-gradient(
+    farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+    oklch(1 0 0 / 0.38) 6%,
+    oklch(1 0 0 / 0.14) 28%,
+    oklch(0.42 0.03 200 / 0.28) 48%,
+    transparent 62%
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 5 · Esmeralda — jewel plate + original criss-cross lattice (radiant idea)  */
+/* Inspired rewrite: not a copy of radiant-holo.css. Foil on mat chrome only. */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="cosmos-holo"] {
+  /* Lab-only emerald plate — does not touch production --cromo-5-* . */
+  --cromo-top: oklch(0.58 0.16 152);
+  --cromo-bottom: oklch(0.3 0.12 164);
+  --cromo-glow: 0.26;
+  --cromo-fg: oklch(0.97 0.03 148);
+  --lz-emerald-plate: url("/prototype-cromo-tcg/esmeralda-plate.jpg");
+  --lz-emerald-foil: url("/prototype-cromo-tcg/esmeralda-foil.jpg");
+  background-color: oklch(0.28 0.11 162);
   background-image:
     linear-gradient(
       165deg,
-      oklch(0.94 0.008 250) 0%,
-      oklch(0.8 0.01 250) 45%,
-      oklch(0.68 0.012 250) 100%
+      oklch(0.56 0.17 150) 0%,
+      oklch(0.38 0.14 158) 46%,
+      oklch(0.22 0.1 168) 100%
     ),
-    var(--lz-silver-plate);
+    var(--lz-emerald-plate);
   background-size: 100% 100%, cover;
   background-position: center center, center center;
   background-blend-mode: soft-light, normal;
 }
 
-/*
- * Paper is the JPG: hammered silver + diagonal grain, registered.
- * Hex/banner stamps are NOT printed here — they only live in the shine mask.
- */
-.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat {
-  background-color: oklch(0.91 0.008 250);
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-mat {
+  background-color: oklch(0.44 0.14 156);
   background-image:
-    linear-gradient(
-      -45deg,
-      transparent 22%,
-      oklch(1 0 0 / 0.28) 46%,
-      oklch(1 0 0 / 0.08) 58%,
-      transparent 78%
-    ),
-    var(--lz-iridescent-foil),
+    var(--lz-emerald-plate),
     linear-gradient(
       180deg,
-      oklch(0.96 0.005 250) 0%,
-      oklch(0.88 0.008 250) 55%,
-      oklch(0.82 0.012 250) 100%
+      oklch(0.52 0.16 150) 0%,
+      oklch(0.38 0.14 158) 58%,
+      oklch(0.28 0.12 166) 100%
     );
-  background-size: 140% 140%, cover, 100% 100%;
-  background-position: 42% 38%, center center, center;
-  background-repeat: no-repeat, no-repeat, no-repeat;
-  background-blend-mode: screen, soft-light, normal;
-}
-
-.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat .lz-tcg-shine::before {
-  content: none;
-  display: none;
+  background-size: cover, 100% 100%;
+  background-position: center center, center;
+  background-repeat: no-repeat;
+  background-blend-mode: soft-light, normal;
 }
 
 /*
- * Paper is light platinum, so light maps stay white→transparent (no black).
- * Black + difference + color-dodge on this mat reads as grey stickers, not foil.
- * Foil JPG is fixed. Only the diagonal band follows the pointer.
+ * One diagonal per pseudo. Solid opacity plates, hard stops, 1:1 scale
+ * so the steps stay crisp. Green only on the beam — gaps stay empty.
  */
-.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-mat .lz-tcg-shine::after {
-  mix-blend-mode: overlay;
-  filter: brightness(1.2) contrast(1.35) saturate(1.65);
-  opacity: calc((1.05 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12));
-  background-image:
-    radial-gradient(
-      circle at var(--lz-pointer-x) var(--lz-pointer-y),
-      oklch(1 0.02 220 / 0.9) 0%,
-      oklch(0.96 0.04 250 / 0.35) 32%,
-      transparent 64%
-    ),
-    linear-gradient(
-      -45deg,
-      transparent 16%,
-      oklch(0.94 0.05 250 / 0.45) 34%,
-      oklch(1 0.03 220 / 0.95) 48%,
-      oklch(1 0.04 300 / 0.85) 58%,
-      oklch(0.94 0.05 250 / 0.45) 72%,
-      transparent 88%
-    ),
-    var(--lz-iridescent-foil);
-  background-size: 160% 160%, 220% 220%, cover;
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-mat .lz-tcg-shine::before {
+  mix-blend-mode: normal;
+  filter: none;
+  opacity: 1;
+  background-image: repeating-linear-gradient(
+    42deg,
+    rgb(0 0 0 / 0) 0 20px,
+    oklch(0.48 0.14 155 / 0.35) 20px 32px,
+    oklch(0.58 0.16 152 / 0.55) 32px 42px,
+    oklch(0.68 0.16 150 / 0.75) 42px 50px,
+    oklch(0.76 0.15 148 / 0.9) 50px 56px,
+    oklch(0.68 0.16 150 / 0.75) 56px 64px,
+    oklch(0.58 0.16 152 / 0.55) 64px 74px,
+    oklch(0.48 0.14 155 / 0.35) 74px 86px,
+    rgb(0 0 0 / 0) 86px 110px
+  );
+  background-size: 72rem 72rem;
   background-position:
-    center center,
-    calc(100% * var(--lz-from-left)) calc(100% * var(--lz-from-top)),
-    center center;
-  background-repeat: no-repeat, no-repeat, no-repeat;
-  background-blend-mode: overlay, overlay, normal;
-  -webkit-mask-image: var(--lz-reverse-mask);
-  mask-image: var(--lz-reverse-mask);
-  -webkit-mask-size: var(--lz-reverse-size);
-  mask-size: var(--lz-reverse-size);
-  -webkit-mask-position: 0 0;
-  mask-position: 0 0;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
+    calc(-12rem + var(--lz-from-left) * -18rem)
+    calc(-12rem + var(--lz-from-top) * -18rem);
+  background-repeat: no-repeat;
 }
 
-.lz-tcg-frame[data-rarity="radiant-holo"] .lz-tcg-glare {
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-mat .lz-tcg-shine::after {
+  mix-blend-mode: normal;
+  filter: none;
+  opacity: 1;
+  background-image: repeating-linear-gradient(
+    -48deg,
+    rgb(0 0 0 / 0) 0 22px,
+    oklch(0.46 0.14 158 / 0.32) 22px 34px,
+    oklch(0.56 0.16 154 / 0.52) 34px 44px,
+    oklch(0.66 0.16 151 / 0.72) 44px 52px,
+    oklch(0.74 0.15 148 / 0.88) 52px 58px,
+    oklch(0.66 0.16 151 / 0.72) 58px 66px,
+    oklch(0.56 0.16 154 / 0.52) 66px 76px,
+    oklch(0.46 0.14 158 / 0.32) 76px 88px,
+    rgb(0 0 0 / 0) 88px 112px
+  );
+  background-size: 72rem 72rem;
+  background-position:
+    calc(-12rem + (1 - var(--lz-from-left)) * -18rem)
+    calc(-12rem + (1 - var(--lz-from-top)) * -18rem);
+  background-repeat: no-repeat;
+}
+
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-glare {
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--lz-card-opacity) * 0.55);
+  background-image: radial-gradient(
+    farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+    oklch(0.72 0.14 152 / 0.35) 0%,
+    oklch(0.58 0.12 155 / 0.12) 38%,
+    transparent 62%
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6 · Diamante — nacre bezel + crystal mat + VSTAR-family oil (inspired)     */
+/* Diagonal pastel bands over texture. Original angles/period/hues, no GPL.   */
+/* -------------------------------------------------------------------------- */
+
+.lz-tcg-frame[data-rarity="secret-rare"] {
+  --cromo-top: oklch(0.96 0.03 80);
+  --cromo-bottom: oklch(0.86 0.04 70);
+  --cromo-glow: 0.12;
+  --cromo-fg: oklch(0.26 0.04 65);
+  --lz-tcg-bezel: 0.95rem;
+  --lz-nacre: url("/prototype-cromo-tcg/diamante-nacre-plate.jpg");
+  --lz-crystal: url("/prototype-cromo-tcg/diamante-crystal.jpg");
+  /* Oil slick — champagne / gold / mint / lilac / rose / peach. No cyan. */
+  --lz-oil-1: oklch(0.84 0.1 32);
+  --lz-oil-2: oklch(0.88 0.11 88);
+  --lz-oil-3: oklch(0.9 0.07 145);
+  --lz-oil-4: oklch(0.86 0.09 312);
+  --lz-oil-5: oklch(0.84 0.1 350);
+  --lz-oil-6: oklch(0.88 0.08 68);
+  background-color: oklch(0.88 0.03 75);
+  background-image:
+    linear-gradient(
+      165deg,
+      oklch(1 0.02 90 / 0.35) 0%,
+      oklch(0.9 0.04 70 / 0.18) 100%
+    ),
+    var(--lz-nacre);
+  background-size: 100% 100%, cover;
+  background-position: center center, center center;
+  background-blend-mode: soft-light, normal;
+  box-shadow:
+    0 16px 36px oklch(0 0 0 / 0.24),
+    inset 0 1px 0 oklch(1 0 0 / 0.78);
+}
+
+/* Oil sheen on the nacre ring only — hole punched through the mat. */
+.lz-tcg-frame[data-rarity="secret-rare"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: inherit;
+  box-sizing: border-box;
+  padding: var(--lz-tcg-bezel);
+  background-image: repeating-linear-gradient(
+    118deg,
+    var(--lz-oil-1),
+    var(--lz-oil-2),
+    var(--lz-oil-3),
+    var(--lz-oil-4),
+    var(--lz-oil-5),
+    var(--lz-oil-6),
+    var(--lz-oil-1)
+  );
+  background-size: 240% 240%;
+  background-position: var(--lz-bg-x) var(--lz-bg-y);
+  mix-blend-mode: overlay;
+  opacity: calc(0.32 + var(--lz-card-opacity) * 0.48);
+  -webkit-mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#fff 0 0), linear-gradient(#fff 0 0);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+}
+
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-mat {
+  background-color: oklch(0.97 0.01 85);
+  background-image:
+    linear-gradient(oklch(1 0.008 85 / 0.28), oklch(1 0.008 85 / 0.28)),
+    var(--lz-crystal),
+    linear-gradient(
+      180deg,
+      oklch(0.9 0.01 85) 0%,
+      oklch(0.88 0.012 80) 52%,
+      oklch(0.86 0.015 320) 100%
+    );
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center, 50% 54%, center;
+  background-repeat: no-repeat;
+  /*
+   * lighten = dark facets cannot go below the pearl floor.
+   * screen veil lifts the remaining charcoal toward ice.
+   */
+  background-blend-mode: screen, lighten, normal;
+  box-shadow: inset 0 0 0 1px oklch(0.55 0.05 75 / 0.22),
+    inset 0 0 0 2px oklch(1 0 0 / 0.5);
+}
+
+/*
+ * Oil: pastel rainbow through hue, then diagonal pearl bands.
+ * Period/angle invented (118deg / 7.5%) — not the VSTAR sheet.
+ */
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-mat .lz-tcg-shine::before {
+  mix-blend-mode: overlay;
+  filter: brightness(calc(0.78 + var(--lz-from-center) * 0.4))
+    contrast(1.22)
+    saturate(1.18);
+  opacity: calc(0.38 + var(--lz-card-opacity) * 0.5);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--lz-oil-1) 0%,
+      var(--lz-oil-2) 7.5%,
+      var(--lz-oil-3) 15%,
+      var(--lz-oil-4) 22.5%,
+      var(--lz-oil-5) 30%,
+      var(--lz-oil-6) 37.5%,
+      var(--lz-oil-1) 45%
+    ),
+    repeating-linear-gradient(
+      118deg,
+      oklch(0.78 0.03 75) 0%,
+      oklch(0.9 0.03 88) 2.8%,
+      oklch(0.99 0.01 95) 3.7%,
+      oklch(0.9 0.03 88) 4.6%,
+      oklch(0.78 0.03 75) 8.5%,
+      oklch(0.78 0.03 75) 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
+      oklch(1 0.03 90 / 0.7) 6%,
+      oklch(0.9 0.06 330 / 0.18) 34%,
+      transparent 60%
+    );
+  background-size: 170% 620%, 250% 100%, 140% 140%;
+  background-position:
+    0% var(--lz-bg-y),
+    var(--lz-bg-x) var(--lz-bg-y),
+    center center;
+  background-blend-mode: hue, overlay, normal;
+}
+
+/*
+ * Inverse diagonal only — crystal stays on the mat so dark facets
+ * are not painted back on top of the pearl floor.
+ */
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-mat .lz-tcg-shine::after {
+  mix-blend-mode: soft-light;
+  filter: brightness(calc(1.08 + var(--lz-from-center) * 0.18))
+    contrast(1.08)
+    saturate(0.9);
+  opacity: calc(0.28 + var(--lz-card-opacity) * 0.32);
+  background-image:
+    repeating-linear-gradient(
+      -118deg,
+      oklch(0.86 0.02 75) 0%,
+      oklch(0.94 0.025 88) 2.8%,
+      oklch(1 0.01 95) 3.7%,
+      oklch(0.94 0.025 88) 4.6%,
+      oklch(0.86 0.02 75) 8.5%,
+      oklch(0.86 0.02 75) 12%
+    ),
+    radial-gradient(circle, oklch(1 0 0 / 0.9) 0 0.55px, transparent 1.1px);
+  background-size: 190% 100%, 12px 15px;
+  background-position:
+    calc(100% - var(--lz-bg-x)) calc(100% - var(--lz-bg-y)),
+    calc(40% + var(--lz-from-left) * 12%) calc(40% + var(--lz-from-top) * 12%);
+  background-repeat: repeat, repeat;
+  background-blend-mode: overlay, screen;
+}
+
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-glare {
   mix-blend-mode: soft-light;
   opacity: calc(var(--lz-card-opacity) * 1.05);
   background-image: radial-gradient(
     farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
-    oklch(1 0 0 / 0.9) 0%,
-    oklch(1 0 0 / 0.42) 38%,
-    oklch(1 0 0 / 0.12) 62%,
-    transparent 78%
+    oklch(1 0.03 90 / 0.92) 0%,
+    oklch(0.94 0.06 330 / 0.32) 32%,
+    oklch(0.9 0.04 75 / 0.1) 56%,
+    transparent 72%
   );
-}
-
-/* -------------------------------------------------------------------------- */
-/* 5 · cosmos-holo (Esmeralda) — flecks + soft color band                     */
-/* -------------------------------------------------------------------------- */
-
-.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-shine::before {
-  opacity: 0.36;
-  mix-blend-mode: soft-light;
-  background-image:
-    radial-gradient(circle, oklch(1 0 0 / 0.5) 0 0.55px, transparent 1.1px),
-    radial-gradient(circle, oklch(0.9 0.08 145 / 0.4) 0 0.5px, transparent 1px),
-    radial-gradient(circle, oklch(0.88 0.07 230 / 0.35) 0 0.45px, transparent 0.95px);
-  background-size: 14px 18px, 22px 16px, 18px 24px;
-  background-position: 0 0, 7px 9px, 11px 4px;
-}
-
-.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-shine::after {
-  mix-blend-mode: soft-light;
-  filter: brightness(0.92) contrast(1.08) saturate(1.05);
-  opacity: calc(
-    (0.78 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12)
-  );
-  background-image:
-    radial-gradient(circle, oklch(1 0 0 / 0.85) 0 0.65px, transparent 1.2px),
-    radial-gradient(circle, oklch(0.92 0.1 145 / 0.7) 0 0.55px, transparent 1.1px),
-    radial-gradient(circle, oklch(0.9 0.08 85 / 0.55) 0 0.5px, transparent 1px),
-    repeating-linear-gradient(
-      82deg,
-      oklch(0.78 0.1 95 / 0.35) 0%,
-      oklch(0.72 0.1 145 / 0.3) 8%,
-      oklch(0.7 0.1 200 / 0.3) 16%,
-      oklch(0.68 0.1 280 / 0.28) 24%,
-      oklch(0.78 0.1 95 / 0.35) 32%
-    ),
-    radial-gradient(
-      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
-      oklch(0.95 0.04 180 / 0.35) 5%,
-      transparent 55%
-    );
-  background-size:
-    12px 16px,
-    18px 14px,
-    15px 20px,
-    320% 600%,
-    100% 100%;
-  background-position:
-    0 0,
-    5px 7px,
-    9px 3px,
-    calc(10% + var(--lz-from-left) * 80%) calc(10% + var(--lz-from-top) * 80%),
-    center center;
-  background-blend-mode: screen, screen, screen, soft-light, normal;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 6 · secret-rare (Diamante) — dual glitter + warm gold                      */
-/* -------------------------------------------------------------------------- */
-
-.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-shine::before {
-  opacity: 0.32;
-  mix-blend-mode: soft-light;
-  background-image:
-    radial-gradient(circle, oklch(1 0 0 / 0.7) 0 0.6px, transparent 1.15px),
-    radial-gradient(circle, oklch(0.92 0.1 95 / 0.55) 0 0.5px, transparent 1px);
-  background-size: 11px 14px, 17px 12px;
-  background-position:
-    calc(45% + var(--lz-from-left) * 8%) calc(45% + var(--lz-from-top) * 8%),
-    calc(55% - var(--lz-from-left) * 8%) calc(55% - var(--lz-from-top) * 8%);
-}
-
-.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-shine::after {
-  mix-blend-mode: soft-light;
-  filter: brightness(0.88) contrast(1.12) saturate(1.05);
-  opacity: calc(
-    (0.8 * var(--lz-card-opacity)) - (var(--lz-from-center) * 0.12)
-  );
-  background-image:
-    radial-gradient(circle, oklch(1 0 0 / 0.9) 0 0.7px, transparent 1.3px),
-    radial-gradient(circle, oklch(0.95 0.12 95 / 0.75) 0 0.55px, transparent 1.15px),
-    conic-gradient(
-      from calc(var(--lz-from-left) * 40deg),
-      oklch(0.75 0.08 200 / 0.35),
-      oklch(0.78 0.1 300 / 0.3),
-      oklch(0.82 0.12 85 / 0.4),
-      oklch(0.75 0.08 200 / 0.35)
-    ),
-    linear-gradient(
-      45deg,
-      oklch(0.78 0.12 85 / 0.35),
-      oklch(0.88 0.1 95 / 0.25)
-    ),
-    radial-gradient(
-      farthest-corner circle at var(--lz-pointer-x) var(--lz-pointer-y),
-      oklch(1 0 0 / 0.4) 8%,
-      transparent 55%
-    );
-  background-size:
-    10px 13px,
-    16px 11px,
-    100% 100%,
-    100% 100%,
-    100% 100%;
-  background-position:
-    calc(42% + var(--lz-from-left) * 10%) calc(42% + var(--lz-from-top) * 10%),
-    calc(58% - var(--lz-from-left) * 10%) calc(58% - var(--lz-from-top) * 10%),
-    center center,
-    center center,
-    center center;
-  background-blend-mode: screen, screen, soft-light, soft-light, normal;
 }
 
 /* Ink chrome chip */
@@ -498,11 +663,41 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  -webkit-text-stroke: 1.5px oklch(1 0 0 / 0.85);
   background-image: linear-gradient(
     120deg,
     oklch(1 0 0 / 0.95),
     oklch(0.75 0.02 80 / 0.45) 45%,
     oklch(1 0 0 / 0.9)
+  );
+}
+
+.lz-tcg-frame[data-rarity="cosmos-holo"] .lz-tcg-dorsal {
+  background-image: linear-gradient(
+    120deg,
+    oklch(1 0.04 148 / 0.96),
+    oklch(0.78 0.14 155 / 0.5) 45%,
+    oklch(1 0.03 140 / 0.92)
+  );
+}
+
+.lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-dorsal {
+  -webkit-text-stroke-color: oklch(1 0.02 250 / 0.72);
+  background-image: linear-gradient(
+    120deg,
+    oklch(1 0.02 250 / 0.96),
+    oklch(0.72 0.06 250 / 0.48) 45%,
+    oklch(0.98 0.03 200 / 0.92)
+  );
+}
+
+.lz-tcg-frame[data-rarity="secret-rare"] .lz-tcg-dorsal {
+  -webkit-text-stroke-color: oklch(0.22 0.03 70 / 0.4);
+  background-image: linear-gradient(
+    120deg,
+    oklch(0.22 0.04 70 / 0.92),
+    oklch(0.42 0.05 320 / 0.55) 45%,
+    oklch(0.2 0.03 80 / 0.9)
   );
 }
 
@@ -513,7 +708,9 @@
 
   .lz-tcg-shine::after,
   .lz-tcg-glare,
-  .lz-tcg-chip::before {
+  .lz-tcg-chip::before,
+  .lz-tcg-frame[data-rarity="secret-rare"]::before,
+  .lz-tcg-frame[data-rarity="trainer-gallery-holo"] .lz-tcg-mat .lz-tcg-shine {
     opacity: 0.08;
   }
 }

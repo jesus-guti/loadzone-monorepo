@@ -13,7 +13,7 @@ export const CROMO_RARITY_KEYS = [
   "reverse-holo",
   "shiny-rare",
   "regular-holo",
-  "radiant-holo",
+  "trainer-gallery-holo",
   "cosmos-holo",
   "secret-rare",
 ] as const;
@@ -24,7 +24,7 @@ export const CROMO_RARITY_TIER: Record<CromoRarity, CromoTier> = {
   "reverse-holo": 1,
   "shiny-rare": 2,
   "regular-holo": 3,
-  "radiant-holo": 4,
+  "trainer-gallery-holo": 4,
   "cosmos-holo": 5,
   "secret-rare": 6,
 };
@@ -45,28 +45,31 @@ export const CROMO_RARITY_META: Record<
     name: "Secret gold",
     thesis: "Bezel/mat oro secret · burst radial · sin textura de celdas.",
   },
-  "radiant-holo": {
-    name: "Hex reverse",
-    thesis: "Placa plata + hex foil · haz amplio platino · tilt mueve la luz.",
+  "trainer-gallery-holo": {
+    name: "Trainer gallery",
+    thesis: "Acero platino · rainbow color-dodge · shimmer hard-light.",
   },
   "cosmos-holo": {
-    name: "Cosmos holo",
-    thesis: "Destellos + banda de color suave (galaxia CSS).",
+    name: "Radiant holo",
+    thesis: "Placa esmeralda + criss-cross · borde joya · grain premium.",
   },
   "secret-rare": {
-    name: "Secret rare",
-    thesis: "Glitter dual + oro cálido · tope de escalera.",
+    name: "VSTAR nacre",
+    thesis: "Borde nácar · cristal · oil diagonal pastel.",
   },
 };
 
 export function parseCromoRarity(
   raw: string | null | undefined
 ): CromoRarity | null {
+  if (raw === "radiant-holo") {
+    return "trainer-gallery-holo";
+  }
   if (
     raw === "reverse-holo" ||
     raw === "shiny-rare" ||
     raw === "regular-holo" ||
-    raw === "radiant-holo" ||
+    raw === "trainer-gallery-holo" ||
     raw === "cosmos-holo" ||
     raw === "secret-rare"
   ) {
