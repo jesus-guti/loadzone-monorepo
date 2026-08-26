@@ -5,7 +5,7 @@ Tracker: local markdown (`.scratch/streak-cromo-tcg-card-wayfinder/`). Promote t
 
 ## Destination
 
-A **trusted in-place plan** to change the production **Streak Cromo** (Racha sheet + today’s check-in completion) so it **reads as a physical trading card**: TCG-like rectangular frame, working pointer tilt, foil only on chrome — judged on that real card, never on the DD-05 check-in lab.
+**Shipped 2026-08-26.** Production **Streak Cromo** (Racha sheet + today’s check-in completion) reads as a physical trading card: Bezel A frame, working pointer tilt, foil only on chrome. Judged on the real card, never on DD-05.
 
 ## Notes
 
@@ -31,13 +31,16 @@ Imported from the prior map (do not re-grill unless this map invalidates them):
 - [Pin how a human judges the Streak Cromo](issues/01-pin-judge-surface.md) — Seed Player `/[token]`, tap header racha pill, judge sheet cromo on desktop pointer; no `?variant=`; completion is not the judge surface.
 - [Prototype TCG frame and working tilt on the real Streak Cromo](issues/03-prototype-real-cromo-frame-tilt.md) — Collectible; start from Bezel A; pointer 3D is the acceptance signal. Throwaway: `prototype-cromo-tcg` + `?cromo=` on Racha (not `?variant=`).
 - [Choose the first production foil recipe](issues/04-first-production-foil-recipe.md) — Ship plate + holo + spark together as already mapped; spark is new Diamante code; holo/spark still need a Racha Bezel A judge pass.
-- [Lock Bezel A proportions for production](issues/06-lock-bezel-a-proportions.md) — Keep throwaway: 0.85rem bezel, 0.28rem radius, 50%/42% arch.
+- [Lock Bezel A proportions for production](issues/06-lock-bezel-a-proportions.md) — Keep throwaway: 0.85rem bezel, 0.28rem radius, 50%/42% arch. Production later kept the judged radii (`0.58rem` / `0.32rem`).
+- [Judge holo and spark on Bezel A](issues/07-judge-holo-spark-bezel.md) — Collectible; six recipes graduate; labs deleted.
+- [Assemble the in-place Streak Cromo build plan](issues/05-assemble-inplace-build-plan.md) — Shipped into `StreakCromo` + `streak-cromo.css` + `public/cromo/`. Gyro still later.
 
-Live on the throwaway after judging Bezel A (not a separate ticket): rank seal is **ink**; **sleeve glare** (full-card beam) is not foil. Glossary: `CONTEXT.md` **Streak Cromo**.
+Live after judging Bezel A: rank seal is **ink**; **sleeve glare** (full-card beam) is not foil. Glossary: `CONTEXT.md` **Streak Cromo**.
 
 ## Not yet specified
 
 - Low-end phone budget for blend stacks.
+- Racha-sheet gyro opt-in (pointer tilt ships; gyro still later).
 - Share / high-res export (in scope of product later; not this destination).
 
 ## Out of scope

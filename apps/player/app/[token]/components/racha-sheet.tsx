@@ -13,13 +13,9 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState, type JSX } from "react";
+import { useState, type JSX } from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
-import { parseCromoRarity } from "../prototype-cromo-tcg/constants";
-import { CromoTcgSwitcher } from "../prototype-cromo-tcg/switcher";
-import { TcgPrototypeCromo } from "../prototype-cromo-tcg/tcg-cromo";
 import { StreakCromo } from "./streak-cromo";
 
 type RachaSheetProperties = {
@@ -75,46 +71,6 @@ function HeaderPhotoDisc({
       />
     </span>
   );
-}
-
-function ProductionCromo(properties: CromoProperties): JSX.Element {
-  return (
-    <StreakCromo
-      clubCrestUrl={properties.clubCrestUrl}
-      imageUrl={properties.imageUrl}
-      playerName={properties.playerName}
-      playingPosition={properties.playingPosition}
-      restarted={properties.restarted}
-      shirtNumber={properties.shirtNumber}
-      streakCount={properties.streakCount}
-      teammateStreaks={properties.teammateStreaks}
-      teamName={properties.teamName}
-    />
-  );
-}
-
-function RachaCromoHost(properties: CromoProperties): JSX.Element {
-  const searchParams = useSearchParams();
-  const rarity = parseCromoRarity(searchParams.get("rarity"));
-
-  if (process.env.NODE_ENV !== "production" && rarity) {
-    return (
-      <TcgPrototypeCromo
-        clubCrestUrl={properties.clubCrestUrl}
-        imageUrl={properties.imageUrl}
-        playerName={properties.playerName}
-        playingPosition={properties.playingPosition}
-        rarity={rarity}
-        restarted={properties.restarted}
-        shirtNumber={properties.shirtNumber}
-        streakCount={properties.streakCount}
-        teammateStreaks={properties.teammateStreaks}
-        teamName={properties.teamName}
-      />
-    );
-  }
-
-  return <ProductionCromo {...properties} />;
 }
 
 /**
@@ -187,9 +143,17 @@ export function RachaSheet({
         </SheetHeader>
 
         <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-28 pt-2">
-          <Suspense fallback={<ProductionCromo {...cromoProperties} />}>
-            <RachaCromoHost {...cromoProperties} />
-          </Suspense>
+          <StreakCromo
+            clubCrestUrl={cromoProperties.clubCrestUrl}
+            imageUrl={cromoProperties.imageUrl}
+            playerName={cromoProperties.playerName}
+            playingPosition={cromoProperties.playingPosition}
+            restarted={cromoProperties.restarted}
+            shirtNumber={cromoProperties.shirtNumber}
+            streakCount={cromoProperties.streakCount}
+            teammateStreaks={cromoProperties.teammateStreaks}
+            teamName={cromoProperties.teamName}
+          />
           <div className="mb-0 mt-auto flex flex-col items-center gap-2 text-center">
             <StreakFireIcon
               backColor={STREAK_FIRE_TONE.back}
@@ -237,11 +201,6 @@ export function RachaSheet({
           </div>
         </div>
       </SheetContent>
-      {process.env.NODE_ENV === "production" ? null : (
-        <Suspense fallback={null}>
-          <CromoTcgSwitcher />
-        </Suspense>
-      )}
     </Sheet>
   );
 }

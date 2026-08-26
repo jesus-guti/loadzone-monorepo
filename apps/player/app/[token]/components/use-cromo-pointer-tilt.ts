@@ -1,6 +1,12 @@
 "use client";
 
-import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type PointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type TiltVars = {
   readonly style: CSSProperties;
@@ -15,8 +21,10 @@ type SpringPair = {
   velocity: number;
 };
 
+/** Modest pointer spring for cromo 3D tilt (inspired rewrite; not GPL CSS). */
 const INTERACT_STIFFNESS = 0.066;
 const INTERACT_DAMPING = 0.25;
+/** Same as `interactEnd` snap-back. */
 const SNAP_STIFFNESS = 0.01;
 const SNAP_DAMPING = 0.06;
 const SNAP_DELAY_MS = 500;
@@ -54,6 +62,10 @@ function stepSpring(
   }
 }
 
+/**
+ * Pointer → CSS vars. Targets update on move; painted values follow a
+ * svelte/motion-style spring so the card eases toward the cursor instead of snapping.
+ */
 export function usePointerTilt(reducedMotion: boolean): TiltVars {
   const [interacting, setInteracting] = useState(false);
   const interactingRef = useRef(false);
@@ -63,31 +75,34 @@ export function usePointerTilt(reducedMotion: boolean): TiltVars {
 
   const px = useRef<SpringPair>({ value: 50, velocity: 0 });
   const py = useRef<SpringPair>({ value: 50, velocity: 0 });
-  const shine = useRef<SpringPair>({ value: 0.32, velocity: 0 });
+  const opacity = useRef<SpringPair>({ value: 0.38, velocity: 0 });
   const targetPx = useRef(50);
   const targetPy = useRef(50);
-  const targetShine = useRef(0.32);
+  const targetOpacity = useRef(0.38);
   const stiffness = useRef(INTERACT_STIFFNESS);
   const damping = useRef(INTERACT_DAMPING);
   const leaveRest = useRef(false);
 
   useEffect(() => {
-    const paint = (x: number, y: number, shineValue: number): void => {
+    const paint = (x: number, y: number, o: number, interactingFlag: 0 | 1): void => {
       const fromCenter = clamp(Math.hypot(x - 50, y - 50) / 50, 0, 1);
       setStyle({
         ["--lz-pointer-x" as string]: `${x}%`,
         ["--lz-pointer-y" as string]: `${y}%`,
         ["--lz-from-center" as string]: String(fromCenter),
-        ["--lz-rotate-y" as string]: `${-((x - 50) / 4.2)}deg`,
-        ["--lz-rotate-x" as string]: `${(y - 50) / 5.2}deg`,
-        ["--lz-bg-x" as string]: `${mapFromPercent(x, 34, 66)}%`,
-        ["--lz-bg-y" as string]: `${mapFromPercent(y, 38, 62)}%`,
-        ["--lz-shine" as string]: String(shineValue),
+        ["--lz-from-left" as string]: String(x / 100),
+        ["--lz-from-top" as string]: String(y / 100),
+        ["--lz-rotate-y" as string]: `${-((x - 50) / 3.5)}deg`,
+        ["--lz-rotate-x" as string]: `${(y - 50) / 3.5}deg`,
+        ["--lz-bg-x" as string]: `${mapFromPercent(x, 37, 63)}%`,
+        ["--lz-bg-y" as string]: `${mapFromPercent(y, 33, 67)}%`,
+        ["--lz-card-opacity" as string]: String(o),
+        ["--lz-interacting" as string]: String(interactingFlag),
       });
     };
 
     if (reducedMotion) {
-      paint(50, 50, 0.18);
+      paint(50, 50, 0, 0);
       return;
     }
 
@@ -95,22 +110,32 @@ export function usePointerTilt(reducedMotion: boolean): TiltVars {
       const idleAmbient = !interactingRef.current && !leaveRest.current;
       if (idleAmbient) {
         const t = time / 1000;
-        targetPx.current = 50 + Math.sin(t * 0.7) * 18;
-        targetPy.current = 50 + Math.cos(t * 0.55) * 14;
-        targetShine.current = 0.32;
+        targetPx.current = 50 + Math.sin(t * 0.55) * 14;
+        targetPy.current = 50 + Math.cos(t * 0.42) * 10;
+        targetOpacity.current = 0.38;
         stiffness.current = INTERACT_STIFFNESS;
         damping.current = INTERACT_DAMPING;
       }
 
       stepSpring(px.current, targetPx.current, stiffness.current, damping.current);
       stepSpring(py.current, targetPy.current, stiffness.current, damping.current);
-      stepSpring(shine.current, targetShine.current, stiffness.current, damping.current);
+      stepSpring(
+        opacity.current,
+        targetOpacity.current,
+        stiffness.current,
+        damping.current
+      );
 
-      if (leaveRest.current && isSettled(px.current, py.current, shine.current)) {
+      if (leaveRest.current && isSettled(px.current, py.current, opacity.current)) {
         leaveRest.current = false;
       }
 
-      paint(px.current.value, py.current.value, shine.current.value);
+      paint(
+        px.current.value,
+        py.current.value,
+        opacity.current.value,
+        interactingRef.current ? 1 : 0
+      );
       frameRef.current = window.requestAnimationFrame(tick);
     };
 
@@ -145,7 +170,7 @@ export function usePointerTilt(reducedMotion: boolean): TiltVars {
         damping.current = SNAP_DAMPING;
         targetPx.current = 50;
         targetPy.current = 50;
-        targetShine.current = 0.18;
+        targetOpacity.current = 0;
       }, SNAP_DELAY_MS);
     },
     onPointerMove: (event) => {
@@ -163,7 +188,7 @@ export function usePointerTilt(reducedMotion: boolean): TiltVars {
         0,
         100
       );
-      targetShine.current = 0.92;
+      targetOpacity.current = 0.58;
     },
   };
 }

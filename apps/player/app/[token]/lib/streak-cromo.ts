@@ -11,20 +11,17 @@ export const CROMO_TIER_MIN_DAYS = {
   6: 60,
 } as const satisfies Record<CromoTier, number>;
 
-/** Bronce / Plata: metallic plate. Oro+ : holographic foil. */
-export type CromoFoilKind = "plate" | "holo";
-
-export const CROMO_FOIL_INTENSITY: Record<CromoTier, number> = {
-  1: 0.18,
-  2: 0.38,
-  3: 0.56,
-  4: 0.72,
-  5: 0.86,
-  6: 1,
-};
+/** Plate (Bronce/Plata), holo (Oro–Esmeralda), spark (Diamante). Distinct CSS per tier. */
+export type CromoFoilKind = "plate" | "holo" | "spark";
 
 export function cromoFoilKind(tier: CromoTier): CromoFoilKind {
-  return tier <= 2 ? "plate" : "holo";
+  if (tier <= 2) {
+    return "plate";
+  }
+  if (tier <= 5) {
+    return "holo";
+  }
+  return "spark";
 }
 
 export function streakCountToCromoTier(streakCount: number): CromoTier {

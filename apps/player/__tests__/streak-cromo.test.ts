@@ -71,28 +71,35 @@ describe("Streak Cromo Spanish copy", () => {
   it("paints each tier on the card article via data-streak-cromo-tier CSS", async () => {
     const { readFile } = await import("node:fs/promises");
     const { fileURLToPath } = await import("node:url");
-    const cssPath = fileURLToPath(
+    const globalsPath = fileURLToPath(
       new URL("../app/globals.css", import.meta.url)
     );
-    const css = await readFile(cssPath, "utf8");
+    const foilPath = fileURLToPath(
+      new URL(
+        "../app/[token]/components/streak-cromo.css",
+        import.meta.url
+      )
+    );
+    const globals = await readFile(globalsPath, "utf8");
+    const foil = await readFile(foilPath, "utf8");
     for (const tier of CROMO_TIERS) {
-      expect(css).toContain(`[data-streak-cromo-tier="${tier}"]`);
-      expect(css).toContain(`--cromo-${tier}-top:`);
+      expect(globals).toContain(`[data-streak-cromo-tier="${tier}"]`);
+      expect(globals).toContain(`--cromo-${tier}-top:`);
+      expect(foil).toContain(`[data-streak-cromo-tier="${tier}"]`);
     }
-    expect(css).toContain("background-image:");
-    expect(css).toContain("linear-gradient(180deg, var(--cromo-top)");
-    expect(css).toContain('[data-cromo-foil="plate"]');
-    expect(css).toContain('[data-cromo-foil="holo"]');
-    expect(css).toContain(".cromo-foil-holo");
+    expect(foil).toContain("linear-gradient(180deg, var(--cromo-top)");
+    expect(foil).toContain(".cromo-frame");
+    expect(foil).toContain(".cromo-shine");
+    expect(foil).toContain(".cromo-glare");
   });
 
-  it("uses plate foil on Bronce/Plata and holographic foil from Oro up", () => {
+  it("maps plate, holo, and spark onto existing CromoTiers", () => {
     expect(cromoFoilKind(1)).toBe("plate");
     expect(cromoFoilKind(2)).toBe("plate");
     expect(cromoFoilKind(3)).toBe("holo");
     expect(cromoFoilKind(4)).toBe("holo");
     expect(cromoFoilKind(5)).toBe("holo");
-    expect(cromoFoilKind(6)).toBe("holo");
+    expect(cromoFoilKind(6)).toBe("spark");
   });
 
   it("keeps glow tokens as CSS vars so shells stay whisper-highlight", () => {
