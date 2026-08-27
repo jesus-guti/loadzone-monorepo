@@ -13,7 +13,12 @@ import {
 import { StreakFireIcon } from "@repo/design-system/components/streak-fire-icon";
 import { STREAK_FIRE_TONE } from "@repo/design-system/lib/streak-fire-tones";
 import { cn } from "@repo/design-system/lib/utils";
-import { useState, type JSX } from "react";
+import {
+  useRef,
+  useState,
+  type JSX,
+  type PointerEvent,
+} from "react";
 import { FOCUS_COPY } from "../lib/focus-copy";
 import type { RachaWeekDay } from "../lib/racha-week";
 import { StreakCromo } from "./streak-cromo";
@@ -91,6 +96,31 @@ export function RachaSheet({
   shirtNumber = null,
   teammateStreaks = [],
 }: RachaSheetProperties): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const swipeStartY = useRef<number | null>(null);
+
+  const onSwipePointerDown = (event: PointerEvent<HTMLDivElement>): void => {
+    swipeStartY.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onSwipePointerMove = (event: PointerEvent<HTMLDivElement>): void => {
+    if (swipeStartY.current === null) {
+      return;
+    }
+    setDragY(Math.max(0, event.clientY - swipeStartY.current));
+  };
+
+  const onSwipePointerUp = (): void => {
+    const shouldClose = dragY > 72;
+    swipeStartY.current = null;
+    setDragY(0);
+    if (shouldClose) {
+      setOpen(false);
+    }
+  };
+
   const cromoProperties: CromoProperties = {
     clubCrestUrl,
     imageUrl,
@@ -104,7 +134,7 @@ export function RachaSheet({
   };
 
   return (
-    <Sheet>
+    <Sheet onOpenChange={setOpen} open={open}>
       <SheetTrigger
         render={
           <button
@@ -130,11 +160,28 @@ export function RachaSheet({
         </span>
       </SheetTrigger>
       <SheetContent
-        className="flex max-h-[90dvh] flex-col gap-0 overflow-y-auto overscroll-contain rounded-t-3xl bg-bg-primary pb-[max(2rem,env(safe-area-inset-bottom))]"
+        className={cn(
+          "flex h-[98dvh] max-h-[98dvh] flex-col gap-0 overflow-hidden overscroll-none rounded-t-3xl bg-bg-primary pb-[max(1rem,env(safe-area-inset-bottom))]",
+          dragY > 0 ? "duration-0" : ""
+        )}
+        showCloseButton={false}
         side="bottom"
+        style={{ translate: `0 ${dragY}px` }}
       >
-        <SheetHeader className="sticky top-0 z-10 space-y-1 bg-bg-primary pb-2">
-          <SheetTitle className="pr-10 text-center text-lg text-text-primary">
+        <SheetHeader
+          className="relative shrink-0 touch-none space-y-1 bg-bg-primary px-4 pb-1 pt-2"
+          onPointerCancel={onSwipePointerUp}
+          onPointerDown={onSwipePointerDown}
+          onPointerMove={onSwipePointerMove}
+          onPointerUp={onSwipePointerUp}
+        >
+          <div className="flex cursor-grab flex-col items-center pb-1 active:cursor-grabbing">
+            <span
+              aria-hidden
+              className="h-1.5 w-12 rounded-full bg-text-primary/25"
+            />
+          </div>
+          <SheetTitle className="text-center text-lg text-text-primary">
             {FOCUS_COPY.streakSheetTitle}
           </SheetTitle>
           <SheetDescription className="sr-only">
@@ -142,8 +189,8 @@ export function RachaSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-6 px-4 pt-1">
-          <div className="w-full [&_.cromo-root]:mb-0 [&_.cromo-root]:mt-0">
+        <div className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-between overflow-visible px-4 pt-2">
+          <div className="relative z-10 flex w-full min-h-0 flex-1 items-start justify-center overflow-visible">
             <StreakCromo
               clubCrestUrl={cromoProperties.clubCrestUrl}
               imageUrl={cromoProperties.imageUrl}
@@ -157,18 +204,18 @@ export function RachaSheet({
             />
           </div>
 
-          <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex shrink-0 flex-col items-center gap-1.5 pb-1 text-center">
             <StreakFireIcon
               backColor={STREAK_FIRE_TONE.back}
-              className="size-10"
+              className="size-7"
               frontColor={STREAK_FIRE_TONE.front}
             />
-            <p className="text-2xl font-semibold tracking-tight text-text-primary">
+            <p className="text-xl font-semibold tracking-tight text-text-primary">
               {FOCUS_COPY.streakHero(streakCount)}
             </p>
           </div>
 
-          <div className="flex w-full flex-col items-center gap-3">
+          <div className="flex w-full shrink-0 flex-col items-center gap-2 pt-2">
             <ul
               aria-label="Sesiones del equipo esta semana"
               className="m-0 flex w-full list-none justify-between gap-1 p-0"

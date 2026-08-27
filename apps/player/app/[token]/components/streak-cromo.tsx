@@ -6,8 +6,10 @@ import { formatPlayingPositionCromoLine } from "@repo/database/playing-position"
 import { cn } from "@repo/design-system/lib/utils";
 import {
   type JSX,
+  type PointerEvent,
   useEffect,
   useId,
+  useRef,
   useState,
 } from "react";
 
@@ -313,6 +315,11 @@ export function StreakCromo({
 }: StreakCromoProperties): JSX.Element {
   const reducedMotion = useReducedMotion();
   const tilt = usePointerTilt(reducedMotion);
+  const [spinning, setSpinning] = useState(false);
+  const [instantSpin, setInstantSpin] = useState(false);
+  const pointerOrigin = useRef<{ x: number; y: number } | null>(null);
+  const spinTimer = useRef(0);
+  const instantTimer = useRef(0);
   const tier = streakCountToCromoTier(streakCount);
   const foilKind = cromoFoilKind(tier);
   const showRestart = restarted || streakCount === 0;
@@ -325,37 +332,99 @@ export function StreakCromo({
   const trimmedTeamName = teamName?.trim() ?? "";
   const rootStyle = tilt.style;
 
+  useEffect(
+    () => () => {
+      window.clearTimeout(spinTimer.current);
+      window.clearTimeout(instantTimer.current);
+    },
+    []
+  );
+
+  const popover = (): void => {
+    if (reducedMotion || spinning) {
+      return;
+    }
+    setInstantSpin(false);
+    setSpinning(true);
+    window.clearTimeout(spinTimer.current);
+    window.clearTimeout(instantTimer.current);
+    spinTimer.current = window.setTimeout(() => {
+      setInstantSpin(true);
+      setSpinning(false);
+      instantTimer.current = window.setTimeout(() => {
+        setInstantSpin(false);
+      }, 50);
+    }, 1000);
+  };
+
+  const onPointerDown = (event: PointerEvent<HTMLButtonElement>): void => {
+    pointerOrigin.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const onPointerUp = (event: PointerEvent<HTMLButtonElement>): void => {
+    const origin = pointerOrigin.current;
+    pointerOrigin.current = null;
+    if (!origin) {
+      return;
+    }
+    const distance = Math.hypot(
+      event.clientX - origin.x,
+      event.clientY - origin.y
+    );
+    if (distance > 10) {
+      return;
+    }
+    popover();
+  };
+
   return (
-    <div className="cromo-root mb-3 mt-auto flex w-full flex-col items-center gap-3">
+    <div className="cromo-root mb-0 mt-0 flex w-full flex-col items-center gap-3">
       <div className="cromo-stage" style={rootStyle}>
-        <div
-          className="cromo-rotator"
-          onPointerEnter={tilt.onPointerEnter}
-          onPointerLeave={tilt.onPointerLeave}
-          onPointerMove={tilt.onPointerMove}
-        >
-          <article
-            className="cromo-frame"
-            data-cromo-foil={foilKind}
-            data-streak-cromo-tier={tier}
+        <div className="cromo-translater">
+          <button
+            aria-label={FOCUS_COPY.streakCromoSelectLabel}
+            className="cromo-rotator"
+            onPointerDown={onPointerDown}
+            onPointerEnter={tilt.onPointerEnter}
+            onPointerLeave={tilt.onPointerLeave}
+            onPointerMove={tilt.onPointerMove}
+            onPointerUp={onPointerUp}
+            type="button"
           >
-            <div className="cromo-mat">
-              <span aria-hidden className="cromo-shine" />
-              <CromoPortrait dorsal={dorsal} imageUrl={imageUrl} />
-              <IdentityHeader
-                playerName={playerName}
-                positionLine={positionLine}
-              />
-              <CromoCardFooter
-                clubCrestUrl={clubCrestUrl}
-                rank={teamRank.position}
-                streakCount={streakCount}
-                teamSize={teamRank.teamSize}
-                trimmedTeamName={trimmedTeamName}
-              />
+            <div
+              className={cn(
+                "cromo-flip",
+                spinning ? "is-spinning" : "",
+                instantSpin ? "is-instant" : ""
+              )}
+            >
+              <article
+                className="cromo-frame cromo-front"
+                data-cromo-foil={foilKind}
+                data-streak-cromo-tier={tier}
+              >
+                <div className="cromo-mat">
+                  <span aria-hidden className="cromo-shine" />
+                  <CromoPortrait dorsal={dorsal} imageUrl={imageUrl} />
+                  <IdentityHeader
+                    playerName={playerName}
+                    positionLine={positionLine}
+                  />
+                  <CromoCardFooter
+                    clubCrestUrl={clubCrestUrl}
+                    rank={teamRank.position}
+                    streakCount={streakCount}
+                    teamSize={teamRank.teamSize}
+                    trimmedTeamName={trimmedTeamName}
+                  />
+                </div>
+                <span aria-hidden className="cromo-glare" />
+              </article>
+              <div aria-hidden className="cromo-back" data-streak-cromo-tier={tier}>
+                <p className="cromo-back-mark">LOADZONE</p>
+              </div>
             </div>
-            <span aria-hidden className="cromo-glare" />
-          </article>
+          </button>
         </div>
       </div>
       {showRestart ? (

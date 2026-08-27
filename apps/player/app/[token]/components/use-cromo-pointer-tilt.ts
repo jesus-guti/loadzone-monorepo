@@ -11,7 +11,7 @@ import {
 type TiltVars = {
   readonly style: CSSProperties;
   readonly interacting: boolean;
-  readonly onPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
+  readonly onPointerMove: (event: PointerEvent<HTMLElement>) => void;
   readonly onPointerEnter: () => void;
   readonly onPointerLeave: () => void;
 };
