@@ -16,21 +16,96 @@
 }
 
 .cromo-stage {
-    perspective: 600px;
+    perspective: 700px;
     perspective-origin: 50% 40%;
-    width: min(100%, 17.5rem);
+    /* Room above so tilt/flip is not clipped by the sheet title. */
+    padding: 1.25rem 0.75rem 1.75rem;
+    width: min(100%, 21rem, 52dvh);
 }
 
-@media (max-height: 740px) {
-    .cromo-stage {
-        width: min(100%, 14.75rem);
-    }
+.cromo-translater {
+    transform-origin: center center;
+    transform-style: preserve-3d;
 }
 
 .cromo-rotator {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: inherit;
+    appearance: none;
+    -webkit-appearance: none;
     transform: rotateX(var(--lz-rotate-x)) rotateY(var(--lz-rotate-y));
     transform-style: preserve-3d;
     will-change: transform;
+    touch-action: none;
+    cursor: pointer;
+}
+
+.cromo-flip {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+    transition: transform 1000ms cubic-bezier(0.22, 0.7, 0.28, 1);
+}
+
+.cromo-flip.is-spinning {
+    transform: rotateY(360deg);
+}
+
+.cromo-flip.is-instant {
+    transition: none;
+}
+
+.cromo-back {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    border-radius: 0.58rem;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    color: oklch(0.97 0.02 160);
+    background-color: oklch(0.28 0.06 162);
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% 18%, oklch(0.45 0.08 160 / 0.55), transparent 70%),
+        linear-gradient(165deg, oklch(0.34 0.07 160) 0%, oklch(0.22 0.05 164) 100%);
+    box-shadow:
+        0 2px 6px oklch(0 0 0 / 0.45),
+        0 14px 28px oklch(0 0 0 / 0.5),
+        0 32px 48px oklch(0 0 0 / 0.32);
+}
+
+.cromo-back::before {
+    content: "";
+    position: absolute;
+    inset: 1.1rem;
+    border-radius: 0.32rem;
+    border: 1px solid oklch(0.82 0.06 160 / 0.28);
+    box-shadow: inset 0 0 0 6px oklch(0.22 0.05 164 / 0.35);
+    pointer-events: none;
+}
+
+.cromo-back-mark {
+    position: relative;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    text-indent: 0.28em;
+}
+
+.cromo-front {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 
@@ -47,7 +122,10 @@
     --cromo-bezel: 0.85rem;
     padding: var(--cromo-bezel);
     border-radius: 0.58rem;
-    box-shadow: 0 16px 36px oklch(0 0 0 / 0.28);
+    box-shadow:
+        0 2px 6px oklch(0 0 0 / 0.45),
+        0 14px 28px oklch(0 0 0 / 0.5),
+        0 32px 48px oklch(0 0 0 / 0.32);
 }
 
 .cromo-mat {
@@ -368,7 +446,11 @@
     background-size: 100% 100%, cover;
     background-position: center center, center center;
     background-blend-mode: soft-light, normal;
-    box-shadow: 0 16px 36px oklch(0 0 0 / 0.24), inset 0 1px 0 oklch(1 0 0 / 0.78);
+    box-shadow:
+        0 2px 6px oklch(0 0 0 / 0.4),
+        0 14px 28px oklch(0 0 0 / 0.46),
+        0 32px 48px oklch(0 0 0 / 0.28),
+        inset 0 1px 0 oklch(1 0 0 / 0.78);
 }
 
 
@@ -505,6 +587,9 @@
 @media (prefers-reduced-motion: reduce) {
     .cromo-rotator {
         transform: none;
+    }
+    .cromo-flip {
+        transition: none;
     }
     .cromo-shine::after,
     .cromo-glare,

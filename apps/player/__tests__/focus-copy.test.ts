@@ -81,6 +81,7 @@ describe("FOCUS_COPY calm completion", () => {
   it("keeps Racha sheet copy Age Band–agnostic and calm at zero", () => {
     expect(FOCUS_COPY.streakSheetTitle).toBe("Racha");
     expect(FOCUS_COPY.streakSheetOpenLabel).toBe("Ver racha");
+    expect(FOCUS_COPY.streakCromoSelectLabel).toBe("Acercar cromo");
     expect(FOCUS_COPY.streakHero(0)).toBe("Racha de 0 días");
     expect(FOCUS_COPY.streakHero(7)).toBe("Racha de 7 días");
     expect(FOCUS_COPY.streakHero(0).toLowerCase()).not.toMatch(

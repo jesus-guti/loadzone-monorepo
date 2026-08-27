@@ -89,6 +89,7 @@ export const FOCUS_COPY = {
   /** Header pill → Racha sheet (Age Band–agnostic chrome). */
   streakSheetTitle: "Racha",
   streakSheetOpenLabel: "Ver racha",
+  streakCromoSelectLabel: "Acercar cromo",
   streakHero: (n: number): string => `Racha de ${n} días`,
   /**
    * Racha sheet week banner — same Monday–Sunday Team Session week as the row.
