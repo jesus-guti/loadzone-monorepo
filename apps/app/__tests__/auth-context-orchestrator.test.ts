@@ -5,6 +5,7 @@ const stubs = vi.hoisted(() => ({
   cookiesGet: vi.fn(),
   fetchClubAndTeams: vi.fn(),
   fetchSeasons: vi.fn(),
+  listClubs: vi.fn(),
 }));
 
 vi.mock("@repo/auth/server", () => ({
@@ -21,6 +22,7 @@ vi.mock("@/lib/staff-data-adapter", () => ({
   getStaffDataAdapter: vi.fn(() => ({
     fetchClubAndTeams: stubs.fetchClubAndTeams,
     fetchSeasons: stubs.fetchSeasons,
+    listClubs: stubs.listClubs,
   })),
 }));
 
@@ -198,5 +200,55 @@ describe("getCurrentStaffContext (orchestrator)", () => {
     await getCurrentStaffContext();
 
     expect(stubs.fetchSeasons).not.toHaveBeenCalled();
+  });
+
+  it("lets a Super Admin with no Memberships operate the cookie Club", async () => {
+    stubs.currentUser.mockResolvedValue({
+      ...fakeCurrentUser(),
+      platformRole: "SUPER_ADMIN",
+      memberships: [],
+    });
+    stubs.cookiesGet.mockImplementation((name: string) =>
+      name === "loadzone_active_club" ? { value: "club-op" } : undefined,
+    );
+    stubs.listClubs.mockResolvedValue([
+      { id: "club-op", name: "Club Operado" },
+    ]);
+    stubs.fetchClubAndTeams.mockResolvedValue({
+      club: { id: "club-op", name: "Club Operado", logoUrl: null, ageBandPolicy: null },
+      teams: [fakeTeam("ta")],
+    });
+    stubs.fetchSeasons.mockResolvedValue([]);
+
+    const result = await getCurrentStaffContext();
+
+    expect(result).not.toBeNull();
+    expect(result?.club.id).toBe("club-op");
+    expect(result?.club.name).toBe("Club Operado");
+    expect(result?.platformRole).toBe("SUPER_ADMIN");
+    expect(result?.canCreateTeam).toBe(true);
+    expect(stubs.fetchClubAndTeams).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clubId: "club-op",
+        hasAllTeams: true,
+      }),
+    );
+  });
+
+  it("assembles a Super Admin with zero Clubs so they can open Plataforma", async () => {
+    stubs.currentUser.mockResolvedValue({
+      ...fakeCurrentUser(),
+      platformRole: "SUPER_ADMIN",
+      memberships: [],
+    });
+    stubs.cookiesGet.mockReturnValue(undefined);
+    stubs.listClubs.mockResolvedValue([]);
+
+    const result = await getCurrentStaffContext();
+
+    expect(result).not.toBeNull();
+    expect(result?.platformRole).toBe("SUPER_ADMIN");
+    expect(result?.teams).toEqual([]);
+    expect(stubs.fetchClubAndTeams).not.toHaveBeenCalled();
   });
 });

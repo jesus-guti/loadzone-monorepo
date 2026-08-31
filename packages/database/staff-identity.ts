@@ -1,5 +1,6 @@
 /**
- * Staff identity seam: invitations (SI-01) and Club membership access (SI-03).
+ * Staff identity seam: invitations (SI-01), Club membership access (SI-03),
+ * and Super Admin platform operations (SI-05).
  * Callers inject a Prisma-shaped client, clock, token factory, and hashPassword.
  * Mail is an email intent — tests never call SMTP.
  */
@@ -51,6 +52,10 @@ export type StaffIdentityErrorCode =
   | "INVALID_PASSWORD"
   | "CLUB_NOT_FOUND"
   | "NOT_PENDING"
+  | "INVALID_SLUG"
+  | "INVALID_NAME"
+  | "SLUG_TAKEN"
+  | "EMAIL_TAKEN"
   | "RESET_NOT_FOUND"
   | "RESET_USED"
   | "RESET_EXPIRED"
@@ -107,16 +112,20 @@ type MembershipRow = {
   readonly hasAllTeams: boolean;
 };
 
+export type PlatformRoleValue = "USER" | "SUPER_ADMIN";
+
 type UserRow = {
   readonly id: string;
   readonly email: string;
   readonly name: string | null;
   readonly passwordHash: string | null;
+  readonly platformRole?: PlatformRoleValue;
 };
 
 type ClubRow = {
   readonly id: string;
   readonly name: string;
+  readonly slug?: string;
 };
 
 export type PasswordResetTokenRow = {
@@ -142,9 +151,16 @@ export type StaffInvitationRow = {
 export type StaffIdentityClient = {
   readonly club: {
     findUnique: (args: {
-      where: { id: string };
-      select: { id: true; name: true };
+      where: { id?: string; slug?: string };
+      select?: { id?: true; name: true; slug?: true };
     }) => Promise<ClubRow | null>;
+    findMany: (args?: {
+      orderBy?: { name: "asc" };
+      select?: { id: true; name: true; slug: true };
+    }) => Promise<ClubRow[]>;
+    create: (args: {
+      data: { name: string; slug: string };
+    }) => Promise<ClubRow>;
   };
   readonly user: {
     findUnique: (args: {
@@ -154,6 +170,7 @@ export type StaffIdentityClient = {
         email?: true;
         name?: true;
         passwordHash?: true;
+        platformRole?: true;
       };
     }) => Promise<UserRow | null>;
     create: (args: {
@@ -166,7 +183,11 @@ export type StaffIdentityClient = {
     }) => Promise<UserRow>;
     update: (args: {
       where: { id: string };
-      data: { passwordHash: string };
+      data: {
+        email?: string;
+        platformRole?: PlatformRoleValue;
+        passwordHash?: string;
+      };
     }) => Promise<UserRow>;
   };
   readonly membership: {
@@ -258,6 +279,7 @@ export type StaffIdentityClient = {
 
 export type IssueStaffInvitationInput = {
   readonly actorUserId: string;
+  readonly actor?: StaffIdentityActor;
   readonly clubId: string;
   readonly email: string;
   readonly role: StaffInviteRole;
@@ -323,6 +345,29 @@ async function requireActorOnClub(
   }
   await requireCoordinatorOnClub(db, actor.userId, clubId);
 }
+
+function requirePlatformActor(actor: StaffIdentityActor): void {
+  if (actor.kind !== "platform") {
+    throw new StaffIdentityError(
+      "FORBIDDEN",
+      "Solo un operador de plataforma puede hacer esto."
+    );
+  }
+}
+
+function resolveIssueActor(input: IssueStaffInvitationInput): StaffIdentityActor {
+  return input.actor ?? { kind: "coordinator", userId: input.actorUserId };
+}
+
+const slugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "invalid")
+  .min(2)
+  .max(48);
+
+const clubNameSchema = z.string().trim().min(2).max(80);
 
 function isClubStaffRole(role: MembershipRole): role is StaffInviteRole {
   return role === "COORDINATOR" || role === "STAFF";
@@ -456,7 +501,7 @@ export async function issueStaffInvitation(
   }
   const email = normalizeEmail(input.email);
   const club = await requireClub(db, input.clubId);
-  await requireCoordinatorOnClub(db, input.actorUserId, input.clubId);
+  await requireActorOnClub(db, resolveIssueActor(input), input.clubId);
 
   const pending = await db.staffInvitation.findFirst({
     where: { clubId: input.clubId, email, status: "PENDING" },
@@ -521,6 +566,7 @@ export async function resendStaffInvitation(
   clock: StaffIdentityClock,
   input: {
     readonly actorUserId: string;
+    readonly actor?: StaffIdentityActor;
     readonly invitationId: string;
     readonly acceptUrlForToken: (rawToken: string) => string;
     readonly createToken?: () => string;
@@ -535,7 +581,11 @@ export async function resendStaffInvitation(
       "Esta invitación no es válida."
     );
   }
-  await requireCoordinatorOnClub(db, input.actorUserId, invitation.clubId);
+  await requireActorOnClub(
+    db,
+    input.actor ?? { kind: "coordinator", userId: input.actorUserId },
+    invitation.clubId
+  );
   if (invitation.status === "CANCELLED") {
     throw new StaffIdentityError(
       "INVITE_CANCELLED",
@@ -576,7 +626,11 @@ export async function resendStaffInvitation(
 export async function cancelStaffInvitation(
   db: StaffIdentityClient,
   clock: StaffIdentityClock,
-  input: { readonly actorUserId: string; readonly invitationId: string }
+  input: {
+    readonly actorUserId: string;
+    readonly actor?: StaffIdentityActor;
+    readonly invitationId: string;
+  }
 ): Promise<{ readonly invitationId: string }> {
   const invitation = await db.staffInvitation.findFirst({
     where: { id: input.invitationId },
@@ -587,7 +641,11 @@ export async function cancelStaffInvitation(
       "Esta invitación no es válida."
     );
   }
-  await requireCoordinatorOnClub(db, input.actorUserId, invitation.clubId);
+  await requireActorOnClub(
+    db,
+    input.actor ?? { kind: "coordinator", userId: input.actorUserId },
+    invitation.clubId
+  );
   if (invitation.status !== "PENDING" || isExpired(invitation, clock.now())) {
     throw new StaffIdentityError(
       "NOT_PENDING",
@@ -704,9 +762,17 @@ export async function acceptStaffInvitation(
 
 export async function listPendingStaffInvitations(
   db: StaffIdentityClient,
-  input: { readonly actorUserId: string; readonly clubId: string }
+  input: {
+    readonly actorUserId: string;
+    readonly actor?: StaffIdentityActor;
+    readonly clubId: string;
+  }
 ): Promise<StaffInvitationRow[]> {
-  await requireCoordinatorOnClub(db, input.actorUserId, input.clubId);
+  await requireActorOnClub(
+    db,
+    input.actor ?? { kind: "coordinator", userId: input.actorUserId },
+    input.clubId
+  );
   return db.staffInvitation.findMany({
     where: { clubId: input.clubId, status: "PENDING" },
     orderBy: { createdAt: "desc" },
@@ -1016,4 +1082,133 @@ export async function changeMembershipRole(
     data: { role: roleParsed.data },
   });
   return { membershipId: updated.id, role: roleParsed.data };
+}
+
+export type OperableClub = {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+};
+
+export async function listOperableClubs(
+  db: StaffIdentityClient,
+  input: { readonly actor: StaffIdentityActor }
+): Promise<OperableClub[]> {
+  requirePlatformActor(input.actor);
+  const clubs = await db.club.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, slug: true },
+  });
+  return clubs.map((club) => ({
+    id: club.id,
+    name: club.name,
+    slug: club.slug ?? "",
+  }));
+}
+
+export async function createClub(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly name: string;
+    readonly slug: string;
+  }
+): Promise<OperableClub> {
+  requirePlatformActor(input.actor);
+  const nameParsed = clubNameSchema.safeParse(input.name);
+  if (!nameParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_NAME",
+      "El nombre del club no es válido."
+    );
+  }
+  const slugParsed = slugSchema.safeParse(input.slug);
+  if (!slugParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_SLUG",
+      "El slug debe ser minúsculas, números y guiones."
+    );
+  }
+  const existing = await db.club.findUnique({
+    where: { slug: slugParsed.data },
+    select: { id: true, name: true, slug: true },
+  });
+  if (existing) {
+    throw new StaffIdentityError(
+      "SLUG_TAKEN",
+      "Ese slug ya está en uso."
+    );
+  }
+  const club = await db.club.create({
+    data: { name: nameParsed.data, slug: slugParsed.data },
+  });
+  return {
+    id: club.id,
+    name: club.name,
+    slug: club.slug ?? slugParsed.data,
+  };
+}
+
+export async function changeUserEmail(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly userId: string;
+    readonly email: string;
+  }
+): Promise<{ readonly userId: string; readonly email: string }> {
+  requirePlatformActor(input.actor);
+  const email = normalizeEmail(input.email);
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  if (user.email !== email) {
+    const taken = await db.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, name: true, passwordHash: true },
+    });
+    if (taken) {
+      throw new StaffIdentityError(
+        "EMAIL_TAKEN",
+        "Ese email ya pertenece a otra cuenta."
+      );
+    }
+    await db.user.update({
+      where: { id: user.id },
+      data: { email },
+    });
+  }
+  return { userId: user.id, email };
+}
+
+export async function grantSuperAdmin(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly userId: string;
+  }
+): Promise<{ readonly userId: string; readonly platformRole: "SUPER_ADMIN" }> {
+  requirePlatformActor(input.actor);
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      passwordHash: true,
+      platformRole: true,
+    },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  await db.user.update({
+    where: { id: user.id },
+    data: { platformRole: "SUPER_ADMIN" },
+  });
+  return { userId: user.id, platformRole: "SUPER_ADMIN" };
 }

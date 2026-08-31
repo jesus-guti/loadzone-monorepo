@@ -7,9 +7,13 @@ import {
   cancelStaffInvitation,
   changeMembershipRole,
   changePassword,
+  changeUserEmail,
   completePasswordReset,
+  createClub,
+  grantSuperAdmin,
   issueStaffInvitation,
   listClubAccess,
+  listOperableClubs,
   peekStaffInvitation,
   requestPasswordReset,
   resendStaffInvitation,
@@ -44,16 +48,20 @@ function sha256(raw: string): string {
   return createHash("sha256").update(raw, "utf8").digest("hex");
 }
 
+type ClubMem = { id: string; name: string; slug: string };
+type UserMem = UserRow & { platformRole: "USER" | "SUPER_ADMIN" };
+
 function createMemoryDb(seed?: {
-  clubs?: { id: string; name: string }[];
-  users?: UserRow[];
+  clubs?: ClubMem[];
+  users?: UserMem[];
   memberships?: MemRow[];
   invitations?: InviteRow[];
   passwordResetTokens?: PasswordResetTokenRow[];
 }): StaffIdentityClient & {
-  users: UserRow[];
+  users: UserMem[];
   memberships: MemRow[];
   invitations: InviteRow[];
+  clubs: ClubMem[];
   passwordResetTokens: PasswordResetTokenRow[];
 } {
   const clubs = [...(seed?.clubs ?? [])];
@@ -80,18 +88,37 @@ function createMemoryDb(seed?: {
   };
 
   const db: StaffIdentityClient & {
-    users: UserRow[];
+    users: UserMem[];
     memberships: MemRow[];
     invitations: InviteRow[];
+    clubs: ClubMem[];
     passwordResetTokens: PasswordResetTokenRow[];
   } = {
     users,
     memberships,
     invitations,
+    clubs,
     passwordResetTokens,
     club: {
-      findUnique: async ({ where }) =>
-        clubs.find((club) => club.id === where.id) ?? null,
+      findUnique: async ({ where }) => {
+        if ("id" in where && where.id) {
+          return clubs.find((club) => club.id === where.id) ?? null;
+        }
+        if ("slug" in where && where.slug) {
+          return clubs.find((club) => club.slug === where.slug) ?? null;
+        }
+        return null;
+      },
+      findMany: async () => clubs.map((club) => ({ ...club })),
+      create: async ({ data }) => {
+        const club: ClubMem = {
+          id: nextId("club"),
+          name: data.name,
+          slug: data.slug,
+        };
+        clubs.push(club);
+        return club;
+      },
     },
     user: {
       findUnique: async ({ where }) => {
@@ -104,11 +131,12 @@ function createMemoryDb(seed?: {
         return null;
       },
       create: async ({ data }) => {
-        const user: UserRow = {
+        const user: UserMem = {
           id: nextId("user"),
           email: data.email,
           name: data.name ?? null,
           passwordHash: data.passwordHash,
+          platformRole: "USER",
         };
         users.push(user);
         return user;
@@ -117,6 +145,12 @@ function createMemoryDb(seed?: {
         const user = users.find((row) => row.id === where.id);
         if (!user) {
           throw new Error("missing user");
+        }
+        if (data.email !== undefined) {
+          user.email = data.email;
+        }
+        if (data.platformRole !== undefined) {
+          user.platformRole = data.platformRole;
         }
         if (data.passwordHash !== undefined) {
           user.passwordHash = data.passwordHash;
@@ -245,8 +279,8 @@ function acceptUrlForToken(raw: string): string {
 function seedClub() {
   return createMemoryDb({
     clubs: [
-      { id: "club_a", name: "Atlético Norte" },
-      { id: "club_b", name: "Club Sur" },
+      { id: "club_a", name: "Atlético Norte", slug: "atletico-norte" },
+      { id: "club_b", name: "Club Sur", slug: "club-sur" },
     ],
     users: [
       {
@@ -254,12 +288,21 @@ function seedClub() {
         email: "coord@a.test",
         name: "Coord A",
         passwordHash: "hash-coord",
+        platformRole: "USER",
       },
       {
         id: "staff_a",
         email: "staff@a.test",
         name: "Staff A",
         passwordHash: "hash-staff",
+        platformRole: "USER",
+      },
+      {
+        id: "op_1",
+        email: "op@loadzone.test",
+        name: "Operador",
+        passwordHash: "hash-op",
+        platformRole: "SUPER_ADMIN",
       },
     ],
     memberships: [
@@ -432,6 +475,7 @@ describe("acceptStaffInvitation", () => {
       email: "physio@club.test",
       name: "Fisio",
       passwordHash: "keep-me",
+      platformRole: "USER",
     });
     const issued = await issueStaffInvitation(db, clockAt(FROZEN), {
       actorUserId: "coord_a",
@@ -472,6 +516,7 @@ describe("acceptStaffInvitation", () => {
       email: "coord@b.test",
       name: "Coord B",
       passwordHash: "hb",
+      platformRole: "USER",
     });
     db.memberships.push({
       id: "m_coord_b",
@@ -485,6 +530,7 @@ describe("acceptStaffInvitation", () => {
       email: "shared@club.test",
       name: "Shared",
       passwordHash: "hs",
+      platformRole: "USER",
     });
     const first = await issueStaffInvitation(db, clockAt(FROZEN), {
       actorUserId: "coord_a",
@@ -960,6 +1006,7 @@ describe("revokeMembership", () => {
       email: "coord2@a.test",
       name: "Coord 2",
       passwordHash: "h2",
+      platformRole: "USER",
     });
     db.memberships.push({
       id: "m_coord_2",
@@ -1027,6 +1074,7 @@ describe("changeMembershipRole", () => {
       email: "coord2@a.test",
       name: "Coord 2",
       passwordHash: "h2",
+      platformRole: "USER",
     });
     db.memberships.push({
       id: "m_coord_2",
@@ -1060,5 +1108,191 @@ describe("changeMembershipRole", () => {
         role: "COORDINATOR",
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("createClub", () => {
+  it("lets a platform actor create a Club with name and slug and no Membership", async () => {
+    const db = seedClub();
+    const membershipCount = db.memberships.length;
+    const result = await createClub(db, {
+      actor: { kind: "platform" },
+      name: "Nuevo Club",
+      slug: "nuevo-club",
+    });
+    expect(result).toMatchObject({
+      name: "Nuevo Club",
+      slug: "nuevo-club",
+    });
+    expect(db.clubs.find((club) => club.slug === "nuevo-club")).toBeDefined();
+    expect(db.memberships).toHaveLength(membershipCount);
+  });
+
+  it("refuses a Coordinator actor", async () => {
+    const db = seedClub();
+    await expect(
+      createClub(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        name: "Otro",
+        slug: "otro-club",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(db.clubs.find((club) => club.slug === "otro-club")).toBeUndefined();
+  });
+
+  it("refuses a duplicate slug", async () => {
+    const db = seedClub();
+    await expect(
+      createClub(db, {
+        actor: { kind: "platform" },
+        name: "Copia",
+        slug: "atletico-norte",
+      })
+    ).rejects.toMatchObject({ code: "SLUG_TAKEN" });
+  });
+});
+
+describe("platform actor member operations", () => {
+  it("invites the first Coordinator into a Club with no Memberships", async () => {
+    const db = seedClub();
+    const created = await createClub(db, {
+      actor: { kind: "platform" },
+      name: "Vacío",
+      slug: "vacio",
+    });
+    const issued = await issueStaffInvitation(db, clockAt(FROZEN), {
+      actorUserId: "op_1",
+      actor: { kind: "platform" },
+      clubId: created.id,
+      email: "first@vacio.test",
+      role: "COORDINATOR",
+      acceptUrlForToken,
+      createToken: () => "first-coord",
+    });
+    expect(issued.emailIntent.to).toBe("first@vacio.test");
+    expect(db.memberships.filter((row) => row.clubId === created.id)).toHaveLength(
+      0
+    );
+    const accepted = await acceptStaffInvitation(db, clockAt(FROZEN), {
+      rawToken: "first-coord",
+      password: "password1",
+      hashPassword: async (plain) => `h:${plain}`,
+    });
+    expect(
+      db.memberships.find((row) => row.id === accepted.membershipId)
+    ).toMatchObject({
+      clubId: created.id,
+      role: "COORDINATOR",
+      hasAllTeams: true,
+    });
+  });
+
+  it("lists and revokes on a Club the operator does not belong to", async () => {
+    const db = seedClub();
+    const access = await listClubAccess(db, {
+      actor: { kind: "platform" },
+      clubId: "club_a",
+    });
+    expect(access.members).toHaveLength(2);
+    await revokeMembership(db, {
+      actor: { kind: "platform" },
+      clubId: "club_a",
+      membershipId: "m_staff_a",
+    });
+    expect(db.memberships.find((row) => row.id === "m_staff_a")).toBeUndefined();
+  });
+
+  it("still refuses Last Coordinator revoke for a platform actor", async () => {
+    const db = seedClub();
+    await expect(
+      revokeMembership(db, {
+        actor: { kind: "platform" },
+        clubId: "club_a",
+        membershipId: "m_coord_a",
+      })
+    ).rejects.toMatchObject({ code: "LAST_COORDINATOR" });
+  });
+
+  it("lists every Club for a platform actor", async () => {
+    const db = seedClub();
+    const clubs = await listOperableClubs(db, { actor: { kind: "platform" } });
+    expect(clubs.map((club) => club.slug).sort()).toEqual([
+      "atletico-norte",
+      "club-sur",
+    ]);
+  });
+
+  it("refuses listing Clubs for a Coordinator", async () => {
+    const db = seedClub();
+    await expect(
+      listOperableClubs(db, { actor: { kind: "coordinator", userId: "coord_a" } })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("changeUserEmail", () => {
+  it("stores a unique lowercase email", async () => {
+    const db = seedClub();
+    const result = await changeUserEmail(db, {
+      actor: { kind: "platform" },
+      userId: "staff_a",
+      email: "Nuevo.Staff@A.Test",
+    });
+    expect(result).toEqual({ userId: "staff_a", email: "nuevo.staff@a.test" });
+    expect(db.users.find((user) => user.id === "staff_a")?.email).toBe(
+      "nuevo.staff@a.test"
+    );
+  });
+
+  it("refuses an email already used by another User", async () => {
+    const db = seedClub();
+    await expect(
+      changeUserEmail(db, {
+        actor: { kind: "platform" },
+        userId: "staff_a",
+        email: "coord@a.test",
+      })
+    ).rejects.toMatchObject({ code: "EMAIL_TAKEN" });
+    expect(db.users.find((user) => user.id === "staff_a")?.email).toBe(
+      "staff@a.test"
+    );
+  });
+
+  it("refuses a Coordinator actor", async () => {
+    const db = seedClub();
+    await expect(
+      changeUserEmail(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        userId: "staff_a",
+        email: "x@a.test",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("grantSuperAdmin", () => {
+  it("grants Super Admin on an existing User", async () => {
+    const db = seedClub();
+    const result = await grantSuperAdmin(db, {
+      actor: { kind: "platform" },
+      userId: "coord_a",
+    });
+    expect(result).toEqual({ userId: "coord_a", platformRole: "SUPER_ADMIN" });
+    expect(db.users.find((user) => user.id === "coord_a")?.platformRole).toBe(
+      "SUPER_ADMIN"
+    );
+  });
+
+  it("refuses a Coordinator actor", async () => {
+    const db = seedClub();
+    await expect(
+      grantSuperAdmin(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        userId: "staff_a",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(db.users.find((user) => user.id === "staff_a")?.platformRole).toBe(
+      "USER"
+    );
   });
 });

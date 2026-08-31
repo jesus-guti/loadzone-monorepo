@@ -51,21 +51,32 @@ function asActionError(error: unknown): StaffInviteActionResult {
   return { success: false, error: "No se pudo completar la acción." };
 }
 
-async function requireCoordinatorClub(
+async function requireClubOperator(
   clubId: string
-): Promise<{ userId: string } | StaffInviteActionResult> {
+): Promise<
+  | { userId: string; actor: { kind: "coordinator"; userId: string } | { kind: "platform" } }
+  | StaffInviteActionResult
+> {
   const staffContext = await getCurrentStaffContext();
-  if (
-    !staffContext ||
-    staffContext.club.id !== clubId ||
-    !staffCanInvite(staffContext.role)
-  ) {
+  if (!staffContext) {
     return {
       success: false,
       error: "No tienes permiso para invitar a este club.",
     };
   }
-  return { userId: staffContext.user.id };
+  if (staffContext.platformRole === "SUPER_ADMIN") {
+    return { userId: staffContext.user.id, actor: { kind: "platform" } };
+  }
+  if (staffContext.club.id !== clubId || !staffCanInvite(staffContext.role)) {
+    return {
+      success: false,
+      error: "No tienes permiso para invitar a este club.",
+    };
+  }
+  return {
+    userId: staffContext.user.id,
+    actor: { kind: "coordinator", userId: staffContext.user.id },
+  };
 }
 
 export async function issueClubStaffInvitation(
@@ -73,13 +84,14 @@ export async function issueClubStaffInvitation(
   email: string,
   role: StaffInviteRole
 ): Promise<StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     const result = await issueStaffInvitation(staffIdentityDb, clock, {
       actorUserId: gate.userId,
+      actor: gate.actor,
       clubId,
       email,
       role,
@@ -97,13 +109,14 @@ export async function resendClubStaffInvitation(
   clubId: string,
   invitationId: string
 ): Promise<StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     const result = await resendStaffInvitation(staffIdentityDb, clock, {
       actorUserId: gate.userId,
+      actor: gate.actor,
       invitationId,
       acceptUrlForToken,
     });
@@ -119,13 +132,14 @@ export async function cancelClubStaffInvitation(
   clubId: string,
   invitationId: string
 ): Promise<StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     await cancelStaffInvitation(staffIdentityDb, clock, {
       actorUserId: gate.userId,
+      actor: gate.actor,
       invitationId,
     });
     revalidatePath("/settings/club");
@@ -160,13 +174,13 @@ export async function acceptClubStaffInvitation(input: {
 export async function loadClubAccess(
   clubId: string
 ): Promise<ClubAccess | StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     return await listClubAccess(staffIdentityDb, {
-      actor: { kind: "coordinator", userId: gate.userId },
+      actor: gate.actor,
       clubId,
     });
   } catch (error) {
@@ -178,13 +192,13 @@ export async function revokeClubMembership(
   clubId: string,
   membershipId: string
 ): Promise<StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     await revokeMembership(staffIdentityDb, {
-      actor: { kind: "coordinator", userId: gate.userId },
+      actor: gate.actor,
       clubId,
       membershipId,
     });
@@ -200,13 +214,13 @@ export async function changeClubMembershipRole(
   membershipId: string,
   role: StaffInviteRole
 ): Promise<StaffInviteActionResult> {
-  const gate = await requireCoordinatorClub(clubId);
+  const gate = await requireClubOperator(clubId);
   if ("success" in gate) {
     return gate;
   }
   try {
     await changeMembershipRole(staffIdentityDb, {
-      actor: { kind: "coordinator", userId: gate.userId },
+      actor: gate.actor,
       clubId,
       membershipId,
       role,
