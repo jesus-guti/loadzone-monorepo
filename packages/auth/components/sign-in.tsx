@@ -1,6 +1,7 @@
 "use client";
 
 import { getCsrfToken } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   REMEMBERED_EMAIL_STORAGE_KEY,
