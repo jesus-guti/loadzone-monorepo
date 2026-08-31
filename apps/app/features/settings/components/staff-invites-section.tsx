@@ -93,7 +93,7 @@ export function StaffInvitesSection({
   return (
     <SettingsSection
       description="Invita a coordinadores o staff. Copia el enlace de un solo uso y envíaselo; el correo aún no se envía automáticamente."
-      title="Invitaciones"
+      title="Invitar"
     >
       <SettingsRow htmlFor="staff-invite-email" label="Email">
         <Input
