@@ -11,6 +11,7 @@ import {
   resendStaffInvitation,
   staffCanInvite,
   type StaffIdentityClient,
+  type StaffInvitationEmailIntent,
   type StaffInviteRole,
 } from "@repo/database/staff-identity";
 import { revalidatePath } from "next/cache";
@@ -20,6 +21,8 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 export type StaffInviteActionResult = {
   success: boolean;
   error?: string;
+  /** One-time accept URL. Present after issue/resend; never persist or log. */
+  acceptUrl?: string;
 };
 
 const clock = { now: () => new Date() };
@@ -30,10 +33,9 @@ function acceptUrlForToken(rawToken: string): string {
   return `${base}/invite/${rawToken}`;
 }
 
-function deliverStaffInvitationIntent(intent: {
-  kind: string;
-  to: string;
-}): void {
+function deliverStaffInvitationIntent(
+  intent: StaffInvitationEmailIntent
+): void {
   console.info("[staff-invitation]", intent.kind, intent.to);
 }
 
@@ -81,7 +83,7 @@ export async function issueClubStaffInvitation(
     });
     deliverStaffInvitationIntent(result.emailIntent);
     revalidatePath("/settings/club");
-    return { success: true };
+    return { success: true, acceptUrl: result.emailIntent.acceptUrl };
   } catch (error) {
     return asActionError(error);
   }
@@ -103,7 +105,7 @@ export async function resendClubStaffInvitation(
     });
     deliverStaffInvitationIntent(result.emailIntent);
     revalidatePath("/settings/club");
-    return { success: true };
+    return { success: true, acceptUrl: result.emailIntent.acceptUrl };
   } catch (error) {
     return asActionError(error);
   }
