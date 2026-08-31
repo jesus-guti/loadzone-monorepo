@@ -172,7 +172,7 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - A **Player** belongs to a **Team**; has an optional **Playing Position** and optional shirt number; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
-- A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- **Age Band** policy is **postponed** (`AGE_BAND_POLICY_ENABLED` in `@repo/database/age-band-policy`): staff settings, player create/edit, and runtime resolution treat every Player as unassigned (no parental layer). Persistence (`dateOfBirth`, `ageBandOverride`, Club/Team JSON) remains; flip the flag to restore.
 - **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**; expected days come from **Sessions** that player is on, not from every **Session** on the Team.
@@ -194,6 +194,6 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - **User** vs **Player**: a **User** is staff login (this wave); **Player** is the roster entity and may exist without a linked **User**. Player/Guardian Users remain deferred.
 - Public staff signup (first Coordinator creates a Club) is deferred; until then Clubs receive staff only via **Staff Invitation** (plus operator bootstrap of **Super Admin**).
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
-- **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).
+- **Age Band** is postponed in product UI and `resolveAgeBandPolicy`; persistence fields remain for a later restore.
 - **Session** subset vs whole-Team: a Session may list a subset of Players; Recoverable Streak uses only Sessions that Player is on. Player week chrome may still show all Team Sessions that week.
 - **Preseason**: not a domain entity. Staff scope history with **Season** and calendar dates. Persistence may store an optional `preSeasonEnd` on **Season**; that is not product language and is not a filter object.

@@ -2,8 +2,6 @@ import { database } from "@repo/database";
 import {
   filterOpenPainAlerts,
   formatInjuryRegionLabels,
-  partitionInjuriesByOpenClosed,
-  sortClosedInjuriesNewestFirst,
   sortOpenInjuriesNewestFirst,
   sortPainAlertsNewestFirst,
   takeSectionCap,
@@ -36,6 +34,7 @@ type PainAlertDbRow = {
   readonly bodyPart: string | null;
   readonly reportedAt: Date;
   readonly promotedInjuryId: string | null;
+  readonly dismissedAt: Date | null;
   readonly player: { readonly name: string };
 };
 
@@ -57,9 +56,7 @@ function mapInjuryRow(row: InjuryDbRow): TeamInjuryListItem {
 
 function mapPainAlertRow(row: PainAlertDbRow): TeamPainAlertListItem {
   const summarySource =
-    row.description?.trim() ||
-    row.bodyPart?.trim() ||
-    null;
+    row.description?.trim() || row.bodyPart?.trim() || null;
   return {
     id: row.id,
     playerId: row.playerId,
@@ -72,15 +69,14 @@ function mapPainAlertRow(row: PainAlertDbRow): TeamPainAlertListItem {
 }
 
 /**
- * Team `/injuries` payload: open Pain Alerts (triage) + open/closed Injuries.
- * Pain Alerts are never mixed into Injury SoT arrays.
+ * Team `/injuries`: open Pain Alerts (triage) + open Injuries (roster).
  */
 export async function getTeamInjuriesList(
   teamId: string
 ): Promise<TeamInjuriesListPayload> {
   const [injuryRows, painAlertRows] = await Promise.all([
     database.injury.findMany({
-      where: { teamId },
+      where: { teamId, endDate: null },
       orderBy: { startDate: "desc" },
       take: 200,
       select: {
@@ -95,7 +91,7 @@ export async function getTeamInjuriesList(
       },
     }),
     database.painAlert.findMany({
-      where: { teamId, promotedInjuryId: null },
+      where: { teamId, promotedInjuryId: null, dismissedAt: null },
       orderBy: { reportedAt: "desc" },
       take: 50,
       select: {
@@ -106,19 +102,17 @@ export async function getTeamInjuriesList(
         bodyPart: true,
         reportedAt: true,
         promotedInjuryId: true,
+        dismissedAt: true,
         player: { select: { name: true } },
       },
     }),
   ]);
 
   const mappedInjuries = injuryRows.map(mapInjuryRow);
-  const { open, closed } = partitionInjuriesByOpenClosed(mappedInjuries);
-
   const openAlerts = filterOpenPainAlerts(painAlertRows).map(mapPainAlertRow);
 
   return {
     painAlerts: takeSectionCap(sortPainAlertsNewestFirst(openAlerts)),
-    activeInjuries: takeSectionCap(sortOpenInjuriesNewestFirst(open)),
-    closedInjuries: takeSectionCap(sortClosedInjuriesNewestFirst(closed)),
+    activeInjuries: takeSectionCap(sortOpenInjuriesNewestFirst(mappedInjuries)),
   };
 }

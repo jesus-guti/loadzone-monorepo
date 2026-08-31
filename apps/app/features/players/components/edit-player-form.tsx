@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/select";
 import { toast } from "@repo/design-system/components/sonner";
-import type { AgeBand, PlayerStatus } from "@repo/database";
+import type { PlayerStatus } from "@repo/database";
 import type { PlayingPosition } from "@repo/database/playing-position";
 import { PLAYING_POSITION_STAFF_LABEL } from "@repo/database/playing-position";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
@@ -25,11 +25,9 @@ type EditPlayerFormProperties = {
     name: string;
     status: PlayerStatus;
     dateOfBirth: string | null;
-    ageBandOverride: AgeBand | null;
     playingPosition: PlayingPosition | null;
     shirtNumber: number | null;
     reminderConsentState: PlayerReminderConsentState;
-    resolvedAgeBand: AgeBand | "UNASSIGNED";
   };
   readonly hasActiveInjury: boolean;
 };
@@ -53,13 +51,6 @@ const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
   GUARDIAN_BLOCKED: "Revocado (supervisión)",
   ASSISTED_GUARDIAN_GRANTED: "Tutor consintió (asistida)",
 };
-
-const AGE_BAND_OPTIONS = [
-  { value: "NONE", label: "Automático (por fecha)" },
-  { value: "ASSISTED", label: "Asistida" },
-  { value: "GUIDED", label: "Guiada" },
-  { value: "INDEPENDENT", label: "Independiente" },
-] as const;
 
 const PLAYING_POSITION_OPTIONS = [
   { value: "NONE", label: "Sin posición" },
@@ -161,29 +152,7 @@ export function EditPlayerForm({
           max={new Date().toISOString().slice(0, 10)}
           name="dateOfBirth"
         />
-        <p className="text-xs text-text-secondary">
-          Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
-        <Select
-          defaultValue={player.ageBandOverride ?? "NONE"}
-          items={AGE_BAND_OPTIONS}
-          name="ageBandOverride"
-        >
-          <SelectTrigger className="w-full" id="ageBandOverride">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {AGE_BAND_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <p className="text-xs text-text-secondary">Opcional.</p>
       </div>
 
       <div className="space-y-2">
@@ -231,11 +200,8 @@ export function EditPlayerForm({
           Consentimiento de recordatorios
         </Label>
         <p className="text-xs text-text-secondary">
-          Estado actual: {CONSENT_STATE_LABEL[player.reminderConsentState]}
-          {player.resolvedAgeBand !== "UNASSIGNED"
-            ? ` · tramo ${player.resolvedAgeBand.toLowerCase()}`
-            : " · sin tramo"}
-          . La suscripción push es solo transporte.
+          Estado actual: {CONSENT_STATE_LABEL[player.reminderConsentState]}. La
+          suscripción push es solo transporte.
         </p>
         <Select
           defaultValue="LEAVE"

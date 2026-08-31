@@ -383,15 +383,10 @@ describe("GuardianCareSlice allow-list (JES-49)", () => {
 });
 
 describe("evaluateAndEmitCareAlert", () => {
-  it("rate-limits to one ledger row per class per civil day", async () => {
-    const create = vi
-      .fn()
-      .mockResolvedValueOnce({ id: "1" })
-      .mockRejectedValueOnce({ code: "P2002" });
+  it("does not emit while Age Band policy is postponed (parental layer off)", async () => {
+    const create = vi.fn();
 
-    const db = { careAlertDispatch: { create } };
-
-    const baseInput = {
+    const result = await evaluateAndEmitCareAlert({
       playerId: "player-1",
       playerDisplayName: "Alex",
       teamTimezone: "Europe/Madrid",
@@ -404,23 +399,15 @@ describe("evaluateAndEmitCareAlert", () => {
       },
       checkInCompleted: true,
       now: new Date("2026-08-04T10:00:00.000Z"),
-      db,
-    };
+      db: { careAlertDispatch: { create } },
+    });
 
-    const first = await evaluateAndEmitCareAlert(baseInput);
-    expect(first.emitted).toEqual(["CARE_RELEVANT_WELLNESS"]);
-    expect(first.careFlagPresent).toBe(true);
-
-    const second = await evaluateAndEmitCareAlert(baseInput);
-    expect(second.emitted).toEqual([]);
-    expect(second.careFlagPresent).toBe(true);
-    expect(create).toHaveBeenCalledTimes(2);
-
-    const writtenPayload = create.mock.calls[0]?.[0]?.data?.payload;
-    expect(findStaffOnlyKeysOnGuardianPayload(writtenPayload)).toEqual([]);
-    expect(guardianCareSliceSchema.safeParse(writtenPayload).success).toBe(
-      true
-    );
+    expect(result).toEqual({
+      careFlagPresent: true,
+      emitted: [],
+      policyBlocked: true,
+    });
+    expect(create).not.toHaveBeenCalled();
   });
 
   it("does not emit when policy blocked but still reports careFlagPresent", async () => {
@@ -470,11 +457,11 @@ describe("evaluateAndEmitCareAlert", () => {
     expect(create).not.toHaveBeenCalled();
   });
 
-  it("writes graduated injury slice for Pain Alert signals", async () => {
-    const create = vi.fn().mockResolvedValue({ id: "1" });
+  it("does not write guardian payload while Age Band policy is postponed", async () => {
+    const create = vi.fn();
     const reportedAt = new Date("2026-08-04T09:00:00.000Z");
 
-    await evaluateAndEmitCareAlert({
+    const result = await evaluateAndEmitCareAlert({
       playerId: "player-1",
       playerDisplayName: "Alex",
       teamTimezone: "Europe/Madrid",
@@ -495,14 +482,7 @@ describe("evaluateAndEmitCareAlert", () => {
       db: { careAlertDispatch: { create } },
     });
 
-    const payload = create.mock.calls[0]?.[0]?.data?.payload as GuardianCareSlice;
-    expect(payload.triggerClass).toBe("INJURY_PAIN");
-    expect(payload.injury).toEqual({
-      bodyPart: "ankle",
-      side: "LEFT",
-      injuryType: "sprain",
-      reportedAt: reportedAt.toISOString(),
-    });
-    expect(findStaffOnlyKeysOnGuardianPayload(payload)).toEqual([]);
+    expect(result.policyBlocked).toBe(true);
+    expect(create).not.toHaveBeenCalled();
   });
 });

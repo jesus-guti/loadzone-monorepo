@@ -914,6 +914,8 @@ model PainAlert {
   severity          InjurySeverity @default(UNKNOWN)
   reportedAt        DateTime       @default(now())
   promotedInjuryId  String?
+  /// Staff archived the aviso without creating an Injury. Null = still in triage (if unpromoted).
+  dismissedAt       DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   player            Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -923,6 +925,7 @@ model PainAlert {
   @@index([playerId, reportedAt])
   @@index([teamId, reportedAt])
   @@index([promotedInjuryId])
+  @@index([teamId, dismissedAt])
 }
 
 model AiSuggestion {

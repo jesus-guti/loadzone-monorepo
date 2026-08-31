@@ -47,6 +47,11 @@ const createInjurySchema = z.object({
   cause: z.string().trim().min(1, "La causa es obligatoria").max(500),
   regionDetail: z.string().trim().max(1000).optional(),
   regionIds: regionIdsSchema,
+  painAlertId: z.string().min(1).optional(),
+});
+
+const painAlertIdSchema = z.object({
+  painAlertId: z.string().min(1),
 });
 
 const updateInjurySchema = z.object({
@@ -140,12 +145,17 @@ export async function createInjury(
       return { success: false, error: "Equipo no encontrado." };
     }
 
+    const painAlertRaw = formData.get("painAlertId");
     const parsed = createInjurySchema.safeParse({
       playerId: formData.get("playerId"),
       startDate: formData.get("startDate"),
       cause: formData.get("cause"),
       regionDetail: formData.get("regionDetail") || undefined,
       regionIds: parseRegionIds(formData.get("regionIds")),
+      painAlertId:
+        typeof painAlertRaw === "string" && painAlertRaw.length > 0
+          ? painAlertRaw
+          : undefined,
     });
 
     if (!parsed.success) {
@@ -185,6 +195,19 @@ export async function createInjury(
       },
       select: { id: true },
     });
+
+    if (parsed.data.painAlertId) {
+      await database.painAlert.updateMany({
+        where: {
+          id: parsed.data.painAlertId,
+          teamId,
+          playerId: player.id,
+          promotedInjuryId: null,
+          dismissedAt: null,
+        },
+        data: { promotedInjuryId: injury.id },
+      });
+    }
 
     await syncPlayerStatusFromInjuries(database, player.id, { timeZone });
     await recomputeStreakAfterInjury(
@@ -610,5 +633,104 @@ export async function promotePainAlert(
         ? error.message
         : "No se pudo promover el aviso a lesión.";
     return { success: false, error: message };
+  }
+}
+
+/**
+ * Archive an open Pain Alert without creating an Injury. Undo via restorePainAlert.
+ */
+export async function dismissPainAlert(
+  _prev: InjuryActionResult,
+  formData: FormData
+): Promise<InjuryActionResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.activeTeam) {
+      return { success: false, error: "Equipo no encontrado." };
+    }
+
+    const parsed = painAlertIdSchema.safeParse({
+      painAlertId: formData.get("painAlertId"),
+    });
+    if (!parsed.success) {
+      return { success: false, error: "Datos no válidos." };
+    }
+
+    const teamId = staffContext.activeTeam.id;
+    const updated = await database.painAlert.updateMany({
+      where: {
+        id: parsed.data.painAlertId,
+        teamId,
+        promotedInjuryId: null,
+        dismissedAt: null,
+      },
+      data: { dismissedAt: new Date() },
+    });
+
+    if (updated.count === 0) {
+      return { success: false, error: "Aviso no encontrado o ya resuelto." };
+    }
+
+    const alert = await database.painAlert.findFirst({
+      where: { id: parsed.data.painAlertId, teamId },
+      select: { playerId: true },
+    });
+    if (alert) {
+      revalidateInjuryPaths(alert.playerId);
+    } else {
+      revalidatePath("/injuries");
+    }
+
+    return { success: true };
+  } catch {
+    return { success: false, error: "No se pudo descartar el aviso." };
+  }
+}
+
+export async function restorePainAlert(
+  _prev: InjuryActionResult,
+  formData: FormData
+): Promise<InjuryActionResult> {
+  try {
+    const staffContext = await getCurrentStaffContext();
+    if (!staffContext?.activeTeam) {
+      return { success: false, error: "Equipo no encontrado." };
+    }
+
+    const parsed = painAlertIdSchema.safeParse({
+      painAlertId: formData.get("painAlertId"),
+    });
+    if (!parsed.success) {
+      return { success: false, error: "Datos no válidos." };
+    }
+
+    const teamId = staffContext.activeTeam.id;
+    const updated = await database.painAlert.updateMany({
+      where: {
+        id: parsed.data.painAlertId,
+        teamId,
+        promotedInjuryId: null,
+        dismissedAt: { not: null },
+      },
+      data: { dismissedAt: null },
+    });
+
+    if (updated.count === 0) {
+      return { success: false, error: "No se pudo deshacer." };
+    }
+
+    const alert = await database.painAlert.findFirst({
+      where: { id: parsed.data.painAlertId, teamId },
+      select: { playerId: true },
+    });
+    if (alert) {
+      revalidateInjuryPaths(alert.playerId);
+    } else {
+      revalidatePath("/injuries");
+    }
+
+    return { success: true };
+  } catch {
+    return { success: false, error: "No se pudo restaurar el aviso." };
   }
 }

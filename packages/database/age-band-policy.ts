@@ -8,6 +8,11 @@
  * Independent 14+; optional youth Independent supervision covers ages below
  * adultMajorityAge (default 16 → Independent 14–15). See CONTEXT.md Age Band.
  *
+ * Product postpone: `AGE_BAND_POLICY_ENABLED` is false. Public
+ * `resolveAgeBandPolicy` treats every player as UNASSIGNED (Independent majority
+ * consent register, parental layer off). Flip the flag to restore cutoffs.
+ * Ungated resolution lives in `computeResolvedAgeBandPolicy`.
+ *
  * Import from `@repo/database/age-band-policy` (not the default entry) so client
  * bundles avoid `server-only` from `./client`.
  */
@@ -29,10 +34,14 @@ export type AgeBandPolicy = {
   guardianCareAlertReceiveEnabled: boolean;
 };
 
+/** When false, Age Band policy is hidden and ignored at runtime. */
+export const AGE_BAND_POLICY_ENABLED = false;
+
 /**
  * Documented safe defaults when Club/Team JSON is null or invalid.
  * Not fixed-only runtime constants elsewhere — always resolve through this module.
  */
+
 export const DEFAULT_AGE_BAND_POLICY: AgeBandPolicy = {
   assistedMaxAgeExclusive: 10,
   guidedMaxAgeExclusive: 14,
@@ -217,11 +226,32 @@ export type ResolveAgeBandPolicyInput = {
   now?: Date;
 };
 
+function postponedUnassignedResolution(
+  input: ResolveAgeBandPolicyInput
+): ResolvedAgeBandPolicy {
+  const policy = input.policy;
+  const policySource = input.policySource ?? "defaults";
+  const dob = input.dateOfBirth ?? null;
+  const now = input.now ?? new Date();
+  const ageYearsComplete =
+    dob === null ? null : getAgeYearsComplete(dob, input.teamTimezone, now);
+
+  return {
+    ageBand: "UNASSIGNED",
+    ageYearsComplete,
+    parentalSupervisionActive: false,
+    guardianMissReceive: false,
+    guardianCareAlertReceive: false,
+    policy,
+    policySource,
+  };
+}
+
 /**
- * Resolve Player Age Band and Parental Supervision flags from effective policy + assignment.
- * Neither DOB nor override → UNASSIGNED (Independent copy register; supervision off).
+ * Ungated Age Band resolution (cutoffs + override). Used by tests and when
+ * `AGE_BAND_POLICY_ENABLED` is true.
  */
-export function resolveAgeBandPolicy(
+export function computeResolvedAgeBandPolicy(
   input: ResolveAgeBandPolicyInput
 ): ResolvedAgeBandPolicy {
   const policy = input.policy;
@@ -271,6 +301,20 @@ export function resolveAgeBandPolicy(
     policy,
     policySource,
   };
+}
+
+/**
+ * Resolve Player Age Band and Parental Supervision flags from effective policy + assignment.
+ * Neither DOB nor override → UNASSIGNED (Independent copy register; supervision off).
+ * When Age Band policy is postponed, always UNASSIGNED (layer off).
+ */
+export function resolveAgeBandPolicy(
+  input: ResolveAgeBandPolicyInput
+): ResolvedAgeBandPolicy {
+  if (!AGE_BAND_POLICY_ENABLED) {
+    return postponedUnassignedResolution(input);
+  }
+  return computeResolvedAgeBandPolicy(input);
 }
 
 export const ageBandOverrideSchema = z.enum(AGE_BANDS);

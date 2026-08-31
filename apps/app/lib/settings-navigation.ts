@@ -3,7 +3,6 @@ import {
   BuildingsIcon,
   GlobeSimpleIcon,
   HeartIcon,
-  ShieldCheckIcon,
   UserCircleIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react/ssr";
@@ -35,13 +34,6 @@ export const settingsNavigation: SettingsNavItem[] = [
     label: "Wellness",
     match: (pathname: string) =>
       matchesPath(pathname, `${SETTINGS_BASE}/wellness`),
-  },
-  {
-    href: `${SETTINGS_BASE}/politicas`,
-    icon: ShieldCheckIcon,
-    label: "Políticas",
-    match: (pathname: string) =>
-      matchesPath(pathname, `${SETTINGS_BASE}/politicas`),
   },
   {
     href: `${SETTINGS_BASE}/club`,

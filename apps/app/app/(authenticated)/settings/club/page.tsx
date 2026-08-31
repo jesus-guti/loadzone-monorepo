@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { DEFAULT_AGE_BAND_POLICY } from "@repo/database/age-band-policy";
 import {
   listClubAccess,
   staffCanInvite,
@@ -23,8 +22,6 @@ export default async function ClubSettingsPage() {
     notFound();
   }
 
-  const clubAgePolicy =
-    staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
   const isPlatform = staffContext.platformRole === "SUPER_ADMIN";
   const canInvite = staffCanInvite(staffContext.role) || isPlatform;
   const access = canInvite
@@ -64,13 +61,11 @@ export default async function ClubSettingsPage() {
         staffContext.activeTeam ? (
           <ClubSettingsForm
             key={staffContext.activeTeam.id}
-            teamId={staffContext.activeTeam.id}
             userId={staffContext.user.id}
             clubId={staffContext.club.id}
             canEdit={staffContext.canCreateTeam}
             clubName={staffContext.club.name}
             clubLogoUrl={staffContext.club.logoUrl}
-            clubAgePolicy={clubAgePolicy}
           />
         ) : null
       }

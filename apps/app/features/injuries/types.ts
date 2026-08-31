@@ -27,7 +27,6 @@ export type TeamPainAlertListItem = {
 export type TeamInjuriesListPayload = {
   readonly painAlerts: readonly TeamPainAlertListItem[];
   readonly activeInjuries: readonly TeamInjuryListItem[];
-  readonly closedInjuries: readonly TeamInjuryListItem[];
 };
 
 export type InjuryListItem = {

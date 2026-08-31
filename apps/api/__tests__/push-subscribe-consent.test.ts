@@ -62,7 +62,7 @@ beforeEach(() => {
 });
 
 describe("POST /api/push/subscribe consent gate", () => {
-  it("rejects Assisted without guardian grant (403)", async () => {
+  it("allows subscribe while Age Band policy is postponed (overrides ignored)", async () => {
     stubs.findUnique.mockResolvedValue(
       playerRow({
         ageBandOverride: "ASSISTED",
@@ -71,33 +71,13 @@ describe("POST /api/push/subscribe consent gate", () => {
     );
 
     const response = await POST(subscribeRequest(validBody));
-    expect(response.status).toBe(403);
-    const json = (await response.json()) as { error?: string };
-    expect(json.error).not.toMatch(/tok-secret/);
-    expect(stubs.subscribePush).not.toHaveBeenCalled();
-  });
-
-  it("allows Assisted after staff guardian grant", async () => {
-    stubs.findUnique.mockResolvedValue(
-      playerRow({
-        ageBandOverride: "ASSISTED",
-        reminderConsentState: "ASSISTED_GUARDIAN_GRANTED",
-      })
-    );
-
-    const response = await POST(subscribeRequest(validBody));
     expect(response.status).toBe(200);
     expect(stubs.subscribePush).toHaveBeenCalledWith(
       expect.objectContaining({ playerId: "player-1" })
     );
-    expect(stubs.playerUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: { reminderConsentState: "OPTED_IN" },
-      })
-    );
   });
 
-  it("rejects Guided when supervision-revoked", async () => {
+  it("rejects when supervision-revoked regardless of Age Band override", async () => {
     stubs.findUnique.mockResolvedValue(
       playerRow({
         ageBandOverride: "GUIDED",
