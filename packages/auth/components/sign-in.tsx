@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { getCsrfToken } from "next-auth/react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
@@ -226,13 +225,6 @@ export const SignIn = () => {
           Entrar
         </button>
       </form>
-
-      <p className="mt-6 text-sm text-text-secondary">
-        ¿No tienes cuenta?{" "}
-        <Link href="/sign-up" className="font-medium text-text-primary underline">
-          Crear cuenta
-        </Link>
-      </p>
     </div>
   );
 };

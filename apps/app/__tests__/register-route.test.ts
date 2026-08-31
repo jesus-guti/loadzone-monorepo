@@ -15,7 +15,7 @@ describe("POST /api/auth/register", () => {
     registerUserMock.mockReset();
   });
 
-  it("rechaza payloads invalidos antes de llamar a auth", async () => {
+  it("rechaza payloads invalidos sin llamar a auth", async () => {
     const request = new Request("http://localhost/api/auth/register", {
       method: "POST",
       body: JSON.stringify({
@@ -28,20 +28,15 @@ describe("POST /api/auth/register", () => {
 
     const response = await POST(request);
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(403);
     expect(registerUserMock).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
       ok: false,
-      error: "El email no es válido.",
+      error: "El registro público no está disponible.",
     });
   });
 
-  it("registra al usuario cuando el body es valido", async () => {
-    registerUserMock.mockResolvedValue({
-      success: true,
-      userId: "user_123",
-    });
-
+  it("rechaza el registro publico aunque el body sea valido", async () => {
     const request = new Request("http://localhost/api/auth/register", {
       method: "POST",
       body: JSON.stringify({
@@ -54,15 +49,11 @@ describe("POST /api/auth/register", () => {
 
     const response = await POST(request);
 
-    expect(registerUserMock).toHaveBeenCalledWith({
-      email: "coach@loadzone.app",
-      name: "Coordinador",
-      password: "password123",
-    });
-    expect(response.status).toBe(200);
+    expect(registerUserMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(403);
     await expect(response.json()).resolves.toEqual({
-      ok: true,
-      userId: "user_123",
+      ok: false,
+      error: "El registro público no está disponible.",
     });
   });
 });
