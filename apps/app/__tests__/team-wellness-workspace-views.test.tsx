@@ -19,7 +19,7 @@ vi.mock("@/features/wellness/actions/remind-pending-players", () => ({
 }));
 
 const PLAYER_NAME_PATTERN = /Jugador Uno/;
-const BURBUJAS_TAB_PATTERN = /Burbujas/;
+const LISTA_TAB_PATTERN = /Lista/;
 
 afterEach(() => {
   cleanup();
@@ -42,7 +42,7 @@ function createPlayer(
 }
 
 describe("TeamWellnessWorkspace exclusive roster views", () => {
-  it("places Tarjetas / Burbujas above the team summary", () => {
+  it("places Tarjetas / Lista above the team summary", () => {
     const { container } = render(
       <TeamWellnessWorkspace
         evaluatedDate="2026-08-26"
@@ -66,13 +66,11 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
 
     expect(screen.getByText("Formularios pendientes")).toBeDefined();
     expect(screen.queryByRole("table")).toBeNull();
+    expect(screen.queryByRole("list", { name: "Comparativa de bienestar" })).toBeNull();
     expect(container.querySelector('[data-slot="card"]')).not.toBeNull();
-    expect(
-      screen.queryByRole("button", { name: PLAYER_NAME_PATTERN })
-    ).toBeNull();
   });
 
-  it("shows comparison table and filterable bubbles, not cards, in Burbujas", () => {
+  it("shows comparison table and mobile list with all metrics in Lista, not cards", () => {
     const { container } = render(
       <TeamWellnessWorkspace
         evaluatedDate="2026-08-26"
@@ -80,23 +78,28 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("tab", { name: BURBUJAS_TAB_PATTERN }));
+    fireEvent.click(screen.getByRole("tab", { name: LISTA_TAB_PATTERN }));
 
     expect(screen.getByText("Formularios pendientes")).toBeDefined();
     expect(screen.getByRole("table")).toBeDefined();
     expect(
       within(screen.getByRole("table")).getByText("Jugador Uno")
     ).toBeDefined();
-    const table = screen.getByRole("table");
-    expect(within(table).queryByText("Sí")).toBeNull();
-    expect(within(table).getByText("Pre sesión")).toBeDefined();
-    expect(within(table).getByText("Post sesión")).toBeDefined();
-    expect(within(table).getByText("Sueño")).toBeDefined();
-    expect(within(table).getByText("Calidad")).toBeDefined();
-    expect(within(table).getByText("RPE")).toBeDefined();
+    expect(within(screen.getByRole("table")).getByText("Pre sesión")).toBeDefined();
+    expect(within(screen.getByRole("table")).getByText("Post sesión")).toBeDefined();
+
+    const list = screen.getByRole("list", { name: "Comparativa de bienestar" });
+    expect(within(list).getByText("Jugador Uno")).toBeDefined();
+    expect(within(list).getByText("Recuperación")).toBeDefined();
+    expect(within(list).getByText("Energía")).toBeDefined();
+    expect(within(list).getByText("Agujetas")).toBeDefined();
+    expect(within(list).getByText("Sueño")).toBeDefined();
+    expect(within(list).getByText("Calidad")).toBeDefined();
+    expect(within(list).getByText("RPE")).toBeDefined();
+    expect(within(list).getByText("Riesgo")).toBeDefined();
     expect(
-      screen.getByRole("button", { name: PLAYER_NAME_PATTERN })
-    ).toBeDefined();
+      screen.queryByRole("button", { name: PLAYER_NAME_PATTERN })
+    ).toBeNull();
     expect(container.querySelector('[data-slot="card"]')).toBeNull();
   });
 });

@@ -21,6 +21,11 @@ type InjuryLogFormProperties = {
   readonly todayCivil: string;
   readonly mode: "create" | "edit";
   readonly initial?: InjuryListItem | null;
+  readonly painAlertId?: string | null;
+  readonly prefillCause?: string;
+  readonly prefillStartDate?: string;
+  readonly prefillRegionDetail?: string;
+  readonly layout?: "page" | "dialog";
   readonly onCancel: () => void;
   readonly onSuccess: () => void;
 };
@@ -32,6 +37,11 @@ export function InjuryLogForm({
   todayCivil,
   mode,
   initial = null,
+  painAlertId = null,
+  prefillCause,
+  prefillStartDate,
+  prefillRegionDetail,
+  layout = "page",
   onCancel,
   onSuccess,
 }: InjuryLogFormProperties) {
@@ -41,11 +51,13 @@ export function InjuryLogForm({
   );
   const [regionsError, setRegionsError] = useState(false);
   const [startDate, setStartDate] = useState(
-    initial?.startDate ?? todayCivil
+    initial?.startDate ?? prefillStartDate ?? todayCivil
   );
-  const [cause, setCause] = useState(initial?.cause ?? "");
+  const [cause, setCause] = useState(
+    initial?.cause ?? prefillCause ?? ""
+  );
   const [regionDetail, setRegionDetail] = useState(
-    initial?.regionDetail ?? ""
+    initial?.regionDetail ?? prefillRegionDetail ?? ""
   );
 
   const action = mode === "create" ? createInjury : updateInjury;
@@ -94,15 +106,21 @@ export function InjuryLogForm({
   };
 
   return (
-    <section className="space-y-4 border-t border-border-secondary pt-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-medium text-text-primary">
-          {mode === "create" ? "Registrar lesión" : "Editar lesión"}
-        </h2>
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
+    <section
+      className={
+        layout === "dialog" ? "space-y-4" : "space-y-4 border-t border-border-secondary pt-4"
+      }
+    >
+      {layout === "page" ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-medium text-text-primary">
+            {mode === "create" ? "Registrar lesión" : "Editar lesión"}
+          </h2>
+          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,20rem)_1fr]">
         <BodyMap
@@ -120,6 +138,9 @@ export function InjuryLogForm({
           className="space-y-3"
         >
           <input type="hidden" name="playerId" value={playerId} />
+          {mode === "create" && painAlertId ? (
+            <input type="hidden" name="painAlertId" value={painAlertId} />
+          ) : null}
           {mode === "edit" && initial ? (
             <input type="hidden" name="injuryId" value={initial.id} />
           ) : null}

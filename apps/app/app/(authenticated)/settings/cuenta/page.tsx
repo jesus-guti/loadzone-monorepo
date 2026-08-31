@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 export default async function CuentaSettingsPage() {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext) {
     notFound();
   }
 
   return (
     <CuentaSettingsForm
-      key={staffContext.activeTeam.id}
-      teamId={staffContext.activeTeam.id}
+      key={staffContext.user.id}
+      teamId={staffContext.activeTeam?.id ?? staffContext.club?.id ?? staffContext.user.id}
       email={staffContext.user.email}
       name={staffContext.user.name}
       imageUrl={staffContext.user.image}

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { getCsrfToken } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   REMEMBERED_EMAIL_STORAGE_KEY,
@@ -218,6 +218,15 @@ export const SignIn = () => {
           </p>
         ) : null}
 
+        <p className="text-sm text-text-secondary">
+          <Link
+            href="/forgot-password"
+            className="font-medium text-text-primary underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+
         <button
           type="submit"
           disabled={!csrfToken}
@@ -226,13 +235,6 @@ export const SignIn = () => {
           Entrar
         </button>
       </form>
-
-      <p className="mt-6 text-sm text-text-secondary">
-        ¿No tienes cuenta?{" "}
-        <Link href="/sign-up" className="font-medium text-text-primary underline">
-          Crear cuenta
-        </Link>
-      </p>
     </div>
   );
 };

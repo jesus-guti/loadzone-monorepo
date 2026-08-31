@@ -1,9 +1,10 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
   BuildingsIcon,
+  GlobeSimpleIcon,
   HeartIcon,
-  ShieldCheckIcon,
   UserCircleIcon,
+  UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -12,6 +13,7 @@ export type SettingsNavItem = {
   icon: Icon;
   label: string;
   match: (pathname: string) => boolean;
+  superAdminOnly?: boolean;
 };
 
 function matchesPath(pathname: string, href: string): boolean {
@@ -35,17 +37,17 @@ export const settingsNavigation: SettingsNavItem[] = [
       matchesPath(pathname, `${SETTINGS_BASE}/wellness`),
   },
   {
-    href: `${SETTINGS_BASE}/politicas`,
-    icon: ShieldCheckIcon,
-    label: "Políticas",
-    match: (pathname: string) =>
-      matchesPath(pathname, `${SETTINGS_BASE}/politicas`),
-  },
-  {
     href: `${SETTINGS_BASE}/club`,
     icon: BuildingsIcon,
     label: "Club",
     match: (pathname: string) => matchesPath(pathname, `${SETTINGS_BASE}/club`),
+  },
+  {
+    href: `${SETTINGS_BASE}/usuarios`,
+    icon: UsersIcon,
+    label: "Usuarios",
+    match: (pathname: string) =>
+      matchesPath(pathname, `${SETTINGS_BASE}/usuarios`),
   },
   {
     href: `${SETTINGS_BASE}/cuenta`,
@@ -53,6 +55,14 @@ export const settingsNavigation: SettingsNavItem[] = [
     label: "Cuenta",
     match: (pathname: string) =>
       matchesPath(pathname, `${SETTINGS_BASE}/cuenta`),
+  },
+  {
+    href: `${SETTINGS_BASE}/platform`,
+    icon: GlobeSimpleIcon,
+    label: "Plataforma",
+    match: (pathname: string) =>
+      matchesPath(pathname, `${SETTINGS_BASE}/platform`),
+    superAdminOnly: true,
   },
 ];
 

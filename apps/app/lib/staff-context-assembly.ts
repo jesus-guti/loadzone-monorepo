@@ -51,18 +51,20 @@ export type TeamSummary = {
   reminderConsentPolicySource: "team" | "defaults";
 };
 
+export type StaffClubSummary = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  ageBandPolicy: AgeBandPolicy | null;
+};
+
 export type StaffContext = {
   user: CurrentUser;
   platformRole: PlatformRole;
-  membershipId: string;
-  role: MembershipRole;
+  membershipId: string | null;
+  role: MembershipRole | null;
   canCreateTeam: boolean;
-  club: {
-    id: string;
-    name: string;
-    logoUrl: string | null;
-    ageBandPolicy: AgeBandPolicy | null;
-  };
+  club: StaffClubSummary | null;
   teams: TeamSummary[];
   activeTeam: TeamSummary | null;
   activeTeamSeasons: SeasonSummary[];
@@ -73,7 +75,7 @@ export type StaffContext = {
 
 type AssembleInput = {
   user: CurrentUser;
-  membership: StaffMembershipInfo;
+  membership: StaffMembershipInfo | null;
   club: StaffClubRow | null;
   teams: StaffTeamRow[];
   activeTeamSeasons: StaffSeasonRow[];
@@ -149,18 +151,31 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
     seasonSummaries.find((season) => season.id === activeSeasonRecord?.id) ??
     null;
 
+  const assembledClub: StaffClubSummary | null = membership
+    ? {
+        id: membership.clubId,
+        name: club?.name ?? membership.clubName,
+        logoUrl: club?.logoUrl ?? null,
+        ageBandPolicy: clubAgeBandPolicy,
+      }
+    : club
+      ? {
+          id: club.id,
+          name: club.name,
+          logoUrl: club.logoUrl,
+          ageBandPolicy: clubAgeBandPolicy,
+        }
+      : null;
+
   return {
     user,
     platformRole: user.platformRole,
-    membershipId: membership.id,
-    role: membership.role,
-    canCreateTeam: staffCanCreateTeam(membership.role, user.platformRole),
-    club: {
-      id: membership.clubId,
-      name: club?.name ?? membership.clubName,
-      logoUrl: club?.logoUrl ?? null,
-      ageBandPolicy: clubAgeBandPolicy,
-    },
+    membershipId: membership?.id ?? null,
+    role: membership?.role ?? null,
+    canCreateTeam: membership
+      ? staffCanCreateTeam(membership.role, user.platformRole)
+      : user.platformRole === "SUPER_ADMIN",
+    club: assembledClub,
     teams: transformedTeams,
     activeTeam: transformedActiveTeam,
     activeTeamSeasons: seasonSummaries,

@@ -121,7 +121,6 @@ describe("RSC client props must be plain data", () => {
           regionDetail: null,
         },
       ],
-      closedInjuries: [],
     };
 
     expect(collectNonPlainRscValues(data)).toEqual([]);

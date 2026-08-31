@@ -1,8 +1,7 @@
 "use server";
 
 import { database } from "@repo/database";
-import type { AgeBand, PlayerStatus } from "@repo/database";
-import { ageBandOverrideSchema } from "@repo/database/age-band-policy";
+import type { PlayerStatus } from "@repo/database";
 import {
   isPlayerStatusOverrideBlocked,
   playerHasActiveInjury,
@@ -71,24 +70,6 @@ const optionalDateOfBirth = z
     return date;
   });
 
-const optionalAgeBandOverride = z
-  .string()
-  .optional()
-  .transform((value, ctx) => {
-    if (!value || value.trim().length === 0 || value === "NONE") {
-      return null;
-    }
-    const parsed = ageBandOverrideSchema.safeParse(value);
-    if (!parsed.success) {
-      ctx.addIssue({
-        code: "custom",
-        message: "El tramo de edad manual no es válido.",
-      });
-      return z.NEVER;
-    }
-    return parsed.data;
-  });
-
 const reminderConsentActionSchema = z.enum([
   "LEAVE",
   "GRANT_ASSISTED",
@@ -99,7 +80,6 @@ const reminderConsentActionSchema = z.enum([
 const createPlayerSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(100),
   dateOfBirth: optionalDateOfBirth,
-  ageBandOverride: optionalAgeBandOverride,
   playingPosition: optionalPlayingPositionSchema,
   shirtNumber: optionalShirtNumberSchema,
 });
@@ -112,7 +92,6 @@ export async function createPlayer(
     const parsed = createPlayerSchema.safeParse({
       name: formData.get("name"),
       dateOfBirth: formData.get("dateOfBirth") || undefined,
-      ageBandOverride: formData.get("ageBandOverride") || undefined,
       playingPosition: formData.get("playingPosition") || undefined,
       shirtNumber: formData.get("shirtNumber") || undefined,
     });
@@ -128,7 +107,6 @@ export async function createPlayer(
         name: parsed.data.name,
         teamId,
         dateOfBirth: parsed.data.dateOfBirth,
-        ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
         playingPosition: parsed.data.playingPosition as PlayingPosition | null,
         shirtNumber: parsed.data.shirtNumber,
       },
@@ -153,7 +131,6 @@ const updatePlayerSchema = z.object({
     "UNAVAILABLE",
   ]),
   dateOfBirth: optionalDateOfBirth,
-  ageBandOverride: optionalAgeBandOverride,
   playingPosition: optionalPlayingPositionSchema,
   shirtNumber: optionalShirtNumberSchema,
   reminderConsentAction: reminderConsentActionSchema.default("LEAVE"),
@@ -169,7 +146,6 @@ export async function updatePlayer(
       name: formData.get("name"),
       status: formData.get("status"),
       dateOfBirth: formData.get("dateOfBirth") || undefined,
-      ageBandOverride: formData.get("ageBandOverride") || undefined,
       playingPosition: formData.get("playingPosition") || undefined,
       shirtNumber: formData.get("shirtNumber") || undefined,
       reminderConsentAction: formData.get("reminderConsentAction") || "LEAVE",
@@ -218,7 +194,6 @@ export async function updatePlayer(
           name: parsed.data.name,
           status: parsed.data.status as PlayerStatus,
           dateOfBirth: parsed.data.dateOfBirth,
-          ageBandOverride: parsed.data.ageBandOverride as AgeBand | null,
           playingPosition: parsed.data.playingPosition as PlayingPosition | null,
           shirtNumber: parsed.data.shirtNumber,
           ...(nextConsentState

@@ -333,7 +333,7 @@ export async function updateClubAgeBandPolicyField(
     if (!staffContext) {
       return fail("No tienes permisos para editar el club.");
     }
-    if (!staffContext.canCreateTeam) {
+    if (!staffContext.canCreateTeam || !staffContext.club) {
       return fail("No tienes permisos para editar la política del club.");
     }
 

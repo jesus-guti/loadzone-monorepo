@@ -39,30 +39,25 @@ export const Header = ({ page, children }: HeaderProps) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 px-4 py-3 md:hidden">
-        <div className="flex min-h-10 items-center gap-2">
-          <div className="shrink-0">
-            <TeamBranding
-              clubLogoUrl={club.logoUrl}
-              clubName={club.name}
-              compact
-              logoTreatment="ambient"
-              teamLogoUrl={activeTeam?.logoUrl ?? null}
-              teamName={activeTeam?.name ?? null}
-            />
-          </div>
-          <div className="min-w-0 flex-1 -ml-3">
-            <ActiveTeamSwitcher />
-          </div>
-          {children ? (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {children}
-            </div>
-          ) : null}
-          <div className="hidden shrink-0 items-center gap-2 md:block ">
-            <ActiveSeasonSwitcher />
-          </div>
+      <div className="flex min-h-10 items-center gap-2 px-4 py-3 md:hidden">
+        <div className="shrink-0">
+          <TeamBranding
+            clubLogoUrl={club?.logoUrl ?? null}
+            clubName={club?.name ?? "LoadZone"}
+            compact
+            logoTreatment="ambient"
+            teamLogoUrl={activeTeam?.logoUrl ?? null}
+            teamName={activeTeam?.name ?? null}
+          />
         </div>
+        <div className="min-w-0 flex-1 -ml-3">
+          <ActiveTeamSwitcher />
+        </div>
+        {children ? (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {children}
+          </div>
+        ) : null}
       </div>
     </header>
   );

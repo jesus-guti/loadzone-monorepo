@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon } from "@phosphor-icons/react/ssr";
+import { CalendarBlankIcon, PlusIcon } from "@phosphor-icons/react/ssr";
 import {
   Select,
   SelectContent,
@@ -18,21 +18,32 @@ import { useAppShell } from "./app-shell-context";
 
 const CREATE_SEASON_VALUE = "__create_season__";
 
-export function ActiveSeasonSwitcher() {
+type ActiveSeasonSwitcherProps = {
+  readonly variant?: "toolbar" | "fab";
+};
+
+export function ActiveSeasonSwitcher({
+  variant = "toolbar",
+}: ActiveSeasonSwitcherProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
   const { activeSeason, activeTeamSeasons } = useAppShell();
 
-  const activeValue = activeSeason?.id ?? "";
+  const activeValue =
+    activeSeason &&
+    activeTeamSeasons.some((season) => season.id === activeSeason.id)
+      ? activeSeason.id
+      : "";
   const triggerLabel =
     activeSeason?.label ?? activeSeason?.name ?? "Sin temporada";
+  const isFab = variant === "fab";
 
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Select
         disabled={isPending}
-        value={activeValue || undefined}
+        value={activeValue}
         onValueChange={(seasonId: string | null) => {
           if (!seasonId) {
             return;
@@ -49,14 +60,29 @@ export function ActiveSeasonSwitcher() {
         }}
       >
         <SelectTrigger
-          aria-label="Temporada activa"
-          className="h-9 w-auto min-w-0 gap-2 border-transparent bg-transparent px-2 text-sm shadow-none hover:bg-bg-secondary focus-visible:ring-0"
+          aria-label={
+            isFab ? `Temporada activa: ${triggerLabel}` : "Temporada activa"
+          }
+          className={
+            isFab
+              ? "size-11 justify-center gap-0 rounded-full border border-border-primary bg-bg-primary/95 px-0 shadow-md backdrop-blur hover:bg-bg-secondary focus-visible:ring-0 [&>svg:last-child]:hidden"
+              : "h-9 w-auto min-w-0 gap-2 border-transparent bg-transparent px-2 text-sm shadow-none hover:bg-bg-secondary focus-visible:ring-0"
+          }
         >
-          <span className="truncate font-medium text-text-primary">
-            {triggerLabel}
-          </span>
+          {isFab ? (
+            <CalendarBlankIcon className="size-5 text-text-secondary" />
+          ) : (
+            <span className="truncate font-medium text-text-primary">
+              {triggerLabel}
+            </span>
+          )}
         </SelectTrigger>
-        <SelectContent align="end">
+        <SelectContent
+          align="end"
+          alignItemWithTrigger={!isFab}
+          className={isFab ? "w-auto min-w-64" : undefined}
+          side={isFab ? "top" : "bottom"}
+        >
           <SelectGroup>
             <SelectLabel>Temporadas</SelectLabel>
             {activeTeamSeasons.length === 0 ? (

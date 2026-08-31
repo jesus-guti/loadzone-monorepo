@@ -35,6 +35,7 @@ export type OpenPainAlertRow = {
   readonly bodyPart: string | null;
   readonly severity: InjurySeverity;
   readonly promotedInjuryId: string | null;
+  readonly dismissedAt: Date | null;
 };
 
 export type PromotePainAlertClient = StaffInjuryWriteClient & {
@@ -44,6 +45,7 @@ export type PromotePainAlertClient = StaffInjuryWriteClient & {
         id: string;
         teamId: string;
         promotedInjuryId: null;
+        dismissedAt: null;
       };
       select: {
         id: true;
@@ -54,6 +56,7 @@ export type PromotePainAlertClient = StaffInjuryWriteClient & {
         bodyPart: true;
         severity: true;
         promotedInjuryId: true;
+        dismissedAt: true;
       };
     }) => Promise<OpenPainAlertRow | null>;
     update: (args: {
@@ -64,13 +67,12 @@ export type PromotePainAlertClient = StaffInjuryWriteClient & {
 };
 
 /**
- * Open triage = promotedInjuryId is null. Promoted alerts keep the row for audit
- * but are excluded from the open set via this FK link.
+ * Open triage = not promoted and not dismissed.
  */
 export function isOpenPainAlert(
-  alert: Pick<OpenPainAlertRow, "promotedInjuryId">
+  alert: Pick<OpenPainAlertRow, "promotedInjuryId" | "dismissedAt">
 ): boolean {
-  return alert.promotedInjuryId === null;
+  return alert.promotedInjuryId === null && alert.dismissedAt === null;
 }
 
 /**
@@ -117,6 +119,7 @@ export async function promotePainAlertToInjury(
       id: input.painAlertId,
       teamId: input.teamId,
       promotedInjuryId: null,
+      dismissedAt: null,
     },
     select: {
       id: true,
@@ -127,6 +130,7 @@ export async function promotePainAlertToInjury(
       bodyPart: true,
       severity: true,
       promotedInjuryId: true,
+      dismissedAt: true,
     },
   });
 

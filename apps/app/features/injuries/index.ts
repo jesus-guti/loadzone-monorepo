@@ -21,7 +21,9 @@ export {
   deleteInjury,
   updateInjuryTriage,
   promotePainAlert,
+  dismissPainAlert,
+  restorePainAlert,
 } from "./actions/injury-actions";
 export type { InjuryActionResult } from "./actions/injury-actions";
 export { PlayerInjuriesPanel } from "./components/player-injuries-panel";
-export { PromotePainAlertForm } from "./components/promote-pain-alert-form";
+export { RegisterInjuryDialog } from "./components/register-injury-dialog";

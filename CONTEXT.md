@@ -20,6 +20,42 @@ _Avoid_: “Campaign” unless product copy standardises it over **Season**.
 A person on a team roster who submits wellness check-ins. May link to a **User** account or operate via the player’s public access token (do not confuse that token with push subscriptions). Primary daily operator of `apps/player` across all **Age Bands**.
 _Avoid_: “User” when you only mean the roster record—that is **Player**.
 
+**User**:
+A login identity for the staff app. Distinct from **Player** (roster) and from **Guardian**. Email is the stable login identifier; only a **Super Admin** may change it. A User may hold one or more Club **Memberships**. Player and Guardian logins are out of this vocabulary until product work lands.
+_Avoid_: Calling a Coordinator or staff person “Admin”; “account” when you mean **User** or **Membership**; self-serve email change in this wave.
+
+**Membership**:
+The User’s role inside one **Club**: **Coordinator**, **Staff**, or (unused for staff login) **Player**. Privileges are Club-scoped. At most one Membership per User per Club (`@@unique([userId, clubId])`). A User without a Membership is not Club staff. Coordinator or Super Admin may change STAFF ↔ COORDINATOR in place, subject to **Last Coordinator**.
+_Avoid_: Treating **Super Admin** as a Membership; “Admin” as a Membership role.
+
+**Coordinator**:
+Club-scoped Membership that operates the Club and may invite other staff Users into that Club. Creates Teams. Product “admin del club” maps here — there is no Membership named Admin.
+_Avoid_: Super Admin; a second Club-owner title.
+
+**Staff** (Membership):
+Club-scoped Membership that uses the staff workspace (wellness, injuries, sessions, …) but does not invite Users or create Teams.
+_Avoid_: Using “staff” only as informal English for every logged-in User including Coordinators.
+
+**Super Admin**:
+Platform operator **User** (not a Club Membership). In the staff app they choose a **Club** and invite, revoke, or create Clubs without impersonating another User. Same person may also hold Memberships; the platform flag is a separate axis. A Super Admin is minted at bootstrap or granted by an existing Super Admin — never by a Coordinator.
+_Avoid_: Club “owner”; implying Super Admin is COORDINATOR of every Club; session impersonation as the support model.
+
+**Staff Invitation**:
+The only way a staff **User** joins a Club in the current product: a Coordinator of that Club, or a **Super Admin**, issues an email with a one-time link; the person sets a password and receives a **Membership** as Coordinator or Staff (always all Teams of that Club in this wave). If the email already belongs to a **User**, accepting attaches another Membership — one User, many Clubs. A pending invite expires; it may be resent (new token) or cancelled; at most one pending invite per email per Club. Public self-signup for staff is deferred.
+_Avoid_: Open registration; one email per Club; per-Team Membership as the v1 invite rule; temporary passwords as the normal invite path; never-expiring invite links.
+
+**Password reset**:
+A **User** who forgot their password requests a one-time hashed email link (TTL 1 hour) from sign-in, then sets a new password. Signed-in Users change password in **Cuenta** with the current password. The email field there stays read-only. There is no `mustChangePassword` and no temporary password.
+_Avoid_: NextAuth VerificationToken for this flow; leaking whether an email exists; auto-login after reset.
+
+**Last Coordinator**:
+A **Club** must keep at least one Coordinator **Membership**. Revoking or demoting that last Coordinator is refused; a **Super Admin** invites or creates another Coordinator instead of leaving the Club unable to invite.
+_Avoid_: Auto-promoting Staff; Clubs with zero Coordinators as a normal state.
+
+**Membership Revocation**:
+Removing a **Membership** so that **User** can no longer act in that **Club**. The User record remains (they may still have other Clubs or later invites). Not User deletion.
+_Avoid_: “Delete user” when you only mean leave a Club.
+
 **Playing Position**:
 Optional coarse line on a **Player**: POR, DEF, MED, or DEL. Identity on the **Streak Cromo** only — not a rating, attribute, or selection rule.
 _Avoid_: Fine pitch slots (LD, MCD, …) as required roster data; FUT-style attributes; treating missing position as an error.
@@ -127,13 +163,16 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 
 ## Relationships
 
-- A **Club** has many **Teams** (and club-scoped exercises and other shared entities).
+- A **User** may have many **Memberships** (each one Club + role). **Super Admin** is a User flag, not a Membership.
+- A **Club** has many **Memberships** (Coordinators and Staff) and many **Teams** (and club-scoped exercises and other shared entities).
+- A **Club** keeps at least one **Coordinator** (**Last Coordinator** rule).
+- A **Staff Invitation** belongs to a **Club** and, when accepted, yields a **Membership** (all Teams) on an existing or new **User**.
 - A **Team** belongs to a **Club** and has many **Seasons**, many **Players**, and many **Sessions**.
 - A **Season** belongs to a **Team**; it groups that season’s **DailyEntry** and **PlayerDailyStats**.
 - A **Player** belongs to a **Team**; has an optional **Playing Position** and optional shirt number; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
 - A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
-- A **Player** is assigned an **Age Band** (Assisted / Guided / Independent) from optional `dateOfBirth` and/or `ageBandOverride`, resolved against Club defaults with Team override (see `@repo/database/age-band-policy`); indicative ages and consent defaults are staff-configurable policy, not fixed-only constants.
+- **Age Band** policy is **postponed** (`AGE_BAND_POLICY_ENABLED` in `@repo/database/age-band-policy`): staff settings, player create/edit, and runtime resolution treat every Player as unassigned (no parental layer). Persistence (`dateOfBirth`, `ageBandOverride`, Club/Team JSON) remains; flip the flag to restore.
 - **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).
 - A **Guardian** participates via the **Parental Supervision Layer** (care slice: see / receive / escalate) — not as co-operator of routine **DailyEntry** on `apps/player`.
 - A **Recoverable Streak** and **Excused Absence** are scoped to expected check-ins within a **Season** for a **Player**; expected days come from **Sessions** that player is on, not from every **Session** on the Team.
@@ -152,8 +191,9 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 
 ## Flagged ambiguities
 
-- **User** vs **Player**: a **User** is a login identity (staff or optional player linkage); **Player** is the roster entity. A player row may exist without a linked **User**.
+- **User** vs **Player**: a **User** is staff login (this wave); **Player** is the roster entity and may exist without a linked **User**. Player/Guardian Users remain deferred.
+- Public staff signup (first Coordinator creates a Club) is deferred; until then Clubs receive staff only via **Staff Invitation** (plus operator bootstrap of **Super Admin**).
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
-- **Age Band** persistence: optional `Player.dateOfBirth` + `ageBandOverride`; effective cutoffs live in `Club.ageBandPolicy` / `Team.ageBandPolicy` JSON (null → documented package defaults).
+- **Age Band** is postponed in product UI and `resolveAgeBandPolicy`; persistence fields remain for a later restore.
 - **Session** subset vs whole-Team: a Session may list a subset of Players; Recoverable Streak uses only Sessions that Player is on. Player week chrome may still show all Team Sessions that week.
 - **Preseason**: not a domain entity. Staff scope history with **Season** and calendar dates. Persistence may store an optional `preSeasonEnd` on **Season**; that is not product language and is not a filter object.

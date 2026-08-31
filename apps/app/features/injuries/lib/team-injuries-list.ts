@@ -43,23 +43,55 @@ export function partitionInjuriesByOpenClosed<T extends InjuryOpenClosedRow>(
 export type PainAlertTriageRow = {
   readonly id: string;
   readonly promotedInjuryId: string | null;
+  readonly dismissedAt?: Date | string | null;
 };
 
-/** Triage queue: not yet promoted to an official Injury. */
+/** Triage queue: not promoted and not dismissed. */
 export function isOpenPainAlert(
-  promotedInjuryId: string | null
+  promotedInjuryId: string | null,
+  dismissedAt: Date | string | null = null
 ): boolean {
-  return promotedInjuryId === null;
+  return promotedInjuryId === null && dismissedAt == null;
 }
 
 export function filterOpenPainAlerts<T extends PainAlertTriageRow>(
   alerts: readonly T[]
 ): T[] {
-  return alerts.filter((alert) => isOpenPainAlert(alert.promotedInjuryId));
+  return alerts.filter((alert) =>
+    isOpenPainAlert(alert.promotedInjuryId, alert.dismissedAt ?? null)
+  );
 }
 
 export function playerProfileHref(playerId: string): string {
-  return `/players/${playerId}`;
+  return `/players/${playerId}?tab=lesiones`;
+}
+
+/**
+ * Inclusive civil-day count from start YMD through today YMD (UTC calendar).
+ * Same day = 1. Future start = 0.
+ */
+export function countInclusiveCivilDays(
+  startYmd: string,
+  todayYmd: string
+): number {
+  const start = parseCivilUtc(startYmd);
+  const today = parseCivilUtc(todayYmd);
+  if (start === null || today === null) {
+    return 0;
+  }
+  const delta = Math.floor((today - start) / 86_400_000);
+  if (delta < 0) {
+    return 0;
+  }
+  return delta + 1;
+}
+
+function parseCivilUtc(ymd: string): number | null {
+  const [year, month, day] = ymd.split("-").map(Number);
+  if (!year || !month || !day) {
+    return null;
+  }
+  return Date.UTC(year, month - 1, day);
 }
 
 export function truncateText(

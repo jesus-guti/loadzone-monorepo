@@ -2,7 +2,13 @@ import { authMiddleware } from "@repo/auth/proxy";
 import type { NextProxy } from "next/server";
 import { NextResponse } from "next/server";
 
-export default authMiddleware(() => NextResponse.next()) as unknown as NextProxy;
+export default authMiddleware((request) => {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-loadzone-pathname", request.nextUrl.pathname);
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+}) as unknown as NextProxy;
 
 export const config = {
   matcher: [

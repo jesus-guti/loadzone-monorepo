@@ -16,13 +16,6 @@ import { useActionState, useEffect } from "react";
 import { DatePicker } from "@/components/date-picker";
 import { createPlayer } from "../actions/player-actions";
 
-const AGE_BAND_OPTIONS = [
-  { value: "NONE", label: "Automático (por fecha)" },
-  { value: "ASSISTED", label: "Asistida" },
-  { value: "GUIDED", label: "Guiada" },
-  { value: "INDEPENDENT", label: "Independiente" },
-] as const;
-
 const PLAYING_POSITION_OPTIONS = [
   { value: "NONE", label: "Sin posición" },
   { value: "POR", label: PLAYING_POSITION_STAFF_LABEL.POR },
@@ -63,29 +56,8 @@ export function CreatePlayerForm() {
           name="dateOfBirth"
         />
         <p className="text-xs text-text-secondary">
-          Opcional. Sin fecha ni tramo manual, el jugador queda sin asignar (sin
-          supervisión parental).
+          Opcional.
         </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ageBandOverride">Tramo de edad (manual)</Label>
-        <Select
-          defaultValue="NONE"
-          items={AGE_BAND_OPTIONS}
-          name="ageBandOverride"
-        >
-          <SelectTrigger className="w-full" id="ageBandOverride">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {AGE_BAND_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="space-y-2">

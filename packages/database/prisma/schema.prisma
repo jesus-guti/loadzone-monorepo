@@ -249,6 +249,13 @@ enum InjurySide {
   CENTRAL
 }
 
+enum StaffInvitationStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+  EXPIRED
+}
+
 enum AgeBand {
   ASSISTED
   GUIDED
@@ -288,11 +295,12 @@ model Club {
   ageBandPolicy  Json?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  memberships    Membership[]
-  teams          Team[]
-  forms          FormTemplate[]
-  sessions       TeamSession[]
-  exercises      Exercise[]
+  memberships        Membership[]
+  staffInvitations   StaffInvitation[]
+  teams              Team[]
+  forms              FormTemplate[]
+  sessions           TeamSession[]
+  exercises          Exercise[]
 }
 
 model User {
@@ -305,12 +313,14 @@ model User {
   platformRole     PlatformRole   @default(USER)
   accounts         Account[]
   sessions         Session[]
-  memberships      Membership[]
-  aiSuggestions    AiSuggestion[] @relation("AcceptedSuggestions")
-  playerProfile    Player?        @relation("PlayerUser")
-  createdInjuries  Injury[]       @relation("CreatedInjuries")
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  memberships              Membership[]
+  issuedStaffInvitations   StaffInvitation[] @relation("StaffInvitationsIssued")
+  passwordResetTokens      PasswordResetToken[]
+  aiSuggestions            AiSuggestion[]    @relation("AcceptedSuggestions")
+  playerProfile            Player?           @relation("PlayerUser")
+  createdInjuries          Injury[]          @relation("CreatedInjuries")
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
 }
 
 model Account {
@@ -350,6 +360,40 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+/// Club staff invite (SI-01). One PENDING per (clubId, email) is enforced in the staff-identity seam, not a partial unique index.
+model StaffInvitation {
+  id          String                 @id @default(cuid())
+  clubId      String
+  email       String
+  role        MembershipRole
+  tokenHash   String                 @unique
+  expiresAt   DateTime
+  status      StaffInvitationStatus  @default(PENDING)
+  invitedById String
+  acceptedAt  DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  club        Club                   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  invitedBy   User                   @relation("StaffInvitationsIssued", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([clubId, email])
+  @@index([clubId, status])
+  @@index([invitedById])
+}
+
+/// One-time hashed staff password reset (SI-04). Unused tokens rotate on a new request.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 model Membership {
   id                String                       @id @default(cuid())
   userId            String
@@ -366,7 +410,7 @@ model Membership {
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
-  @@unique([userId, clubId, role])
+  @@unique([userId, clubId])
   @@index([userId])
   @@index([clubId])
 }
@@ -870,6 +914,8 @@ model PainAlert {
   severity          InjurySeverity @default(UNKNOWN)
   reportedAt        DateTime       @default(now())
   promotedInjuryId  String?
+  /// Staff archived the aviso without creating an Injury. Null = still in triage (if unpromoted).
+  dismissedAt       DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   player            Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -879,6 +925,7 @@ model PainAlert {
   @@index([playerId, reportedAt])
   @@index([teamId, reportedAt])
   @@index([promotedInjuryId])
+  @@index([teamId, dismissedAt])
 }
 
 model AiSuggestion {

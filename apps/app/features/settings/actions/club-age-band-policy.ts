@@ -11,7 +11,7 @@ export async function updateClubAgeBandPolicy(formData: FormData): Promise<void>
   if (!staffContext) {
     throw new Error("No tienes permisos para editar el club.");
   }
-  if (!staffContext.canCreateTeam) {
+  if (!staffContext.canCreateTeam || !staffContext.club) {
     throw new Error("No tienes permisos para editar la política del club.");
   }
 

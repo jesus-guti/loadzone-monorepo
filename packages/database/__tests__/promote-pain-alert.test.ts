@@ -95,8 +95,18 @@ describe("buildInjuryPrefillFromPainAlert / isOpenPainAlert", () => {
   });
 
   it("treats null promotedInjuryId as open triage", () => {
-    expect(isOpenPainAlert({ promotedInjuryId: null })).toBe(true);
-    expect(isOpenPainAlert({ promotedInjuryId: "inj_1" })).toBe(false);
+    expect(
+      isOpenPainAlert({ promotedInjuryId: null, dismissedAt: null })
+    ).toBe(true);
+    expect(
+      isOpenPainAlert({ promotedInjuryId: "inj_1", dismissedAt: null })
+    ).toBe(false);
+    expect(
+      isOpenPainAlert({
+        promotedInjuryId: null,
+        dismissedAt: new Date("2026-08-31T10:00:00.000Z"),
+      })
+    ).toBe(false);
   });
 });
 
@@ -111,6 +121,7 @@ describe("promotePainAlertToInjury", () => {
       bodyPart: "isquio",
       severity: "MINOR",
       promotedInjuryId: null,
+      dismissedAt: null,
     });
     const painAlertUpdate = vi.fn().mockResolvedValue({});
     const injuryCreate = vi.fn().mockResolvedValue({

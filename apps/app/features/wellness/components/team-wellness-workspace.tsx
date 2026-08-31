@@ -1,6 +1,6 @@
 "use client";
 
-import { SparkleIcon, SquaresFourIcon } from "@phosphor-icons/react/ssr";
+import { ListBulletsIcon, SquaresFourIcon } from "@phosphor-icons/react/ssr";
 import {
   Tabs,
   TabsContent,
@@ -10,7 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
-import { TeamWellnessBubblesView } from "./team-wellness-bubbles-view";
+import { TeamWellnessComparisonList } from "./team-wellness-comparison-list";
 import { TeamWellnessComparisonTable } from "./team-wellness-comparison-table";
 import { TeamWellnessOverview } from "./team-wellness-overview";
 import { TeamWellnessPlayerCard } from "./team-wellness-player-card";
@@ -22,10 +22,10 @@ type TeamWellnessWorkspaceProperties = {
   readonly wellnessLimits?: WellnessLimits | null;
 };
 
-type WellnessViewMode = "cards" | "bubbles";
+type WellnessViewMode = "cards" | "list";
 
 function isWellnessViewMode(value: string): value is WellnessViewMode {
-  return value === "cards" || value === "bubbles";
+  return value === "cards" || value === "list";
 }
 
 export function TeamWellnessWorkspace({
@@ -34,30 +34,11 @@ export function TeamWellnessWorkspace({
   wellnessLimits,
 }: TeamWellnessWorkspaceProperties) {
   const [viewMode, setViewMode] = useState<WellnessViewMode>("cards");
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
-
-  const filteredPlayers = useMemo(() => {
-    if (selectedPlayerIds.length === 0) {
-      return players;
-    }
-
-    return players.filter((player) => selectedPlayerIds.includes(player.id));
-  }, [players, selectedPlayerIds]);
 
   const summary = useMemo(
-    () => buildWellnessSummary(filteredPlayers, wellnessLimits),
-    [filteredPlayers, wellnessLimits]
+    () => buildWellnessSummary(players, wellnessLimits),
+    [players, wellnessLimits]
   );
-
-  const togglePlayerSelection = (playerId: string): void => {
-    setSelectedPlayerIds((currentIds) => {
-      if (currentIds.includes(playerId)) {
-        return currentIds.filter((id) => id !== playerId);
-      }
-
-      return [...currentIds, playerId];
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -75,40 +56,27 @@ export function TeamWellnessWorkspace({
               <SquaresFourIcon className="size-4" />
               Tarjetas
             </TabsTrigger>
-            <TabsTrigger type="button" value="bubbles">
-              <SparkleIcon className="size-4" />
-              Burbujas
+            <TabsTrigger type="button" value="list">
+              <ListBulletsIcon className="size-4" />
+              Lista
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-3 self-start sm:self-auto">
-            <p className="text-sm text-text-tertiary">
-              {selectedPlayerIds.length > 0
-                ? `${selectedPlayerIds.length} jugadores filtrados`
-                : `${players.length} jugadores`}
-            </p>
-            {selectedPlayerIds.length > 0 ? (
-              <button
-                className="text-sm text-text-secondary hover:text-text-primary"
-                onClick={() => setSelectedPlayerIds([])}
-                type="button"
-              >
-                Quitar filtros
-              </button>
-            ) : null}
-          </div>
+          <p className="self-start text-sm text-text-tertiary sm:self-auto">
+            {players.length} jugadores
+          </p>
         </div>
 
         <TeamWellnessOverview
           evaluatedDate={evaluatedDate}
-          players={filteredPlayers}
+          players={players}
           summary={summary}
           wellnessLimits={wellnessLimits}
         />
 
         <TabsContent className="mt-0 outline-none" value="cards">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {filteredPlayers.map((player) => (
+            {players.map((player) => (
               <TeamWellnessPlayerCard
                 key={player.id}
                 player={player}
@@ -118,16 +86,16 @@ export function TeamWellnessWorkspace({
           </div>
         </TabsContent>
 
-        <TabsContent className="mt-0 outline-none" value="bubbles">
-          <div className="space-y-6">
-            <TeamWellnessBubblesView
-              onToggle={togglePlayerSelection}
+        <TabsContent className="mt-0 outline-none" value="list">
+          <div className="md:hidden">
+            <TeamWellnessComparisonList
               players={players}
-              selectedPlayerIds={selectedPlayerIds}
               wellnessLimits={wellnessLimits}
             />
+          </div>
+          <div className="hidden md:block">
             <TeamWellnessComparisonTable
-              players={filteredPlayers}
+              players={players}
               wellnessLimits={wellnessLimits}
             />
           </div>

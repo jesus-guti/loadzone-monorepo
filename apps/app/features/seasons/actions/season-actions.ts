@@ -4,35 +4,27 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import {
   ACTIVE_SEASON_COOKIE_NAME,
   getCurrentStaffContext,
 } from "@/lib/auth-context";
+import { createSeasonSchema } from "../lib/create-season-schema";
+import { parseCivilDate } from "../lib/season-cycle";
 
 async function getTeamId(): Promise<string> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) throw new Error("Equipo no encontrado");
+  if (!staffContext?.activeTeam) {
+    throw new Error("Equipo no encontrado");
+  }
   return staffContext.activeTeam.id;
 }
-
-const createSeasonSchema = z
-  .object({
-    name: z.string().min(1, "El nombre es obligatorio"),
-    startDate: z.string().min(1, "Fecha de inicio obligatoria"),
-    endDate: z.string().min(1, "Fecha de fin obligatoria"),
-    preSeasonEnd: z.string().optional(),
-  })
-  .refine((data) => new Date(data.startDate) < new Date(data.endDate), {
-    message: "La fecha de inicio debe ser anterior a la de fin",
-  });
 
 async function persistSeason(formData: FormData): Promise<string> {
   const parsed = createSeasonSchema.safeParse({
     name: formData.get("name"),
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate"),
-    preSeasonEnd: formData.get("preSeasonEnd") || undefined,
+    preSeasonEnd: formData.get("preSeasonEnd"),
   });
 
   if (!parsed.success) {
@@ -40,15 +32,25 @@ async function persistSeason(formData: FormData): Promise<string> {
   }
 
   const teamId = await getTeamId();
+  const startDate = parseCivilDate(parsed.data.startDate);
+  const endDate = parseCivilDate(parsed.data.endDate);
+  const preSeasonEnd = parseCivilDate(parsed.data.preSeasonEnd);
+  if (!startDate) {
+    throw new Error("Fechas no válidas.");
+  }
+  if (!endDate) {
+    throw new Error("Fechas no válidas.");
+  }
+  if (!preSeasonEnd) {
+    throw new Error("Fechas no válidas.");
+  }
 
   const season = await database.season.create({
     data: {
       name: parsed.data.name,
-      startDate: new Date(parsed.data.startDate),
-      endDate: new Date(parsed.data.endDate),
-      preSeasonEnd: parsed.data.preSeasonEnd
-        ? new Date(parsed.data.preSeasonEnd)
-        : null,
+      startDate,
+      endDate,
+      preSeasonEnd,
       teamId,
     },
     select: { id: true },

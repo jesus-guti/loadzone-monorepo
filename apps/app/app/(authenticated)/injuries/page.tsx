@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { Header } from "@/components/layouts/header";
 import { TeamInjuriesList } from "@/features/injuries/components/team-injuries-list";
 import { getTeamInjuriesList } from "@/features/injuries/queries/get-team-injuries-list";
@@ -15,13 +16,17 @@ const InjuriesPage = async () => {
     notFound();
   }
 
+  const todayCivil = toCivilDateString(
+    new Date(),
+    staffContext.activeTeam.timezone || "Europe/Madrid"
+  );
   const data = await getTeamInjuriesList(staffContext.activeTeam.id);
 
   return (
     <>
       <Header page="Lesiones" pages={["LoadZone"]} />
       <div className="mx-auto max-w-4xl p-4 pt-0">
-        <TeamInjuriesList data={data} />
+        <TeamInjuriesList data={data} todayCivil={todayCivil} />
       </div>
     </>
   );

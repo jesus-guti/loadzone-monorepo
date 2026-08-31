@@ -22,6 +22,19 @@ import {
   REMEMBER_ME_COOKIE_NAME,
 } from "./session-persistence";
 
+const PASSWORD_HASH_COST = 12;
+
+export async function hashPassword(plain: string): Promise<string> {
+  return hash(plain, PASSWORD_HASH_COST);
+}
+
+export async function verifyPassword(
+  plain: string,
+  passwordHash: string
+): Promise<boolean> {
+  return compare(plain, passwordHash);
+}
+
 type MembershipSummary = {
   id: string;
   clubId: string;
@@ -70,12 +83,6 @@ const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   rememberMe: z.enum(["true", "false"]).optional(),
-});
-
-const registerSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2).max(100),
-  password: z.string().min(8).max(128),
 });
 
 async function getMemberships(userId: string): Promise<MembershipSummary[]> {
@@ -286,46 +293,10 @@ export async function currentUser(): Promise<CurrentUser | null> {
 }
 
 export async function registerUser(
-  input: RegisterUserInput
+  _input: RegisterUserInput
 ): Promise<RegisterUserResult> {
-  const parsed = registerSchema.safeParse({
-    email: input.email,
-    name: input.name,
-    password: input.password,
-  });
-
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.issues[0]?.message ?? "Datos no válidos.",
-    };
-  }
-
-  const existingUser = await database.user.findUnique({
-    where: { email: parsed.data.email.toLowerCase() },
-    select: { id: true },
-  });
-
-  if (existingUser) {
-    return {
-      success: false,
-      error: "Ya existe un usuario con ese email.",
-    };
-  }
-
-  const passwordHash = await hash(parsed.data.password, 12);
-
-  const user = await database.user.create({
-    data: {
-      email: parsed.data.email.toLowerCase(),
-      name: parsed.data.name,
-      passwordHash,
-    },
-    select: { id: true },
-  });
-
   return {
-    success: true,
-    userId: user.id,
+    success: false,
+    error: "El registro público no está disponible.",
   };
 }

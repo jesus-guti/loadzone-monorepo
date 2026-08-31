@@ -196,6 +196,7 @@ export function PlayerDetailShell(
             closedInjuries={properties.closedInjuries}
             openInjuries={properties.openInjuries}
             playerId={properties.playerId}
+            playerName={properties.playerName}
             todayCivil={properties.todayCivil}
           />
         </TabsContent>

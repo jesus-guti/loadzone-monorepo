@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  countInclusiveCivilDays,
   filterOpenPainAlerts,
   isOpenInjury,
   isOpenPainAlert,
@@ -79,10 +80,16 @@ describe("Pain Alert triage vs Injury SoT", () => {
   it("keeps only unpromoted Pain Alerts in the triage queue", () => {
     expect(isOpenPainAlert(null)).toBe(true);
     expect(isOpenPainAlert("injury-1")).toBe(false);
+    expect(isOpenPainAlert(null, "2026-08-31T10:00:00.000Z")).toBe(false);
 
     const filtered = filterOpenPainAlerts([
-      { id: "alert-open", promotedInjuryId: null },
+      { id: "alert-open", promotedInjuryId: null, dismissedAt: null },
       { id: "alert-promoted", promotedInjuryId: "injury-9" },
+      {
+        id: "alert-dismissed",
+        promotedInjuryId: null,
+        dismissedAt: "2026-08-31T10:00:00.000Z",
+      },
     ]);
 
     expect(filtered.map((row) => row.id)).toEqual(["alert-open"]);
@@ -113,7 +120,9 @@ describe("Pain Alert triage vs Injury SoT", () => {
 
 describe("playerProfileHref", () => {
   it("links rows to the player profile by player id", () => {
-    expect(playerProfileHref("player-abc")).toBe("/players/player-abc");
+    expect(playerProfileHref("player-abc")).toBe(
+      "/players/player-abc?tab=lesiones"
+    );
   });
 });
 
@@ -122,6 +131,14 @@ describe("takeSectionCap", () => {
     const ids = Array.from({ length: 60 }, (_, index) => `id-${index}`);
     expect(takeSectionCap(ids, 50)).toHaveLength(50);
     expect(takeSectionCap(ids, 50)[0]).toBe("id-0");
+  });
+});
+
+describe("countInclusiveCivilDays", () => {
+  it("counts inclusive calendar days and clamps future starts", () => {
+    expect(countInclusiveCivilDays("2026-08-31", "2026-08-31")).toBe(1);
+    expect(countInclusiveCivilDays("2026-08-29", "2026-08-31")).toBe(3);
+    expect(countInclusiveCivilDays("2026-09-02", "2026-08-31")).toBe(0);
   });
 });
 

@@ -1,6 +1,5 @@
 "use client";
 
-import type { AgeBandPolicy } from "@repo/database/age-band-policy";
 import { CameraIcon } from "@phosphor-icons/react/ssr";
 import {
   Avatar,
@@ -8,25 +7,20 @@ import {
   AvatarImage,
 } from "@repo/design-system/components/avatar";
 import { Button } from "@repo/design-system/components/button";
-import { Input } from "@repo/design-system/components/input";
 import { toast } from "@repo/design-system/components/sonner";
 import { validateImageFile } from "@repo/storage/image-validation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { clearClubBrandingLogo, updateClubBranding } from "../actions/team-settings";
-import { updateClubAgeBandPolicyField } from "../actions/settings-field-actions";
-import { useSettingsAutosave } from "../hooks/use-settings-autosave";
 import { PrimerosPasosReopenSection } from "./primeros-pasos-reopen-section";
 import { SettingsRow } from "./settings-row";
 import { SettingsSection } from "./settings-section";
 
 type ClubSettingsFormProps = {
-  readonly teamId: string;
   readonly userId: string;
   readonly clubId: string;
   readonly canEdit: boolean;
   readonly clubName: string;
   readonly clubLogoUrl: string | null;
-  readonly clubAgePolicy: AgeBandPolicy;
 };
 
 const WHITESPACE_PATTERN = /\s+/;
@@ -41,13 +35,11 @@ function getInitials(value: string): string {
 }
 
 export function ClubSettingsForm({
-  teamId,
   userId,
   clubId,
   canEdit,
   clubName,
   clubLogoUrl,
-  clubAgePolicy,
 }: ClubSettingsFormProps) {
   const inputReference = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -55,29 +47,6 @@ export function ClubSettingsForm({
     clubLogoUrl
   );
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { saveImmediate, saveDebounced, flushDebounced } = useSettingsAutosave({
-    teamId,
-    routeKey: "club",
-  });
-
-  const [assisted, setAssisted] = useState(
-    String(clubAgePolicy.assistedMaxAgeExclusive)
-  );
-  const [guided, setGuided] = useState(
-    String(clubAgePolicy.guidedMaxAgeExclusive)
-  );
-  const [majority, setMajority] = useState(
-    String(clubAgePolicy.adultMajorityAge)
-  );
-  const [youthSupervision, setYouthSupervision] = useState(
-    clubAgePolicy.independentYouthSupervisionEnabled
-  );
-  const [missReceive, setMissReceive] = useState(
-    clubAgePolicy.guardianMissReceiveEnabled
-  );
-  const [careReceive, setCareReceive] = useState(
-    clubAgePolicy.guardianCareAlertReceiveEnabled
-  );
 
   useEffect(() => {
     setCurrentLogoUrl(clubLogoUrl);
@@ -91,45 +60,6 @@ export function ClubSettingsForm({
       }
     };
   }, [previewUrl]);
-
-  const buildAgeFormData = (overrides?: {
-    assisted?: string;
-    guided?: string;
-    majority?: string;
-    youthSupervision?: boolean;
-    missReceive?: boolean;
-    careReceive?: boolean;
-  }): FormData => {
-    const formData = new FormData();
-    formData.set(
-      "age_assistedMaxAgeExclusive",
-      overrides?.assisted ?? assisted
-    );
-    formData.set("age_guidedMaxAgeExclusive", overrides?.guided ?? guided);
-    formData.set("age_adultMajorityAge", overrides?.majority ?? majority);
-    const nextYouth =
-      overrides?.youthSupervision !== undefined
-        ? overrides.youthSupervision
-        : youthSupervision;
-    const nextMiss =
-      overrides?.missReceive !== undefined
-        ? overrides.missReceive
-        : missReceive;
-    const nextCare =
-      overrides?.careReceive !== undefined
-        ? overrides.careReceive
-        : careReceive;
-    if (nextYouth) {
-      formData.set("age_independentYouthSupervisionEnabled", "on");
-    }
-    if (nextMiss) {
-      formData.set("age_guardianMissReceiveEnabled", "on");
-    }
-    if (nextCare) {
-      formData.set("age_guardianCareAlertReceiveEnabled", "on");
-    }
-    return formData;
-  };
 
   const handleFileSelection = (file: File | null | undefined): void => {
     if (!file || !canEdit) {
@@ -274,175 +204,6 @@ export function ClubSettingsForm({
       </SettingsSection>
 
       <PrimerosPasosReopenSection clubId={clubId} userId={userId} />
-
-      <SettingsSection
-        description="Los equipos sin override heredan estos valores."
-        title="Política de edad del club"
-      >
-        {!canEdit ? (
-          <p className="py-3 text-sm text-text-secondary">
-            Solo lectura. Necesitas permisos de coordinación para editar la
-            política del club.
-          </p>
-        ) : null}
-        <SettingsRow htmlFor="club-age-assisted" label="Asistida hasta">
-          <Input
-            id="club-age-assisted"
-            type="number"
-            min={0}
-            max={100}
-            disabled={!canEdit}
-            value={assisted}
-            onChange={(event) => {
-              const next = event.target.value;
-              setAssisted(next);
-              if (!canEdit) {
-                return;
-              }
-              saveDebounced("club-assisted", () =>
-                updateClubAgeBandPolicyField(
-                  buildAgeFormData({ assisted: next })
-                )
-              );
-            }}
-            onBlur={() => {
-              if (!canEdit) {
-                return;
-              }
-              flushDebounced("club-assisted", () =>
-                updateClubAgeBandPolicyField(buildAgeFormData())
-              );
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow htmlFor="club-age-guided" label="Guiada hasta">
-          <Input
-            id="club-age-guided"
-            type="number"
-            min={0}
-            max={100}
-            disabled={!canEdit}
-            value={guided}
-            onChange={(event) => {
-              const next = event.target.value;
-              setGuided(next);
-              if (!canEdit) {
-                return;
-              }
-              saveDebounced("club-guided", () =>
-                updateClubAgeBandPolicyField(buildAgeFormData({ guided: next }))
-              );
-            }}
-            onBlur={() => {
-              if (!canEdit) {
-                return;
-              }
-              flushDebounced("club-guided", () =>
-                updateClubAgeBandPolicyField(buildAgeFormData())
-              );
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow htmlFor="club-age-majority" label="Mayoría desde">
-          <Input
-            id="club-age-majority"
-            type="number"
-            min={0}
-            max={100}
-            disabled={!canEdit}
-            value={majority}
-            onChange={(event) => {
-              const next = event.target.value;
-              setMajority(next);
-              if (!canEdit) {
-                return;
-              }
-              saveDebounced("club-majority", () =>
-                updateClubAgeBandPolicyField(
-                  buildAgeFormData({ majority: next })
-                )
-              );
-            }}
-            onBlur={() => {
-              if (!canEdit) {
-                return;
-              }
-              flushDebounced("club-majority", () =>
-                updateClubAgeBandPolicyField(buildAgeFormData())
-              );
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow
-          htmlFor="club-age-youth"
-          label="Supervisión en independiente juvenil"
-        >
-          <input
-            id="club-age-youth"
-            type="checkbox"
-            disabled={!canEdit}
-            className="size-4 rounded border-border-secondary accent-brand"
-            checked={youthSupervision}
-            onChange={(event) => {
-              const next = event.target.checked;
-              setYouthSupervision(next);
-              if (!canEdit) {
-                return;
-              }
-              saveImmediate(() =>
-                updateClubAgeBandPolicyField(
-                  buildAgeFormData({ youthSupervision: next })
-                )
-              );
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow htmlFor="club-age-miss" label="Tutor recibe avisos de falta">
-          <input
-            id="club-age-miss"
-            type="checkbox"
-            disabled={!canEdit}
-            className="size-4 rounded border-border-secondary accent-brand"
-            checked={missReceive}
-            onChange={(event) => {
-              const next = event.target.checked;
-              setMissReceive(next);
-              if (!canEdit) {
-                return;
-              }
-              saveImmediate(() =>
-                updateClubAgeBandPolicyField(
-                  buildAgeFormData({ missReceive: next })
-                )
-              );
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow
-          htmlFor="club-age-care"
-          label="Tutor recibe alertas de cuidado"
-        >
-          <input
-            id="club-age-care"
-            type="checkbox"
-            disabled={!canEdit}
-            className="size-4 rounded border-border-secondary accent-brand"
-            checked={careReceive}
-            onChange={(event) => {
-              const next = event.target.checked;
-              setCareReceive(next);
-              if (!canEdit) {
-                return;
-              }
-              saveImmediate(() =>
-                updateClubAgeBandPolicyField(
-                  buildAgeFormData({ careReceive: next })
-                )
-              );
-            }}
-          />
-        </SettingsRow>
-      </SettingsSection>
     </div>
   );
 }

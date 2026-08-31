@@ -3,6 +3,7 @@ import {
   DEFAULT_AGE_BAND_POLICY,
   getAgeYearsComplete,
   parseAgeBandPolicy,
+  computeResolvedAgeBandPolicy,
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
   ageBandPolicySchema,
@@ -104,7 +105,24 @@ describe("getAgeYearsComplete", () => {
   });
 });
 
-describe("resolveAgeBandPolicy matrix", () => {
+describe("resolveAgeBandPolicy (postponed)", () => {
+  it("ignores DOB and override while Age Band policy is disabled", () => {
+    const result = resolveAgeBandPolicy({
+      policy: DEFAULT_AGE_BAND_POLICY,
+      dateOfBirth: new Date(Date.UTC(2018, 0, 1)),
+      ageBandOverride: "ASSISTED",
+      teamTimezone: "UTC",
+      now: new Date("2024-08-01T12:00:00Z"),
+      policySource: "club",
+    });
+    expect(result.ageBand).toBe("UNASSIGNED");
+    expect(result.parentalSupervisionActive).toBe(false);
+    expect(result.guardianMissReceive).toBe(false);
+    expect(result.guardianCareAlertReceive).toBe(false);
+  });
+});
+
+describe("computeResolvedAgeBandPolicy matrix", () => {
   const now = new Date("2024-08-01T12:00:00Z");
   const policy = DEFAULT_AGE_BAND_POLICY;
 
@@ -113,7 +131,7 @@ describe("resolveAgeBandPolicy matrix", () => {
     ageBandOverride?: "ASSISTED" | "GUIDED" | "INDEPENDENT" | null;
     policyOverride?: AgeBandPolicy;
   }) {
-    return resolveAgeBandPolicy({
+    return computeResolvedAgeBandPolicy({
       policy: partial.policyOverride ?? policy,
       dateOfBirth: partial.dateOfBirth,
       ageBandOverride: partial.ageBandOverride,

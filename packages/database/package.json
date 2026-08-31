@@ -22,6 +22,7 @@
     "./pain-alert": "./pain-alert.ts",
     "./create-injury": "./create-injury.ts",
     "./promote-pain-alert": "./promote-pain-alert.ts",
+    "./staff-identity": "./staff-identity.ts",
     "./legacy-body-part-map": "./legacy-body-part-map.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts"

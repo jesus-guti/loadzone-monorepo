@@ -22,7 +22,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const payload = await getExerciseLibraryPayload({
     clubId: staffContext.club.id,
-    membershipId: staffContext.membershipId,
+    membershipId: staffContext.membershipId ?? "",
     sort,
   });
 

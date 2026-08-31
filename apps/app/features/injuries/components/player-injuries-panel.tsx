@@ -29,14 +29,15 @@ import type { InjuryListItem } from "../types";
 import { CloseInjuryDialog } from "./close-injury-dialog";
 import { DeleteInjuryButton } from "./delete-injury-button";
 import { InjuryLogForm } from "./injury-log-form";
+import { RegisterInjuryDialog } from "./register-injury-dialog";
 
 type PanelMode =
   | { kind: "profile" }
-  | { kind: "create" }
   | { kind: "edit"; injury: InjuryListItem };
 
 type PlayerInjuriesPanelProperties = {
   readonly playerId: string;
+  readonly playerName: string;
   readonly todayCivil: string;
   readonly openInjuries: readonly InjuryListItem[];
   readonly closedInjuries: readonly InjuryListItem[];
@@ -124,12 +125,14 @@ function InjuryRow({
 
 export function PlayerInjuriesPanel({
   playerId,
+  playerName,
   todayCivil,
   openInjuries,
   closedInjuries,
   allInjuries,
 }: PlayerInjuriesPanelProperties): React.JSX.Element {
   const [mode, setMode] = useState<PanelMode>({ kind: "profile" });
+  const [createOpen, setCreateOpen] = useState(false);
   const [closing, setClosing] = useState<InjuryListItem | null>(null);
   const [view, setView] = useState<BodyMapView>("front");
   const [yearFilter, setYearFilter] = useState<YearFilter>("total");
@@ -137,11 +140,11 @@ export function PlayerInjuriesPanel({
     null
   );
 
-  if (mode.kind === "create" || mode.kind === "edit") {
+  if (mode.kind === "edit") {
     return (
       <InjuryLogForm
-        initial={mode.kind === "edit" ? mode.injury : null}
-        mode={mode.kind}
+        initial={mode.injury}
+        mode="edit"
         onCancel={() => setMode({ kind: "profile" })}
         onSuccess={() => setMode({ kind: "profile" })}
         playerId={playerId}
@@ -167,7 +170,7 @@ export function PlayerInjuriesPanel({
       : (bodyRegionById.get(regionFilter)?.labelEs ?? regionFilter);
 
   const registerButton = (
-    <Button onClick={() => setMode({ kind: "create" })} type="button">
+    <Button onClick={() => setCreateOpen(true)} type="button">
       Registrar lesión
     </Button>
   );
@@ -433,13 +436,23 @@ export function PlayerInjuriesPanel({
       <div className="fixed right-4 bottom-20 z-30 md:hidden">
         <Button
           className="rounded-full shadow-lg"
-          onClick={() => setMode({ kind: "create" })}
+          onClick={() => setCreateOpen(true)}
           type="button"
         >
           Registrar lesión
         </Button>
       </div>
 
+      <RegisterInjuryDialog
+        onOpenChange={setCreateOpen}
+        open={createOpen}
+        target={
+          createOpen
+            ? { playerId, playerName }
+            : null
+        }
+        todayCivil={todayCivil}
+      />
       <CloseInjuryDialog
         injury={closing}
         onOpenChange={(nextOpen) => {

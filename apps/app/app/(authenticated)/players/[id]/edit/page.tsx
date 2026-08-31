@@ -1,8 +1,4 @@
 import { database } from "@repo/database";
-import {
-  resolveAgeBandPolicy,
-  resolveEffectiveAgeBandPolicy,
-} from "@repo/database/age-band-policy";
 import { playerHasActiveInjury } from "@repo/database/injury-status";
 import { toCivilDateString } from "@repo/database/recoverable-streak";
 import type { Metadata } from "next";
@@ -31,15 +27,12 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
       name: true,
       status: true,
       dateOfBirth: true,
-      ageBandOverride: true,
       playingPosition: true,
       shirtNumber: true,
       reminderConsentState: true,
       team: {
         select: {
           timezone: true,
-          ageBandPolicy: true,
-          club: { select: { ageBandPolicy: true } },
         },
       },
     },
@@ -51,18 +44,6 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
     player.dateOfBirth === null
       ? null
       : player.dateOfBirth.toISOString().slice(0, 10);
-
-  const effectiveAge = resolveEffectiveAgeBandPolicy({
-    teamPolicy: player.team.ageBandPolicy,
-    clubPolicy: player.team.club.ageBandPolicy,
-  });
-  const resolvedAge = resolveAgeBandPolicy({
-    policy: effectiveAge.policy,
-    policySource: effectiveAge.source,
-    dateOfBirth: player.dateOfBirth,
-    ageBandOverride: player.ageBandOverride,
-    teamTimezone: player.team.timezone,
-  });
 
   // Lock status only while ≥1 Injury is civil-day active in Team.timezone today
   // (future-dated open episodes do not force Lesionado).
@@ -85,11 +66,9 @@ const EditPlayerPage = async ({ params }: EditPlayerPageProperties) => {
             name: player.name,
             status: player.status,
             dateOfBirth,
-            ageBandOverride: player.ageBandOverride,
             playingPosition: player.playingPosition,
             shirtNumber: player.shirtNumber,
             reminderConsentState: player.reminderConsentState,
-            resolvedAgeBand: resolvedAge.ageBand,
           }}
           hasActiveInjury={hasActiveInjury}
         />

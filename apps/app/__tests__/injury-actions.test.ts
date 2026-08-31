@@ -11,6 +11,8 @@ const stubs = vi.hoisted(() => ({
   injuryDelete: vi.fn(),
   injuryBodyRegionDeleteMany: vi.fn(),
   injuryBodyRegionCreateMany: vi.fn(),
+  painAlertUpdateMany: vi.fn(),
+  painAlertFindFirst: vi.fn(),
   syncPlayerStatusFromInjuries: vi.fn(),
   findActiveSeasonIdForTeam: vi.fn(),
   recomputeAndPersistPlayerStreak: vi.fn(),
@@ -47,6 +49,10 @@ vi.mock("@repo/database", () => ({
       deleteMany: stubs.injuryBodyRegionDeleteMany,
       createMany: stubs.injuryBodyRegionCreateMany,
     },
+    painAlert: {
+      updateMany: stubs.painAlertUpdateMany,
+      findFirst: stubs.painAlertFindFirst,
+    },
     $transaction: stubs.transaction,
   },
 }));
@@ -55,7 +61,9 @@ import {
   closeInjury,
   createInjury,
   deleteInjury,
+  dismissPainAlert,
   reopenInjury,
+  restorePainAlert,
   updateInjury,
 } from "@/features/injuries/actions/injury-actions";
 
@@ -79,6 +87,7 @@ function createForm(overrides: {
   cause?: string;
   regionDetail?: string;
   regionIds?: string[];
+  painAlertId?: string;
 } = {}): FormData {
   const fd = new FormData();
   fd.set("playerId", overrides.playerId ?? "player-1");
@@ -86,6 +95,9 @@ function createForm(overrides: {
   fd.set("cause", overrides.cause ?? "Partido");
   if (overrides.regionDetail !== undefined) {
     fd.set("regionDetail", overrides.regionDetail);
+  }
+  if (overrides.painAlertId !== undefined) {
+    fd.set("painAlertId", overrides.painAlertId);
   }
   fd.set(
     "regionIds",
@@ -108,6 +120,8 @@ describe("injury actions (JES-51)", () => {
   stubs.injuryBodyRegionDeleteMany.mockResolvedValue({});
   stubs.injuryBodyRegionCreateMany.mockResolvedValue({});
   stubs.injuryUpdate.mockResolvedValue({});
+    stubs.painAlertUpdateMany.mockResolvedValue({ count: 1 });
+    stubs.painAlertFindFirst.mockResolvedValue({ playerId: "player-1" });
   });
 
   it("createInjury with multi-region succeeds and syncs status", async () => {
@@ -300,6 +314,64 @@ describe("injury actions (JES-51)", () => {
     fd.set("injuryId", "inj-1");
     const result = await deleteInjury(noopPrev, fd);
     expect(result.success).toBe(false);
-    expect(stubs.injuryDelete).not.toHaveBeenCalled();
+    expect(stubs.injuryCreate).not.toHaveBeenCalled();
+  });
+
+  it("createInjury links an open pain alert when painAlertId is present", async () => {
+    const result = await createInjury(
+      noopPrev,
+      createForm({ painAlertId: "pa-1" })
+    );
+    expect(result.success).toBe(true);
+    expect(stubs.painAlertUpdateMany).toHaveBeenCalledWith({
+      where: {
+        id: "pa-1",
+        teamId: "team-1",
+        playerId: "player-1",
+        promotedInjuryId: null,
+        dismissedAt: null,
+      },
+      data: { promotedInjuryId: "inj-1" },
+    });
+  });
+
+  it("createInjury does not link when painAlertId is absent", async () => {
+    await createInjury(noopPrev, createForm());
+    expect(stubs.painAlertUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("dismissPainAlert sets dismissedAt and does not create Injury", async () => {
+    const fd = new FormData();
+    fd.set("painAlertId", "pa-1");
+    const result = await dismissPainAlert(noopPrev, fd);
+    expect(result.success).toBe(true);
+    expect(stubs.painAlertUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: "pa-1",
+          teamId: "team-1",
+          promotedInjuryId: null,
+          dismissedAt: null,
+        }),
+        data: expect.objectContaining({ dismissedAt: expect.any(Date) }),
+      })
+    );
+    expect(stubs.injuryCreate).not.toHaveBeenCalled();
+  });
+
+  it("restorePainAlert clears dismissedAt", async () => {
+    const fd = new FormData();
+    fd.set("painAlertId", "pa-1");
+    const result = await restorePainAlert(noopPrev, fd);
+    expect(result.success).toBe(true);
+    expect(stubs.painAlertUpdateMany).toHaveBeenCalledWith({
+      where: {
+        id: "pa-1",
+        teamId: "team-1",
+        promotedInjuryId: null,
+        dismissedAt: { not: null },
+      },
+      data: { dismissedAt: null },
+    });
   });
 });
