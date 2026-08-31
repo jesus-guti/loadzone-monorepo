@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, type ReactNode, useEffect } from "react";
+import { cn } from "@repo/design-system/lib/utils";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import {
   configurationNavItem,
@@ -26,11 +27,13 @@ import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
 import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import { MobileSeasonFab } from "./mobile-season-fab";
 import { MobileSidebarFab } from "./mobile-sidebar-fab";
 import { OperationalRouteMemory } from "./operational-route-memory";
 import { SettingsVolverLink } from "./settings-volver-link";
 import { SidebarUserMenu } from "./sidebar-user-menu";
 import { TeamBranding } from "./team-branding";
+import { MOBILE_SHELL_SCROLL_PB_CLASS } from "./mobile-shell-chrome";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -201,11 +204,17 @@ export const GlobalSidebar = ({
         )}
       </Sidebar>
       <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-0 md:pb-0">
-        <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain">
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain",
+            MOBILE_SHELL_SCROLL_PB_CLASS
+          )}
+        >
           {children}
         </div>
         {inSettings ? null : <MobileBottomNav />}
         <MobileSidebarFab />
+        <MobileSeasonFab />
       </SidebarInset>
     </AppShellProvider>
   );
