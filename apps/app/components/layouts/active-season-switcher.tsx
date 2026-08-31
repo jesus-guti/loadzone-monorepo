@@ -30,7 +30,11 @@ export function ActiveSeasonSwitcher({
   const [createOpen, setCreateOpen] = useState(false);
   const { activeSeason, activeTeamSeasons } = useAppShell();
 
-  const activeValue = activeSeason?.id ?? "";
+  const activeValue =
+    activeSeason &&
+    activeTeamSeasons.some((season) => season.id === activeSeason.id)
+      ? activeSeason.id
+      : "";
   const triggerLabel =
     activeSeason?.label ?? activeSeason?.name ?? "Sin temporada";
   const isFab = variant === "fab";
@@ -39,7 +43,7 @@ export function ActiveSeasonSwitcher({
     <div className="flex min-w-0 items-center gap-2">
       <Select
         disabled={isPending}
-        value={activeValue || undefined}
+        value={activeValue}
         onValueChange={(seasonId: string | null) => {
           if (!seasonId) {
             return;
