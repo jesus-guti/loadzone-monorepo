@@ -22,6 +22,12 @@ import {
   REMEMBER_ME_COOKIE_NAME,
 } from "./session-persistence";
 
+const PASSWORD_HASH_COST = 12;
+
+export async function hashPassword(plain: string): Promise<string> {
+  return hash(plain, PASSWORD_HASH_COST);
+}
+
 type MembershipSummary = {
   id: string;
   clubId: string;
@@ -313,7 +319,7 @@ export async function registerUser(
     };
   }
 
-  const passwordHash = await hash(parsed.data.password, 12);
+  const passwordHash = await hashPassword(parsed.data.password);
 
   const user = await database.user.create({
     data: {

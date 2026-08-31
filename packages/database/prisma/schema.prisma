@@ -249,6 +249,13 @@ enum InjurySide {
   CENTRAL
 }
 
+enum StaffInvitationStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+  EXPIRED
+}
+
 enum AgeBand {
   ASSISTED
   GUIDED
@@ -288,11 +295,12 @@ model Club {
   ageBandPolicy  Json?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  memberships    Membership[]
-  teams          Team[]
-  forms          FormTemplate[]
-  sessions       TeamSession[]
-  exercises      Exercise[]
+  memberships        Membership[]
+  staffInvitations   StaffInvitation[]
+  teams              Team[]
+  forms              FormTemplate[]
+  sessions           TeamSession[]
+  exercises          Exercise[]
 }
 
 model User {
@@ -305,12 +313,13 @@ model User {
   platformRole     PlatformRole   @default(USER)
   accounts         Account[]
   sessions         Session[]
-  memberships      Membership[]
-  aiSuggestions    AiSuggestion[] @relation("AcceptedSuggestions")
-  playerProfile    Player?        @relation("PlayerUser")
-  createdInjuries  Injury[]       @relation("CreatedInjuries")
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  memberships              Membership[]
+  issuedStaffInvitations   StaffInvitation[] @relation("StaffInvitationsIssued")
+  aiSuggestions            AiSuggestion[]    @relation("AcceptedSuggestions")
+  playerProfile            Player?           @relation("PlayerUser")
+  createdInjuries          Injury[]          @relation("CreatedInjuries")
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
 }
 
 model Account {
@@ -348,6 +357,27 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// Club staff invite (SI-01). One PENDING per (clubId, email) is enforced in the staff-identity seam, not a partial unique index.
+model StaffInvitation {
+  id          String                 @id @default(cuid())
+  clubId      String
+  email       String
+  role        MembershipRole
+  tokenHash   String                 @unique
+  expiresAt   DateTime
+  status      StaffInvitationStatus  @default(PENDING)
+  invitedById String
+  acceptedAt  DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  club        Club                   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  invitedBy   User                   @relation("StaffInvitationsIssued", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([clubId, email])
+  @@index([clubId, status])
+  @@index([invitedById])
 }
 
 model Membership {
