@@ -217,6 +217,15 @@ export const SignIn = () => {
           </p>
         ) : null}
 
+        <p className="text-sm text-text-secondary">
+          <Link
+            href="/forgot-password"
+            className="font-medium text-text-primary underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+
         <button
           type="submit"
           disabled={!csrfToken}

@@ -44,6 +44,10 @@ _Avoid_: Club “owner”; implying Super Admin is COORDINATOR of every Club; se
 The only way a staff **User** joins a Club in the current product: a Coordinator of that Club, or a **Super Admin**, issues an email with a one-time link; the person sets a password and receives a **Membership** as Coordinator or Staff (always all Teams of that Club in this wave). If the email already belongs to a **User**, accepting attaches another Membership — one User, many Clubs. A pending invite expires; it may be resent (new token) or cancelled; at most one pending invite per email per Club. Public self-signup for staff is deferred.
 _Avoid_: Open registration; one email per Club; per-Team Membership as the v1 invite rule; temporary passwords as the normal invite path; never-expiring invite links.
 
+**Password reset**:
+A **User** who forgot their password requests a one-time hashed email link (TTL 1 hour) from sign-in, then sets a new password. Signed-in Users change password in **Cuenta** with the current password. The email field there stays read-only. There is no `mustChangePassword` and no temporary password.
+_Avoid_: NextAuth VerificationToken for this flow; leaking whether an email exists; auto-login after reset.
+
 **Last Coordinator**:
 A **Club** must keep at least one Coordinator **Membership**. Revoking or demoting that last Coordinator is refused; a **Super Admin** invites or creates another Coordinator instead of leaving the Club unable to invite.
 _Avoid_: Auto-promoting Staff; Clubs with zero Coordinators as a normal state.

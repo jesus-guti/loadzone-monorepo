@@ -14,6 +14,7 @@ import { toast } from "@repo/design-system/components/sonner";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { updateCurrentUserProfile } from "@/actions/profile-actions";
+import { ChangePasswordForm } from "./change-password-form";
 import { useSettingsAutosave } from "../hooks/use-settings-autosave";
 import { SettingsRow } from "./settings-row";
 import { SettingsSection } from "./settings-section";
@@ -194,6 +195,8 @@ export function CuentaSettingsForm({
           <Input disabled id="settings-profile-email" value={email} />
         </SettingsRow>
       </SettingsSection>
+
+      <ChangePasswordForm />
 
       <SettingsSection title="Apariencia">
         <SettingsRow label="Tema / modo">
