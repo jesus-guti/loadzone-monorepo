@@ -1,14 +1,17 @@
 "use client";
 
+import { CheckIcon, ClipboardTextIcon } from "@phosphor-icons/react/ssr";
 import { Button } from "@repo/design-system/components/button";
 import { Input } from "@repo/design-system/components/input";
 import { toast } from "@repo/design-system/components/sonner";
 import { useState, useTransition } from "react";
 import type { StaffInviteRole } from "@repo/database/staff-identity";
+import { UI_FEEDBACK_TIMEOUT_MS } from "@/lib/durations";
 import {
   cancelClubStaffInvitation,
   issueClubStaffInvitation,
   resendClubStaffInvitation,
+  type StaffInviteActionResult,
 } from "../actions/staff-invite-actions";
 import { SettingsRow } from "./settings-row";
 import { SettingsSection } from "./settings-section";
@@ -37,7 +40,38 @@ export function StaffInvitesSection({
 }: StaffInvitesSectionProperties) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<StaffInviteRole>("STAFF");
+  const [lastAcceptUrl, setLastAcceptUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const applyInviteSuccess = (
+    result: StaffInviteActionResult,
+    fallbackError: string
+  ): boolean => {
+    if (!result.success) {
+      toast.error(result.error ?? fallbackError);
+      return false;
+    }
+    if (result.acceptUrl) {
+      setLastAcceptUrl(result.acceptUrl);
+      setCopied(false);
+    }
+    return true;
+  };
+
+  const copyAcceptUrl = async (): Promise<void> => {
+    if (!lastAcceptUrl) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(lastAcceptUrl);
+      setCopied(true);
+      toast.success("Enlace copiado al portapapeles");
+      setTimeout(() => setCopied(false), UI_FEEDBACK_TIMEOUT_MS);
+    } catch {
+      toast.error("No se pudo copiar el enlace. Inténtalo de nuevo.");
+    }
+  };
 
   if (!canInvite) {
     return null;
@@ -46,18 +80,19 @@ export function StaffInvitesSection({
   const submitInvite = (): void => {
     startTransition(async () => {
       const result = await issueClubStaffInvitation(clubId, email, role);
-      if (!result.success) {
-        toast.error(result.error ?? "No se pudo enviar la invitación.");
+      if (!applyInviteSuccess(result, "No se pudo enviar la invitación.")) {
         return;
       }
       setEmail("");
-      toast.success("Invitación enviada.");
+      toast.success(
+        "Invitación lista. Copia el enlace y envíaselo a la persona invitada."
+      );
     });
   };
 
   return (
     <SettingsSection
-      description="Invita a coordinadores o staff. Recibirán un enlace de un solo uso."
+      description="Invita a coordinadores o staff. Copia el enlace de un solo uso y envíaselo; el correo aún no se envía automáticamente."
       title="Invitaciones"
     >
       <SettingsRow htmlFor="staff-invite-email" label="Email">
@@ -94,6 +129,37 @@ export function StaffInvitesSection({
         </Button>
       </div>
 
+      {lastAcceptUrl ? (
+        <div className="border-border-secondary border-t py-3">
+          <p className="mb-2 text-sm text-text-secondary">
+            Enlace de aceptación (cópialo ahora; no se volverá a mostrar):
+          </p>
+          <div className="flex items-center gap-2">
+            <Input
+              aria-label="Enlace de aceptación"
+              className="font-mono text-xs"
+              readOnly
+              value={lastAcceptUrl}
+            />
+            <Button
+              onClick={() => {
+                void copyAcceptUrl();
+              }}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {copied ? (
+                <CheckIcon className="size-4 text-brand" />
+              ) : (
+                <ClipboardTextIcon className="size-4" />
+              )}
+              Copiar enlace
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {pendingInvites.length === 0 ? (
         <p className="pt-2 text-sm text-text-secondary">
           No hay invitaciones pendientes.
@@ -121,11 +187,12 @@ export function StaffInvitesSection({
                         clubId,
                         invite.id
                       );
-                      if (!result.success) {
-                        toast.error(result.error ?? "No se pudo reenviar.");
+                      if (!applyInviteSuccess(result, "No se pudo reenviar.")) {
                         return;
                       }
-                      toast.success("Invitación reenviada.");
+                      toast.success(
+                        "Nuevo enlace listo. Cópialo y envíaselo; el anterior deja de valer."
+                      );
                     });
                   }}
                   size="sm"
