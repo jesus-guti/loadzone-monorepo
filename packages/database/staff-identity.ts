@@ -1,5 +1,5 @@
 /**
- * Staff Invitation seam (SI-01): issue / accept / resend / cancel.
+ * Staff identity seam: invitations (SI-01) and Club membership access (SI-03).
  * Callers inject a Prisma-shaped client, clock, token factory, and hashPassword.
  * Mail is an email intent — tests never call SMTP.
  */
@@ -35,6 +35,8 @@ export type StaffIdentityErrorCode =
   | "INVALID_EMAIL"
   | "PENDING_EXISTS"
   | "MEMBERSHIP_EXISTS"
+  | "MEMBERSHIP_NOT_FOUND"
+  | "LAST_COORDINATOR"
   | "INVITE_NOT_FOUND"
   | "INVITE_USED"
   | "INVITE_CANCELLED"
@@ -42,6 +44,10 @@ export type StaffIdentityErrorCode =
   | "INVALID_PASSWORD"
   | "CLUB_NOT_FOUND"
   | "NOT_PENDING";
+
+export type StaffIdentityActor =
+  | { readonly kind: "coordinator"; readonly userId: string }
+  | { readonly kind: "platform" };
 
 export class StaffIdentityError extends Error {
   readonly code: StaffIdentityErrorCode;
@@ -138,13 +144,14 @@ export type StaffIdentityClient = {
   readonly membership: {
     findFirst: (args: {
       where: {
-        userId: string;
-        clubId: string;
+        id?: string;
+        userId?: string;
+        clubId?: string;
         role?: MembershipRole;
       };
     }) => Promise<MembershipRow | null>;
     findMany: (args: {
-      where: { userId: string; clubId: string };
+      where: { userId?: string; clubId?: string; role?: MembershipRole };
     }) => Promise<MembershipRow[]>;
     create: (args: {
       data: {
@@ -154,6 +161,11 @@ export type StaffIdentityClient = {
         hasAllTeams: boolean;
       };
     }) => Promise<MembershipRow>;
+    update: (args: {
+      where: { id: string };
+      data: { role: StaffInviteRole };
+    }) => Promise<MembershipRow>;
+    delete: (args: { where: { id: string } }) => Promise<MembershipRow>;
   };
   readonly staffInvitation: {
     findFirst: (args: {
@@ -247,6 +259,59 @@ async function requireCoordinatorOnClub(
       "No tienes permiso para invitar a este club."
     );
   }
+}
+
+async function requireActorOnClub(
+  db: StaffIdentityClient,
+  actor: StaffIdentityActor,
+  clubId: string
+): Promise<void> {
+  if (actor.kind === "platform") {
+    return;
+  }
+  await requireCoordinatorOnClub(db, actor.userId, clubId);
+}
+
+function isClubStaffRole(role: MembershipRole): role is StaffInviteRole {
+  return role === "COORDINATOR" || role === "STAFF";
+}
+
+async function loadClubStaffMembership(
+  db: StaffIdentityClient,
+  clubId: string,
+  membershipId: string
+): Promise<MembershipRow> {
+  const membership = await db.membership.findFirst({
+    where: { id: membershipId, clubId },
+  });
+  if (!membership || !isClubStaffRole(membership.role)) {
+    throw new StaffIdentityError(
+      "MEMBERSHIP_NOT_FOUND",
+      "No se encontró esa membresía."
+    );
+  }
+  return membership;
+}
+
+async function coordinatorCountWouldDropToZero(
+  db: StaffIdentityClient,
+  clubId: string,
+  membership: MembershipRow
+): Promise<boolean> {
+  if (membership.role !== "COORDINATOR") {
+    return false;
+  }
+  const coordinators = await db.membership.findMany({
+    where: { clubId, role: "COORDINATOR" },
+  });
+  return coordinators.length <= 1;
+}
+
+function lastCoordinatorError(): never {
+  throw new StaffIdentityError(
+    "LAST_COORDINATOR",
+    "El club debe conservar al menos un coordinador."
+  );
 }
 
 async function requireClub(
@@ -594,4 +659,111 @@ export async function listPendingStaffInvitations(
     where: { clubId: input.clubId, status: "PENDING" },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export type ClubAccessMember = {
+  readonly membershipId: string;
+  readonly userId: string;
+  readonly email: string;
+  readonly name: string | null;
+  readonly role: StaffInviteRole;
+};
+
+export type ClubAccess = {
+  readonly members: ClubAccessMember[];
+  readonly pendingInvites: StaffInvitationRow[];
+};
+
+export async function listClubAccess(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly clubId: string;
+  }
+): Promise<ClubAccess> {
+  await requireActorOnClub(db, input.actor, input.clubId);
+  const memberships = await db.membership.findMany({
+    where: { clubId: input.clubId },
+  });
+  const members: ClubAccessMember[] = [];
+  for (const membership of memberships) {
+    if (!isClubStaffRole(membership.role)) {
+      continue;
+    }
+    const user = await db.user.findUnique({
+      where: { id: membership.userId },
+      select: { id: true, email: true, name: true, passwordHash: true },
+    });
+    if (!user) {
+      continue;
+    }
+    members.push({
+      membershipId: membership.id,
+      userId: membership.userId,
+      email: user.email,
+      name: user.name,
+      role: membership.role,
+    });
+  }
+  const pendingInvites = await db.staffInvitation.findMany({
+    where: { clubId: input.clubId, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+  });
+  return { members, pendingInvites };
+}
+
+export async function revokeMembership(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly clubId: string;
+    readonly membershipId: string;
+  }
+): Promise<{ readonly membershipId: string }> {
+  await requireActorOnClub(db, input.actor, input.clubId);
+  const membership = await loadClubStaffMembership(
+    db,
+    input.clubId,
+    input.membershipId
+  );
+  if (await coordinatorCountWouldDropToZero(db, input.clubId, membership)) {
+    lastCoordinatorError();
+  }
+  await db.membership.delete({ where: { id: membership.id } });
+  return { membershipId: membership.id };
+}
+
+export async function changeMembershipRole(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly clubId: string;
+    readonly membershipId: string;
+    readonly role: StaffInviteRole;
+  }
+): Promise<{ readonly membershipId: string; readonly role: StaffInviteRole }> {
+  const roleParsed = inviteRoleSchema.safeParse(input.role);
+  if (!roleParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_ROLE",
+      "El rol debe ser Coordinador o Staff."
+    );
+  }
+  await requireActorOnClub(db, input.actor, input.clubId);
+  const membership = await loadClubStaffMembership(
+    db,
+    input.clubId,
+    input.membershipId
+  );
+  if (
+    roleParsed.data === "STAFF" &&
+    (await coordinatorCountWouldDropToZero(db, input.clubId, membership))
+  ) {
+    lastCoordinatorError();
+  }
+  const updated = await db.membership.update({
+    where: { id: membership.id },
+    data: { role: roleParsed.data },
+  });
+  return { membershipId: updated.id, role: roleParsed.data };
 }

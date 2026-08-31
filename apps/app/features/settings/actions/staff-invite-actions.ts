@@ -6,10 +6,14 @@ import {
   StaffIdentityError,
   acceptStaffInvitation,
   cancelStaffInvitation,
+  changeMembershipRole,
   issueStaffInvitation,
+  listClubAccess,
   peekStaffInvitation,
   resendStaffInvitation,
+  revokeMembership,
   staffCanInvite,
+  type ClubAccess,
   type StaffIdentityClient,
   type StaffInvitationEmailIntent,
   type StaffInviteRole,
@@ -147,6 +151,67 @@ export async function acceptClubStaffInvitation(input: {
       name: input.name,
       hashPassword,
     });
+    return { success: true };
+  } catch (error) {
+    return asActionError(error);
+  }
+}
+
+export async function loadClubAccess(
+  clubId: string
+): Promise<ClubAccess | StaffInviteActionResult> {
+  const gate = await requireCoordinatorClub(clubId);
+  if ("success" in gate) {
+    return gate;
+  }
+  try {
+    return await listClubAccess(staffIdentityDb, {
+      actor: { kind: "coordinator", userId: gate.userId },
+      clubId,
+    });
+  } catch (error) {
+    return asActionError(error);
+  }
+}
+
+export async function revokeClubMembership(
+  clubId: string,
+  membershipId: string
+): Promise<StaffInviteActionResult> {
+  const gate = await requireCoordinatorClub(clubId);
+  if ("success" in gate) {
+    return gate;
+  }
+  try {
+    await revokeMembership(staffIdentityDb, {
+      actor: { kind: "coordinator", userId: gate.userId },
+      clubId,
+      membershipId,
+    });
+    revalidatePath("/settings/club");
+    return { success: true };
+  } catch (error) {
+    return asActionError(error);
+  }
+}
+
+export async function changeClubMembershipRole(
+  clubId: string,
+  membershipId: string,
+  role: StaffInviteRole
+): Promise<StaffInviteActionResult> {
+  const gate = await requireCoordinatorClub(clubId);
+  if ("success" in gate) {
+    return gate;
+  }
+  try {
+    await changeMembershipRole(staffIdentityDb, {
+      actor: { kind: "coordinator", userId: gate.userId },
+      clubId,
+      membershipId,
+      role,
+    });
+    revalidatePath("/settings/club");
     return { success: true };
   } catch (error) {
     return asActionError(error);

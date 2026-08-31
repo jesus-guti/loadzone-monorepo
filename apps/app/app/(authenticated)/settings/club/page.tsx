@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { DEFAULT_AGE_BAND_POLICY } from "@repo/database/age-band-policy";
-import { staffCanInvite } from "@repo/database/staff-identity";
+import {
+  listClubAccess,
+  staffCanInvite,
+  type StaffIdentityClient,
+} from "@repo/database/staff-identity";
 import { database } from "@repo/database";
 import { notFound } from "next/navigation";
 import { ClubMembersSection } from "@/features/settings/components/club-members-section";
@@ -22,35 +26,14 @@ export default async function ClubSettingsPage() {
   const clubAgePolicy =
     staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
   const canInvite = staffCanInvite(staffContext.role);
-  const [pendingRows, membershipRows] = await Promise.all([
-    canInvite
-      ? database.staffInvitation.findMany({
-          where: {
-            clubId: staffContext.club.id,
-            status: "PENDING",
-            expiresAt: { gt: new Date() },
-          },
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            email: true,
-            role: true,
-            expiresAt: true,
-          },
-        })
-      : Promise.resolve([]),
-    database.membership.findMany({
-      where: { clubId: staffContext.club.id },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        role: true,
-        user: { select: { email: true, name: true } },
-      },
-    }),
-  ]);
+  const access = canInvite
+    ? await listClubAccess(database as unknown as StaffIdentityClient, {
+        actor: { kind: "coordinator", userId: staffContext.user.id },
+        clubId: staffContext.club.id,
+      })
+    : { members: [], pendingInvites: [] };
 
-  const pendingInvites = pendingRows.flatMap((row) => {
+  const pendingInvites = access.pendingInvites.flatMap((row) => {
     if (row.role !== "COORDINATOR" && row.role !== "STAFF") {
       return [];
     }
@@ -64,19 +47,13 @@ export default async function ClubSettingsPage() {
     ];
   });
 
-  const members = membershipRows.flatMap((row) => {
-    if (row.role !== "COORDINATOR" && row.role !== "STAFF") {
-      return [];
-    }
-    return [
-      {
-        membershipId: row.id,
-        email: row.user.email,
-        name: row.user.name,
-        role: row.role,
-      },
-    ];
-  });
+  const members = access.members.map((row) => ({
+    membershipId: row.membershipId,
+    userId: row.userId,
+    email: row.email,
+    name: row.name,
+    role: row.role,
+  }));
 
   return (
     <ClubSettingsTabs
@@ -94,7 +71,11 @@ export default async function ClubSettingsPage() {
       }
       usersPanel={
         <>
-          <ClubMembersSection members={members} />
+          <ClubMembersSection
+            canManage={canInvite}
+            clubId={staffContext.club.id}
+            members={members}
+          />
           <StaffInvitesSection
             canInvite={canInvite}
             clubId={staffContext.club.id}

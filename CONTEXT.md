@@ -25,7 +25,7 @@ A login identity for the staff app. Distinct from **Player** (roster) and from *
 _Avoid_: Calling a Coordinator or staff person “Admin”; “account” when you mean **User** or **Membership**; self-serve email change in this wave.
 
 **Membership**:
-The User’s role inside one **Club**: **Coordinator**, **Staff**, or (unused for staff login) **Player**. Privileges are Club-scoped. A User without a Membership is not Club staff. Coordinator or Super Admin may change STAFF ↔ COORDINATOR in place, subject to **Last Coordinator**.
+The User’s role inside one **Club**: **Coordinator**, **Staff**, or (unused for staff login) **Player**. Privileges are Club-scoped. At most one Membership per User per Club (`@@unique([userId, clubId])`). A User without a Membership is not Club staff. Coordinator or Super Admin may change STAFF ↔ COORDINATOR in place, subject to **Last Coordinator**.
 _Avoid_: Treating **Super Admin** as a Membership; “Admin” as a Membership role.
 
 **Coordinator**:

@@ -7,6 +7,8 @@ const stubs = vi.hoisted(() => ({
   issueStaffInvitation: vi.fn(),
   resendStaffInvitation: vi.fn(),
   cancelStaffInvitation: vi.fn(),
+  revokeMembership: vi.fn(),
+  changeMembershipRole: vi.fn(),
   hashPassword: vi.fn(),
 }));
 
@@ -39,12 +41,16 @@ vi.mock("@repo/database/staff-identity", async () => {
     issueStaffInvitation: stubs.issueStaffInvitation,
     resendStaffInvitation: stubs.resendStaffInvitation,
     cancelStaffInvitation: stubs.cancelStaffInvitation,
+    revokeMembership: stubs.revokeMembership,
+    changeMembershipRole: stubs.changeMembershipRole,
   };
 });
 
 import {
+  changeClubMembershipRole,
   issueClubStaffInvitation,
   resendClubStaffInvitation,
+  revokeClubMembership,
 } from "@/features/settings/actions/staff-invite-actions";
 
 describe("issueClubStaffInvitation", () => {
@@ -176,5 +182,85 @@ describe("resendClubStaffInvitation", () => {
       success: true,
       acceptUrl: "https://app.test/invite/new-secret",
     });
+  });
+});
+
+describe("revokeClubMembership", () => {
+  beforeEach(() => {
+    stubs.getCurrentStaffContext.mockReset();
+    stubs.revokeMembership.mockReset();
+    stubs.revalidatePath.mockReset();
+  });
+
+  it("refuses Staff Membership", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "STAFF",
+    });
+    const result = await revokeClubMembership("club_a", "m_staff");
+    expect(result.success).toBe(false);
+    expect(stubs.revokeMembership).not.toHaveBeenCalled();
+  });
+
+  it("revokes when the actor is Coordinator of that Club", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.revokeMembership.mockResolvedValue({ membershipId: "m_staff" });
+    const result = await revokeClubMembership("club_a", "m_staff");
+    expect(result).toEqual({ success: true });
+    expect(stubs.revokeMembership).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        actor: { kind: "coordinator", userId: "u1" },
+        clubId: "club_a",
+        membershipId: "m_staff",
+      })
+    );
+    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/club");
+  });
+
+  it("surfaces Last Coordinator errors in Spanish", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.revokeMembership.mockRejectedValue(
+      new StaffIdentityError(
+        "LAST_COORDINATOR",
+        "El club debe conservar al menos un coordinador."
+      )
+    );
+    const result = await revokeClubMembership("club_a", "m_coord");
+    expect(result).toEqual({
+      success: false,
+      error: "El club debe conservar al menos un coordinador.",
+    });
+  });
+});
+
+describe("changeClubMembershipRole", () => {
+  beforeEach(() => {
+    stubs.getCurrentStaffContext.mockReset();
+    stubs.changeMembershipRole.mockReset();
+  });
+
+  it("refuses Staff Membership", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "STAFF",
+    });
+    const result = await changeClubMembershipRole(
+      "club_a",
+      "m_staff",
+      "COORDINATOR"
+    );
+    expect(result.success).toBe(false);
+    expect(stubs.changeMembershipRole).not.toHaveBeenCalled();
   });
 });
