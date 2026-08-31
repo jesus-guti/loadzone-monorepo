@@ -1,0 +1,180 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { StaffIdentityError } from "@repo/database/staff-identity";
+
+const stubs = vi.hoisted(() => ({
+  getCurrentStaffContext: vi.fn(),
+  revalidatePath: vi.fn(),
+  issueStaffInvitation: vi.fn(),
+  resendStaffInvitation: vi.fn(),
+  cancelStaffInvitation: vi.fn(),
+  hashPassword: vi.fn(),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: stubs.revalidatePath,
+}));
+
+vi.mock("@/lib/auth-context", () => ({
+  getCurrentStaffContext: stubs.getCurrentStaffContext,
+}));
+
+vi.mock("@/env", () => ({
+  env: { NEXT_PUBLIC_APP_URL: "https://app.test" },
+}));
+
+vi.mock("@repo/auth/server", () => ({
+  hashPassword: stubs.hashPassword,
+}));
+
+vi.mock("@repo/database", () => ({
+  database: {},
+}));
+
+vi.mock("@repo/database/staff-identity", async () => {
+  const actual = await vi.importActual<
+    typeof import("@repo/database/staff-identity")
+  >("@repo/database/staff-identity");
+  return {
+    ...actual,
+    issueStaffInvitation: stubs.issueStaffInvitation,
+    resendStaffInvitation: stubs.resendStaffInvitation,
+    cancelStaffInvitation: stubs.cancelStaffInvitation,
+  };
+});
+
+import {
+  issueClubStaffInvitation,
+  resendClubStaffInvitation,
+} from "@/features/settings/actions/staff-invite-actions";
+
+describe("issueClubStaffInvitation", () => {
+  beforeEach(() => {
+    stubs.getCurrentStaffContext.mockReset();
+    stubs.issueStaffInvitation.mockReset();
+    stubs.revalidatePath.mockReset();
+  });
+
+  it("refuses Staff Membership", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "STAFF",
+    });
+    const result = await issueClubStaffInvitation(
+      "club_a",
+      "a@b.test",
+      "STAFF"
+    );
+    expect(result.success).toBe(false);
+    expect(stubs.issueStaffInvitation).not.toHaveBeenCalled();
+  });
+
+  it("issues when the actor is Coordinator of that Club", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.issueStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "a@b.test",
+        clubName: "Norte",
+        acceptUrl: "https://app.test/invite/secret",
+      },
+    });
+    const result = await issueClubStaffInvitation(
+      "club_a",
+      "a@b.test",
+      "STAFF"
+    );
+    expect(result).toEqual({
+      success: true,
+      acceptUrl: "https://app.test/invite/secret",
+    });
+    expect(stubs.issueStaffInvitation).toHaveBeenCalledTimes(1);
+    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/club");
+  });
+
+  it("logs delivery without the accept URL or token", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.issueStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "a@b.test",
+        clubName: "Norte",
+        acceptUrl: "https://app.test/invite/secret",
+      },
+    });
+    await issueClubStaffInvitation("club_a", "a@b.test", "STAFF");
+    const logged = info.mock.calls.flat().map(String).join(" ");
+    expect(logged).toContain("staff_invitation");
+    expect(logged).toContain("a@b.test");
+    expect(logged).not.toContain("secret");
+    expect(logged).not.toContain("/invite/");
+    info.mockRestore();
+  });
+
+  it("surfaces StaffIdentityError messages in Spanish", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.issueStaffInvitation.mockRejectedValue(
+      new StaffIdentityError(
+        "PENDING_EXISTS",
+        "Ya hay una invitación pendiente para este email en este club."
+      )
+    );
+    const result = await issueClubStaffInvitation(
+      "club_a",
+      "a@b.test",
+      "STAFF"
+    );
+    expect(result).toEqual({
+      success: false,
+      error: "Ya hay una invitación pendiente para este email en este club.",
+    });
+  });
+});
+
+describe("resendClubStaffInvitation", () => {
+  beforeEach(() => {
+    stubs.getCurrentStaffContext.mockReset();
+    stubs.resendStaffInvitation.mockReset();
+    stubs.revalidatePath.mockReset();
+  });
+
+  it("returns the rotated accept URL to the Coordinator", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.resendStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "new-secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "a@b.test",
+        clubName: "Norte",
+        acceptUrl: "https://app.test/invite/new-secret",
+      },
+    });
+    const result = await resendClubStaffInvitation("club_a", "inv_1");
+    expect(result).toEqual({
+      success: true,
+      acceptUrl: "https://app.test/invite/new-secret",
+    });
+  });
+});
