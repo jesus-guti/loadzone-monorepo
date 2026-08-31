@@ -315,6 +315,7 @@ model User {
   sessions         Session[]
   memberships              Membership[]
   issuedStaffInvitations   StaffInvitation[] @relation("StaffInvitationsIssued")
+  passwordResetTokens      PasswordResetToken[]
   aiSuggestions            AiSuggestion[]    @relation("AcceptedSuggestions")
   playerProfile            Player?           @relation("PlayerUser")
   createdInjuries          Injury[]          @relation("CreatedInjuries")
@@ -378,6 +379,19 @@ model StaffInvitation {
   @@index([clubId, email])
   @@index([clubId, status])
   @@index([invitedById])
+}
+
+/// One-time hashed staff password reset (SI-04). Unused tokens rotate on a new request.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Membership {

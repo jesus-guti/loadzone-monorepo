@@ -26,6 +26,8 @@ export function isOperationalPath(pathname: string): boolean {
   if (
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname.startsWith("/sign-out") ||
     pathname.startsWith("/onboarding")
   ) {

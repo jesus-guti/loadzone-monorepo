@@ -1,14 +1,19 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
+  PASSWORD_RESET_TTL_MS,
   STAFF_INVITATION_TTL_MS,
   acceptStaffInvitation,
   cancelStaffInvitation,
+  changePassword,
+  completePasswordReset,
   issueStaffInvitation,
   peekStaffInvitation,
+  requestPasswordReset,
   resendStaffInvitation,
   staffCanInvite,
   StaffIdentityError,
+  type PasswordResetTokenRow,
   type StaffIdentityClient,
   type StaffInvitationRow,
 } from "../staff-identity";
@@ -41,15 +46,18 @@ function createMemoryDb(seed?: {
   users?: UserRow[];
   memberships?: MemRow[];
   invitations?: InviteRow[];
+  passwordResetTokens?: PasswordResetTokenRow[];
 }): StaffIdentityClient & {
   users: UserRow[];
   memberships: MemRow[];
   invitations: InviteRow[];
+  passwordResetTokens: PasswordResetTokenRow[];
 } {
   const clubs = [...(seed?.clubs ?? [])];
   const users = [...(seed?.users ?? [])];
   const memberships = [...(seed?.memberships ?? [])];
   const invitations = [...(seed?.invitations ?? [])];
+  const passwordResetTokens = [...(seed?.passwordResetTokens ?? [])];
   let seq = 1;
   const nextId = (prefix: string): string => `${prefix}_${seq++}`;
 
@@ -72,10 +80,12 @@ function createMemoryDb(seed?: {
     users: UserRow[];
     memberships: MemRow[];
     invitations: InviteRow[];
+    passwordResetTokens: PasswordResetTokenRow[];
   } = {
     users,
     memberships,
     invitations,
+    passwordResetTokens,
     club: {
       findUnique: async ({ where }) =>
         clubs.find((club) => club.id === where.id) ?? null,
@@ -98,6 +108,16 @@ function createMemoryDb(seed?: {
           passwordHash: data.passwordHash,
         };
         users.push(user);
+        return user;
+      },
+      update: async ({ where, data }) => {
+        const user = users.find((row) => row.id === where.id);
+        if (!user) {
+          throw new Error("missing user");
+        }
+        if (data.passwordHash !== undefined) {
+          user.passwordHash = data.passwordHash;
+        }
         return user;
       },
     },
@@ -151,6 +171,35 @@ function createMemoryDb(seed?: {
         const row = invitations.find((item) => item.id === where.id);
         if (!row) {
           throw new Error("missing invitation");
+        }
+        Object.assign(row, data);
+        return row;
+      },
+    },
+    passwordResetToken: {
+      findFirst: async ({ where }) =>
+        passwordResetTokens.find((row) =>
+          matches(row as unknown as Record<string, unknown>, where)
+        ) ?? null,
+      findMany: async ({ where }) =>
+        passwordResetTokens.filter((row) =>
+          matches(row as unknown as Record<string, unknown>, where)
+        ),
+      create: async ({ data }) => {
+        const row: PasswordResetTokenRow = {
+          id: nextId("prt"),
+          userId: data.userId,
+          tokenHash: data.tokenHash,
+          expiresAt: data.expiresAt,
+          usedAt: null,
+        };
+        passwordResetTokens.push(row);
+        return row;
+      },
+      update: async ({ where, data }) => {
+        const row = passwordResetTokens.find((item) => item.id === where.id);
+        if (!row) {
+          throw new Error("missing reset token");
         }
         Object.assign(row, data);
         return row;
@@ -647,5 +696,152 @@ describe("peekStaffInvitation", () => {
       ok: false,
       message: "Esta invitación no es válida.",
     });
+  });
+});
+
+function resetUrlForToken(raw: string): string {
+  return `https://app.test/reset-password/${raw}`;
+}
+
+describe("requestPasswordReset", () => {
+  it("returns a reset email intent when the User exists", async () => {
+    const db = seedClub();
+    const result = await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "staff@a.test",
+      resetUrlForToken,
+      createToken: () => "reset-raw",
+    });
+    expect(result.emailIntent).toEqual({
+      kind: "password_reset",
+      to: "staff@a.test",
+      resetUrl: "https://app.test/reset-password/reset-raw",
+    });
+    expect(db.passwordResetTokens).toHaveLength(1);
+    expect(db.passwordResetTokens[0]?.tokenHash).toBe(sha256("reset-raw"));
+    expect(db.passwordResetTokens[0]?.expiresAt).toEqual(
+      new Date(FROZEN.getTime() + PASSWORD_RESET_TTL_MS)
+    );
+  });
+
+  it("succeeds without an email intent when the User does not exist", async () => {
+    const db = seedClub();
+    const result = await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "nobody@a.test",
+      resetUrlForToken,
+    });
+    expect(result).toEqual({ emailIntent: null });
+    expect(db.passwordResetTokens).toHaveLength(0);
+  });
+
+  it("rotates unused tokens so only the latest link works", async () => {
+    const db = seedClub();
+    await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "staff@a.test",
+      resetUrlForToken,
+      createToken: () => "first",
+    });
+    await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "staff@a.test",
+      resetUrlForToken,
+      createToken: () => "second",
+    });
+    await expect(
+      completePasswordReset(db, clockAt(FROZEN), {
+        rawToken: "first",
+        password: "newpass12",
+        hashPassword: async (plain) => `h:${plain}`,
+      })
+    ).rejects.toMatchObject({ code: "RESET_USED" });
+    const completed = await completePasswordReset(db, clockAt(FROZEN), {
+      rawToken: "second",
+      password: "newpass12",
+      hashPassword: async (plain) => `h:${plain}`,
+    });
+    expect(completed.userId).toBe("staff_a");
+    expect(db.users.find((user) => user.id === "staff_a")?.passwordHash).toBe(
+      "h:newpass12"
+    );
+  });
+});
+
+describe("completePasswordReset", () => {
+  it("refuses unknown, expired, and replayed tokens", async () => {
+    const db = seedClub();
+    const issued = await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "staff@a.test",
+      resetUrlForToken,
+      createToken: () => "live",
+    });
+    expect(issued.emailIntent).not.toBeNull();
+
+    await expect(
+      completePasswordReset(db, clockAt(FROZEN), {
+        rawToken: "unknown",
+        password: "newpass12",
+        hashPassword: async (plain) => plain,
+      })
+    ).rejects.toMatchObject({ code: "RESET_NOT_FOUND" });
+
+    const afterTtl = new Date(FROZEN.getTime() + PASSWORD_RESET_TTL_MS + 1);
+    const expiring = await requestPasswordReset(db, clockAt(FROZEN), {
+      email: "coord@a.test",
+      resetUrlForToken,
+      createToken: () => "stale",
+    });
+    expect(expiring.emailIntent).not.toBeNull();
+    await expect(
+      completePasswordReset(db, clockAt(afterTtl), {
+        rawToken: "stale",
+        password: "newpass12",
+        hashPassword: async (plain) => plain,
+      })
+    ).rejects.toMatchObject({ code: "RESET_EXPIRED" });
+
+    await completePasswordReset(db, clockAt(FROZEN), {
+      rawToken: "live",
+      password: "newpass12",
+      hashPassword: async (plain) => `h:${plain}`,
+    });
+    await expect(
+      completePasswordReset(db, clockAt(FROZEN), {
+        rawToken: "live",
+        password: "otherpass",
+        hashPassword: async (plain) => plain,
+      })
+    ).rejects.toMatchObject({ code: "RESET_USED" });
+  });
+});
+
+describe("changePassword", () => {
+  it("updates the hash when the current password matches", async () => {
+    const db = seedClub();
+    const result = await changePassword(db, {
+      userId: "staff_a",
+      currentPassword: "old-secret",
+      newPassword: "newpass12",
+      verifyPassword: async (plain, hash) =>
+        plain === "old-secret" && hash === "hash-staff",
+      hashPassword: async (plain) => `h:${plain}`,
+    });
+    expect(result.userId).toBe("staff_a");
+    expect(db.users.find((user) => user.id === "staff_a")?.passwordHash).toBe(
+      "h:newpass12"
+    );
+  });
+
+  it("refuses when the current password does not match", async () => {
+    const db = seedClub();
+    await expect(
+      changePassword(db, {
+        userId: "staff_a",
+        currentPassword: "wrong",
+        newPassword: "newpass12",
+        verifyPassword: async () => false,
+        hashPassword: async (plain) => plain,
+      })
+    ).rejects.toMatchObject({ code: "CURRENT_PASSWORD_INVALID" });
+    expect(db.users.find((user) => user.id === "staff_a")?.passwordHash).toBe(
+      "hash-staff"
+    );
   });
 });
