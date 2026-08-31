@@ -10,6 +10,7 @@ type AppShellContextValue = Pick<
   | "activeTeamSeasons"
   | "canCreateTeam"
   | "club"
+  | "platformRole"
   | "role"
   | "teams"
 >;

@@ -44,6 +44,7 @@ type GlobalSidebarProperties = {
     | "activeTeamSeasons"
     | "canCreateTeam"
     | "club"
+    | "platformRole"
     | "role"
     | "teams"
   >;
@@ -120,7 +121,13 @@ export const GlobalSidebar = ({
                 <SidebarGroupLabel>Ajustes</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {settingsNavigation.map((item) => (
+                    {settingsNavigation
+                      .filter(
+                        (item) =>
+                          !item.superAdminOnly ||
+                          staffContext.platformRole === "SUPER_ADMIN"
+                      )
+                      .map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           isActive={item.match(pathname)}

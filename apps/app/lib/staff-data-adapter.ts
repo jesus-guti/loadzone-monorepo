@@ -44,6 +44,7 @@ export type StaffDataAdapter = {
     teams: StaffTeamRow[];
   }>;
   fetchSeasons(teamId: string): Promise<StaffSeasonRow[]>;
+  listClubs(): Promise<{ id: string; name: string }[]>;
 };
 
 export function createPrismaStaffDataAdapter(): StaffDataAdapter {
@@ -96,6 +97,14 @@ export function createPrismaStaffDataAdapter(): StaffDataAdapter {
         orderBy: [{ startDate: "desc" }, { name: "desc" }],
         select: { id: true, name: true, startDate: true, endDate: true },
       });
+    },
+
+    async listClubs() {
+      const clubs = await database.club.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      });
+      return clubs;
     },
   };
 }

@@ -122,6 +122,40 @@ describe("issueClubStaffInvitation", () => {
       error: "Ya hay una invitación pendiente para este email en este club.",
     });
   });
+
+  it("issues as a platform actor when the caller is Super Admin", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "op_1" },
+      club: { id: "club_b" },
+      role: "STAFF",
+      platformRole: "SUPER_ADMIN",
+    });
+    stubs.issueStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "first@b.test",
+        clubName: "Sur",
+        acceptUrl: "https://app.test/invite/secret",
+      },
+    });
+    const result = await issueClubStaffInvitation(
+      "club_b",
+      "first@b.test",
+      "COORDINATOR"
+    );
+    expect(result).toEqual({ success: true });
+    expect(stubs.issueStaffInvitation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        actorUserId: "op_1",
+        actor: { kind: "platform" },
+        clubId: "club_b",
+      })
+    );
+  });
 });
 
 describe("revokeClubMembership", () => {

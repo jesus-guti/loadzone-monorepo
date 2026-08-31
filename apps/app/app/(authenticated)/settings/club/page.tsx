@@ -18,16 +18,19 @@ export const metadata: Metadata = {
 
 export default async function ClubSettingsPage() {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext || staffContext.club.id.length === 0) {
     notFound();
   }
 
   const clubAgePolicy =
     staffContext.club.ageBandPolicy ?? DEFAULT_AGE_BAND_POLICY;
-  const canInvite = staffCanInvite(staffContext.role);
+  const isPlatform = staffContext.platformRole === "SUPER_ADMIN";
+  const canInvite = staffCanInvite(staffContext.role) || isPlatform;
   const access = canInvite
     ? await listClubAccess(database as unknown as StaffIdentityClient, {
-        actor: { kind: "coordinator", userId: staffContext.user.id },
+        actor: isPlatform
+          ? { kind: "platform" }
+          : { kind: "coordinator", userId: staffContext.user.id },
         clubId: staffContext.club.id,
       })
     : { members: [], pendingInvites: [] };
@@ -56,16 +59,18 @@ export default async function ClubSettingsPage() {
 
   return (
     <>
-      <ClubSettingsForm
-        key={staffContext.activeTeam.id}
-        teamId={staffContext.activeTeam.id}
-        userId={staffContext.user.id}
-        clubId={staffContext.club.id}
-        canEdit={staffContext.canCreateTeam}
-        clubName={staffContext.club.name}
-        clubLogoUrl={staffContext.club.logoUrl}
-        clubAgePolicy={clubAgePolicy}
-      />
+      {staffContext.activeTeam ? (
+        <ClubSettingsForm
+          key={staffContext.activeTeam.id}
+          teamId={staffContext.activeTeam.id}
+          userId={staffContext.user.id}
+          clubId={staffContext.club.id}
+          canEdit={staffContext.canCreateTeam}
+          clubName={staffContext.club.name}
+          clubLogoUrl={staffContext.club.logoUrl}
+          clubAgePolicy={clubAgePolicy}
+        />
+      ) : null}
       <ClubMembersSection
         canManage={canInvite}
         clubId={staffContext.club.id}

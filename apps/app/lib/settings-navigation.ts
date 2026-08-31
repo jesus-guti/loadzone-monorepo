@@ -1,6 +1,7 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
   BuildingsIcon,
+  GlobeSimpleIcon,
   HeartIcon,
   ShieldCheckIcon,
   UserCircleIcon,
@@ -12,6 +13,7 @@ export type SettingsNavItem = {
   icon: Icon;
   label: string;
   match: (pathname: string) => boolean;
+  superAdminOnly?: boolean;
 };
 
 function matchesPath(pathname: string, href: string): boolean {
@@ -53,6 +55,14 @@ export const settingsNavigation: SettingsNavItem[] = [
     label: "Cuenta",
     match: (pathname: string) =>
       matchesPath(pathname, `${SETTINGS_BASE}/cuenta`),
+  },
+  {
+    href: `${SETTINGS_BASE}/plataforma`,
+    icon: GlobeSimpleIcon,
+    label: "Plataforma",
+    match: (pathname: string) =>
+      matchesPath(pathname, `${SETTINGS_BASE}/plataforma`),
+    superAdminOnly: true,
   },
 ];
 

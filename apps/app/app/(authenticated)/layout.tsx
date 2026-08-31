@@ -28,9 +28,16 @@ async function AuthenticatedShell({
     redirect("/onboarding");
   }
 
-  const recommendedSetupFacts = await loadClubRecommendedSetupFacts(
-    staffContext.club.id,
-  );
+    staffContext.club.id.length === 0
+      ? {
+          hasClubLogo: false,
+          hasAnySeason: false,
+          hasAnyPlayer: false,
+          hasMembershipExerciseFavorite: false,
+          hasExerciseOnSession: false,
+          hasAnySession: false,
+        }
+      : await loadClubRecommendedSetupFacts(staffContext.club.id);
 
   return (
     <GlobalSidebar
