@@ -53,7 +53,13 @@ async function AuthenticatedShell({
     >
       <QueryClientProviderWrapper>
         {/* Keep shell mounted on soft nav; do not remount the empty initial loader. */}
-        <Suspense fallback={null}>{children}</Suspense>
+        <Suspense
+          fallback={
+            <p className="px-10 pt-8 text-sm text-text-secondary">Cargando…</p>
+          }
+        >
+          {children}
+        </Suspense>
       </QueryClientProviderWrapper>
     </GlobalSidebar>
   );
