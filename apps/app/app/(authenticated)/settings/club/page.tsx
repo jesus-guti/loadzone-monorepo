@@ -9,6 +9,7 @@ import { database } from "@repo/database";
 import { notFound } from "next/navigation";
 import { ClubMembersSection } from "@/features/settings/components/club-members-section";
 import { ClubSettingsForm } from "@/features/settings/components/club-settings-form";
+import { ClubSettingsTabs } from "@/features/settings/components/club-settings-tabs";
 import { StaffInvitesSection } from "@/features/settings/components/staff-invites-section";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
@@ -58,29 +59,35 @@ export default async function ClubSettingsPage() {
   }));
 
   return (
-    <>
-      {staffContext.activeTeam ? (
-        <ClubSettingsForm
-          key={staffContext.activeTeam.id}
-          teamId={staffContext.activeTeam.id}
-          userId={staffContext.user.id}
-          clubId={staffContext.club.id}
-          canEdit={staffContext.canCreateTeam}
-          clubName={staffContext.club.name}
-          clubLogoUrl={staffContext.club.logoUrl}
-          clubAgePolicy={clubAgePolicy}
-        />
-      ) : null}
-      <ClubMembersSection
-        canManage={canInvite}
-        clubId={staffContext.club.id}
-        members={members}
-      />
-      <StaffInvitesSection
-        canInvite={canInvite}
-        clubId={staffContext.club.id}
-        pendingInvites={pendingInvites}
-      />
-    </>
+    <ClubSettingsTabs
+      clubPanel={
+        staffContext.activeTeam ? (
+          <ClubSettingsForm
+            key={staffContext.activeTeam.id}
+            teamId={staffContext.activeTeam.id}
+            userId={staffContext.user.id}
+            clubId={staffContext.club.id}
+            canEdit={staffContext.canCreateTeam}
+            clubName={staffContext.club.name}
+            clubLogoUrl={staffContext.club.logoUrl}
+            clubAgePolicy={clubAgePolicy}
+          />
+        ) : null
+      }
+      usersPanel={
+        <>
+          <ClubMembersSection
+            canManage={canInvite}
+            clubId={staffContext.club.id}
+            members={members}
+          />
+          <StaffInvitesSection
+            canInvite={canInvite}
+            clubId={staffContext.club.id}
+            pendingInvites={pendingInvites}
+          />
+        </>
+      }
+    />
   );
 }

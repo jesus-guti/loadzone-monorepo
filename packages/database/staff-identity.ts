@@ -10,6 +10,7 @@ import { z } from "zod";
 import type { MembershipRole } from "./generated/client";
 
 export const STAFF_INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 export type StaffInviteRole = Extract<MembershipRole, "COORDINATOR" | "STAFF">;
 
@@ -24,6 +25,12 @@ export type StaffInvitationEmailIntent = {
   readonly to: string;
   readonly clubName: string;
   readonly acceptUrl: string;
+};
+
+export type PasswordResetEmailIntent = {
+  readonly kind: "password_reset";
+  readonly to: string;
+  readonly resetUrl: string;
 };
 
 export type StaffIdentityClock = {
@@ -49,6 +56,10 @@ export type StaffIdentityErrorCode =
   | "INVALID_NAME"
   | "SLUG_TAKEN"
   | "EMAIL_TAKEN"
+  | "RESET_NOT_FOUND"
+  | "RESET_USED"
+  | "RESET_EXPIRED"
+  | "CURRENT_PASSWORD_INVALID"
   | "USER_NOT_FOUND";
 
 export type StaffIdentityActor =
@@ -75,6 +86,10 @@ const inviteRoleSchema = z.enum(["COORDINATOR", "STAFF"]);
 
 export function hashStaffInvitationToken(rawToken: string): string {
   return createHash("sha256").update(rawToken, "utf8").digest("hex");
+}
+
+export function hashPasswordResetToken(rawToken: string): string {
+  return hashStaffInvitationToken(rawToken);
 }
 
 function defaultCreateToken(): string {
@@ -111,6 +126,14 @@ type ClubRow = {
   readonly id: string;
   readonly name: string;
   readonly slug?: string;
+};
+
+export type PasswordResetTokenRow = {
+  readonly id: string;
+  readonly userId: string;
+  readonly tokenHash: string;
+  readonly expiresAt: Date;
+  readonly usedAt: Date | null;
 };
 
 export type StaffInvitationRow = {
@@ -160,7 +183,11 @@ export type StaffIdentityClient = {
     }) => Promise<UserRow>;
     update: (args: {
       where: { id: string };
-      data: { email?: string; platformRole?: PlatformRoleValue };
+      data: {
+        email?: string;
+        platformRole?: PlatformRoleValue;
+        passwordHash?: string;
+      };
     }) => Promise<UserRow>;
   };
   readonly membership: {
@@ -223,6 +250,30 @@ export type StaffIdentityClient = {
         acceptedAt?: Date | null;
       };
     }) => Promise<StaffInvitationRow>;
+  };
+  readonly passwordResetToken: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        tokenHash?: string;
+        userId?: string;
+        usedAt?: Date | null;
+      };
+    }) => Promise<PasswordResetTokenRow | null>;
+    findMany: (args: {
+      where: { userId: string; usedAt: Date | null };
+    }) => Promise<PasswordResetTokenRow[]>;
+    create: (args: {
+      data: {
+        userId: string;
+        tokenHash: string;
+        expiresAt: Date;
+      };
+    }) => Promise<PasswordResetTokenRow>;
+    update: (args: {
+      where: { id: string };
+      data: { usedAt?: Date | null };
+    }) => Promise<PasswordResetTokenRow>;
   };
 };
 
@@ -726,6 +777,204 @@ export async function listPendingStaffInvitations(
     where: { clubId: input.clubId, status: "PENDING" },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export type RequestPasswordResetInput = {
+  readonly email: string;
+  readonly resetUrlForToken: (rawToken: string) => string;
+  readonly createToken?: () => string;
+};
+
+export type RequestPasswordResetResult = {
+  readonly emailIntent: PasswordResetEmailIntent | null;
+};
+
+export type CompletePasswordResetInput = {
+  readonly rawToken: string;
+  readonly password: string;
+  readonly hashPassword: (plain: string) => Promise<string>;
+};
+
+export type ChangePasswordInput = {
+  readonly userId: string;
+  readonly currentPassword: string;
+  readonly newPassword: string;
+  readonly verifyPassword: (
+    plain: string,
+    passwordHash: string
+  ) => Promise<boolean>;
+  readonly hashPassword: (plain: string) => Promise<string>;
+};
+
+function parseEmailOrNull(raw: string): string | null {
+  const parsed = emailSchema.safeParse(raw);
+  if (!parsed.success) {
+    return null;
+  }
+  return parsed.data.toLowerCase();
+}
+
+async function loadResetByToken(
+  db: StaffIdentityClient,
+  clock: StaffIdentityClock,
+  rawToken: string
+): Promise<PasswordResetTokenRow> {
+  const tokenHash = hashPasswordResetToken(rawToken);
+  const reset = await db.passwordResetToken.findFirst({
+    where: { tokenHash },
+  });
+  if (!reset) {
+    throw new StaffIdentityError(
+      "RESET_NOT_FOUND",
+      "Este enlace de restablecimiento no es válido."
+    );
+  }
+  if (reset.usedAt) {
+    throw new StaffIdentityError(
+      "RESET_USED",
+      "Este enlace de restablecimiento ya se usó."
+    );
+  }
+  if (reset.expiresAt.getTime() < clock.now().getTime()) {
+    await db.passwordResetToken.update({
+      where: { id: reset.id },
+      data: { usedAt: clock.now() },
+    });
+    throw new StaffIdentityError(
+      "RESET_EXPIRED",
+      "Este enlace de restablecimiento ha caducado."
+    );
+  }
+  return reset;
+}
+
+export async function requestPasswordReset(
+  db: StaffIdentityClient,
+  clock: StaffIdentityClock,
+  input: RequestPasswordResetInput
+): Promise<RequestPasswordResetResult> {
+  const email = parseEmailOrNull(input.email);
+  if (!email) {
+    return { emailIntent: null };
+  }
+  const user = await db.user.findUnique({
+    where: { email },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!user) {
+    return { emailIntent: null };
+  }
+
+  const unused = await db.passwordResetToken.findMany({
+    where: { userId: user.id, usedAt: null },
+  });
+  const now = clock.now();
+  for (const token of unused) {
+    await db.passwordResetToken.update({
+      where: { id: token.id },
+      data: { usedAt: now },
+    });
+  }
+
+  const rawToken = (input.createToken ?? defaultCreateToken)();
+  await db.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashPasswordResetToken(rawToken),
+      expiresAt: new Date(now.getTime() + PASSWORD_RESET_TTL_MS),
+    },
+  });
+
+  return {
+    emailIntent: {
+      kind: "password_reset",
+      to: email,
+      resetUrl: input.resetUrlForToken(rawToken),
+    },
+  };
+}
+
+export async function peekPasswordReset(
+  db: StaffIdentityClient,
+  clock: StaffIdentityClock,
+  rawToken: string
+): Promise<{ readonly ok: true } | { readonly ok: false; readonly message: string }> {
+  try {
+    await loadResetByToken(db, clock, rawToken);
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof StaffIdentityError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+}
+
+export async function completePasswordReset(
+  db: StaffIdentityClient,
+  clock: StaffIdentityClock,
+  input: CompletePasswordResetInput
+): Promise<{ readonly userId: string }> {
+  const reset = await loadResetByToken(db, clock, input.rawToken);
+  const passwordParsed = passwordSchema.safeParse(input.password);
+  if (!passwordParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_PASSWORD",
+      "La contraseña debe tener entre 8 y 128 caracteres."
+    );
+  }
+  const passwordHash = await input.hashPassword(passwordParsed.data);
+  await db.user.update({
+    where: { id: reset.userId },
+    data: { passwordHash },
+  });
+  await db.passwordResetToken.update({
+    where: { id: reset.id },
+    data: { usedAt: clock.now() },
+  });
+  return { userId: reset.userId };
+}
+
+export async function changePassword(
+  db: StaffIdentityClient,
+  input: ChangePasswordInput
+): Promise<{ readonly userId: string }> {
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  if (!user.passwordHash) {
+    throw new StaffIdentityError(
+      "CURRENT_PASSWORD_INVALID",
+      "La contraseña actual no es correcta."
+    );
+  }
+  const matches = await input.verifyPassword(
+    input.currentPassword,
+    user.passwordHash
+  );
+  if (!matches) {
+    throw new StaffIdentityError(
+      "CURRENT_PASSWORD_INVALID",
+      "La contraseña actual no es correcta."
+    );
+  }
+  const passwordParsed = passwordSchema.safeParse(input.newPassword);
+  if (!passwordParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_PASSWORD",
+      "La contraseña debe tener entre 8 y 128 caracteres."
+    );
+  }
+  const passwordHash = await input.hashPassword(passwordParsed.data);
+  await db.user.update({
+    where: { id: user.id },
+    data: { passwordHash },
+  });
+  return { userId: user.id };
 }
 
 export type ClubAccessMember = {

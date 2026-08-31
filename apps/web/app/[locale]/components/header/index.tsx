@@ -157,13 +157,6 @@ export const Header = ({ dictionary }: HeaderProps) => {
               </Link>
             }
           />
-          <Button
-            render={
-              <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
-                {dictionary.web.header.signUp}
-              </Link>
-            }
-          />
         </div>
         <div className="flex w-12 shrink items-end justify-end lg:hidden">
           <Button onClick={() => setOpen(!isOpen)} variant="ghost">
