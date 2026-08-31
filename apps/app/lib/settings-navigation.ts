@@ -57,11 +57,11 @@ export const settingsNavigation: SettingsNavItem[] = [
       matchesPath(pathname, `${SETTINGS_BASE}/cuenta`),
   },
   {
-    href: `${SETTINGS_BASE}/plataforma`,
+    href: `${SETTINGS_BASE}/platform`,
     icon: GlobeSimpleIcon,
     label: "Plataforma",
     match: (pathname: string) =>
-      matchesPath(pathname, `${SETTINGS_BASE}/plataforma`),
+      matchesPath(pathname, `${SETTINGS_BASE}/platform`),
     superAdminOnly: true,
   },
 ];

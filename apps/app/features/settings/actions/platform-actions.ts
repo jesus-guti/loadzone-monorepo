@@ -108,7 +108,7 @@ export async function createOperatingClub(
       maxAge: 60 * 60 * 24 * 30,
     });
     revalidatePath("/", "layout");
-    revalidatePath("/settings/plataforma");
+    revalidatePath("/settings/platform");
     return { success: true, clubId: club.id };
   } catch (error) {
     return asActionError(error);
@@ -129,7 +129,7 @@ export async function changeStaffUserEmail(
       userId,
       email,
     });
-    revalidatePath("/settings/plataforma");
+    revalidatePath("/settings/platform");
     revalidatePath("/settings/club");
     return { success: true };
   } catch (error) {
@@ -149,7 +149,7 @@ export async function grantUserSuperAdmin(
       actor: { kind: "platform" },
       userId,
     });
-    revalidatePath("/settings/plataforma");
+    revalidatePath("/settings/platform");
     return { success: true };
   } catch (error) {
     return asActionError(error);

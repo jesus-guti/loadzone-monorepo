@@ -28,6 +28,7 @@ async function AuthenticatedShell({
     redirect("/onboarding");
   }
 
+  const recommendedSetupFacts =
     staffContext.club.id.length === 0
       ? {
           hasClubLogo: false,
