@@ -5,12 +5,15 @@ import {
   STAFF_INVITATION_TTL_MS,
   acceptStaffInvitation,
   cancelStaffInvitation,
+  changeMembershipRole,
   changePassword,
   completePasswordReset,
   issueStaffInvitation,
+  listClubAccess,
   peekStaffInvitation,
   requestPasswordReset,
   resendStaffInvitation,
+  revokeMembership,
   staffCanInvite,
   StaffIdentityError,
   type PasswordResetTokenRow,
@@ -139,6 +142,25 @@ function createMemoryDb(seed?: {
           hasAllTeams: data.hasAllTeams,
         };
         memberships.push(row);
+        return row;
+      },
+      update: async ({ where, data }) => {
+        const row = memberships.find((item) => item.id === where.id);
+        if (!row) {
+          throw new Error("missing membership");
+        }
+        Object.assign(row, data);
+        return row;
+      },
+      delete: async ({ where }) => {
+        const index = memberships.findIndex((item) => item.id === where.id);
+        if (index < 0) {
+          throw new Error("missing membership");
+        }
+        const [row] = memberships.splice(index, 1);
+        if (!row) {
+          throw new Error("missing membership");
+        }
         return row;
       },
     },
@@ -843,5 +865,200 @@ describe("changePassword", () => {
     expect(db.users.find((user) => user.id === "staff_a")?.passwordHash).toBe(
       "hash-staff"
     );
+  });
+});
+
+describe("listClubAccess", () => {
+  it("lists Club STAFF/COORDINATOR Memberships and pending invites for a Coordinator", async () => {
+    const db = seedClub();
+    await issueStaffInvitation(db, clockAt(FROZEN), {
+      actorUserId: "coord_a",
+      clubId: "club_a",
+      email: "pending@club.test",
+      role: "STAFF",
+      acceptUrlForToken,
+      createToken: () => "pending-token",
+    });
+    db.memberships.push({
+      id: "m_player_a",
+      userId: "staff_a",
+      clubId: "club_a",
+      role: "PLAYER",
+      hasAllTeams: false,
+    });
+
+    const access = await listClubAccess(db, {
+      actor: { kind: "coordinator", userId: "coord_a" },
+      clubId: "club_a",
+    });
+
+    expect(access.members.map((row) => row.membershipId).sort()).toEqual([
+      "m_coord_a",
+      "m_staff_a",
+    ]);
+    expect(access.members.find((row) => row.membershipId === "m_staff_a")).toMatchObject({
+      userId: "staff_a",
+      email: "staff@a.test",
+      name: "Staff A",
+      role: "STAFF",
+    });
+    expect(access.pendingInvites).toHaveLength(1);
+    expect(access.pendingInvites[0]?.email).toBe("pending@club.test");
+  });
+
+  it("refuses Staff Membership", async () => {
+    const db = seedClub();
+    await expect(
+      listClubAccess(db, {
+        actor: { kind: "coordinator", userId: "staff_a" },
+        clubId: "club_a",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("lets a platform actor list without a Club Membership", async () => {
+    const db = seedClub();
+    const access = await listClubAccess(db, {
+      actor: { kind: "platform" },
+      clubId: "club_a",
+    });
+    expect(access.members).toHaveLength(2);
+  });
+});
+
+describe("revokeMembership", () => {
+  it("deletes the Membership and leaves the User", async () => {
+    const db = seedClub();
+    const result = await revokeMembership(db, {
+      actor: { kind: "coordinator", userId: "coord_a" },
+      clubId: "club_a",
+      membershipId: "m_staff_a",
+    });
+    expect(result).toEqual({ membershipId: "m_staff_a" });
+    expect(db.memberships.find((row) => row.id === "m_staff_a")).toBeUndefined();
+    expect(db.users.find((row) => row.id === "staff_a")).toMatchObject({
+      email: "staff@a.test",
+    });
+  });
+
+  it("refuses Last Coordinator revoke", async () => {
+    const db = seedClub();
+    await expect(
+      revokeMembership(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        clubId: "club_a",
+        membershipId: "m_coord_a",
+      })
+    ).rejects.toMatchObject({ code: "LAST_COORDINATOR" });
+    expect(db.memberships.find((row) => row.id === "m_coord_a")).toBeDefined();
+  });
+
+  it("allows self-revoke when another Coordinator remains", async () => {
+    const db = seedClub();
+    db.users.push({
+      id: "coord_2",
+      email: "coord2@a.test",
+      name: "Coord 2",
+      passwordHash: "h2",
+    });
+    db.memberships.push({
+      id: "m_coord_2",
+      userId: "coord_2",
+      clubId: "club_a",
+      role: "COORDINATOR",
+      hasAllTeams: true,
+    });
+    await revokeMembership(db, {
+      actor: { kind: "coordinator", userId: "coord_a" },
+      clubId: "club_a",
+      membershipId: "m_coord_a",
+    });
+    expect(db.memberships.find((row) => row.id === "m_coord_a")).toBeUndefined();
+    expect(db.memberships.find((row) => row.id === "m_coord_2")).toBeDefined();
+  });
+
+  it("refuses Staff callers", async () => {
+    const db = seedClub();
+    await expect(
+      revokeMembership(db, {
+        actor: { kind: "coordinator", userId: "staff_a" },
+        clubId: "club_a",
+        membershipId: "m_staff_a",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(db.memberships.find((row) => row.id === "m_staff_a")).toBeDefined();
+  });
+});
+
+describe("changeMembershipRole", () => {
+  it("promotes Staff to Coordinator in place", async () => {
+    const db = seedClub();
+    const result = await changeMembershipRole(db, {
+      actor: { kind: "coordinator", userId: "coord_a" },
+      clubId: "club_a",
+      membershipId: "m_staff_a",
+      role: "COORDINATOR",
+    });
+    expect(result).toEqual({ membershipId: "m_staff_a", role: "COORDINATOR" });
+    expect(db.memberships.find((row) => row.id === "m_staff_a")?.role).toBe(
+      "COORDINATOR"
+    );
+  });
+
+  it("refuses Last Coordinator demote", async () => {
+    const db = seedClub();
+    await expect(
+      changeMembershipRole(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        clubId: "club_a",
+        membershipId: "m_coord_a",
+        role: "STAFF",
+      })
+    ).rejects.toMatchObject({ code: "LAST_COORDINATOR" });
+    expect(db.memberships.find((row) => row.id === "m_coord_a")?.role).toBe(
+      "COORDINATOR"
+    );
+  });
+
+  it("demotes a Coordinator when another remains", async () => {
+    const db = seedClub();
+    db.users.push({
+      id: "coord_2",
+      email: "coord2@a.test",
+      name: "Coord 2",
+      passwordHash: "h2",
+    });
+    db.memberships.push({
+      id: "m_coord_2",
+      userId: "coord_2",
+      clubId: "club_a",
+      role: "COORDINATOR",
+      hasAllTeams: true,
+    });
+    const result = await changeMembershipRole(db, {
+      actor: { kind: "coordinator", userId: "coord_a" },
+      clubId: "club_a",
+      membershipId: "m_coord_2",
+      role: "STAFF",
+    });
+    expect(result.role).toBe("STAFF");
+    expect(db.memberships.find((row) => row.id === "m_coord_2")?.role).toBe(
+      "STAFF"
+    );
+    expect(db.memberships.find((row) => row.id === "m_coord_a")?.role).toBe(
+      "COORDINATOR"
+    );
+  });
+
+  it("refuses Staff callers", async () => {
+    const db = seedClub();
+    await expect(
+      changeMembershipRole(db, {
+        actor: { kind: "coordinator", userId: "staff_a" },
+        clubId: "club_a",
+        membershipId: "m_staff_a",
+        role: "COORDINATOR",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
