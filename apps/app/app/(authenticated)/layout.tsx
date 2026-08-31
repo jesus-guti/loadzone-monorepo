@@ -1,4 +1,5 @@
 import { SidebarProvider } from "@repo/design-system/components/sidebar";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
@@ -6,6 +7,8 @@ import { getCurrentStaffContext } from "@/lib/auth-context";
 import { GlobalSidebar } from "@/components/layouts/sidebar";
 import { StaffShellInitialLoader } from "@/components/layouts/staff-shell-initial-loader";
 import { loadClubRecommendedSetupFacts } from "@/lib/recommended-setup-facts";
+import { EMPTY_RECOMMENDED_SETUP_FACTS } from "@/lib/recommended-setup";
+import { shouldRedirectOperatorToPlatform } from "@/lib/operator-platform-redirect";
 
 type AppLayoutProperties = {
   readonly children: ReactNode;
@@ -28,16 +31,18 @@ async function AuthenticatedShell({
     redirect("/onboarding");
   }
 
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-loadzone-pathname") ?? "/";
+  if (
+    staffContext.platformRole === "SUPER_ADMIN" &&
+    shouldRedirectOperatorToPlatform(pathname, staffContext.club !== null)
+  ) {
+    redirect("/settings/platform");
+  }
+
   const recommendedSetupFacts =
-    staffContext.club.id.length === 0
-      ? {
-          hasClubLogo: false,
-          hasAnySeason: false,
-          hasAnyPlayer: false,
-          hasMembershipExerciseFavorite: false,
-          hasExerciseOnSession: false,
-          hasAnySession: false,
-        }
+    staffContext.club === null
+      ? EMPTY_RECOMMENDED_SETUP_FACTS
       : await loadClubRecommendedSetupFacts(staffContext.club.id);
 
   return (

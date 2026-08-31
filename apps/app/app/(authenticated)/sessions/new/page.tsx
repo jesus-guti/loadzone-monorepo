@@ -26,7 +26,7 @@ const NewSessionPage = async ({
   searchParams,
 }: PageProps): Promise<ReactElement> => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext?.activeTeam || !staffContext.club) {
     notFound();
   }
 

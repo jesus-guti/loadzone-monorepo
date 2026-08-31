@@ -18,12 +18,14 @@ export const metadata: Metadata = {
 
 export default async function ClubSettingsPage() {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext || staffContext.club.id.length === 0) {
+  if (!staffContext || staffContext.club === null) {
     notFound();
   }
 
   const isPlatform = staffContext.platformRole === "SUPER_ADMIN";
-  const canInvite = staffCanInvite(staffContext.role) || isPlatform;
+  const canInvite =
+    (staffContext.role !== null && staffCanInvite(staffContext.role)) ||
+    isPlatform;
   const access = canInvite
     ? await listClubAccess(database as unknown as StaffIdentityClient, {
         actor: isPlatform

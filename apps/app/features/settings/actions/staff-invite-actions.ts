@@ -67,7 +67,12 @@ async function requireClubOperator(
   if (staffContext.platformRole === "SUPER_ADMIN") {
     return { userId: staffContext.user.id, actor: { kind: "platform" } };
   }
-  if (staffContext.club.id !== clubId || !staffCanInvite(staffContext.role)) {
+  if (
+    staffContext.club === null ||
+    staffContext.club.id !== clubId ||
+    staffContext.role === null ||
+    !staffCanInvite(staffContext.role)
+  ) {
     return {
       success: false,
       error: "No tienes permiso para invitar a este club.",
@@ -98,7 +103,7 @@ export async function issueClubStaffInvitation(
       acceptUrlForToken,
     });
     deliverStaffInvitationIntent(result.emailIntent);
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true, acceptUrl: result.emailIntent.acceptUrl };
   } catch (error) {
     return asActionError(error);
@@ -121,7 +126,7 @@ export async function resendClubStaffInvitation(
       acceptUrlForToken,
     });
     deliverStaffInvitationIntent(result.emailIntent);
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true, acceptUrl: result.emailIntent.acceptUrl };
   } catch (error) {
     return asActionError(error);
@@ -142,7 +147,7 @@ export async function cancelClubStaffInvitation(
       actor: gate.actor,
       invitationId,
     });
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true };
   } catch (error) {
     return asActionError(error);
@@ -202,7 +207,7 @@ export async function revokeClubMembership(
       clubId,
       membershipId,
     });
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true };
   } catch (error) {
     return asActionError(error);
@@ -225,7 +230,7 @@ export async function changeClubMembershipRole(
       membershipId,
       role,
     });
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true };
   } catch (error) {
     return asActionError(error);

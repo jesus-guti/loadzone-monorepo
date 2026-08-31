@@ -115,22 +115,43 @@ export async function createOperatingClub(
   }
 }
 
+async function resolveUserIdByEmail(
+  email: string
+): Promise<{ userId: string } | PlatformActionResult> {
+  const normalized = email.trim().toLowerCase();
+  if (normalized.length === 0) {
+    return { success: false, error: "El email no es válido." };
+  }
+  const user = await database.user.findUnique({
+    where: { email: normalized },
+    select: { id: true },
+  });
+  if (!user) {
+    return { success: false, error: "Usuario no encontrado." };
+  }
+  return { userId: user.id };
+}
+
 export async function changeStaffUserEmail(
-  userId: string,
+  currentEmail: string,
   email: string
 ): Promise<PlatformActionResult> {
   const gate = await requirePlatformUser();
   if ("success" in gate) {
     return gate;
   }
+  const lookup = await resolveUserIdByEmail(currentEmail);
+  if ("success" in lookup) {
+    return lookup;
+  }
   try {
     await changeUserEmail(staffIdentityDb, {
       actor: { kind: "platform" },
-      userId,
+      userId: lookup.userId,
       email,
     });
     revalidatePath("/settings/platform");
-    revalidatePath("/settings/club");
+    revalidatePath("/settings/usuarios");
     return { success: true };
   } catch (error) {
     return asActionError(error);
@@ -138,16 +159,20 @@ export async function changeStaffUserEmail(
 }
 
 export async function grantUserSuperAdmin(
-  userId: string
+  email: string
 ): Promise<PlatformActionResult> {
   const gate = await requirePlatformUser();
   if ("success" in gate) {
     return gate;
   }
+  const lookup = await resolveUserIdByEmail(email);
+  if ("success" in lookup) {
+    return lookup;
+  }
   try {
     await grantSuperAdmin(staffIdentityDb, {
       actor: { kind: "platform" },
-      userId,
+      userId: lookup.userId,
     });
     revalidatePath("/settings/platform");
     return { success: true };

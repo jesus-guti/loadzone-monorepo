@@ -42,8 +42,8 @@ export const Header = ({ page, children }: HeaderProps) => {
       <div className="flex min-h-10 items-center gap-2 px-4 py-3 md:hidden">
         <div className="shrink-0">
           <TeamBranding
-            clubLogoUrl={club.logoUrl}
-            clubName={club.name}
+            clubLogoUrl={club?.logoUrl ?? null}
+            clubName={club?.name ?? "LoadZone"}
             compact
             logoTreatment="ambient"
             teamLogoUrl={activeTeam?.logoUrl ?? null}

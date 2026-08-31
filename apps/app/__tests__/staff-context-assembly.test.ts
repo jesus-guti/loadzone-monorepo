@@ -254,8 +254,8 @@ describe("assembleStaffContext", () => {
       now: new Date("2026-06-01T00:00:00Z"),
     });
 
-    expect(result.club.name).toBe("Fallback Club Name");
-    expect(result.club.logoUrl).toBeNull();
+    expect(result.club?.name).toBe("Fallback Club Name");
+    expect(result.club?.logoUrl).toBeNull();
   });
 
   it("uses DB club name when available", () => {
@@ -270,7 +270,7 @@ describe("assembleStaffContext", () => {
       now: new Date("2026-06-01T00:00:00Z"),
     });
 
-    expect(result.club.name).toBe("DB Club Name");
+    expect(result.club?.name).toBe("DB Club Name");
   });
 
   it("parses valid wellnessLimits JSON", () => {
@@ -349,7 +349,7 @@ describe("assembleStaffContext", () => {
     expect(withTeam.activeTeam?.ageBandPolicySource).toBe("team");
     expect(withTeam.activeTeam?.ageBandPolicy.assistedMaxAgeExclusive).toBe(8);
     expect(withTeam.activeTeam?.ageBandPolicyOverride).toEqual(teamPolicy);
-    expect(withTeam.club.ageBandPolicy).toEqual(clubPolicy);
+    expect(withTeam.club?.ageBandPolicy).toEqual(clubPolicy);
 
     const withClub = assembleStaffContext({
       user: makeUser(),
@@ -379,7 +379,7 @@ describe("assembleStaffContext", () => {
     expect(withDefaults.activeTeam?.ageBandPolicy.guidedMaxAgeExclusive).toBe(
       14
     );
-    expect(withDefaults.club.ageBandPolicy).toBeNull();
+    expect(withDefaults.club?.ageBandPolicy).toBeNull();
     expect(withDefaults.activeTeam?.reminderConsentPolicySource).toBe(
       "defaults"
     );
@@ -499,5 +499,41 @@ describe("assembleStaffContext", () => {
     expect(result.membershipId).toBe("mem-xyz");
     expect(result.role).toBe("COORDINATOR");
     expect(result.user.email).toBe("admin@test.test");
+  });
+
+  it("assembles a platform operator without inventing a Membership", () => {
+    const result = assembleStaffContext({
+      user: makeUser({ platformRole: "SUPER_ADMIN" }),
+      membership: null,
+      club: makeClub({ id: "club-op", name: "Club Operado" }),
+      teams: [makeTeam("ta")],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+
+    expect(result.membershipId).toBeNull();
+    expect(result.role).toBeNull();
+    expect(result.club?.id).toBe("club-op");
+    expect(result.club?.name).toBe("Club Operado");
+    expect(result.canCreateTeam).toBe(true);
+  });
+
+  it("assembles a Super Admin with no operating Club", () => {
+    const result = assembleStaffContext({
+      user: makeUser({ platformRole: "SUPER_ADMIN" }),
+      membership: null,
+      club: null,
+      teams: [],
+      activeTeamSeasons: [],
+      requestedTeamId: null,
+      requestedSeasonId: null,
+      now: new Date("2026-06-01T00:00:00Z"),
+    });
+
+    expect(result.club).toBeNull();
+    expect(result.membershipId).toBeNull();
+    expect(result.teams).toEqual([]);
   });
 });

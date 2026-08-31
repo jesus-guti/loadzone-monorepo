@@ -101,7 +101,7 @@ describe("issueClubStaffInvitation", () => {
       acceptUrl: "https://app.test/invite/secret",
     });
     expect(stubs.issueStaffInvitation).toHaveBeenCalledTimes(1);
-    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/club");
+    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/usuarios");
   });
 
   it("logs delivery without the accept URL or token", async () => {
@@ -175,7 +175,7 @@ describe("issueClubStaffInvitation", () => {
       "first@b.test",
       "COORDINATOR"
     );
-    expect(result).toEqual({ success: true });
+    expect(result.success).toBe(true);
     expect(stubs.issueStaffInvitation).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -254,7 +254,7 @@ describe("revokeClubMembership", () => {
         membershipId: "m_staff",
       })
     );
-    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/club");
+    expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/usuarios");
   });
 
   it("surfaces Last Coordinator errors in Spanish", async () => {

@@ -32,6 +32,15 @@ export type RecommendedSetupClubFacts = {
   hasAnySession: boolean;
 };
 
+export const EMPTY_RECOMMENDED_SETUP_FACTS: RecommendedSetupClubFacts = {
+  hasClubLogo: false,
+  hasAnySeason: false,
+  hasAnyPlayer: false,
+  hasMembershipExerciseFavorite: false,
+  hasExerciseOnSession: false,
+  hasAnySession: false,
+};
+
 export type RecommendedSetupActiveTeam = {
   hasActiveSeason: boolean;
   hasPlayers: boolean;

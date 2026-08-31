@@ -45,8 +45,12 @@ function getInitials(
 }
 
 function membershipRoleLabel(
-  role: "COORDINATOR" | "STAFF" | "PLAYER"
+  role: "COORDINATOR" | "STAFF" | "PLAYER" | null,
+  platformRole: "USER" | "SUPER_ADMIN"
 ): string {
+  if (role === null) {
+    return platformRole === "SUPER_ADMIN" ? "Operador" : "Staff";
+  }
   switch (role) {
     case "COORDINATOR":
       return "Coordinación";
@@ -60,7 +64,7 @@ function membershipRoleLabel(
 export function SidebarUserMenu() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { role } = useAppShell();
+  const { role, platformRole } = useAppShell();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState<boolean>(false);
 
   return (
@@ -87,7 +91,7 @@ export function SidebarUserMenu() {
                       {user?.name ?? "Usuario"}
                     </span>
                     <span className="truncate text-xs text-text-secondary">
-                      {membershipRoleLabel(role)}
+                      {membershipRoleLabel(role, platformRole)}
                     </span>
                   </div>
                 </SidebarMenuButton>
