@@ -1,6 +1,6 @@
 # 01 — Coordinator invites; invitee joins the Club
 
-**What to build:** A Coordinator of a Club can send a Staff Invitation (Coordinator or Staff) by email. The person opens a one-time link, and either sets a password (new User) or keeps their password (existing User) while gaining a Membership on that Club with all Teams. Pending invites expire, can be resent (new token, old link dies) or cancelled; at most one pending invite per email per Club. Hashed tokens; mail is an intent the app sends. Invalid/expired links fail clearly. Staff cannot invite. Spanish UI for invite + accept. Super Admin bootstrap unchanged.
+**What to build:** A Coordinator of a Club can send a Staff Invitation (Coordinator or Staff) by email. The person opens a one-time link, and either sets a password (new User) or keeps their password (existing User) while gaining a Membership on that Club with all Teams. Pending invites expire, can be resent (new token, old link dies) or cancelled; at most one pending invite per email per Club. Hashed tokens; mail is an intent the app sends. Invalid/expired links fail clearly. Staff cannot invite. Spanish UI for invite + accept lives under Configuración → Club → pestaña Usuarios (list of Memberships plus invite/resend/cancel). Super Admin bootstrap unchanged. Revoke and in-place role change stay in SI-03 on the same tab.
 
 **Blocked by:** None — can start immediately.
 
