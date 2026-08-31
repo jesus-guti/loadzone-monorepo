@@ -72,8 +72,8 @@ function SidebarBrandingHeader({
       <div className="flex flex-row items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <TeamBranding
-            clubLogoUrl={staffContext.club.logoUrl}
-            clubName={staffContext.club.name}
+            clubLogoUrl={staffContext.club?.logoUrl ?? null}
+            clubName={staffContext.club?.name ?? "LoadZone"}
             logoTreatment="ambient"
             showClubOnly
             teamLogoUrl={staffContext.activeTeam?.logoUrl ?? null}
@@ -198,12 +198,10 @@ export const GlobalSidebar = ({
             <PrimerosPasosPanel
               activeTeam={{
                 hasActiveSeason: staffContext.activeSeason !== null,
-                // Player count is Club-fact driven for the checklist; active-Team
-                // baseline for Wellness empty states lands in JES-84.
                 hasPlayers: false,
               }}
               clubFacts={recommendedSetupFacts}
-              clubId={staffContext.club.id}
+              clubId={staffContext.club?.id ?? ""}
               userId={userId}
             />
             <SidebarUserMenu />

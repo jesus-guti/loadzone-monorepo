@@ -24,7 +24,7 @@ const CALENDAR_RANGE_DAYS = 90;
 
 const SessionsPage = async (): Promise<ReactElement> => {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext?.activeTeam || !staffContext.club) {
     notFound();
   }
 

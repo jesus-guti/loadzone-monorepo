@@ -21,7 +21,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
 
   const initialPayload = await getExerciseLibraryPayload({
     clubId: staffContext.club.id,
-    membershipId: staffContext.membershipId,
+    membershipId: staffContext.membershipId ?? "",
   });
 
   const total = initialPayload.favorites.length + initialPayload.rest.length;
@@ -47,7 +47,7 @@ const ExercisesPage = async (): Promise<ReactElement> => {
           <ExerciseLibraryShell
             clubId={staffContext.club.id}
             initialData={initialPayload}
-            membershipId={staffContext.membershipId}
+            membershipId={staffContext.membershipId ?? ""}
           />
         )}
       </div>

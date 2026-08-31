@@ -4,6 +4,7 @@ import {
   GlobeSimpleIcon,
   HeartIcon,
   UserCircleIcon,
+  UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -40,6 +41,13 @@ export const settingsNavigation: SettingsNavItem[] = [
     icon: BuildingsIcon,
     label: "Club",
     match: (pathname: string) => matchesPath(pathname, `${SETTINGS_BASE}/club`),
+  },
+  {
+    href: `${SETTINGS_BASE}/usuarios`,
+    icon: UsersIcon,
+    label: "Usuarios",
+    match: (pathname: string) =>
+      matchesPath(pathname, `${SETTINGS_BASE}/usuarios`),
   },
   {
     href: `${SETTINGS_BASE}/cuenta`,

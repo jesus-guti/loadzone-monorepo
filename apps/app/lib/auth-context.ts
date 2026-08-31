@@ -3,7 +3,6 @@ import { cookies } from "next/headers";
 import { assembleStaffContext, type StaffContext } from "./staff-context-assembly";
 import {
   getStaffDataAdapter,
-  type StaffMembershipInfo,
 } from "./staff-data-adapter";
 import {
   pickPreferredStaffMembership,
@@ -23,20 +22,6 @@ export const ACTIVE_CLUB_COOKIE_NAME = "loadzone_active_club";
 
 export function getCurrentUserState(): Promise<CurrentUser | null> {
   return currentUser();
-}
-
-function operatorMembership(
-  clubId: string,
-  clubName: string
-): StaffMembershipInfo {
-  return {
-    id: "",
-    clubId,
-    clubName,
-    role: "STAFF",
-    hasAllTeams: true,
-    teamIds: [],
-  };
 }
 
 export async function resolveSession() {
@@ -84,13 +69,8 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
     if (!fallbackClub) {
       return assembleStaffContext({
         user,
-        membership: operatorMembership("", "Plataforma"),
-        club: {
-          id: "",
-          name: "Plataforma",
-          logoUrl: null,
-          ageBandPolicy: null,
-        },
+        membership: null,
+        club: null,
         teams: [],
         activeTeamSeasons: [],
         requestedTeamId,
@@ -99,12 +79,32 @@ export async function getCurrentStaffContext(): Promise<StaffContext | null> {
       });
     }
 
-    const matchingMembership = user.memberships.find(
-      (row) => row.clubId === fallbackClub.id
-    );
-    membership =
-      matchingMembership ??
-      operatorMembership(fallbackClub.id, fallbackClub.name);
+    const matchingMembership =
+      user.memberships.find((row) => row.clubId === fallbackClub.id) ?? null;
+
+    if (matchingMembership) {
+      membership = matchingMembership;
+    } else {
+      const workspace = await adapter.fetchClubWorkspace(fallbackClub.id);
+      const activeTeam = resolveActiveTeamSnapshot(
+        workspace.teams,
+        requestedTeamId
+      );
+      const activeTeamSeasons = activeTeam
+        ? await adapter.fetchSeasons(activeTeam.id)
+        : [];
+
+      return assembleStaffContext({
+        user,
+        membership: null,
+        club: workspace.club,
+        teams: workspace.teams,
+        activeTeamSeasons,
+        requestedTeamId,
+        requestedSeasonId,
+        now: new Date(),
+      });
+    }
   }
 
   if (!membership) {

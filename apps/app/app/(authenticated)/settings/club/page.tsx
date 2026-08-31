@@ -1,88 +1,38 @@
 import type { Metadata } from "next";
-import {
-  listClubAccess,
-  staffCanInvite,
-  type StaffIdentityClient,
-} from "@repo/database/staff-identity";
-import { database } from "@repo/database";
-import { notFound } from "next/navigation";
-import { ClubMembersSection } from "@/features/settings/components/club-members-section";
+import { notFound, redirect } from "next/navigation";
 import { ClubSettingsForm } from "@/features/settings/components/club-settings-form";
-import { ClubSettingsTabs } from "@/features/settings/components/club-settings-tabs";
-import { StaffInvitesSection } from "@/features/settings/components/staff-invites-section";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: "Club | Configuración | LoadZone",
 };
 
-export default async function ClubSettingsPage() {
+type ClubSettingsPageProperties = {
+  readonly searchParams: Promise<{ tab?: string | string[] }>;
+};
+
+export default async function ClubSettingsPage({
+  searchParams,
+}: ClubSettingsPageProperties) {
+  const params = await searchParams;
+  const tab = Array.isArray(params.tab) ? params.tab[0] : params.tab;
+  if (tab === "usuarios") {
+    redirect("/settings/usuarios");
+  }
+
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext || staffContext.club.id.length === 0) {
+  if (!staffContext || staffContext.club === null) {
     notFound();
   }
 
-  const isPlatform = staffContext.platformRole === "SUPER_ADMIN";
-  const canInvite = staffCanInvite(staffContext.role) || isPlatform;
-  const access = canInvite
-    ? await listClubAccess(database as unknown as StaffIdentityClient, {
-        actor: isPlatform
-          ? { kind: "platform" }
-          : { kind: "coordinator", userId: staffContext.user.id },
-        clubId: staffContext.club.id,
-      })
-    : { members: [], pendingInvites: [] };
-
-  const pendingInvites = access.pendingInvites.flatMap((row) => {
-    if (row.role !== "COORDINATOR" && row.role !== "STAFF") {
-      return [];
-    }
-    return [
-      {
-        id: row.id,
-        email: row.email,
-        role: row.role,
-        expiresAt: row.expiresAt.toISOString(),
-      },
-    ];
-  });
-
-  const members = access.members.map((row) => ({
-    membershipId: row.membershipId,
-    userId: row.userId,
-    email: row.email,
-    name: row.name,
-    role: row.role,
-  }));
-
   return (
-    <ClubSettingsTabs
-      clubPanel={
-        staffContext.activeTeam ? (
-          <ClubSettingsForm
-            key={staffContext.activeTeam.id}
-            userId={staffContext.user.id}
-            clubId={staffContext.club.id}
-            canEdit={staffContext.canCreateTeam}
-            clubName={staffContext.club.name}
-            clubLogoUrl={staffContext.club.logoUrl}
-          />
-        ) : null
-      }
-      usersPanel={
-        <>
-          <ClubMembersSection
-            canManage={canInvite}
-            clubId={staffContext.club.id}
-            members={members}
-          />
-          <StaffInvitesSection
-            canInvite={canInvite}
-            clubId={staffContext.club.id}
-            pendingInvites={pendingInvites}
-          />
-        </>
-      }
+    <ClubSettingsForm
+      key={staffContext.activeTeam?.id ?? staffContext.club.id}
+      userId={staffContext.user.id}
+      clubId={staffContext.club.id}
+      canEdit={staffContext.canCreateTeam}
+      clubName={staffContext.club.name}
+      clubLogoUrl={staffContext.club.logoUrl}
     />
   );
 }

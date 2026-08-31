@@ -375,7 +375,7 @@ export async function toggleExerciseFavorite(
 > {
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext?.club) {
+    if (!staffContext?.club || staffContext.membershipId === null) {
       return { ok: false, error: "Club no encontrado" };
     }
 

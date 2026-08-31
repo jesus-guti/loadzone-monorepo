@@ -103,7 +103,7 @@ export async function createSession(
 
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext?.activeTeam) {
+    if (!staffContext?.activeTeam || !staffContext.club) {
       return { success: false, error: "Equipo no encontrado" };
     }
 
@@ -257,7 +257,7 @@ export async function updateSession(
 ): Promise<ActionResult> {
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext?.activeTeam) {
+    if (!staffContext?.activeTeam || !staffContext.club) {
       return { success: false, error: "Equipo no encontrado" };
     }
 
@@ -364,7 +364,7 @@ export async function deleteSession(
   scope: "instance" | "futureAndCurrent" = "instance"
 ): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext?.activeTeam || !staffContext.club) {
     throw new Error("Equipo no encontrado");
   }
 
@@ -396,7 +396,7 @@ export async function deleteSession(
 
 export async function cancelSession(sessionId: string): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.activeTeam) {
+  if (!staffContext?.activeTeam || !staffContext.club) {
     throw new Error("Equipo no encontrado");
   }
 
@@ -450,7 +450,7 @@ export async function attachExercises(input: {
 }): Promise<ActionResult> {
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext?.activeTeam) {
+    if (!staffContext?.activeTeam || !staffContext.club) {
       return { success: false, error: "Equipo no encontrado" };
     }
 
@@ -524,7 +524,7 @@ export async function setAttendance(input: {
 }): Promise<ActionResult> {
   try {
     const staffContext = await getCurrentStaffContext();
-    if (!staffContext?.activeTeam) {
+    if (!staffContext?.activeTeam || !staffContext.club) {
       return { success: false, error: "Equipo no encontrado" };
     }
 

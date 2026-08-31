@@ -168,7 +168,7 @@ export async function updateTeamSettings(formData: FormData): Promise<void> {
 
 export async function createTeamFromSettings(formData: FormData): Promise<void> {
   const staffContext = await getCurrentStaffContext();
-  if (!staffContext?.canCreateTeam) {
+  if (!staffContext?.canCreateTeam || !staffContext.club) {
     throw new Error("No tienes permisos para crear equipos.");
   }
   const clubId = staffContext.club.id;
@@ -277,7 +277,7 @@ export async function updateClubBranding(
       return { success: false, error: "No tienes permisos para editar el club." };
     }
 
-    if (!staffContext.canCreateTeam) {
+    if (!staffContext.canCreateTeam || !staffContext.club) {
       return { success: false, error: "No tienes permisos para editar el club." };
     }
 
@@ -351,7 +351,7 @@ export async function clearClubBrandingLogo(): Promise<ClubBrandingResult> {
       return { success: false, error: "No tienes permisos para editar el club." };
     }
 
-    if (!staffContext.canCreateTeam) {
+    if (!staffContext.canCreateTeam || !staffContext.club) {
       return { success: false, error: "No tienes permisos para editar el club." };
     }
 

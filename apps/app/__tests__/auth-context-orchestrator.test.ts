@@ -4,6 +4,7 @@ const stubs = vi.hoisted(() => ({
   currentUser: vi.fn(),
   cookiesGet: vi.fn(),
   fetchClubAndTeams: vi.fn(),
+  fetchClubWorkspace: vi.fn(),
   fetchSeasons: vi.fn(),
   listClubs: vi.fn(),
 }));
@@ -21,6 +22,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/staff-data-adapter", () => ({
   getStaffDataAdapter: vi.fn(() => ({
     fetchClubAndTeams: stubs.fetchClubAndTeams,
+    fetchClubWorkspace: stubs.fetchClubWorkspace,
     fetchSeasons: stubs.fetchSeasons,
     listClubs: stubs.listClubs,
   })),
@@ -166,7 +168,7 @@ describe("getCurrentStaffContext (orchestrator)", () => {
 
     expect(result).not.toBeNull();
     expect(result?.user.email).toBe("staff@test.test");
-    expect(result?.club.name).toBe("Club DB");
+    expect(result?.club?.name).toBe("Club DB");
     expect(result?.membershipId).toBe("mem-1");
     expect(result?.activeTeam?.id).toBe("ta");
     expect(result?.activeTeamSeasons).toHaveLength(1);
@@ -214,7 +216,7 @@ describe("getCurrentStaffContext (orchestrator)", () => {
     stubs.listClubs.mockResolvedValue([
       { id: "club-op", name: "Club Operado" },
     ]);
-    stubs.fetchClubAndTeams.mockResolvedValue({
+    stubs.fetchClubWorkspace.mockResolvedValue({
       club: { id: "club-op", name: "Club Operado", logoUrl: null, ageBandPolicy: null },
       teams: [fakeTeam("ta")],
     });
@@ -223,16 +225,14 @@ describe("getCurrentStaffContext (orchestrator)", () => {
     const result = await getCurrentStaffContext();
 
     expect(result).not.toBeNull();
-    expect(result?.club.id).toBe("club-op");
-    expect(result?.club.name).toBe("Club Operado");
+    expect(result?.club?.id).toBe("club-op");
+    expect(result?.club?.name).toBe("Club Operado");
     expect(result?.platformRole).toBe("SUPER_ADMIN");
     expect(result?.canCreateTeam).toBe(true);
-    expect(stubs.fetchClubAndTeams).toHaveBeenCalledWith(
-      expect.objectContaining({
-        clubId: "club-op",
-        hasAllTeams: true,
-      }),
-    );
+    expect(result?.membershipId).toBeNull();
+    expect(result?.role).toBeNull();
+    expect(stubs.fetchClubWorkspace).toHaveBeenCalledWith("club-op");
+    expect(stubs.fetchClubAndTeams).not.toHaveBeenCalled();
   });
 
   it("assembles a Super Admin with zero Clubs so they can open Plataforma", async () => {
@@ -249,6 +249,33 @@ describe("getCurrentStaffContext (orchestrator)", () => {
     expect(result).not.toBeNull();
     expect(result?.platformRole).toBe("SUPER_ADMIN");
     expect(result?.teams).toEqual([]);
+    expect(result?.club).toBeNull();
+    expect(result?.membershipId).toBeNull();
+    expect(result?.role).toBeNull();
     expect(stubs.fetchClubAndTeams).not.toHaveBeenCalled();
+    expect(stubs.fetchClubWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("keeps a real Membership when Super Admin operates their own Club", async () => {
+    stubs.currentUser.mockResolvedValue({
+      ...fakeCurrentUser(),
+      platformRole: "SUPER_ADMIN",
+    });
+    stubs.cookiesGet.mockImplementation((name: string) =>
+      name === "loadzone_active_club" ? { value: "club-1" } : undefined,
+    );
+    stubs.listClubs.mockResolvedValue([{ id: "club-1", name: "Club Test" }]);
+    stubs.fetchClubAndTeams.mockResolvedValue({
+      club: fakeClub(),
+      teams: [fakeTeam("ta")],
+    });
+    stubs.fetchSeasons.mockResolvedValue([]);
+
+    const result = await getCurrentStaffContext();
+
+    expect(result?.membershipId).toBe("mem-1");
+    expect(result?.role).toBe("COORDINATOR");
+    expect(stubs.fetchClubAndTeams).toHaveBeenCalled();
+    expect(stubs.fetchClubWorkspace).not.toHaveBeenCalled();
   });
 });

@@ -9,6 +9,7 @@ const stubs = vi.hoisted(() => ({
   changeUserEmail: vi.fn(),
   grantSuperAdmin: vi.fn(),
   listOperableClubs: vi.fn(),
+  findUserByEmail: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -29,7 +30,11 @@ vi.mock("@/lib/auth-context", () => ({
 }));
 
 vi.mock("@repo/database", () => ({
-  database: {},
+  database: {
+    user: {
+      findUnique: stubs.findUserByEmail,
+    },
+  },
 }));
 
 vi.mock("@repo/database/staff-identity", async () => {
@@ -106,7 +111,7 @@ describe("changeStaffUserEmail", () => {
       platformRole: "USER",
       role: "COORDINATOR",
     });
-    const result = await changeStaffUserEmail("u2", "a@b.test");
+    const result = await changeStaffUserEmail("a@b.test", "nuevo@b.test");
     expect(result.success).toBe(false);
     expect(stubs.changeUserEmail).not.toHaveBeenCalled();
   });
@@ -116,17 +121,44 @@ describe("changeStaffUserEmail", () => {
       user: { id: "op" },
       platformRole: "SUPER_ADMIN",
     });
+    stubs.findUserByEmail.mockResolvedValue({ id: "u2" });
     stubs.changeUserEmail.mockRejectedValue(
       new StaffIdentityError(
         "EMAIL_TAKEN",
         "Ese email ya pertenece a otra cuenta."
       )
     );
-    const result = await changeStaffUserEmail("u2", "taken@a.test");
+    const result = await changeStaffUserEmail("old@a.test", "taken@a.test");
     expect(result).toEqual({
       success: false,
       error: "Ese email ya pertenece a otra cuenta.",
     });
+  });
+
+  it("resolves the User by current email, not UUID", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "op" },
+      platformRole: "SUPER_ADMIN",
+    });
+    stubs.findUserByEmail.mockResolvedValue({ id: "u2" });
+    stubs.changeUserEmail.mockResolvedValue({
+      userId: "u2",
+      email: "nuevo@a.test",
+    });
+    const result = await changeStaffUserEmail("old@a.test", "nuevo@a.test");
+    expect(result).toEqual({ success: true });
+    expect(stubs.findUserByEmail).toHaveBeenCalledWith({
+      where: { email: "old@a.test" },
+      select: { id: true },
+    });
+    expect(stubs.changeUserEmail).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        actor: { kind: "platform" },
+        userId: "u2",
+        email: "nuevo@a.test",
+      })
+    );
   });
 });
 
@@ -141,8 +173,29 @@ describe("grantUserSuperAdmin", () => {
       platformRole: "USER",
       role: "COORDINATOR",
     });
-    const result = await grantUserSuperAdmin("u2");
+    const result = await grantUserSuperAdmin("a@b.test");
     expect(result.success).toBe(false);
     expect(stubs.grantSuperAdmin).not.toHaveBeenCalled();
+  });
+
+  it("grants Super Admin by email, not User UUID", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "op" },
+      platformRole: "SUPER_ADMIN",
+    });
+    stubs.findUserByEmail.mockResolvedValue({ id: "u2" });
+    stubs.grantSuperAdmin.mockResolvedValue({
+      userId: "u2",
+      platformRole: "SUPER_ADMIN",
+    });
+    const result = await grantUserSuperAdmin("coach@a.test");
+    expect(result).toEqual({ success: true });
+    expect(stubs.grantSuperAdmin).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        actor: { kind: "platform" },
+        userId: "u2",
+      })
+    );
   });
 });

@@ -20,22 +20,30 @@ export type OperableClubView = {
   readonly slug: string;
 };
 
+export type PlatformMemberOption = {
+  readonly userId: string;
+  readonly email: string;
+  readonly name: string | null;
+};
+
 type PlatformSettingsFormProperties = {
   readonly activeClubId: string;
   readonly clubs: readonly OperableClubView[];
+  readonly members: readonly PlatformMemberOption[];
 };
 
 export function PlatformSettingsForm({
   activeClubId,
   clubs,
+  members,
 }: PlatformSettingsFormProperties) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [clubName, setClubName] = useState("");
   const [clubSlug, setClubSlug] = useState("");
-  const [userId, setUserId] = useState("");
+  const [currentEmail, setCurrentEmail] = useState("");
   const [email, setEmail] = useState("");
-  const [grantUserId, setGrantUserId] = useState("");
+  const [grantEmail, setGrantEmail] = useState("");
 
   return (
     <>
@@ -120,14 +128,40 @@ export function PlatformSettingsForm({
       </SettingsSection>
 
       <SettingsSection
-        description="El email de acceso solo lo cambia un operador. Debe ser único."
+        description="El email de acceso solo lo cambia un operador. Debe ser único. Elige un miembro del club en operación o busca por email."
         title="Cambiar email de usuario"
       >
-        <SettingsRow htmlFor="email-user-id" label="Id de usuario">
+        {members.length > 0 ? (
+          <SettingsRow htmlFor="email-member" label="Miembro">
+            <select
+              className="h-8 w-full rounded-lg border border-border-secondary bg-bg-tertiary px-2.5 text-sm text-text-primary"
+              disabled={isPending}
+              id="email-member"
+              onChange={(event) => {
+                setCurrentEmail(event.target.value);
+              }}
+              value={
+                members.some((member) => member.email === currentEmail)
+                  ? currentEmail
+                  : ""
+              }
+            >
+              <option value="">Buscar por email…</option>
+              {members.map((member) => (
+                <option key={member.userId} value={member.email}>
+                  {member.name ? `${member.name} (${member.email})` : member.email}
+                </option>
+              ))}
+            </select>
+          </SettingsRow>
+        ) : null}
+        <SettingsRow htmlFor="email-current" label="Email actual">
           <Input
-            id="email-user-id"
-            onChange={(event) => setUserId(event.target.value)}
-            value={userId}
+            autoComplete="off"
+            id="email-current"
+            onChange={(event) => setCurrentEmail(event.target.value)}
+            type="email"
+            value={currentEmail}
           />
         </SettingsRow>
         <SettingsRow htmlFor="email-user-email" label="Nuevo email">
@@ -141,10 +175,14 @@ export function PlatformSettingsForm({
         </SettingsRow>
         <div className="flex justify-end border-border-secondary border-t py-3">
           <Button
-            disabled={isPending || userId.trim().length === 0 || email.trim().length === 0}
+            disabled={
+              isPending ||
+              currentEmail.trim().length === 0 ||
+              email.trim().length === 0
+            }
             onClick={() => {
               startTransition(async () => {
-                const result = await changeStaffUserEmail(userId, email);
+                const result = await changeStaffUserEmail(currentEmail, email);
                 if (!result.success) {
                   toast.error(result.error ?? "No se pudo cambiar el email.");
                   return;
@@ -162,22 +200,48 @@ export function PlatformSettingsForm({
       </SettingsSection>
 
       <SettingsSection
-        description="Un coordinador no puede conceder este rol. No hay impersonación."
+        description="Un coordinador no puede conceder este rol. No hay impersonación. Elige un miembro o escribe su email."
         title="Conceder Super Admin"
       >
-        <SettingsRow htmlFor="grant-user-id" label="Id de usuario">
+        {members.length > 0 ? (
+          <SettingsRow htmlFor="grant-member" label="Miembro">
+            <select
+              className="h-8 w-full rounded-lg border border-border-secondary bg-bg-tertiary px-2.5 text-sm text-text-primary"
+              disabled={isPending}
+              id="grant-member"
+              onChange={(event) => {
+                setGrantEmail(event.target.value);
+              }}
+              value={
+                members.some((member) => member.email === grantEmail)
+                  ? grantEmail
+                  : ""
+              }
+            >
+              <option value="">Buscar por email…</option>
+              {members.map((member) => (
+                <option key={member.userId} value={member.email}>
+                  {member.name ? `${member.name} (${member.email})` : member.email}
+                </option>
+              ))}
+            </select>
+          </SettingsRow>
+        ) : null}
+        <SettingsRow htmlFor="grant-user-email" label="Email">
           <Input
-            id="grant-user-id"
-            onChange={(event) => setGrantUserId(event.target.value)}
-            value={grantUserId}
+            autoComplete="off"
+            id="grant-user-email"
+            onChange={(event) => setGrantEmail(event.target.value)}
+            type="email"
+            value={grantEmail}
           />
         </SettingsRow>
         <div className="flex justify-end border-border-secondary border-t py-3">
           <Button
-            disabled={isPending || grantUserId.trim().length === 0}
+            disabled={isPending || grantEmail.trim().length === 0}
             onClick={() => {
               startTransition(async () => {
-                const result = await grantUserSuperAdmin(grantUserId);
+                const result = await grantUserSuperAdmin(grantEmail);
                 if (!result.success) {
                   toast.error(result.error ?? "No se pudo conceder el rol.");
                   return;
