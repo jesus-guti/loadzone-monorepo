@@ -49,6 +49,7 @@ vi.mock("@repo/database/staff-identity", async () => {
 import {
   changeClubMembershipRole,
   issueClubStaffInvitation,
+  resendClubStaffInvitation,
   revokeClubMembership,
 } from "@/features/settings/actions/staff-invite-actions";
 
@@ -95,9 +96,38 @@ describe("issueClubStaffInvitation", () => {
       "a@b.test",
       "STAFF"
     );
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({
+      success: true,
+      acceptUrl: "https://app.test/invite/secret",
+    });
     expect(stubs.issueStaffInvitation).toHaveBeenCalledTimes(1);
     expect(stubs.revalidatePath).toHaveBeenCalledWith("/settings/club");
+  });
+
+  it("logs delivery without the accept URL or token", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.issueStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "a@b.test",
+        clubName: "Norte",
+        acceptUrl: "https://app.test/invite/secret",
+      },
+    });
+    await issueClubStaffInvitation("club_a", "a@b.test", "STAFF");
+    const logged = info.mock.calls.flat().map(String).join(" ");
+    expect(logged).toContain("staff_invitation");
+    expect(logged).toContain("a@b.test");
+    expect(logged).not.toContain("secret");
+    expect(logged).not.toContain("/invite/");
+    info.mockRestore();
   });
 
   it("surfaces StaffIdentityError messages in Spanish", async () => {
@@ -155,6 +185,37 @@ describe("issueClubStaffInvitation", () => {
         clubId: "club_b",
       })
     );
+  });
+});
+
+describe("resendClubStaffInvitation", () => {
+  beforeEach(() => {
+    stubs.getCurrentStaffContext.mockReset();
+    stubs.resendStaffInvitation.mockReset();
+    stubs.revalidatePath.mockReset();
+  });
+
+  it("returns the rotated accept URL to the Coordinator", async () => {
+    stubs.getCurrentStaffContext.mockResolvedValue({
+      user: { id: "u1" },
+      club: { id: "club_a" },
+      role: "COORDINATOR",
+    });
+    stubs.resendStaffInvitation.mockResolvedValue({
+      invitationId: "inv_1",
+      rawToken: "new-secret",
+      emailIntent: {
+        kind: "staff_invitation",
+        to: "a@b.test",
+        clubName: "Norte",
+        acceptUrl: "https://app.test/invite/new-secret",
+      },
+    });
+    const result = await resendClubStaffInvitation("club_a", "inv_1");
+    expect(result).toEqual({
+      success: true,
+      acceptUrl: "https://app.test/invite/new-secret",
+    });
   });
 });
 
