@@ -6,9 +6,12 @@ alwaysApply: false
 
 # LoadZone Admin Shell
 
-Staff UI exists for dense, calm, predictable **operational clarity** — not sports-marketing chrome or
-issue-tracker bureaucracy. Primary jobs (priority order): monitor team wellness and risk; operate
-sessions and training content; manage roster, season, and configuration.
+Staff UI exists for calm, predictable **operational clarity** for a **preparador físico** under time
+pressure — not sports-marketing chrome, issue-tracker bureaucracy, or sports-science lab chrome.
+Primary jobs (priority order): plan **Sessions** on a Match Day–centric calendar; monitor wellness and
+risk; read **Carga** (load / microcycle insight); manage roster, season, and light configuration.
+**Mobile-first** for daily flows; desktop density is fine for **Carga** tables. Prefer fewer clicks over
+more configuration. Full ICP constraints: `docs/agents/product-direction.md`.
 
 ## Team-centric shell
 
@@ -28,15 +31,19 @@ Desktop sidebar and mobile bottom navigation must share the **same primary navig
 - Inicio (Dashboard)
 - Wellness
 - Sesiones
+- Carga
 - Configuración
 
 **Secondary** (menus / contextual links — not primary chrome growth without evidence):
 
 - Jugadores
-- Ejercicios
+- Ejercicios (consume catalog; do not grow staff authoring in this wave)
 - Lesiones
 - Temporadas
 - Análisis IA
+
+Do not add primary destinations without product evidence. Prefer deepening **Sesiones** and **Carga**
+over new top-level chrome.
 
 ## Invisible data surfaces (default)
 
@@ -70,12 +77,14 @@ Not for libraries, tables, or multi-row operational lists. Do not treat KPI wall
 
 ## Interaction
 
-- Progressive, not Linear-clone: predictable nav, dense keyboard-friendly controls, search/filter/sort
-  on library and list surfaces, clear focus + pending feedback.
+- Progressive, not Linear-clone: predictable nav; thumb-friendly targets on mobile; keyboard-friendly
+  on desktop **Carga** / library surfaces; search/filter/sort where lists need them; clear focus +
+  pending feedback.
+- Session calendar: minimize create fields; support drag-and-drop reschedule when touching calendar UX.
 - Bulk actions are **opt-in per surface** when a concrete multi-item workflow exists — not global
   multi-select doctrine.
 - Refuse Linear product metaphors (issues, cycles, ticket IDs, issue-tracker copy) in staff UX.
-- Domain vocabulary stays LoadZone / `CONTEXT.md`.
+- Domain vocabulary stays LoadZone / `CONTEXT.md` (**Carga**, **Match Day**, **Microcycle**).
 
 ## Theme, color, icons
 

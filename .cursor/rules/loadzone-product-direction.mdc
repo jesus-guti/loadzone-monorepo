@@ -1,0 +1,30 @@
+---
+description: Staff ICP pivot — preparador físico, Match Day, Carga, minimize time-in-app.
+alwaysApply: true
+---
+
+# LoadZone Product Direction
+
+Near-term staff product north star. Full prose: [`docs/agents/product-direction.md`](../../docs/agents/product-direction.md). Vocabulary: [`CONTEXT.md`](../../CONTEXT.md).
+
+## ICP and promise
+
+- Design staff (`apps/app`) for **preparador físico** (División de Honor / Juvenil).
+- **Success = less time in the app.** Maximum UX (fewer clicks, fields, decisions) — **not** staff gamification.
+
+## Opinionated defaults
+
+- Plan around **Match Day** (**MD**, **MD-1**, **MD-2**, …) and **Microcycle**.
+- Staff **consume** LoadZone-prepared **Exercise** / session content; do not add staff “create Exercise” UX in this wave.
+- **Session** calendar: minimal create form; drag-and-drop reschedule; **mobile-first**.
+- Prefer defaults over new config/builders.
+
+## Carga
+
+- Primary load-analysis surface label: **Carga** (Spanish UI).
+- Prefer interactive tables (microcycle, acute/chronic load, minutes rankings) **inside** the app over “export to Excel and calculate.”
+- CSV export may stay as escape hatch — not the main path for load insight.
+
+## Decision test
+
+If two designs compete, pick the one that saves preparador time, speaks MD/microcycle, works on phone first, uses prepared content, and deepens **Carga**.

@@ -97,8 +97,20 @@ A product-opinionated check-in measure used for load, care alerts, limits, and f
 _Avoid_: Treating every form field as a WellnessMetric; filling omitted metrics from a previous day; mixing the extra duplicate into load.
 
 **PlayerDailyStats**:
-Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios).
-_Avoid_: “Stats” without player, day, and season context.
+Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios). Feeds the staff **Carga** surface.
+_Avoid_: “Stats” without player, day, and season context; naming the staff nav tab “Estadísticas” — product UI label is **Carga**.
+
+**Carga**:
+Staff product surface (Spanish UI) for interactive load insight — microcycles, acute/chronic load, minutes rankings, and related **PlayerDailyStats** views. Primary destination for load analysis; CSV export is an escape hatch, not the main job.
+_Avoid_: Calling this surface “Estadísticas”; treating export-to-Excel as the intended load workflow.
+
+**Match Day**:
+Football calendar anchor for planning: the competition day (**MD**) and relative training days (**MD-1**, **MD-2**, …). Staff session planning and microcycles are expressed relative to Match Day when the product shows that framing.
+_Avoid_: Generic “D-day” without the Match Day / MD±n vocabulary when the UI is match-centric.
+
+**Microcycle**:
+A short training block (typically the days around one **Match Day**) used when presenting load and session structure in **Carga** and calendar UX.
+_Avoid_: Treating “week” and Microcycle as interchangeable when Match Day framing is in play.
 
 **PushSubscription**:
 A browser push subscription tied to a **Player** (session reminders, etc.).
@@ -106,6 +118,7 @@ _Avoid_: Treating it as the same thing as the player’s public access token—t
 
 **Exercise**:
 A training drill definition in the library; may be club-owned or part of the **system catalog** (reusable `isSystem` exercises). **Exercise library** visibility for a club combines non-archived club exercises with system-catalog exercises per the rules encoded in the product code.
+_Avoid_: Treating staff Exercise authoring as required for day-to-day Session planning (current product wave prefers catalog consumption — see `docs/agents/product-direction.md`).
 
 **Age Band**:
 Capability tier for player autonomy: **Assisted**, **Guided**, or **Independent**. Indicative ages and consent×band defaults are **staff-configurable policy defaults**, never fixed-only product constants.

@@ -7,6 +7,7 @@ How the engineering skills should consume this repo's domain documentation when 
 ## Where each doc layer lives (avoid duplicating)
 
 - **`CONTEXT.md` (repo root)** — Domain glossary: entities, relationships, terms to avoid, and product language. **Do not** restate entity definitions here in `domain.md`; link to `CONTEXT.md` instead.
+- **`docs/agents/product-direction.md`** — Near-term staff ICP and product constraints (preparador físico, Match Day, **Carga**, minimize time-in-app). Not a glossary; not an ADR. Agent summary: `.cursor/rules/loadzone-product-direction.mdc`.
 - **`.cursor/rules/`** — How agents and contributors work in this monorepo: tooling (`pnpm`), TypeScript conventions, package layout, security (e.g. player tokens), and **UI rules** in `loadzone-design-system.mdc` (semantic tokens, Phosphor, app density). Not a second glossary.
 - **`docs/adr/`** — Irreversible or surprising architectural **decisions** with real trade-offs. Not for vocabulary or day-to-day rules.
 - **`docs/architecture/`** — Living architecture notes and deepening candidates; uses engineering vocabulary (`LANGUAGE.md` where applicable) and should **name** domain concepts using `CONTEXT.md` terms.

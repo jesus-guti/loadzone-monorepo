@@ -12,7 +12,8 @@ alwaysApply: false
 - Error messages should explain what happened and what the user can do next.
 - Empty states should explain the purpose of the area and suggest the next step.
 - Placeholder text should use realistic examples, not repeat the field label.
-- Prefer consistent domain terms: `equipo`, `temporada`, `jugador`, `sesión`, `wellness`, `carga`.
+- Prefer consistent domain terms: `equipo`, `temporada`, `jugador`, `sesión`, `wellness`, `carga`,
+  `MD` / `MD-1` (Match Day), `microciclo`.
 - If copy is repeated across multiple screens, promote it to a shared constant, glossary, or i18n layer instead of duplicating inline text.
 - In dense staff views (`apps/app`), **section titles and table column headers** follow the UI cadence: short labels, often uppercase with letter-spacing for scanability. That does not override sentence case for full sentences, body copy, or primary actions (buttons still start with a clear verb).
 - Table header text should stay concise and domain-consistent (`jugador`, `sesión`, etc.); avoid repeating the page title in every column label.
