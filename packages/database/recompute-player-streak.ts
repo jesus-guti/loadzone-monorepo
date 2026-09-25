@@ -54,6 +54,7 @@ export async function recomputeAndPersistPlayerStreak(
       longestStreak: true,
       currentStreak: true,
       streakBaseline: true,
+      streakSeasonId: true,
       teamId: true,
       team: {
         select: {
@@ -86,7 +87,11 @@ export async function recomputeAndPersistPlayerStreak(
 
   const seasonStartCivil = toCivilDateString(season.startDate, timeZone);
   const seasonEndCivil = toCivilDateString(season.endDate, timeZone);
-  const baseline = player.streakBaseline ?? player.currentStreak;
+  const continuingSeason =
+    player.streakSeasonId === season.id || player.streakSeasonId === null;
+  const baseline = continuingSeason
+    ? (player.streakBaseline ?? player.currentStreak)
+    : 0;
 
   const windowStart =
     compareCivilDates(seasonStartCivil, STREAK_RULES_START) > 0
@@ -266,7 +271,9 @@ export async function recomputeAndPersistPlayerStreak(
 
     if (outcome === "missed" && isGraceOpen(civil, todayCivil)) {
       expectedDays.push({ date: civil, outcome: "grace-open" });
-      openGraceDate = openGraceDate ?? civil;
+      if (compareCivilDates(todayCivil, civil) > 0) {
+        openGraceDate = openGraceDate ?? civil;
+      }
       continue;
     }
 
