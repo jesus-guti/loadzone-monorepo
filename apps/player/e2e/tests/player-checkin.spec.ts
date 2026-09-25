@@ -13,7 +13,7 @@
  *   - Data integrity via seed context
  */
 
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -214,10 +214,7 @@ test.describe("Player check-in E2E", () => {
       await page.waitForTimeout(800);
 
       // Click submit
-      const submitBtn = page.locator("button", {
-        hasText: /Guardar/,
-        visible: true,
-      });
+      const submitBtn = page.getByRole("button", { name: /Guardar/ });
       if (await submitBtn.isVisible().catch(() => false)) {
         await submitBtn.click();
       }
@@ -286,10 +283,7 @@ test.describe("Player check-in E2E", () => {
       await page.waitForTimeout(600);
 
       // Submit
-      const submitBtn = page.locator("button", {
-        hasText: /Guardar/,
-        visible: true,
-      });
+      const submitBtn = page.getByRole("button", { name: /Guardar/ });
       if (await submitBtn.isVisible().catch(() => false)) {
         await submitBtn.click();
       }
@@ -317,10 +311,7 @@ test.describe("Player check-in E2E", () => {
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
-async function setSlider(
-  slider: ReturnType<typeof page.locator>,
-  value: number
-) {
+async function setSlider(slider: Locator, value: number) {
   await slider.evaluate((el, val) => {
     const input = el as HTMLInputElement;
     const setter = Object.getOwnPropertyDescriptor(
