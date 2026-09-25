@@ -518,6 +518,10 @@ model Player {
   isArchived          Boolean             @default(false)
   currentStreak       Int                 @default(0)
   longestStreak       Int                 @default(0)
+  /// Snapshotted currentStreak the first time grace rules run. Later computes start here.
+  streakBaseline      Int?
+  /// When the player dismissed the one-time streak apology. Null means not yet acknowledged.
+  streakApologyAcknowledgedAt DateTime?
   streakSeasonId      String?
   streakSeason        Season?             @relation("PlayerStreakSeason", fields: [streakSeasonId], references: [id], onDelete: SetNull)
   createdAt           DateTime            @default(now())

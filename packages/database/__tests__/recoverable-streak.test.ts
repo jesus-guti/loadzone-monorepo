@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  STREAK_APOLOGY_COPY,
   classifyExpectedDay,
   computeRecoverableStreak,
   effectiveCurrentStreak,
   eachCivilDayInclusive,
+  graceNoteCopy,
   isDayObligationsComplete,
   isInjuryActiveOnDay,
   resolveDayObligations,
+  shouldShowStreakApology,
   shouldSkipWellnessReminderForInjury,
   toCivilDateString,
 } from "../recoverable-streak";
@@ -130,78 +133,149 @@ describe("shouldSkipWellnessReminderForInjury", () => {
 });
 
 describe("computeRecoverableStreak", () => {
-  it("increments on consecutive completed expected days", () => {
+  it("adds 1 per completed day, including seven sessions in one week", () => {
     const result = computeRecoverableStreak({
+      baseline: 0,
       longestStreak: 0,
       expectedDays: [
-        { date: "2026-03-01", outcome: "completed" },
-        { date: "2026-03-02", outcome: "completed" },
-        { date: "2026-03-03", outcome: "completed" },
+        { date: "2026-10-05", outcome: "completed" },
+        { date: "2026-10-06", outcome: "completed" },
+        { date: "2026-10-07", outcome: "completed" },
+        { date: "2026-10-08", outcome: "completed" },
+        { date: "2026-10-09", outcome: "completed" },
+        { date: "2026-10-10", outcome: "completed" },
+        { date: "2026-10-11", outcome: "completed" },
       ],
     });
-    expect(result.currentStreak).toBe(3);
-    expect(result.longestStreak).toBe(3);
+    expect(result.currentStreak).toBe(7);
+    expect(result.longestStreak).toBe(7);
     expect(result.restarted).toBe(false);
   });
 
-  it("restarts at 1 after an unexcused miss", () => {
-    const result = computeRecoverableStreak({
-      longestStreak: 5,
-      expectedDays: [
-        { date: "2026-03-01", outcome: "completed" },
-        { date: "2026-03-02", outcome: "completed" },
-        { date: "2026-03-03", outcome: "missed" },
-        { date: "2026-03-04", outcome: "completed" },
-      ],
+  it("freezes on excused and on an open extra day", () => {
+    const excused = computeRecoverableStreak({
+      baseline: 4,
+      longestStreak: 4,
+      expectedDays: [{ date: "2026-10-05", outcome: "excused" }],
     });
-    expect(result.currentStreak).toBe(1);
-    expect(result.longestStreak).toBe(5);
-    expect(result.restarted).toBe(true);
+    expect(excused.currentStreak).toBe(4);
+    expect(excused.restarted).toBe(false);
+
+    const grace = computeRecoverableStreak({
+      baseline: 4,
+      longestStreak: 4,
+      expectedDays: [{ date: "2026-10-05", outcome: "grace-open" }],
+    });
+    expect(grace.currentStreak).toBe(4);
   });
 
-  it("freezes through excused days without breaking", () => {
-    const result = computeRecoverableStreak({
-      longestStreak: 2,
+  it("subtracts 2 per closed miss, floors at 0, and does not restart above 0", () => {
+    const one = computeRecoverableStreak({
+      baseline: 10,
+      longestStreak: 10,
+      expectedDays: [{ date: "2026-10-05", outcome: "missed" }],
+    });
+    expect(one.currentStreak).toBe(8);
+    expect(one.longestStreak).toBe(10);
+    expect(one.restarted).toBe(false);
+
+    const two = computeRecoverableStreak({
+      baseline: 10,
+      longestStreak: 10,
       expectedDays: [
-        { date: "2026-03-01", outcome: "completed" },
-        { date: "2026-03-02", outcome: "excused" },
-        { date: "2026-03-03", outcome: "completed" },
+        { date: "2026-10-05", outcome: "missed" },
+        { date: "2026-10-06", outcome: "missed" },
       ],
     });
-    expect(result.currentStreak).toBe(2);
+    expect(two.currentStreak).toBe(6);
+
+    const floored = computeRecoverableStreak({
+      baseline: 1,
+      longestStreak: 9,
+      expectedDays: [{ date: "2026-10-05", outcome: "missed" }],
+    });
+    expect(floored.currentStreak).toBe(0);
+    expect(floored.longestStreak).toBe(9);
+    expect(floored.restarted).toBe(true);
+  });
+
+  it("counts a complete on the missed date as +1 with no subtract", () => {
+    const result = computeRecoverableStreak({
+      baseline: 4,
+      longestStreak: 4,
+      expectedDays: [{ date: "2026-10-05", outcome: "completed" }],
+    });
+    expect(result.currentStreak).toBe(5);
     expect(result.restarted).toBe(false);
+  });
+
+  it("does not subtract a lifesaver miss, including 4 October, and does subtract 5 October", () => {
+    const lifesaverMiss = computeRecoverableStreak({
+      baseline: 6,
+      longestStreak: 6,
+      expectedDays: [{ date: "2026-09-30", outcome: "lifesaver-miss" }],
+    });
+    expect(lifesaverMiss.currentStreak).toBe(6);
+
+    const lifesaverComplete = computeRecoverableStreak({
+      baseline: 6,
+      longestStreak: 6,
+      expectedDays: [{ date: "2026-09-30", outcome: "completed" }],
+    });
+    expect(lifesaverComplete.currentStreak).toBe(7);
+
+    const octoberFourth = computeRecoverableStreak({
+      baseline: 6,
+      longestStreak: 6,
+      expectedDays: [{ date: "2026-10-04", outcome: "missed" }],
+    });
+    expect(octoberFourth.currentStreak).toBe(6);
+
+    const octoberFifth = computeRecoverableStreak({
+      baseline: 6,
+      longestStreak: 6,
+      expectedDays: [{ date: "2026-10-05", outcome: "missed" }],
+    });
+    expect(octoberFifth.currentStreak).toBe(4);
+  });
+
+  it("ignores days before the rules date and keeps the baseline", () => {
+    const result = computeRecoverableStreak({
+      baseline: 11,
+      longestStreak: 11,
+      expectedDays: [
+        { date: "2026-09-11", outcome: "missed" },
+        { date: "2026-10-05", outcome: "completed" },
+      ],
+    });
+    expect(result.currentStreak).toBe(12);
+    expect(result.longestStreak).toBe(12);
   });
 
   it("resets across Season change by only seeing the new Season days", () => {
-    const seasonA = computeRecoverableStreak({
-      longestStreak: 0,
-      expectedDays: [
-        { date: "2025-11-01", outcome: "completed" },
-        { date: "2025-11-02", outcome: "completed" },
-      ],
-    });
-    expect(seasonA.currentStreak).toBe(2);
-
     const seasonB = computeRecoverableStreak({
-      longestStreak: seasonA.longestStreak,
-      expectedDays: [{ date: "2026-03-01", outcome: "completed" }],
+      baseline: 0,
+      longestStreak: 2,
+      expectedDays: [{ date: "2026-10-05", outcome: "completed" }],
     });
     expect(seasonB.currentStreak).toBe(1);
     expect(seasonB.longestStreak).toBe(2);
   });
+});
 
-  it("does not trust inflated prior counters (cutover recompute)", () => {
-    const result = computeRecoverableStreak({
-      longestStreak: 99,
-      expectedDays: [
-        { date: "2026-03-01", outcome: "completed" },
-        { date: "2026-03-02", outcome: "missed" },
-        { date: "2026-03-03", outcome: "completed" },
-        { date: "2026-03-04", outcome: "completed" },
-      ],
-    });
-    expect(result.currentStreak).toBe(2);
-    expect(result.longestStreak).toBe(99);
+describe("streak apology and grace note", () => {
+  it("shows the apology until it is acknowledged", () => {
+    expect(shouldShowStreakApology(false)).toBe(true);
+    expect(shouldShowStreakApology(true)).toBe(false);
+    expect(STREAK_APOLOGY_COPY).toContain("bajas 2");
+    expect(STREAK_APOLOGY_COPY).toContain("No vuelves a cero");
+  });
+
+  it("names the date and distinguishes lifesaver from a −2 miss", () => {
+    expect(graceNoteCopy("2026-10-04")).toContain("4 de octubre");
+    expect(graceNoteCopy("2026-10-04")).toContain("no pierdes racha");
+    expect(graceNoteCopy("2026-10-05")).toContain("5 de octubre");
+    expect(graceNoteCopy("2026-10-05")).toContain("baja 2");
   });
 });
 

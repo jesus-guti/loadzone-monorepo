@@ -35,11 +35,14 @@
     margin: 0;
     padding: 0;
     border: none;
+    border-radius: 0.58rem;
     background: transparent;
     color: inherit;
     text-align: inherit;
     appearance: none;
     -webkit-appearance: none;
+    /* Kill shadcn `* { outline-ring }` — sage ring sits outside the rounded bezel. */
+    outline: none;
     transform: rotateX(var(--lz-rotate-x)) rotateY(var(--lz-rotate-y));
     transform-style: preserve-3d;
     will-change: transform;
@@ -47,8 +50,14 @@
     cursor: pointer;
 }
 
+.cromo-rotator:focus,
+.cromo-rotator:focus-visible {
+    outline: none;
+}
+
 .cromo-flip {
     position: relative;
+    border-radius: 0.58rem;
     transform-style: preserve-3d;
     transform: rotateY(0deg);
     transition: transform 1000ms cubic-bezier(0.22, 0.7, 0.28, 1);
@@ -122,6 +131,7 @@
     --cromo-bezel: 0.85rem;
     padding: var(--cromo-bezel);
     border-radius: 0.58rem;
+    outline: none;
     box-shadow:
         0 2px 6px oklch(0 0 0 / 0.45),
         0 14px 28px oklch(0 0 0 / 0.5),

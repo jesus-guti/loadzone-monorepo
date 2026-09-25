@@ -5,8 +5,11 @@ import {
   classifyExpectedDay,
   compareCivilDates,
   computeRecoverableStreak,
+  STREAK_RULES_START,
   isDayObligationsComplete,
+  isGraceOpen,
   isInjuryActiveOnDay,
+  isLifesaverSessionDate,
   resolveDayObligations,
   toCivilDateString,
   type DayObligations,
@@ -23,6 +26,7 @@ type RecomputeArgs = {
 
 export type PersistStreakResult = RecoverableStreakResult & {
   readonly seasonId: string;
+  readonly openGraceDate: string | null;
 };
 
 function playerOnSession(args: {
@@ -48,6 +52,9 @@ export async function recomputeAndPersistPlayerStreak(
     select: {
       id: true,
       longestStreak: true,
+      currentStreak: true,
+      streakBaseline: true,
+      streakSeasonId: true,
       teamId: true,
       team: {
         select: {
@@ -80,8 +87,16 @@ export async function recomputeAndPersistPlayerStreak(
 
   const seasonStartCivil = toCivilDateString(season.startDate, timeZone);
   const seasonEndCivil = toCivilDateString(season.endDate, timeZone);
+  const continuingSeason =
+    player.streakSeasonId === season.id || player.streakSeasonId === null;
+  const baseline = continuingSeason
+    ? (player.streakBaseline ?? player.currentStreak)
+    : 0;
 
-  const windowStart = seasonStartCivil;
+  const windowStart =
+    compareCivilDates(seasonStartCivil, STREAK_RULES_START) > 0
+      ? seasonStartCivil
+      : STREAK_RULES_START;
   let windowEnd = asOfCivil;
   if (compareCivilDates(windowEnd, seasonEndCivil) > 0) {
     windowEnd = seasonEndCivil;
@@ -90,6 +105,7 @@ export async function recomputeAndPersistPlayerStreak(
     const empty = computeRecoverableStreak({
       expectedDays: [],
       longestStreak: player.longestStreak,
+      baseline,
     });
     await database.player.update({
       where: { id: player.id },
@@ -97,9 +113,10 @@ export async function recomputeAndPersistPlayerStreak(
         currentStreak: empty.currentStreak,
         longestStreak: empty.longestStreak,
         streakSeasonId: season.id,
+        streakBaseline: baseline,
       },
     });
-    return { ...empty, seasonId: season.id };
+    return { ...empty, seasonId: season.id, openGraceDate: null };
   }
 
   const rangeStart = civilDateToUtcMidnight(windowStart);
@@ -230,8 +247,13 @@ export async function recomputeAndPersistPlayerStreak(
   const injuryIntervals = mapInjuryRowsToIntervals(injuries);
 
   const expectedDays: ExpectedDayRecord[] = [];
+  let openGraceDate: string | null = null;
 
   for (const civil of expectedDates) {
+    if (compareCivilDates(civil, STREAK_RULES_START) < 0) {
+      continue;
+    }
+
     const bucket = dayBuckets.get(civil);
     if (!bucket) {
       continue;
@@ -247,12 +269,16 @@ export async function recomputeAndPersistPlayerStreak(
       injuryExempt,
     });
 
-    // Lazy miss: open today (incomplete, unexcused) is not closed yet.
-    if (
-      civil === todayCivil &&
-      outcome === "missed" &&
-      compareCivilDates(civil, asOfCivil) >= 0
-    ) {
+    if (outcome === "missed" && isGraceOpen(civil, todayCivil)) {
+      expectedDays.push({ date: civil, outcome: "grace-open" });
+      if (compareCivilDates(todayCivil, civil) > 0) {
+        openGraceDate = openGraceDate ?? civil;
+      }
+      continue;
+    }
+
+    if (outcome === "missed" && isLifesaverSessionDate(civil)) {
+      expectedDays.push({ date: civil, outcome: "lifesaver-miss" });
       continue;
     }
 
@@ -262,6 +288,7 @@ export async function recomputeAndPersistPlayerStreak(
   const result = computeRecoverableStreak({
     expectedDays,
     longestStreak: player.longestStreak,
+    baseline,
   });
 
   await database.player.update({
@@ -270,10 +297,11 @@ export async function recomputeAndPersistPlayerStreak(
       currentStreak: result.currentStreak,
       longestStreak: result.longestStreak,
       streakSeasonId: season.id,
+      streakBaseline: baseline,
     },
   });
 
-  return { ...result, seasonId: season.id };
+  return { ...result, seasonId: season.id, openGraceDate };
 }
 
 export async function findActiveSeasonIdForTeam(

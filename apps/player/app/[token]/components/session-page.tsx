@@ -42,6 +42,8 @@ import {
   sessionPageBottomStyle,
   shouldReserveFixedSaveClearance,
 } from "../lib/session-chrome";
+import { acknowledgeStreakApology } from "../actions/acknowledge-streak-apology";
+import { STREAK_APOLOGY_COPY } from "@repo/database/recoverable-streak";
 
 
 type PolicyAgeBand = "ASSISTED" | "GUIDED" | "INDEPENDENT" | "UNASSIGNED";
@@ -101,6 +103,10 @@ type SessionPageProperties = {
   /** Monday–Sunday Team Session week chrome for the Racha sheet (JES-112). */
   readonly rachaWeekDays: readonly RachaWeekDay[];
   readonly rachaWeekSessionCount: number;
+  /** Team-timezone civil today (YYYY-MM-DD). */
+  readonly todayCivil: string;
+  readonly graceNote: string | null;
+  readonly showStreakApology: boolean;
 };
 
 function formatShortDate(value: Date): string {
@@ -136,9 +142,12 @@ export function SessionPage({
   clubCrestUrl = null,
   rachaWeekDays,
   rachaWeekSessionCount,
+  todayCivil,
+  graceNote,
+  showStreakApology,
 }: SessionPageProperties) {
   const focusAgeBand = toFocusAgeBand(ageBand);
-  const todayIso = new Date().toISOString().split("T")[0];
+  const todayIso = todayCivil;
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -154,6 +163,7 @@ export function SessionPage({
   const [streakCount, setStreakCount] = useState(currentStreak);
   const [streakRestarted, setStreakRestarted] = useState(false);
   const [painAlertOpen, setPainAlertOpen] = useState(false);
+  const [apologyVisible, setApologyVisible] = useState(showStreakApology);
   const [careTriggered, setCareTriggered] = useState(false);
 
   useEffect(() => {
@@ -310,6 +320,28 @@ export function SessionPage({
             />
           </div>
         </div>
+
+        {apologyVisible ? (
+          <div className="space-y-3 rounded-2xl bg-bg-secondary px-4 py-3">
+            <p className="text-sm text-text-primary">{STREAK_APOLOGY_COPY}</p>
+            <Button
+              type="button"
+              className="min-h-12"
+              onClick={() => {
+                setApologyVisible(false);
+                startTransition(() => {
+                  void acknowledgeStreakApology(token);
+                });
+              }}
+            >
+              Entendido
+            </Button>
+          </div>
+        ) : null}
+
+        {graceNote ? (
+          <p className="text-sm text-text-secondary">{graceNote}</p>
+        ) : null}
 
         {shouldShowAssistedPresence(focusAgeBand) ? (
           <p className="text-sm text-text-secondary">

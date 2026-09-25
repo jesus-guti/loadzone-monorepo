@@ -26,4 +26,7 @@ alwaysApply: true
 - If a contract is used by only one feature, keep it local to that feature. Promote it to a
   shared package only when it is consumed by at least two real boundaries.
 - Domain vocabulary and entity relationships: see root [`CONTEXT.md`](../../CONTEXT.md).
+- Staff product north star (ICP, Match Day, **Carga**, minimize time-in-app): see
+  [`loadzone-product-direction.mdc`](./loadzone-product-direction.mdc) and
+  [`docs/agents/product-direction.md`](../../docs/agents/product-direction.md).
 - Never expose or log player tokens. Treat public player flows as security-sensitive.

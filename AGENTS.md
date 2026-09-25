@@ -19,3 +19,7 @@ Five triage roles use the default strings (`needs-triage`, …) as Linear labels
 ### Domain docs
 
 **Single-context** layout: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Product direction
+
+Staff ICP pivot (preparador físico, Match Day–centric planning, **Carga**, minimize time-in-app): see `docs/agents/product-direction.md` and always-on rule `loadzone-product-direction.mdc`.

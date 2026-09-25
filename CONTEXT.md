@@ -65,12 +65,52 @@ A scheduled **Team** event (training, match, recovery, or other) on a civil cale
 _Avoid_: Auth/login “session”; using Session as a synonym for **DailyEntry**; treating a cancelled Session as an expected streak day.
 
 **DailyEntry**:
-One wellness record for a **Player** on a given calendar day within a **Season** (sleep, fatigue, RPE, etc.); the model allows at most one row per player and date. The same record may be filled **PRE-session**, **POST-session**, or both (distinct fill moments, not two DailyEntries). Staff **Team** history (reports, CSV export) still includes past **DailyEntry** rows after the **Player** is archived — archive stops live workspace and reminders, not club history.
-_Avoid_: “Diary” if it suggests a generic journal outside this domain; treating archive as deletion of past check-ins; modelling PRE and POST as separate DailyEntries.
+One wellness record for a **Player** on a given calendar day within a **Season**; at most one row per player and date. It is the *answer* to the **Questionnaire Version** that was **live** when the Player submitted (PRE-session, POST-session, or both — distinct fill moments, not two DailyEntries). Staff **Team** history still includes past rows after the **Player** is archived.
+_Avoid_: “Diary”; treating archive as deletion; modelling PRE and POST as separate DailyEntries; mixing answers from two **Questionnaire Versions** in one list, card set, or CSV.
+
+**Check-in Questionnaire**:
+The Team-owned pair of check-in forms: a **Pre-session form** and a **Post-session form**. Short and long are **Presets** (seeds), not distinct schemas. One questionnaire per **Team**. Questions (not **Exercise**s) are assigned to one form, the other, or both.
+_Avoid_: “Parche”; hardcoded short vs long as different data models; a Club-wide form in this wave; calling a question an Exercise.
+
+**Pre-session form**:
+The before-Session half of a **Check-in Questionnaire**. Product defaults place recovery, energy, soreness, sleep hours, and sleep quality here. Staff may move, omit, or duplicate items onto the **Post-session form**. If a Version’s Pre-session form has no questions, that fill moment is not owed.
+_Avoid_: Treating PRE as a second DailyEntry.
+
+**Post-session form**:
+The after-Session half of a **Check-in Questionnaire**. Product defaults place RPE and optional duration here. Same flexibility as the **Pre-session form**. Empty ⇒ that fill moment is not owed.
+_Avoid_: Treating POST as a second DailyEntry.
+
+**Questionnaire Version**:
+An immutable published snapshot of **both** forms of a **Check-in Questionnaire**. Exactly one Version is **live**. Publishing creates a new Version (even if only one form changed); abandoning an unpublished edit discards it (no draft entity). Staff cannot reactivate an old Version as live. Historical **DailyEntry** rows stay bound to the Version they were submitted against. A live Version has at least one question on at least one form.
+_Avoid_: Mutating a published Version; rewriting history; parallel live Versions; versioning the two forms independently.
+
+**Preset**:
+Product-defined starting configuration of a **Check-in Questionnaire** (short may omit some **WellnessMetric**s; long is the full opinionated set). Customizing and publishing yields a **Questionnaire Version**, not a third schema.
+_Avoid_: Treating Preset as a runtime mode the Player picks each day.
+
+**Custom Question**:
+A staff-authored item on a **Check-in Questionnaire** that is not a **WellnessMetric**. It may sit on the **Pre-session form**, the **Post-session form**, or both (same identity, two answers that day). Answers accumulate and export (CSV per Version). They do not feed **PlayerDailyStats** / load calculations.
+_Avoid_: Calling a **WellnessMetric** “custom”; binding Custom Questions into ACWR / care-alert math; treating a duplicate placement as a second question id.
+
+**WellnessMetric**:
+A product-opinionated check-in measure used for load, care alerts, limits, and future charts (recovery, energy, soreness, sleep hours, sleep quality, RPE, and optional duration). Default forms: first five on the **Pre-session form**; RPE and duration on the **Post-session form**. Staff may move, omit, or place the same metric on both forms. Both answers are stored. Load/care use the default-form value if present; otherwise the only placement; a second placement is CSV-only. If omitted from both, that day’s dependent calculations are skipped (gap, not invented).
+_Avoid_: Treating every form field as a WellnessMetric; filling omitted metrics from a previous day; mixing the extra duplicate into load.
 
 **PlayerDailyStats**:
-Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios).
-_Avoid_: “Stats” without player, day, and season context.
+Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios). Feeds the staff **Carga** surface.
+_Avoid_: “Stats” without player, day, and season context; naming the staff nav tab “Estadísticas” — product UI label is **Carga**.
+
+**Carga**:
+Staff product surface (Spanish UI) for interactive load insight — microcycles, acute/chronic load, minutes rankings, and related **PlayerDailyStats** views. Primary destination for load analysis; CSV export is an escape hatch, not the main job.
+_Avoid_: Calling this surface “Estadísticas”; treating export-to-Excel as the intended load workflow.
+
+**Match Day**:
+Football calendar anchor for planning: the competition day (**MD**) and relative training days (**MD-1**, **MD-2**, …). Staff session planning and microcycles are expressed relative to Match Day when the product shows that framing.
+_Avoid_: Generic “D-day” without the Match Day / MD±n vocabulary when the UI is match-centric.
+
+**Microcycle**:
+A short training block (typically the days around one **Match Day**) used when presenting load and session structure in **Carga** and calendar UX.
+_Avoid_: Treating “week” and Microcycle as interchangeable when Match Day framing is in play.
 
 **PushSubscription**:
 A browser push subscription tied to a **Player** (session reminders, etc.).
@@ -78,6 +118,7 @@ _Avoid_: Treating it as the same thing as the player’s public access token—t
 
 **Exercise**:
 A training drill definition in the library; may be club-owned or part of the **system catalog** (reusable `isSystem` exercises). **Exercise library** visibility for a club combines non-archived club exercises with system-catalog exercises per the rules encoded in the product code.
+_Avoid_: Treating staff Exercise authoring as required for day-to-day Session planning (current product wave prefers catalog consumption — see `docs/agents/product-direction.md`).
 
 **Age Band**:
 Capability tier for player autonomy: **Assisted**, **Guided**, or **Independent**. Indicative ages and consent×band defaults are **staff-configurable policy defaults**, never fixed-only product constants.
@@ -101,7 +142,7 @@ _Avoid_: Treating subscription presence alone as the consent record.
 Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
 
 **Recoverable Streak**:
-Season-scoped expected-day habit. An expected day is a civil day with a non-cancelled **Session** the **Player** is on and PRE/POST **DailyEntry** obligations. Increments on completing those fills; breaks on an unexcused miss; days with no such Session neither increment nor break. Never public shame boards. Attendance GPS is not the signal.
+Season-scoped expected-day habit. An expected day is a civil day with a non-cancelled **Session** the **Player** is on and PRE/POST **DailyEntry** obligations. Increments on completed session-day obligations only. An unexcused miss no longer breaks to zero; after the extra civil day it subtracts 2 down to a floor of 0, except misses whose session day falls in the lifesaver week of 28 September–4 October 2026, which do not subtract. **Excused Absence** and an injury-exempt incomplete day freeze. Days with no such Session neither increment nor subtract. Never public shame boards. Attendance GPS is not the signal.
 _Avoid_: “Streak punishment,” competitive adherence boards, calendar-consecutive days, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:
@@ -167,10 +208,10 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 - A **Club** has many **Memberships** (Coordinators and Staff) and many **Teams** (and club-scoped exercises and other shared entities).
 - A **Club** keeps at least one **Coordinator** (**Last Coordinator** rule).
 - A **Staff Invitation** belongs to a **Club** and, when accepted, yields a **Membership** (all Teams) on an existing or new **User**.
-- A **Team** belongs to a **Club** and has many **Seasons**, many **Players**, and many **Sessions**.
+- A **Team** belongs to a **Club** and has many **Seasons**, many **Players**, and many **Sessions**, and owns one **Check-in Questionnaire** (a **Pre-session form** and a **Post-session form**; many **Questionnaire Versions**, one live).
 - A **Season** belongs to a **Team**; it groups that season’s **DailyEntry** and **PlayerDailyStats**.
 - A **Player** belongs to a **Team**; has an optional **Playing Position** and optional shirt number; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
-- A **DailyEntry** belongs to a **Player** and a **Season**; at most one record per (player, date).
+- A **DailyEntry** belongs to a **Player**, a **Season**, and the **Questionnaire Version** it was submitted against; at most one record per (player, date).
 - **PlayerDailyStats** belongs to a **Player** and a **Season**; summarises metrics per (player, date) within that season.
 - **Age Band** policy is **postponed** (`AGE_BAND_POLICY_ENABLED` in `@repo/database/age-band-policy`): staff settings, player create/edit, and runtime resolution treat every Player as unassigned (no parental layer). Persistence (`dateOfBirth`, `ageBandOverride`, Club/Team JSON) remains; flip the flag to restore.
 - **Reminder Consent** defaults live in `Team.reminderConsentPolicy` JSON (null → SPEC §5 package defaults); per-**Player** `reminderConsentState` gates push subscribe (see `@repo/database/reminder-consent`).

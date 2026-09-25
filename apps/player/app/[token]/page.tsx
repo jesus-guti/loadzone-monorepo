@@ -3,7 +3,12 @@ import {
   resolveAgeBandPolicy,
   resolveEffectiveAgeBandPolicy,
 } from "@repo/database/age-band-policy";
-import { effectiveCurrentStreak } from "@repo/database/recoverable-streak";
+import {
+  effectiveCurrentStreak,
+  graceNoteCopy,
+  toCivilDateString,
+} from "@repo/database/recoverable-streak";
+import { recomputeAndPersistPlayerStreak } from "@repo/database/recompute-player-streak";
 import {
   type PlayerReminderConsentState,
   resolveEffectiveReminderConsentPolicy,
@@ -61,21 +66,12 @@ async function loadRachaWeek(
   return projectRachaWeek({ sessions, timeZone, asOf });
 }
 
-function resolveSelectedDate(rawDate?: string): { iso: string; value: Date } {
-  if (rawDate) {
-    const parsed = new Date(`${rawDate}T00:00:00`);
-    if (!Number.isNaN(parsed.getTime())) {
-      parsed.setHours(0, 0, 0, 0);
-      return { iso: rawDate, value: parsed };
-    }
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return {
-    iso: today.toISOString().split("T")[0] ?? "",
-    value: today,
-  };
+function resolveSelectedDate(
+  rawDate: string | undefined,
+  fallbackIso: string
+): { iso: string; value: Date } {
+  const iso = rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : fallbackIso;
+  return { iso, value: new Date(`${iso}T00:00:00.000Z`) };
 }
 
 const PlayerPage = async ({ params, searchParams }: PageProperties) => {
@@ -155,6 +151,7 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       imageUrl: true,
       currentStreak: true,
       streakSeasonId: true,
+      streakApologyAcknowledgedAt: true,
       teamId: true,
       dateOfBirth: true,
       ageBandOverride: true,
@@ -245,11 +242,20 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     hasActiveSubscription: subscriptionCount > 0,
   });
   const activeSeasonId = player.team.seasons[0]?.id ?? null;
+  const timeZone = player.team.timezone || "Europe/Madrid";
+  const todayCivil = toCivilDateString(new Date(), timeZone);
+  const streakWrite = activeSeasonId
+    ? await recomputeAndPersistPlayerStreak({
+        playerId: player.id,
+        seasonId: activeSeasonId,
+      })
+    : null;
   const displayStreak = effectiveCurrentStreak({
-    currentStreak: player.currentStreak,
-    streakSeasonId: player.streakSeasonId,
+    currentStreak: streakWrite?.currentStreak ?? player.currentStreak,
+    streakSeasonId: streakWrite ? activeSeasonId : player.streakSeasonId,
     activeSeasonId,
   });
+  const openGraceDate = streakWrite?.openGraceDate ?? null;
   const imageUrl = player.imageUrl ? cromoMediaUrl("photo") : null;
   const clubCrestUrl = player.team.club.logoUrl ? cromoMediaUrl("crest") : null;
 
@@ -271,9 +277,13 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
 
   const rachaWeek = await loadRachaWeek(player.teamId, player.team.timezone);
 
-  const selectedDate = resolveSelectedDate(date);
-  const nextDay = new Date(selectedDate.value);
-  nextDay.setDate(nextDay.getDate() + 1);
+  const selectedDate = resolveSelectedDate(date, openGraceDate ?? todayCivil);
+  const sessionWindowStart = new Date(
+    selectedDate.value.getTime() - 24 * 60 * 60 * 1000
+  );
+  const sessionWindowEnd = new Date(
+    selectedDate.value.getTime() + 2 * 24 * 60 * 60 * 1000
+  );
 
   const selectedEntry = await database.dailyEntry.findUnique({
     where: {
@@ -285,12 +295,12 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
     },
   });
 
-  const selectedSession = await database.teamSession.findFirst({
+  const selectedSessionCandidates = await database.teamSession.findMany({
     where: {
       teamId: player.teamId,
       startsAt: {
-        gte: selectedDate.value,
-        lt: nextDay,
+        gte: sessionWindowStart,
+        lt: sessionWindowEnd,
       },
       status: "SCHEDULED",
     },
@@ -328,6 +338,11 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       },
     },
   });
+  const selectedSession =
+    selectedSessionCandidates.find(
+      (session) =>
+        toCivilDateString(session.startsAt, timeZone) === selectedDate.iso
+    ) ?? null;
 
   const fallbackPreTemplate =
     player.team.forms.find(
@@ -445,6 +460,9 @@ const PlayerPage = async ({ params, searchParams }: PageProperties) => {
       rachaWeekDays={rachaWeek.days}
       rachaWeekSessionCount={rachaWeek.sessionCount}
       selectedDate={selectedDate.iso}
+      todayCivil={todayCivil}
+      graceNote={openGraceDate ? graceNoteCopy(openGraceDate) : null}
+      showStreakApology={player.streakApologyAcknowledgedAt === null}
       selectedEntry={selectedEntry}
       selectedSession={
         selectedSession
