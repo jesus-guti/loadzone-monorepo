@@ -142,7 +142,7 @@ _Avoid_: Treating subscription presence alone as the consent record.
 Caps, quiet hours, and invitational tone for automated reminders (e.g. at most one automated Player reminder and one staff re-nudge per expected check-in window). Miss reminders are not **Care Alerts**.
 
 **Recoverable Streak**:
-Season-scoped expected-day habit. An expected day is a civil day with a non-cancelled **Session** the **Player** is on and PRE/POST **DailyEntry** obligations. Increments on completing those fills; breaks on an unexcused miss; days with no such Session neither increment nor break. Never public shame boards. Attendance GPS is not the signal.
+Season-scoped expected-day habit. An expected day is a civil day with a non-cancelled **Session** the **Player** is on and PRE/POST **DailyEntry** obligations. Increments on completed session-day obligations only. An unexcused miss no longer breaks to zero; after the extra civil day it subtracts 2 down to a floor of 0, except misses whose session day falls in the lifesaver week of 28 September–4 October 2026, which do not subtract. **Excused Absence** and an injury-exempt incomplete day freeze. Days with no such Session neither increment nor subtract. Never public shame boards. Attendance GPS is not the signal.
 _Avoid_: “Streak punishment,” competitive adherence boards, calendar-consecutive days, or geo-based attendance as the streak signal.
 
 **Streak Cromo**:

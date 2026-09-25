@@ -5,12 +5,7 @@ import {
   evaluateAndEmitCareAlert,
   PLAYER_CARE_CONFIRM_MESSAGE,
 } from "@repo/database/care-alerts";
-import {
-  civilDateToUtcMidnight,
-  isDayObligationsComplete,
-  resolveDayObligations,
-  toCivilDateString,
-} from "@repo/database/recoverable-streak";
+import { civilDateToUtcMidnight } from "@repo/database/recoverable-streak";
 import { recomputeAndPersistPlayerStreak } from "@repo/database/recompute-player-streak";
 import {
   evaluateImmediateWellnessFlags,
@@ -326,76 +321,9 @@ async function upsertFormSubmission(
 async function maybePersistStreak(
   parsedSubmission: ParsedSubmission
 ): Promise<{ currentStreak: number; restarted: boolean } | null> {
-  const dayStart = parsedSubmission.entryDate;
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-
-  const sessions = await database.teamSession.findMany({
-    where: {
-      teamId: parsedSubmission.ctx.teamId,
-      status: { not: "CANCELLED" },
-      startsAt: {
-        gte: new Date(dayStart.getTime() - 24 * 60 * 60 * 1000),
-        lt: new Date(dayEnd.getTime() + 24 * 60 * 60 * 1000),
-      },
-      OR: [
-        { appliesToAllPlayers: true },
-        { playerLinks: { some: { playerId: parsedSubmission.ctx.playerId } } },
-      ],
-    },
-    select: {
-      startsAt: true,
-      formAssignments: {
-        where: { isActive: true },
-        select: { fillMoment: true },
-      },
-    },
-  });
-
-  const sessionsForDay = sessions.filter(
-    (session) =>
-      toCivilDateString(session.startsAt, parsedSubmission.ctx.timeZone) ===
-      parsedSubmission.entryCivilDate
-  );
-
-  if (sessionsForDay.length === 0) {
-    return null;
-  }
-
-  const teamForms = await database.formAssignment.findMany({
-    where: {
-      teamId: parsedSubmission.ctx.teamId,
-      teamSessionId: null,
-      isActive: true,
-    },
-    select: { fillMoment: true },
-  });
-
-  const sessionMoments = sessionsForDay.map((session) =>
-    session.formAssignments.map((assignment) => assignment.fillMoment)
-  );
-  const obligations = resolveDayObligations(
-    sessionMoments,
-    teamForms.map((form) => form.fillMoment)
-  );
-
-  const entry = await database.dailyEntry.findUnique({
-    where: {
-      playerId_date: {
-        playerId: parsedSubmission.ctx.playerId,
-        date: parsedSubmission.entryDate,
-      },
-    },
-    select: { preFilledAt: true, postFilledAt: true },
-  });
-
-  if (!isDayObligationsComplete(obligations, entry)) {
-    return null;
-  }
-
   const result = await recomputeAndPersistPlayerStreak({
     playerId: parsedSubmission.ctx.playerId,
     seasonId: parsedSubmission.ctx.seasonId,
-    asOfCivilDate: parsedSubmission.entryCivilDate,
   });
 
   if (!result) {

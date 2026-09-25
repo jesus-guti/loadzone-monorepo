@@ -304,7 +304,6 @@ function CromoCardFooter({
 
 export function StreakCromo({
   streakCount,
-  restarted,
   imageUrl = null,
   clubCrestUrl = null,
   playingPosition = null,
@@ -322,7 +321,7 @@ export function StreakCromo({
   const instantTimer = useRef(0);
   const tier = streakCountToCromoTier(streakCount);
   const foilKind = cromoFoilKind(tier);
-  const showRestart = restarted || streakCount === 0;
+  const showRestart = streakCount === 0;
   const positionLine = formatPlayingPositionCromoLine(playingPosition);
   const teamRank = resolveTeamStreakRank({
     playerStreak: streakCount,
