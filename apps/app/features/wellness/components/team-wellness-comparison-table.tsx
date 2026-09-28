@@ -13,7 +13,6 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
   getLatestEntry,
-  getRiskLabel,
   toneForLowerIsBetter,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
@@ -22,7 +21,6 @@ import {
   EmptyScale,
   EnergyScale,
   RecoveryScale,
-  RiskScale,
   SleepQualityScale,
   SorenessScale,
   rpeTrafficTone,
@@ -89,8 +87,6 @@ function TeamWellnessComparisonRow({
   wellnessLimits,
 }: TeamWellnessComparisonRowProperties) {
   const entry = getLatestEntry(player);
-  const riskLevel = player.stats[0]?.riskLevel;
-  const riskLabel = riskLevel ? getRiskLabel(riskLevel) : undefined;
 
   return (
     <TableRow className="border-0 hover:bg-bg-secondary/40">
@@ -132,15 +128,8 @@ function TeamWellnessComparisonRow({
       <TableCell className="hidden py-2 md:table-cell">
         <SleepQualityScale size="sm" value={entry?.sleepQuality ?? null} />
       </TableCell>
-      <TableCell className="hidden py-2 tabular-nums md:table-cell">
+      <TableCell className="hidden py-2 pr-0 tabular-nums md:table-cell">
         <RpeNumber value={entry?.rpe ?? null} />
-      </TableCell>
-      <TableCell className="py-2 pr-0">
-        <RiskScale
-          label={riskLabel}
-          riskLevel={riskLevel}
-          size="sm"
-        />
       </TableCell>
     </TableRow>
   );
@@ -166,7 +155,6 @@ export function TeamWellnessComparisonTable({
             Pre sesión
           </TableHead>
           <TableHead className="text-center">Post sesión</TableHead>
-          <TableHead rowSpan={2}>Riesgo</TableHead>
         </TableRow>
         <TableRow className="border-0 hover:bg-transparent">
           <TableHead>Recuperación</TableHead>

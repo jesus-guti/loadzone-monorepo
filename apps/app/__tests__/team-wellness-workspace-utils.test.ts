@@ -8,6 +8,7 @@ import {
   getDailyStateLabel,
   getWellnessAlerts,
   listPendingPlayers,
+  sortPlayersByTarjetaSeverity,
 } from "@/features/wellness/components/team-wellness-workspace.utils";
 
 function createPlayer(
@@ -100,6 +101,52 @@ describe("team wellness workspace utils", () => {
       { metric: "soreness", careRelevant: true, label: "Agujetas" },
     ]);
     expect(flags.some((flag) => flag.metric === "recovery")).toBe(true);
+    expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
+  });
+
+  it("does not treat stored HIGH or CRITICAL risk as ALERT", () => {
+    const player = createPlayer({
+      entries: [
+        {
+          date: "2026-05-03T00:00:00.000Z",
+          recovery: 8,
+          energy: 4,
+          soreness: 2,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
+          physioAlert: false,
+        },
+      ],
+      stats: [{ riskLevel: "CRITICAL", acwr: 1.9 }],
+    });
+
+    expect(getDailyPlayerState(player, wellnessLimits)).toBe("COMPLETED");
+  });
+
+  it("still marks ALERT for physio when stored risk is low", () => {
+    const player = createPlayer({
+      entries: [
+        {
+          date: "2026-05-03T00:00:00.000Z",
+          recovery: 8,
+          energy: 4,
+          soreness: 2,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
+          physioAlert: true,
+        },
+      ],
+      stats: [{ riskLevel: "LOW", acwr: 0.9 }],
+    });
+
     expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
   });
 
@@ -330,5 +377,101 @@ describe("team wellness workspace utils", () => {
 
       expect(buildWellnessSummary(players, wellnessLimits).pendingCount).toBe(1);
     });
+  });
+
+  it("orders tarjetas by alert count, then injury or illness, then name", () => {
+    const twoAlertEntry = {
+      date: "2026-05-03T00:00:00.000Z",
+      ...emptyEntryFields,
+      recovery: 3,
+      energy: 1,
+      soreness: 1,
+      sleepHours: 8,
+      sleepQuality: 4,
+      preFilledAt: "2026-05-03T07:00:00.000Z",
+      postFilledAt: "2026-05-03T21:00:00.000Z",
+    };
+    const oneAlertEntry = {
+      date: "2026-05-03T00:00:00.000Z",
+      ...emptyEntryFields,
+      recovery: 3,
+      energy: 4,
+      soreness: 1,
+      sleepHours: 8,
+      sleepQuality: 4,
+      preFilledAt: "2026-05-03T07:00:00.000Z",
+      postFilledAt: "2026-05-03T21:00:00.000Z",
+    };
+
+    const sorted = sortPlayersByTarjetaSeverity(
+      [
+        createPlayer({
+          id: "none_zeta",
+          name: "Zeta Sin Datos",
+          status: "AVAILABLE",
+          entries: [],
+        }),
+        createPlayer({
+          id: "one_alert_healthy",
+          name: "Berta Alerta",
+          status: "AVAILABLE",
+          entries: [oneAlertEntry],
+        }),
+        createPlayer({
+          id: "two_alerts",
+          name: "Ana Dos Alertas",
+          status: "AVAILABLE",
+          entries: [twoAlertEntry],
+        }),
+        createPlayer({
+          id: "injured_no_alerts",
+          name: "Carlos Lesionado",
+          status: "INJURED",
+          entries: [],
+        }),
+        createPlayer({
+          id: "one_alert_ill",
+          name: "Ana Alerta",
+          status: "ILL",
+          entries: [oneAlertEntry],
+        }),
+        createPlayer({
+          id: "high_risk",
+          name: "Aaron Riesgo",
+          status: "AVAILABLE",
+          entries: [],
+          stats: [{ riskLevel: "CRITICAL", acwr: 2 }],
+        }),
+        createPlayer({
+          id: "healthy_alpha",
+          name: "Alba Sana",
+          status: "AVAILABLE",
+          entries: [
+            {
+              date: "2026-05-03T00:00:00.000Z",
+              ...emptyEntryFields,
+              recovery: 7,
+              energy: 4,
+              soreness: 1,
+              sleepHours: 8,
+              sleepQuality: 4,
+              preFilledAt: "2026-05-03T07:00:00.000Z",
+              postFilledAt: "2026-05-03T21:00:00.000Z",
+            },
+          ],
+        }),
+      ],
+      wellnessLimits
+    );
+
+    expect(sorted.map((player) => player.id)).toEqual([
+      "two_alerts",
+      "one_alert_ill",
+      "one_alert_healthy",
+      "injured_no_alerts",
+      "high_risk",
+      "healthy_alpha",
+      "none_zeta",
+    ]);
   });
 });

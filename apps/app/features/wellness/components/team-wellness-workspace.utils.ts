@@ -1,4 +1,4 @@
-import type { PlayerStatus, RiskLevel } from "@repo/database";
+import type { PlayerStatus } from "@repo/database";
 import {
   evaluateImmediateWellnessFlags,
   type ImmediateWellnessFlag,
@@ -50,38 +50,6 @@ export function getInitials(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
-}
-
-export function getRiskLabel(riskLevel: RiskLevel | null | undefined): string {
-  switch (riskLevel) {
-    case "CRITICAL":
-      return "Crítico";
-    case "HIGH":
-      return "Alto";
-    case "MODERATE":
-      return "Moderado";
-    case "LOW":
-      return "Bajo";
-    default:
-      return "Sin datos";
-  }
-}
-
-/** Clases Tailwind para semáforo de riesgo (tabla resumen / chips). */
-export function getRiskValueClassName(
-  riskLevel: RiskLevel | null | undefined
-): string {
-  switch (riskLevel) {
-    case "CRITICAL":
-    case "HIGH":
-      return "font-semibold text-danger";
-    case "MODERATE":
-      return "font-medium text-premium";
-    case "LOW":
-      return "text-success";
-    default:
-      return "text-text-tertiary";
-  }
 }
 
 export type WellnessTrafficTone = "bad" | "good" | "neutral" | "watch";
@@ -246,12 +214,6 @@ export function toneAlertDensity(
   return "watch";
 }
 
-export function hasCriticalRisk(
-  riskLevel: RiskLevel | null | undefined
-): boolean {
-  return riskLevel === "CRITICAL" || riskLevel === "HIGH";
-}
-
 export function getInjuryLabel(status: PlayerStatus): string | null {
   switch (status) {
     case "INJURED":
@@ -278,20 +240,51 @@ export function getWellnessAlerts(
   }));
 }
 
+function isInjuredOrIll(status: PlayerStatus): boolean {
+  return status === "INJURED" || status === "ILL";
+}
+
+/**
+ * Tarjetas grid only: more wellness alerts first, then injured/ill, then name.
+ * Does not use riskLevel. Lista views keep roster order.
+ */
+export function sortPlayersByTarjetaSeverity(
+  players: TeamWellnessPlayer[],
+  wellnessLimits?: WellnessLimits | null
+): TeamWellnessPlayer[] {
+  return [...players].sort((left, right) => {
+    const leftAlerts = getWellnessAlerts(
+      getLatestEntry(left),
+      wellnessLimits
+    ).length;
+    const rightAlerts = getWellnessAlerts(
+      getLatestEntry(right),
+      wellnessLimits
+    ).length;
+
+    if (leftAlerts !== rightAlerts) {
+      return rightAlerts - leftAlerts;
+    }
+
+    const leftInjury = isInjuredOrIll(left.status) ? 1 : 0;
+    const rightInjury = isInjuredOrIll(right.status) ? 1 : 0;
+
+    if (leftInjury !== rightInjury) {
+      return rightInjury - leftInjury;
+    }
+
+    return left.name.localeCompare(right.name, "es", { sensitivity: "base" });
+  });
+}
+
 export function getDailyPlayerState(
   player: TeamWellnessPlayer,
   wellnessLimits?: WellnessLimits | null
 ): DailyPlayerState {
   const entry = getLatestEntry(player);
-  const riskLevel = player.stats[0]?.riskLevel;
   const hasWellnessAlert = getWellnessAlerts(entry, wellnessLimits).length > 0;
 
-  if (
-    entry?.physioAlert ||
-    riskLevel === "HIGH" ||
-    riskLevel === "CRITICAL" ||
-    hasWellnessAlert
-  ) {
+  if (entry?.physioAlert || hasWellnessAlert) {
     return "ALERT";
   }
 
