@@ -36,6 +36,18 @@ describe("resolveQuestionLabel", () => {
     );
   });
 
+  it("asks how demanding the session felt on Assisted and Guided RPE", () => {
+    expect(resolveQuestionLabel("rpe", "assisted", "RPE")).toBe(
+      "¿Qué tan exigente fue?"
+    );
+    expect(resolveQuestionLabel("rpe", "guided", "RPE")).toBe(
+      "¿Qué tan exigente fue?"
+    );
+    expect(resolveQuestionLabel("rpe", "independent", "RPE")).toBe(
+      "¿Esfuerzo (RPE)?"
+    );
+  });
+
   it("falls back to the template label for unknown keys", () => {
     expect(
       resolveQuestionLabel("customMood", "guided", "¿Cómo te sientes hoy?")

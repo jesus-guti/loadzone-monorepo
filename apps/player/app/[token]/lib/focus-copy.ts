@@ -36,8 +36,8 @@ const QUESTION_PROMPTS: Record<string, Record<AgeBand, string>> = {
     independent: "¿Calidad del sueño?",
   },
   rpe: {
-    assisted: "¿Qué tan duro se sintió?",
-    guided: "¿Qué tan duro se sintió?",
+    assisted: "¿Qué tan exigente fue?",
+    guided: "¿Qué tan exigente fue?",
     independent: "¿Esfuerzo (RPE)?",
   },
 };
