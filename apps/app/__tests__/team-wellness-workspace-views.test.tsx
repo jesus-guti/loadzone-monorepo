@@ -103,4 +103,70 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
     ).toBeNull();
     expect(container.querySelector('[data-slot="card"]')).toBeNull();
   });
+
+  it("keeps Lista roster order while Tarjetas sort by severity", () => {
+    const wellnessLimits = {
+      recovery: 4,
+      energy: 2,
+      soreness: 4,
+      sleepHours: 6,
+      sleepQuality: 2,
+    };
+    const roster = [
+      createPlayer({
+        id: "healthy",
+        name: "Zeta Sana",
+        status: "AVAILABLE",
+        entries: [],
+      }),
+      createPlayer({
+        id: "alert",
+        name: "Ana Alerta",
+        status: "AVAILABLE",
+        entries: [
+          {
+            date: "2026-08-26T00:00:00.000Z",
+            recovery: 3,
+            energy: 4,
+            soreness: 1,
+            sleepHours: 8,
+            sleepQuality: 4,
+            rpe: null,
+            duration: null,
+            physioAlert: false,
+            preFilledAt: "2026-08-26T07:00:00.000Z",
+            postFilledAt: "2026-08-26T21:00:00.000Z",
+          },
+        ],
+      }),
+    ];
+
+    const { container } = render(
+      <TeamWellnessWorkspace
+        evaluatedDate="2026-08-26"
+        players={roster}
+        wellnessLimits={wellnessLimits}
+      />
+    );
+
+    const cardNames = [...container.querySelectorAll('[data-slot="card"]')].map(
+      (card) => card.textContent ?? ""
+    );
+    expect(cardNames[0]).toContain("Ana Alerta");
+    expect(cardNames[1]).toContain("Zeta Sana");
+
+    fireEvent.click(screen.getByRole("tab", { name: LISTA_TAB_PATTERN }));
+
+    const table = screen.getByRole("table");
+    const tableText = table.textContent ?? "";
+    expect(tableText.indexOf("Zeta Sana")).toBeLessThan(
+      tableText.indexOf("Ana Alerta")
+    );
+
+    const list = screen.getByRole("list", { name: "Comparativa de bienestar" });
+    const listText = list.textContent ?? "";
+    expect(listText.indexOf("Zeta Sana")).toBeLessThan(
+      listText.indexOf("Ana Alerta")
+    );
+  });
 });
