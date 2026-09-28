@@ -96,7 +96,8 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
     expect(within(list).getByText("Sueño")).toBeDefined();
     expect(within(list).getByText("Calidad")).toBeDefined();
     expect(within(list).getByText("RPE")).toBeDefined();
-    expect(within(list).getByText("Riesgo")).toBeDefined();
+    expect(within(list).queryByText("Riesgo")).toBeNull();
+    expect(within(screen.getByRole("table")).queryByText("Riesgo")).toBeNull();
     expect(
       screen.queryByRole("button", { name: PLAYER_NAME_PATTERN })
     ).toBeNull();

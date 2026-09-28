@@ -283,15 +283,9 @@ export function getDailyPlayerState(
   wellnessLimits?: WellnessLimits | null
 ): DailyPlayerState {
   const entry = getLatestEntry(player);
-  const riskLevel = player.stats[0]?.riskLevel;
   const hasWellnessAlert = getWellnessAlerts(entry, wellnessLimits).length > 0;
 
-  if (
-    entry?.physioAlert ||
-    riskLevel === "HIGH" ||
-    riskLevel === "CRITICAL" ||
-    hasWellnessAlert
-  ) {
+  if (entry?.physioAlert || hasWellnessAlert) {
     return "ALERT";
   }
 

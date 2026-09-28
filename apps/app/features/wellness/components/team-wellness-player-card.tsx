@@ -18,7 +18,6 @@ import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
   EnergyScale,
   RecoveryScale,
-  RiskScale,
   RpeScale,
   SorenessScale,
 } from "./wellness-scales";
@@ -27,9 +26,7 @@ import {
   getInitials,
   getInjuryLabel,
   getLatestEntry,
-  getRiskLabel,
   getWellnessAlerts,
-  hasCriticalRisk,
 } from "./team-wellness-workspace.utils";
 
 type TeamWellnessPlayerCardProperties = {
@@ -44,7 +41,6 @@ export function TeamWellnessPlayerCard({
   const entry = getLatestEntry(player);
   const state = getDailyPlayerState(player, wellnessLimits);
   const injuryLabel = getInjuryLabel(player.status);
-  const riskLevel = player.stats[0]?.riskLevel;
   const hasPhysio = Boolean(entry?.physioAlert);
   const showAvatarBadge = state === "ALERT" || Boolean(injuryLabel);
   const wellnessAlerts = getWellnessAlerts(entry, wellnessLimits);
@@ -115,11 +111,6 @@ export function TeamWellnessPlayerCard({
               {hasPhysio ? (
                 <Badge className="rounded-md" variant="destructive">
                   Fisio
-                </Badge>
-              ) : null}
-              {hasCriticalRisk(riskLevel) ? (
-                <Badge className="rounded-md" variant="destructive">
-                  Riesgo alto
                 </Badge>
               ) : null}
               {wellnessAlerts.map((alert) => (
@@ -195,24 +186,7 @@ export function TeamWellnessPlayerCard({
                   <p className="text-xs text-text-tertiary">RPE</p>
                   <RpeScale size="md" value={entry?.rpe ?? null} />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-text-tertiary">Riesgo</p>
-                  <RiskScale
-                    label={riskLevel ? getRiskLabel(riskLevel) : undefined}
-                    riskLevel={riskLevel}
-                    size="md"
-                  />
-                </div>
               </div>
-            </div>
-          ) : riskLevel ? (
-            <div className="space-y-1">
-              <p className="text-xs text-text-tertiary">Riesgo</p>
-              <RiskScale
-                label={getRiskLabel(riskLevel)}
-                riskLevel={riskLevel}
-                size="md"
-              />
             </div>
           ) : (
             <p className="text-sm text-text-tertiary">
