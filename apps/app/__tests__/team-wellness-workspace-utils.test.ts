@@ -127,7 +127,7 @@ describe("team wellness workspace utils", () => {
     expect(getDailyPlayerState(player, wellnessLimits)).toBe("COMPLETED");
   });
 
-  it("marca alerta por fisio aunque el riesgo almacenado sea bajo", () => {
+  it("still marks ALERT for physio when stored risk is low", () => {
     const player = createPlayer({
       entries: [
         {
