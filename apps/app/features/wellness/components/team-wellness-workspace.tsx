@@ -14,7 +14,10 @@ import { TeamWellnessComparisonList } from "./team-wellness-comparison-list";
 import { TeamWellnessComparisonTable } from "./team-wellness-comparison-table";
 import { TeamWellnessOverview } from "./team-wellness-overview";
 import { TeamWellnessPlayerCard } from "./team-wellness-player-card";
-import { buildWellnessSummary } from "./team-wellness-workspace.utils";
+import {
+  buildWellnessSummary,
+  sortPlayersByTarjetaSeverity,
+} from "./team-wellness-workspace.utils";
 
 type TeamWellnessWorkspaceProperties = {
   readonly evaluatedDate: string;
@@ -37,6 +40,11 @@ export function TeamWellnessWorkspace({
 
   const summary = useMemo(
     () => buildWellnessSummary(players, wellnessLimits),
+    [players, wellnessLimits]
+  );
+
+  const tarjetaPlayers = useMemo(
+    () => sortPlayersByTarjetaSeverity(players, wellnessLimits),
     [players, wellnessLimits]
   );
 
@@ -76,7 +84,7 @@ export function TeamWellnessWorkspace({
 
         <TabsContent className="mt-0 outline-none" value="cards">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {players.map((player) => (
+            {tarjetaPlayers.map((player) => (
               <TeamWellnessPlayerCard
                 key={player.id}
                 player={player}

@@ -240,6 +240,43 @@ export function getWellnessAlerts(
   }));
 }
 
+function isInjuredOrIll(status: PlayerStatus): boolean {
+  return status === "INJURED" || status === "ILL";
+}
+
+/**
+ * Tarjetas grid only: more wellness alerts first, then injured/ill, then name.
+ * Does not use riskLevel. Lista views keep roster order.
+ */
+export function sortPlayersByTarjetaSeverity(
+  players: TeamWellnessPlayer[],
+  wellnessLimits?: WellnessLimits | null
+): TeamWellnessPlayer[] {
+  return [...players].sort((left, right) => {
+    const leftAlerts = getWellnessAlerts(
+      getLatestEntry(left),
+      wellnessLimits
+    ).length;
+    const rightAlerts = getWellnessAlerts(
+      getLatestEntry(right),
+      wellnessLimits
+    ).length;
+
+    if (leftAlerts !== rightAlerts) {
+      return rightAlerts - leftAlerts;
+    }
+
+    const leftInjury = isInjuredOrIll(left.status) ? 1 : 0;
+    const rightInjury = isInjuredOrIll(right.status) ? 1 : 0;
+
+    if (leftInjury !== rightInjury) {
+      return rightInjury - leftInjury;
+    }
+
+    return left.name.localeCompare(right.name, "es", { sensitivity: "base" });
+  });
+}
+
 export function getDailyPlayerState(
   player: TeamWellnessPlayer,
   wellnessLimits?: WellnessLimits | null
