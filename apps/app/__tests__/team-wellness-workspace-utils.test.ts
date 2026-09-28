@@ -103,6 +103,52 @@ describe("team wellness workspace utils", () => {
     expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
   });
 
+  it("does not treat stored HIGH or CRITICAL risk as ALERT", () => {
+    const player = createPlayer({
+      entries: [
+        {
+          date: "2026-05-03T00:00:00.000Z",
+          recovery: 8,
+          energy: 4,
+          soreness: 2,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
+          physioAlert: false,
+        },
+      ],
+      stats: [{ riskLevel: "CRITICAL", acwr: 1.9 }],
+    });
+
+    expect(getDailyPlayerState(player, wellnessLimits)).toBe("COMPLETED");
+  });
+
+  it("still marks ALERT for physio when stored risk is low", () => {
+    const player = createPlayer({
+      entries: [
+        {
+          date: "2026-05-03T00:00:00.000Z",
+          recovery: 8,
+          energy: 4,
+          soreness: 2,
+          sleepHours: 8,
+          sleepQuality: 4,
+          rpe: 5,
+          duration: 80,
+          preFilledAt: "2026-05-03T07:00:00.000Z",
+          postFilledAt: "2026-05-03T21:00:00.000Z",
+          physioAlert: true,
+        },
+      ],
+      stats: [{ riskLevel: "LOW", acwr: 0.9 }],
+    });
+
+    expect(getDailyPlayerState(player, wellnessLimits)).toBe("ALERT");
+  });
+
   it("resume completitud y alertas del grupo filtrado", () => {
     const players = [
       createPlayer({

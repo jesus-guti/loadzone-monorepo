@@ -5,7 +5,6 @@ import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
 import {
   getLatestEntry,
-  getRiskLabel,
   toneForLowerIsBetter,
   wellnessValueClass,
 } from "./team-wellness-workspace.utils";
@@ -14,7 +13,6 @@ import {
   EmptyScale,
   EnergyScale,
   RecoveryScale,
-  RiskScale,
   SleepQualityScale,
   SorenessScale,
   rpeTrafficTone,
@@ -96,9 +94,6 @@ export function TeamWellnessComparisonList({
     <ul aria-label="Comparativa de bienestar" className="border-t border-border-tertiary">
       {players.map((player) => {
         const entry = getLatestEntry(player);
-        const riskLevel = player.stats[0]?.riskLevel;
-        const riskLabel =
-          riskLevel === undefined ? undefined : getRiskLabel(riskLevel);
 
         return (
           <li
@@ -147,13 +142,6 @@ export function TeamWellnessComparisonList({
               </MetricCell>
               <MetricCell label="RPE">
                 <RpeNumber value={entry?.rpe ?? null} />
-              </MetricCell>
-              <MetricCell label="Riesgo">
-                <RiskScale
-                  label={riskLabel}
-                  riskLevel={riskLevel}
-                  size="sm"
-                />
               </MetricCell>
             </div>
           </li>
