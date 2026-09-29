@@ -8,7 +8,6 @@ import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import type { TeamWellnessPlayer } from "@/lib/team-wellness";
 import type { WellnessLimits } from "@/lib/wellness-limits";
-import { PendingReminderDialog } from "./pending-reminder-dialog";
 import {
   averageProgressPercent,
   formatAverage,
@@ -114,14 +113,12 @@ function PendingPlayerBubble({ player }: PendingPlayerBubbleProperties) {
 }
 
 type TeamWellnessOverviewProperties = {
-  readonly evaluatedDate: string;
   readonly players: TeamWellnessPlayer[];
   readonly summary: TeamWellnessWorkspaceSummary;
   readonly wellnessLimits?: WellnessLimits | null;
 };
 
 export function TeamWellnessOverview({
-  evaluatedDate,
   players,
   summary,
   wellnessLimits,
@@ -157,41 +154,36 @@ export function TeamWellnessOverview({
     <div className="min-w-0 space-y-6">
       <div
         className={cn(
-          "flex items-start justify-between gap-4 rounded-md",
+          "min-w-0 space-y-2 rounded-md",
           hasPending ? "bg-bg-secondary/80 px-3 py-2.5" : null
         )}
       >
-        <div className="min-w-0 flex-1 space-y-2">
-          <p
-            className={cn(
-              "flex items-center gap-1.5 font-medium text-xs",
-              wellnessLabelClass(pendingTone)
-            )}
-          >
-            {hasPending ? (
-              <WarningIcon className="size-3.5 shrink-0" weight="fill" />
-            ) : (
-              <CheckCircleIcon className="size-3.5 shrink-0" weight="fill" />
-            )}
-            Formularios pendientes
-          </p>
           {hasPending ? (
-            <div className="flex flex-wrap gap-1.5">
-              {pendingPlayers.map((player) => (
-                <PendingPlayerBubble key={player.id} player={player} />
-              ))}
-            </div>
+            <>
+              <p
+                className={cn(
+                  "flex items-center gap-1.5 font-medium text-xs",
+                  wellnessLabelClass(pendingTone)
+                )}
+              >
+                <WarningIcon className="size-3.5 shrink-0" weight="fill" />
+                Sin responder
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {pendingPlayers.map((player) => (
+                  <PendingPlayerBubble key={player.id} player={player} />
+                ))}
+              </div>
+            </>
           ) : (
-            <p className="text-sm text-success">Todo al día</p>
+            <p className="flex items-center gap-1.5 font-medium text-sm text-text-primary">
+              <CheckCircleIcon className="size-3.5 shrink-0" weight="fill" />
+              Todo el equipo ha respondido
+            </p>
           )}
-        </div>
-        <PendingReminderDialog
-          evaluatedDate={evaluatedDate}
-          pendingCount={summary.pendingCount}
-        />
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <AverageMeter
           label="Recuperación media"
           percent={averageProgressPercent(summary.recoveryAverage, "recovery")}

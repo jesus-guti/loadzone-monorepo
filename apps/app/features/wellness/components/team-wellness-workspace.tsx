@@ -20,7 +20,6 @@ import {
 } from "./team-wellness-workspace.utils";
 
 type TeamWellnessWorkspaceProperties = {
-  readonly evaluatedDate: string;
   readonly players: TeamWellnessPlayer[];
   readonly wellnessLimits?: WellnessLimits | null;
 };
@@ -32,7 +31,6 @@ function isWellnessViewMode(value: string): value is WellnessViewMode {
 }
 
 export function TeamWellnessWorkspace({
-  evaluatedDate,
   players,
   wellnessLimits,
 }: TeamWellnessWorkspaceProperties) {
@@ -58,7 +56,7 @@ export function TeamWellnessWorkspace({
         }}
         value={viewMode}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-3">
           <TabsList aria-label="Vista de bienestar del equipo">
             <TabsTrigger type="button" value="cards">
               <SquaresFourIcon className="size-4" />
@@ -70,13 +68,12 @@ export function TeamWellnessWorkspace({
             </TabsTrigger>
           </TabsList>
 
-          <p className="self-start text-sm text-text-tertiary sm:self-auto">
+          <p className="text-sm text-text-tertiary tabular-nums">
             {players.length} jugadores
           </p>
         </div>
 
         <TeamWellnessOverview
-          evaluatedDate={evaluatedDate}
           players={players}
           summary={summary}
           wellnessLimits={wellnessLimits}

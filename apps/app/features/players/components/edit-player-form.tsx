@@ -13,7 +13,10 @@ import {
 import { toast } from "@repo/design-system/components/sonner";
 import type { PlayerStatus } from "@repo/database";
 import type { PlayingPosition } from "@repo/database/playing-position";
-import { PLAYING_POSITION_STAFF_LABEL } from "@repo/database/playing-position";
+import {
+  PLAYING_POSITIONS,
+  PLAYING_POSITION_STAFF_LABEL,
+} from "@repo/database/playing-position";
 import type { PlayerReminderConsentState } from "@repo/database/reminder-consent";
 import { useActionState, useEffect } from "react";
 import { DatePicker } from "@/components/date-picker";
@@ -54,11 +57,11 @@ const CONSENT_STATE_LABEL: Record<PlayerReminderConsentState, string> = {
 
 const PLAYING_POSITION_OPTIONS = [
   { value: "NONE", label: "Sin posición" },
-  { value: "POR", label: PLAYING_POSITION_STAFF_LABEL.POR },
-  { value: "DEF", label: PLAYING_POSITION_STAFF_LABEL.DEF },
-  { value: "MED", label: PLAYING_POSITION_STAFF_LABEL.MED },
-  { value: "DEL", label: PLAYING_POSITION_STAFF_LABEL.DEL },
-] as const;
+  ...PLAYING_POSITIONS.map((value) => ({
+    value,
+    label: `${PLAYING_POSITION_STAFF_LABEL[value]} (${value})`,
+  })),
+];
 
 const REMINDER_CONSENT_ACTION_OPTIONS = [
   { value: "LEAVE", label: "Mantener estado actual" },

@@ -262,12 +262,18 @@ enum AgeBand {
   INDEPENDENT
 }
 
-/// Coarse football line for Player identity (Streak Cromo). Not fine pitch slots.
+/// Specific football role for Player identity (Streak Cromo).
 enum PlayingPosition {
   POR
-  DEF
-  MED
-  DEL
+  DFC
+  LD
+  LI
+  MCD
+  MC
+  MCO
+  ED
+  EI
+  DC
 }
 
 /// Per-Player Reminder Consent ledger (PushSubscription is transport only — JES-45).

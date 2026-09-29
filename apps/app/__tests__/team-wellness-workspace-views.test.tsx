@@ -45,26 +45,24 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
   it("places Tarjetas / Lista above the team summary", () => {
     const { container } = render(
       <TeamWellnessWorkspace
-        evaluatedDate="2026-08-26"
         players={[createPlayer()]}
       />
     );
 
     const text = container.textContent ?? "";
     expect(text.indexOf("Tarjetas")).toBeLessThan(
-      text.indexOf("Formularios pendientes")
+      text.indexOf("Sin responder")
     );
   });
 
   it("shows player cards and no comparison table in Tarjetas", () => {
     const { container } = render(
       <TeamWellnessWorkspace
-        evaluatedDate="2026-08-26"
         players={[createPlayer()]}
       />
     );
 
-    expect(screen.getByText("Formularios pendientes")).toBeDefined();
+    expect(screen.getByText("Sin responder")).toBeDefined();
     expect(screen.queryByRole("table")).toBeNull();
     expect(screen.queryByRole("list", { name: "Comparativa de bienestar" })).toBeNull();
     expect(container.querySelector('[data-slot="card"]')).not.toBeNull();
@@ -73,14 +71,13 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
   it("shows comparison table and mobile list with all metrics in Lista, not cards", () => {
     const { container } = render(
       <TeamWellnessWorkspace
-        evaluatedDate="2026-08-26"
         players={[createPlayer()]}
       />
     );
 
     fireEvent.click(screen.getByRole("tab", { name: LISTA_TAB_PATTERN }));
 
-    expect(screen.getByText("Formularios pendientes")).toBeDefined();
+    expect(screen.getByText("Sin responder")).toBeDefined();
     expect(screen.getByRole("table")).toBeDefined();
     expect(
       within(screen.getByRole("table")).getByText("Jugador Uno")

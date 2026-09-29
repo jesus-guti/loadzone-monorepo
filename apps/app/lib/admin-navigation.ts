@@ -1,6 +1,7 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
   CalendarDotsIcon,
+  ChartBarIcon,
   GearSixIcon,
   HeartIcon,
   SoccerBallIcon,
@@ -35,6 +36,12 @@ export const operationalNavigation: AdminNavItem[] = [
     icon: CalendarDotsIcon,
     label: "Sesiones",
     match: (pathname: string) => matchesPath(pathname, "/sessions"),
+  },
+  {
+    href: "/carga",
+    icon: ChartBarIcon,
+    label: "Carga",
+    match: (pathname: string) => matchesPath(pathname, "/carga"),
   },
   {
     href: "/players",

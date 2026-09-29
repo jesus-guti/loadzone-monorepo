@@ -57,8 +57,8 @@ Removing a **Membership** so that **User** can no longer act in that **Club**. T
 _Avoid_: “Delete user” when you only mean leave a Club.
 
 **Playing Position**:
-Optional coarse line on a **Player**: POR, DEF, MED, or DEL. Identity on the **Streak Cromo** only — not a rating, attribute, or selection rule.
-_Avoid_: Fine pitch slots (LD, MCD, …) as required roster data; FUT-style attributes; treating missing position as an error.
+Optional specific role on a **Player**: POR, DFC, LD, LI, MCD, MC, MCO, ED, EI, or DC. Identity on the **Streak Cromo** only — not a rating, attribute, or selection rule.
+_Avoid_: FUT-style attributes; treating missing position as an error.
 
 **Session**:
 A scheduled **Team** event (training, match, recovery, or other) on a civil calendar day in the team’s timezone. May apply to the whole Team or a subset of **Players**.
@@ -97,20 +97,60 @@ A product-opinionated check-in measure used for load, care alerts, limits, and f
 _Avoid_: Treating every form field as a WellnessMetric; filling omitted metrics from a previous day; mixing the extra duplicate into load.
 
 **PlayerDailyStats**:
-Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios). Feeds the staff **Carga** surface.
-_Avoid_: “Stats” without player, day, and season context; naming the staff nav tab “Estadísticas” — product UI label is **Carga**.
+Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios). Feeds player-level views on the staff **Carga** surface.
+_Avoid_: “Stats” without player, day, and season context; naming the staff nav tab “Estadísticas” — product UI label is **Carga**; using these per-player sums as the team microcycle sheet (**Team daily load**, **Acute team load**, **Chronic team load**, **A:C**).
 
 **Carga**:
 Staff product surface (Spanish UI) for interactive load insight — microcycles, acute/chronic load, minutes rankings, and related **PlayerDailyStats** views. Primary destination for load analysis; CSV export is an escape hatch, not the main job.
 _Avoid_: Calling this surface “Estadísticas”; treating export-to-Excel as the intended load workflow.
 
 **Match Day**:
-Football calendar anchor for planning: the competition day (**MD**) and relative training days (**MD-1**, **MD-2**, …). Staff session planning and microcycles are expressed relative to Match Day when the product shows that framing.
-_Avoid_: Generic “D-day” without the Match Day / MD±n vocabulary when the UI is match-centric.
+Football calendar anchor for planning: the competition day (**MD**) and relative training days (**MD-1**, **MD-2**, …). On the **Carga** microcycle sheet the labels sit on the Monday–Sunday week: each match is **MD**, the next day is **MD+1**, and later days count down toward the next match. A Monday–Sunday week that contains no match shows the weekday only.
+_Avoid_: Generic “D-day” without the Match Day / MD±n vocabulary when the UI is match-centric; regrouping the **Microcycle** itself around the match; carrying MD±n onto a week with no match.
 
 **Microcycle**:
-A short training block (typically the days around one **Match Day**) used when presenting load and session structure in **Carga** and calendar UX.
-_Avoid_: Treating “week” and Microcycle as interchangeable when Match Day framing is in play.
+A Monday–Sunday calendar week used to lay out team load in **Carga**. **Microcycle** 1 is the first Monday–Sunday of preseason. Day headers may also show **Match Day** labels. Columns stay for all seven days, including days with no session and days before activity starts midweek.
+_Avoid_: A variable-length span from one match to the next; dropping empty days from the grid; starting a microcycle on a day other than Monday.
+
+**Shared session minutes**:
+The single duration of a non-match **Session** (training, recovery, or other). Every **Player** on that Session is credited the same minutes. Default when unset is 80.
+_Avoid_: Per-player training minutes; check-in duration; **Minutes played**.
+
+**Match lineup**:
+The starters and the bench for one match **Session**, laid out on one of five formations: 4-3-3, 4-4-2, 4-2-3-1, 3-5-2, or 5-3-2. The next match starts from the previous match’s formation, starters, and bench. Switching formation on that match keeps the same starters and bench; only the shape changes. There is no library of named lineups. Bench players stay at 0 **Minutes played** until a **Substitution** brings them on. **Minutes played** are not entered by hand.
+_Avoid_: A free list of minutes per player; rebuilding the XI from scratch every match when the previous one still applies; treating the bench as full-match minutes; a custom-drawn formation.
+
+**Substitution**:
+One change in a match: a player leaves and, unless it is a sending-off, another enters at a given minute. A sending-off is an exit with no entry; that player’s **Minutes played** stop at that minute and nobody receives the rest. **Minutes played** are derived from these events.
+_Avoid_: Typing the resulting minutes instead of the minute of the change; forcing a replacement on a sending-off.
+
+**Minutes played**:
+A **Player**’s time on the pitch in one match **Session**, derived from the **Match lineup**, each **Substitution**, and stoppage. Distinct from **Shared session minutes** and from check-in duration.
+_Avoid_: Typing each player’s match minutes by hand; using the player’s check-in duration as match minutes.
+
+**Full match length**:
+Regulation time plus the stoppage staff mark for each half, and the same again for each half of extra time when the match has it. A player on the pitch for the whole match is credited every half they finish and that half’s stoppage. Stoppage for a half is credited only to players still on at that half’s whistle. A **Substitution** minute at 46–90 falls in the second half.
+_Avoid_: A flat 90 that ignores stoppage; one stoppage figure for the whole match; giving stoppage to a player already substituted off.
+
+**Team day minutes**:
+The single duration for a civil day used when computing that day’s **Team daily load**. On a training-only day it is that Session’s **Shared session minutes**. On a day with a match it is the **Full match length**, even if that day also has a training Session. It is not a third number staff type in, and it is not the mean of **Minutes played**.
+_Avoid_: Minutes played; per-player duration; a separate staff field beside the training duration or the match stoppage; summing training and match on the same civil day.
+
+**Team daily load**:
+That civil day’s team load: the mean RPE of players who reported RPE, multiplied by the **Team day minutes**. A civil day with no reported RPE is 0.
+_Avoid_: Player sRPE; **PlayerDailyStats** acute load; omitting a rest day from the mean.
+
+**Acute team load**:
+The mean of **Team daily load** over the last 7 civil days on the **Carga** microcycle sheet, counting a rest day as 0.
+_Avoid_: The per-player acute sum on **PlayerDailyStats**; a mean of training days only.
+
+**Chronic team load**:
+The mean of **Team daily load** over the last 28 civil days on the **Carga** microcycle sheet (fewer days only while that window is still filling), counting a rest day as 0.
+_Avoid_: The per-player chronic figure on **PlayerDailyStats** (a sum divided by 4); a mean of training days only.
+
+**A:C**:
+**Acute team load** divided by **Chronic team load** on the **Carga** microcycle sheet. Below 0.8 is under-stimulus, 0.8–1.3 is the **Sweet spot**, 1.3–1.5 is the transition zone, and above 1.5 is the danger zone. A rise of 15% from one civil day to the next is the brusque-jump warning. Staff UI names the row **A:C** and puts **punto dulce** on that same row, so the ratio and its sweet spot read as one label.
+_Avoid_: Calling this the per-player ACWR on **PlayerDailyStats** without saying which one; treating 1.25 as the top of the sweet spot; naming the row only “sweet spot” or only “punto dulce” (that name is the 0.8–1.3 band, not the ratio).
 
 **PushSubscription**:
 A browser push subscription tied to a **Player** (session reminders, etc.).
@@ -150,7 +190,7 @@ Player-facing identity card in `apps/player` that visually evolves with the **Re
 _Avoid_: FUT-style attribute numbers; high-res export/share as the first habit surface; conflating with admin Team Wellness player cards; using Team logo as the crest source; putting the dorsal in the ink seal; foil on the rank seal; TCG rarity names (cosmos, secret rare, …) as foil-recipe names; treating the header racha pill as a foil surface; gyro without explicit Racha-sheet opt-in; pointer/gyro or ambient foil loops under `prefers-reduced-motion`; a full-card foil wash over the portrait (sleeve glare is not that wash); copying Pokémon card art or clip geometry; a foil celebration on every check-in; printing material tier names on the tier-up beat; replaying the morph on every Racha open.
 
 **Playing Position**:
-Optional coarse football line on a **Player**: **POR**, **DEF**, **MED**, or **DEL**. Staff set or clear it on create/edit; **Streak Cromo** shows that Spanish abbreviation only when set. Not fine pitch slots (LB, CM, ST, …).
+Optional specific football role on a **Player**: **POR**, **DFC**, **LD**, **LI**, **MCD**, **MC**, **MCO**, **ED**, **EI**, or **DC**. Staff set or clear it on create/edit; **Streak Cromo** shows that Spanish abbreviation only when set.
 _Avoid_: Treating empty as a displayed «Sin posición» on the cromo; inventing per-slot pitch coordinates.
 
 **Shirt number**:
@@ -232,6 +272,7 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 
 ## Flagged ambiguities
 
+- **Shared session minutes** vs **Minutes played** vs **Team day minutes**: a non-match Session has one shared duration (default 80), edited on that Session with steppers and a typed value. A match derives **Minutes played** from the **Match lineup** (starters and bench; bench at 0 until they enter), each **Substitution** (a sending-off is an exit with no entry), per-half stoppage only for players still on at the whistle, and two extra-time halves when needed. **Team day minutes** is the shared duration on a training-only day and the **Full match length** on any day that has a match.
 - **User** vs **Player**: a **User** is staff login (this wave); **Player** is the roster entity and may exist without a linked **User**. Player/Guardian Users remain deferred.
 - Public staff signup (first Coordinator creates a Club) is deferred; until then Clubs receive staff only via **Staff Invitation** (plus operator bootstrap of **Super Admin**).
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
