@@ -11,8 +11,6 @@ import {
 } from "../session-persistence";
 
 type SignInState = {
-  email: string;
-  password: string;
   rememberMe: boolean;
   error: string | null;
 };
@@ -31,16 +29,10 @@ function getCookieAttributes(maxAge: number): string {
   return `Path=/; Max-Age=${maxAge}; SameSite=Lax${secureAttribute}`;
 }
 
-function loadRememberedSignInState(): Pick<SignInState, "email" | "rememberMe"> {
-  const rememberedEmail =
-    typeof window.localStorage.getItem(REMEMBERED_EMAIL_STORAGE_KEY) === "string"
-      ? window.localStorage.getItem(REMEMBERED_EMAIL_STORAGE_KEY)?.trim() ?? ""
-      : "";
+function loadRememberedEmail(): string {
+  const stored = window.localStorage.getItem(REMEMBERED_EMAIL_STORAGE_KEY);
 
-  return {
-    email: rememberedEmail,
-    rememberMe: parseRememberMeValue(getCookieValue(REMEMBER_ME_COOKIE_NAME)),
-  };
+  return typeof stored === "string" ? stored.trim() : "";
 }
 
 function persistRememberedSignInState(email: string, rememberMe: boolean): void {
@@ -58,8 +50,6 @@ function persistRememberedSignInState(email: string, rememberMe: boolean): void 
 export const SignIn = () => {
   const [csrfToken, setCsrfToken] = useState("");
   const [state, setState] = useState<SignInState>({
-    email: "",
-    password: "",
     rememberMe: false,
     error: null,
   });
@@ -81,13 +71,20 @@ export const SignIn = () => {
     }
 
     try {
-      const rememberedState = loadRememberedSignInState();
-
       setState((currentState) => ({
         ...currentState,
-        email: currentState.email || rememberedState.email,
-        rememberMe: rememberedState.rememberMe,
+        rememberMe: parseRememberMeValue(getCookieValue(REMEMBER_ME_COOKIE_NAME)),
       }));
+
+      const emailInput = document.getElementById("email");
+
+      if (emailInput instanceof HTMLInputElement && emailInput.value.trim() === "") {
+        const rememberedEmail = loadRememberedEmail();
+
+        if (rememberedEmail) {
+          emailInput.value = rememberedEmail;
+        }
+      }
     } catch {
       // Ignore storage access errors and fall back to browser autofill only.
     }
@@ -146,13 +143,6 @@ export const SignIn = () => {
             id="email"
             name="email"
             type="email"
-            value={state.email}
-            onChange={(event) =>
-              setState((currentState) => ({
-                ...currentState,
-                email: event.target.value,
-              }))
-            }
             className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
             placeholder="staff@club.com"
             autoComplete="username"
@@ -175,15 +165,7 @@ export const SignIn = () => {
             id="password"
             name="password"
             type="password"
-            value={state.password}
-            onChange={(event) =>
-              setState((currentState) => ({
-                ...currentState,
-                password: event.target.value,
-              }))
-            }
             className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
-            placeholder="********"
             autoComplete="current-password"
             required
           />
