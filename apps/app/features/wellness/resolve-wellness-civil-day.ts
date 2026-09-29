@@ -1,4 +1,14 @@
+import { toCivilDateString } from "@repo/database/recoverable-streak";
+
 const CIVIL_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const DEFAULT_TEAM_TIME_ZONE = "Europe/Madrid";
+
+export function teamCivilToday(
+  timeZone: string | null | undefined,
+  now: Date = new Date()
+): string {
+  return toCivilDateString(now, timeZone || DEFAULT_TEAM_TIME_ZONE);
+}
 
 type WellnessDateCookie = {
   readonly viewed: string;

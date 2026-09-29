@@ -9,7 +9,10 @@ import {
   WellnessBaselineEmptyStates,
   WellnessDateFilter,
 } from "@/features/wellness";
-import { resolveWellnessCivilDay } from "@/features/wellness/resolve-wellness-civil-day";
+import {
+  resolveWellnessCivilDay,
+  teamCivilToday,
+} from "@/features/wellness/resolve-wellness-civil-day";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { ACTIVE_WELLNESS_DATE_COOKIE_NAME } from "@/lib/auth-context";
 import { resolveRecommendedSetup } from "@/lib/recommended-setup";
@@ -51,12 +54,12 @@ const WellnessPage = async () => {
   }
 
   const cookieStore = await cookies();
-  const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
+  const todayCivilDay = teamCivilToday(staffContext.activeTeam.timezone);
   const evaluatedDate = parseWellnessDateValue(
     resolveWellnessCivilDay({
       cookieValue:
         cookieStore.get(ACTIVE_WELLNESS_DATE_COOKIE_NAME)?.value ?? null,
-      todayCivilDay: toCivilDateString(new Date(), timeZone),
+      todayCivilDay,
     })
   );
 
@@ -91,7 +94,10 @@ const WellnessPage = async () => {
     <>
       <Header page="Wellness" pages={["LoadZone"]}>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <WellnessDateFilter initialDate={data.evaluatedDate} />
+          <WellnessDateFilter
+            initialDate={data.evaluatedDate}
+            todayCivilDay={todayCivilDay}
+          />
           <ExportWellnessCsvDialog
             defaultEndDate={defaultEndDate}
             defaultStartDate={defaultStartDate}

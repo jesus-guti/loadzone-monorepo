@@ -14,6 +14,7 @@ import { setActiveWellnessDate } from "@/actions/active-wellness-date";
 
 type WellnessDateFilterProperties = {
   readonly initialDate: string;
+  readonly todayCivilDay: string;
 };
 
 function parseDateValue(dateValue: string): Date {
@@ -36,15 +37,8 @@ function formatDateValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function isSameDay(leftDate: Date, rightDate: Date): boolean {
-  return formatDateValue(leftDate) === formatDateValue(rightDate);
-}
-
-function formatButtonLabel(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (isSameDay(date, today)) {
+function formatButtonLabel(date: Date, todayCivilDay: string): string {
+  if (formatDateValue(date) === todayCivilDay) {
     return "Hoy";
   }
 
@@ -56,6 +50,7 @@ function formatButtonLabel(date: Date): string {
 
 export function WellnessDateFilter({
   initialDate,
+  todayCivilDay,
 }: WellnessDateFilterProperties) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -65,8 +60,8 @@ export function WellnessDateFilter({
   );
 
   const buttonLabel = useMemo(
-    () => formatButtonLabel(selectedDate),
-    [selectedDate]
+    () => formatButtonLabel(selectedDate, todayCivilDay),
+    [selectedDate, todayCivilDay]
   );
 
   const handleDateSelect = (date: Date | undefined): void => {
@@ -87,9 +82,7 @@ export function WellnessDateFilter({
   };
 
   const goToToday = (): void => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    handleDateSelect(today);
+    handleDateSelect(parseDateValue(todayCivilDay));
   };
 
   return (
