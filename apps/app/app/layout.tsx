@@ -3,7 +3,14 @@ import "./styles.css";
 import { AuthProvider } from "@repo/auth/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+
+export const metadata: Metadata = {
+  icons: {
+    icon: "/brand/mark.svg",
+  },
+};
 
 type RootLayoutProperties = {
   readonly children: ReactNode;
