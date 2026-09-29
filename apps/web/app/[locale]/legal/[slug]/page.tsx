@@ -5,47 +5,117 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type LegalPageProperties = {
-  readonly params: Promise<{ slug: string }>;
+  readonly params: Promise<{ locale: string; slug: string }>;
 };
 
-const LEGAL_SLUGS = ["privacy", "terms"] as const;
+const LEGAL_LOCALES = ["es", "en"] as const;
+
+const LEGAL_PAGES = {
+  privacy: {
+    es: {
+      title: "Política de privacidad",
+      sections: [
+        "Responsable",
+        "Datos",
+        "Finalidad",
+        "Conservación",
+        "Cesiones",
+        "Derechos",
+        "Contacto",
+      ],
+    },
+    en: {
+      title: "Privacy policy",
+      sections: [
+        "Controller",
+        "Data",
+        "Purpose",
+        "Retention",
+        "Sharing",
+        "Rights",
+        "Contact",
+      ],
+    },
+  },
+  cookies: {
+    es: {
+      title: "Política de cookies",
+      sections: ["Qué son", "Cuáles usamos", "Cómo gestionarlas"],
+    },
+    en: {
+      title: "Cookie policy",
+      sections: ["What they are", "Which we use", "How to manage them"],
+    },
+  },
+  "legal-notice": {
+    es: {
+      title: "Aviso legal",
+      sections: ["Titular", "Objeto", "Propiedad intelectual", "Contacto"],
+    },
+    en: {
+      title: "Legal notice",
+      sections: ["Owner", "Purpose", "Intellectual property", "Contact"],
+    },
+  },
+} as const;
+
+type LegalSlug = keyof typeof LEGAL_PAGES;
+type LegalLocale = (typeof LEGAL_LOCALES)[number];
+
+function isLegalSlug(slug: string): slug is LegalSlug {
+  return slug in LEGAL_PAGES;
+}
+
+function isLegalLocale(locale: string): locale is LegalLocale {
+  return LEGAL_LOCALES.includes(locale as LegalLocale);
+}
 
 export const generateMetadata = async ({
   params,
 }: LegalPageProperties): Promise<Metadata> => {
-  const { slug } = await params;
-  if (!LEGAL_SLUGS.includes(slug as (typeof LEGAL_SLUGS)[number])) {
+  const { locale, slug } = await params;
+  if (!isLegalLocale(locale) || !isLegalSlug(slug)) {
     return {};
   }
-  const title = slug === "privacy" ? "Privacy Policy" : "Terms of Service";
+  const title = LEGAL_PAGES[slug][locale].title;
   return createMetadata({ title, description: title });
 };
 
-export const generateStaticParams = async (): Promise<{ slug: string }[]> =>
-  LEGAL_SLUGS.map((slug) => ({ slug }));
+export const generateStaticParams = async (): Promise<
+  { locale: string; slug: string }[]
+> =>
+  LEGAL_LOCALES.flatMap((locale) =>
+    (Object.keys(LEGAL_PAGES) as LegalSlug[]).map((slug) => ({ locale, slug }))
+  );
 
 const LegalPage = async ({ params }: LegalPageProperties) => {
-  const { slug } = await params;
-  if (!LEGAL_SLUGS.includes(slug as (typeof LEGAL_SLUGS)[number])) {
+  const { locale, slug } = await params;
+  if (!isLegalLocale(locale) || !isLegalSlug(slug)) {
     notFound();
   }
-  const title = slug === "privacy" ? "Privacy Policy" : "Terms of Service";
+
+  const page = LEGAL_PAGES[slug][locale];
+  const backLabel = locale === "es" ? "Volver al inicio" : "Back to home";
 
   return (
     <div className="container max-w-5xl py-16">
       <Link
         className="mb-4 inline-flex items-center gap-1 text-muted-foreground text-sm focus:underline focus:outline-none"
-        href="/"
+        href={`/${locale}`}
       >
         <CaretLeftIcon className="h-4 w-4" />
-        Back to Home
+        {backLabel}
       </Link>
-      <h1 className="scroll-m-20 text-balance font-extrabold text-4xl tracking-tight lg:text-5xl">
-        {title}
+      <h1 className="scroll-m-20 text-balance text-4xl font-extrabold tracking-tight lg:text-5xl">
+        {page.title}
       </h1>
-      <p className="mt-6 text-balance leading-7">
-        Placeholder content. Replace with your legal pages.
-      </p>
+      <div className="mt-10 space-y-8">
+        {page.sections.map((section) => (
+          <section key={section}>
+            <h2 className="text-xl font-semibold tracking-tight">{section}</h2>
+          </section>
+        ))}
+      </div>
     </div>
   );
 };

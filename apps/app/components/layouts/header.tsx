@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ProductMark } from "@/components/brand/product-mark";
 import { ActiveSeasonSwitcher } from "./active-season-switcher";
 import { ActiveTeamSwitcher } from "./active-team-switcher";
 import { useAppShell } from "./app-shell-context";
@@ -19,10 +20,8 @@ export const Header = ({ page, children }: HeaderProps) => {
     <header className="sticky top-0 z-20 bg-bg-primary/95 backdrop-blur">
       <div className="hidden items-center justify-between gap-4 px-6 py-6 md:flex">
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <div className="relative flex min-w-0 flex-col gap-0.5 -mt-0.5">
-            <p className="absolute -top-2 truncate font-medium text-[11px] text-text-secondary uppercase tracking-[0.16em]">
-              LoadZone
-            </p>
+          <div className="flex min-w-0 flex-col gap-1">
+            <ProductMark compact />
             <h1 className="truncate font-semibold text-2xl text-text-primary tracking-tight">
               {page}
             </h1>

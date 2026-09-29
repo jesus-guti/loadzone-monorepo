@@ -1,18 +1,29 @@
 "use client";
 
-import { getCsrfToken } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { getCsrfToken } from "next-auth/react";
+import { type FormEvent, useEffect, useState } from "react";
 import {
-  REMEMBERED_EMAIL_STORAGE_KEY,
+  parseRememberMeValue,
   REMEMBER_ME_COOKIE_MAX_AGE_SECONDS,
   REMEMBER_ME_COOKIE_NAME,
-  parseRememberMeValue,
+  REMEMBERED_EMAIL_STORAGE_KEY,
 } from "../session-persistence";
+
+type SignInLegalLinks = {
+  privacyUrl: string;
+  cookiesUrl: string;
+  legalNoticeUrl: string;
+};
+
+type SignInProps = {
+  readonly legalLinks?: SignInLegalLinks;
+};
 
 type SignInState = {
   rememberMe: boolean;
   error: string | null;
+  showPassword: boolean;
 };
 
 function getCookieValue(name: string): string | undefined {
@@ -24,7 +35,8 @@ function getCookieValue(name: string): string | undefined {
 }
 
 function getCookieAttributes(maxAge: number): string {
-  const secureAttribute = window.location.protocol === "https:" ? "; Secure" : "";
+  const secureAttribute =
+    window.location.protocol === "https:" ? "; Secure" : "";
 
   return `Path=/; Max-Age=${maxAge}; SameSite=Lax${secureAttribute}`;
 }
@@ -35,7 +47,10 @@ function loadRememberedEmail(): string {
   return typeof stored === "string" ? stored.trim() : "";
 }
 
-function persistRememberedSignInState(email: string, rememberMe: boolean): void {
+function persistRememberedSignInState(
+  email: string,
+  rememberMe: boolean
+): void {
   if (rememberMe) {
     window.localStorage.setItem(REMEMBERED_EMAIL_STORAGE_KEY, email);
     document.cookie = `${REMEMBER_ME_COOKIE_NAME}=true; ${getCookieAttributes(REMEMBER_ME_COOKIE_MAX_AGE_SECONDS)}`;
@@ -47,11 +62,12 @@ function persistRememberedSignInState(email: string, rememberMe: boolean): void 
   document.cookie = `${REMEMBER_ME_COOKIE_NAME}=; ${getCookieAttributes(0)}`;
 }
 
-export const SignIn = () => {
+export const SignIn = ({ legalLinks }: SignInProps) => {
   const [csrfToken, setCsrfToken] = useState("");
   const [state, setState] = useState<SignInState>({
     rememberMe: false,
     error: null,
+    showPassword: false,
   });
 
   useEffect(() => {
@@ -61,7 +77,9 @@ export const SignIn = () => {
       }
     });
 
-    const signInError = new URLSearchParams(window.location.search).get("error");
+    const signInError = new URLSearchParams(window.location.search).get(
+      "error"
+    );
 
     if (signInError) {
       setState((currentState) => ({
@@ -73,12 +91,17 @@ export const SignIn = () => {
     try {
       setState((currentState) => ({
         ...currentState,
-        rememberMe: parseRememberMeValue(getCookieValue(REMEMBER_ME_COOKIE_NAME)),
+        rememberMe: parseRememberMeValue(
+          getCookieValue(REMEMBER_ME_COOKIE_NAME)
+        ),
       }));
 
       const emailInput = document.getElementById("email");
 
-      if (emailInput instanceof HTMLInputElement && emailInput.value.trim() === "") {
+      if (
+        emailInput instanceof HTMLInputElement &&
+        emailInput.value.trim() === ""
+      ) {
         const rememberedEmail = loadRememberedEmail();
 
         if (rememberedEmail) {
@@ -109,23 +132,24 @@ export const SignIn = () => {
     }
   }
 
+  const fieldClassName =
+    "h-12 w-full border border-border-secondary bg-bg-primary px-3 text-sm text-text-primary outline-none rounded-md placeholder:text-text-tertiary focus:border-text-primary";
+
   return (
-    <div className="w-full rounded-2xl border border-border-secondary bg-bg-primary p-6 shadow-sm sm:p-7">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-          Inicia sesión
-        </h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Accede al panel de LoadZone con tu cuenta.
-        </p>
-      </div>
+    <div className="w-full">
+      <p className="text-center text-sm leading-6 text-text-secondary">
+        Identifícate con tu cuenta de staff de LoadZone.
+      </p>
+      <h1 className="mx-auto mt-6 w-fit border-b-2 border-text-primary pb-2 text-center text-lg font-semibold text-text-primary">
+        Iniciar sesión
+      </h1>
 
       <form
-        className="space-y-5"
-        onSubmit={handleSubmit}
-        method="post"
         action="/api/auth/callback/credentials"
         autoComplete="on"
+        className="mt-8 space-y-5"
+        method="post"
+        onSubmit={handleSubmit}
       >
         <input name="csrfToken" type="hidden" value={csrfToken} />
         <input name="callbackUrl" type="hidden" value="/" />
@@ -136,87 +160,117 @@ export const SignIn = () => {
         />
 
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-text-primary">
-            Email
+          <label
+            className={
+              state.error ? "text-sm text-danger" : "text-sm text-text-primary"
+            }
+            htmlFor="email"
+          >
+            Correo electrónico
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
-            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
-            placeholder="staff@club.com"
-            autoComplete="username"
             autoCapitalize="none"
+            autoComplete="username"
             autoCorrect="off"
+            className={fieldClassName}
+            id="email"
             inputMode="email"
-            spellCheck={false}
+            name="email"
+            placeholder="Correo electrónico"
             required
+            spellCheck={false}
+            type="email"
           />
+          {state.error ? (
+            <p className="text-sm text-danger">{state.error}</p>
+          ) : null}
         </div>
 
         <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-text-primary"
-          >
+          <label className="text-sm text-text-primary" htmlFor="password">
             Contraseña
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="h-12 w-full  border border-border-secondary bg-bg-secondary px-4 text-sm text-text-primary outline-none ring-0 placeholder:text-text-tertiary focus:border-brand"
-            autoComplete="current-password"
-            required
-          />
+          <div className="flex items-center gap-2">
+            <input
+              autoComplete="current-password"
+              className={fieldClassName}
+              id="password"
+              name="password"
+              placeholder="Contraseña"
+              required
+              type={state.showPassword ? "text" : "password"}
+            />
+            <button
+              aria-label={
+                state.showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+              className="flex size-12 shrink-0 rounded-md items-center justify-center border border-border-secondary text-text-secondary"
+              onClick={() =>
+                setState((currentState) => ({
+                  ...currentState,
+                  showPassword: !currentState.showPassword,
+                }))
+              }
+              type="button"
+            >
+              <PasswordVisibilityIcon hidden={!state.showPassword} />
+            </button>
+          </div>
         </div>
 
-        <label className="flex items-start gap-3 py-1 text-text-secondary">
+        <p className="text-sm text-text-secondary">
+          <Link className="underline" href="/forgot-password">
+            ¿Has olvidado la contraseña?
+          </Link>
+        </p>
+
+        <label className="flex items-center gap-3 text-sm text-text-primary">
           <input
-            type="checkbox"
             checked={state.rememberMe}
+            className="size-4 border-border-secondary"
             onChange={(event) =>
               setState((currentState) => ({
                 ...currentState,
                 rememberMe: event.target.checked,
               }))
             }
-            className="mt-0.5 h-4 w-4 rounded border-border-secondary text-brand focus:ring-brand"
+            type="checkbox"
           />
-          <span className="min-w-0">
-            <span className="block text-sm font-medium text-text-primary">
-              Recordarme
-            </span>
-            <span className="mt-1 block text-xs leading-5 text-text-secondary">
-              Mantiene la sesión abierta durante más tiempo en este dispositivo y
-              recuerda tu email.
-            </span>
-          </span>
+          Recordarme en este dispositivo
         </label>
 
-        {state.error ? (
-          <p className=" bg-danger/10 px-3 py-2 text-sm text-danger">
-            {state.error}
-          </p>
-        ) : null}
-
-        <p className="text-sm text-text-secondary">
-          <Link
-            href="/forgot-password"
-            className="font-medium text-text-primary underline"
-          >
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </p>
-
         <button
-          type="submit"
+          className="h-12 w-full rounded-md bg-text-primary text-sm font-semibold text-bg-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!csrfToken}
-          className="h-12 w-full  bg-brand px-4 text-sm font-semibold text-brand-foreground transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+          type="submit"
         >
-          Entrar
+          Iniciar sesión
         </button>
       </form>
+
+      {legalLinks ? (
+        <nav className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-text-tertiary">
+          <a href={legalLinks.privacyUrl}>Política de privacidad</a>
+          <a href={legalLinks.cookiesUrl}>Política de cookies</a>
+          <a href={legalLinks.legalNoticeUrl}>Aviso legal</a>
+        </nav>
+      ) : null}
     </div>
   );
 };
+
+function PasswordVisibilityIcon({ hidden }: { readonly hidden: boolean }) {
+  return (
+    <svg aria-hidden className="size-5" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      {hidden ? (
+        <path d="M5 19 19 5" stroke="currentColor" strokeWidth="1.5" />
+      ) : null}
+    </svg>
+  );
+}

@@ -4,6 +4,10 @@ LoadZone is an amateur football wellness and load monitoring product: staff mana
 
 ## Language
 
+**Product mark**:
+The LoadZone symbol plus the wordmark “LoadZone”. The symbol is an abstract load or zone form in the sage brand family. It identifies the product on staff sign-in and in the staff shell. It is not a **Club** logo or a **Team** logo.
+_Avoid_: A letter cut out of a shield; a ball, pitch, or shirt as the symbol; using the Product mark where Club or Team branding belongs.
+
 **Club**:
 Sports organisation that groups teams and shared resources (e.g. the club’s exercise library).
 _Avoid_: “Tenant” in business-facing prose.
