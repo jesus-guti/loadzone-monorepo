@@ -9,6 +9,7 @@ import {
   WellnessBaselineEmptyStates,
   WellnessDateFilter,
 } from "@/features/wellness";
+import { resolveWellnessCivilDay } from "@/features/wellness/resolve-wellness-civil-day";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { ACTIVE_WELLNESS_DATE_COOKIE_NAME } from "@/lib/auth-context";
 import { resolveRecommendedSetup } from "@/lib/recommended-setup";
@@ -50,8 +51,13 @@ const WellnessPage = async () => {
   }
 
   const cookieStore = await cookies();
+  const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
   const evaluatedDate = parseWellnessDateValue(
-    cookieStore.get(ACTIVE_WELLNESS_DATE_COOKIE_NAME)?.value ?? null
+    resolveWellnessCivilDay({
+      cookieValue:
+        cookieStore.get(ACTIVE_WELLNESS_DATE_COOKIE_NAME)?.value ?? null,
+      todayCivilDay: toCivilDateString(new Date(), timeZone),
+    })
   );
 
   const data = await getTeamWellnessWorkspaceData(

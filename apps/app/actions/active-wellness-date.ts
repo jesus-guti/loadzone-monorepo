@@ -1,6 +1,8 @@
 "use server";
 
+import { toCivilDateString } from "@repo/database/recoverable-streak";
 import { cookies } from "next/headers";
+import { serializeWellnessDateCookie } from "@/features/wellness/resolve-wellness-civil-day";
 import {
   ACTIVE_WELLNESS_DATE_COOKIE_NAME,
   getCurrentStaffContext,
@@ -31,8 +33,10 @@ export async function setActiveWellnessDate(dateValue: string): Promise<void> {
     throw new Error("Fecha no válida.");
   }
 
+  const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
+  const todayCivilDay = toCivilDateString(new Date(), timeZone);
   const cookieStore = await cookies();
-  cookieStore.set(ACTIVE_WELLNESS_DATE_COOKIE_NAME, dateValue, {
+  cookieStore.set(ACTIVE_WELLNESS_DATE_COOKIE_NAME, serializeWellnessDateCookie(dateValue, todayCivilDay), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
