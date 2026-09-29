@@ -140,7 +140,6 @@ describe("TeamWellnessWorkspace exclusive roster views", () => {
 
     const { container } = render(
       <TeamWellnessWorkspace
-        evaluatedDate="2026-08-26"
         players={roster}
         wellnessLimits={wellnessLimits}
       />
