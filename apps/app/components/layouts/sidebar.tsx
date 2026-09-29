@@ -58,7 +58,9 @@ const sidebarPrefetchHrefs = Array.from(
       ...operationalNavigation,
       configurationNavItem,
       ...settingsNavigation,
-    ].map((item) => item.href)
+    ]
+      .filter((item) => !("disabled" in item && item.disabled))
+      .map((item) => item.href)
   )
 );
 
@@ -153,16 +155,32 @@ export const GlobalSidebar = ({
                   <SidebarMenu>
                     {operationalNavigation.map((item) => (
                       <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          isActive={item.match(pathname)}
-                          render={
-                            <Link href={item.href} prefetch>
-                              <item.icon weight="fill" />
-                              <span>{item.label}</span>
-                            </Link>
-                          }
-                          tooltip={item.label}
-                        />
+                        {item.disabled ? (
+                          <SidebarMenuButton
+                            aria-disabled="true"
+                            className="pointer-events-none opacity-60"
+                            tooltip={item.label}
+                          >
+                            <item.icon weight="fill" />
+                            <span className="flex-1">{item.label}</span>
+                            {item.badge ? (
+                              <span className="ml-auto shrink-0 overflow-visible rounded-full bg-bg-tertiary px-1.5 py-0.5 font-medium text-[10px] text-text-secondary uppercase tracking-wide">
+                                {item.badge}
+                              </span>
+                            ) : null}
+                          </SidebarMenuButton>
+                        ) : (
+                          <SidebarMenuButton
+                            isActive={item.match(pathname)}
+                            render={
+                              <Link href={item.href} prefetch>
+                                <item.icon weight="fill" />
+                                <span>{item.label}</span>
+                              </Link>
+                            }
+                            tooltip={item.label}
+                          />
+                        )}
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>

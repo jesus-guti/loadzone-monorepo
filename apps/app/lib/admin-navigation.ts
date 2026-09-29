@@ -4,7 +4,6 @@ import {
   ChartBarIcon,
   GearSixIcon,
   HeartIcon,
-  SoccerBallIcon,
   UsersIcon,
 } from "@phosphor-icons/react/ssr";
 
@@ -13,6 +12,9 @@ export type AdminNavItem = {
   icon: Icon;
   label: string;
   match: (pathname: string) => boolean;
+  /** Shown in the sidebar; the destination stays unreachable. */
+  disabled?: boolean;
+  badge?: string;
 };
 
 function matchesPath(pathname: string, href: string): boolean {
@@ -42,18 +44,14 @@ export const operationalNavigation: AdminNavItem[] = [
     icon: ChartBarIcon,
     label: "Carga",
     match: (pathname: string) => matchesPath(pathname, "/carga"),
+    disabled: true,
+    badge: "Pronto",
   },
   {
     href: "/players",
     icon: UsersIcon,
     label: "Jugadores",
     match: (pathname: string) => matchesPath(pathname, "/players"),
-  },
-  {
-    href: "/exercises",
-    icon: SoccerBallIcon,
-    label: "Ejercicios",
-    match: (pathname: string) => matchesPath(pathname, "/exercises"),
   },
   {
     href: "/injuries",
