@@ -44,8 +44,6 @@ export const operationalNavigation: AdminNavItem[] = [
     icon: ChartBarIcon,
     label: "Carga",
     match: (pathname: string) => matchesPath(pathname, "/carga"),
-    disabled: true,
-    badge: "Pronto",
   },
   {
     href: "/players",

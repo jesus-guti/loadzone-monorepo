@@ -1,5 +1,7 @@
 import { cn } from "@repo/design-system/lib/utils";
 import type { ReactNode } from "react";
+import { rpeTrafficTone } from "@/features/wellness/components/wellness-scales/metric-scales";
+import { wellnessValueClass } from "@/features/wellness/components/team-wellness-workspace.utils";
 import {
   acBand,
   type AcBand,
@@ -42,6 +44,22 @@ function LoadNumber({
           +15%
         </span>
       ) : null}
+    </span>
+  );
+}
+
+function RpeCell({ value }: { readonly value: number | null }) {
+  if (value === null) {
+    return <span className="text-text-tertiary">—</span>;
+  }
+
+  const level = Math.min(10, Math.max(0, Math.round(value)));
+  return (
+    <span
+      aria-label={`RPE ${level} de 10`}
+      className={cn("font-semibold tabular-nums", wellnessValueClass(rpeTrafficTone(level)))}
+    >
+      {level}
     </span>
   );
 }
@@ -236,19 +254,15 @@ export function MicrocycleSheetView({
               >
                 {player.name}
               </th>
-              {player.loads.map((load, index) => (
+              {player.rpe.map((value, index) => (
                 <td
                   key={sheet.days[index]?.key ?? index}
                   className={cn(
                     COL,
-                    "border-t border-border-secondary py-2 text-text-primary tabular-nums"
+                    "border-t border-border-secondary py-2 text-text-primary"
                   )}
                 >
-                  {load === 0 ? (
-                    <span className="text-text-tertiary">0</span>
-                  ) : (
-                    load
-                  )}
+                  <RpeCell value={value} />
                 </td>
               ))}
             </tr>

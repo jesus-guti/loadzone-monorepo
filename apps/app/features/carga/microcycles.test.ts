@@ -92,6 +92,7 @@ describe("buildMicrocycleSheet", () => {
     const tuesday = sheet.days[1];
     expect(monday?.minutes).toBe(SHARED_DAY_MINUTES);
     expect(monday?.teamLoad).toBe(Math.round(((6 + 8) / 2) * 95));
+    expect(sheet.players.map((player) => player.rpe[0])).toEqual([6, 8, null]);
     expect(sheet.players.map((player) => player.loads[0])).toEqual([
       6 * 95,
       8 * 95,

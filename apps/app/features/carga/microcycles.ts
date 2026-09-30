@@ -45,7 +45,10 @@ export type Microcycle = {
 export type PlayerRow = {
   readonly id: string;
   readonly name: string;
+  /** Session load (RPE × shared minutes). Feeds team daily load. */
   readonly loads: readonly number[];
+  /** Reported RPE (1–10). Null when the player did not report that day. */
+  readonly rpe: readonly (number | null)[];
 };
 
 export type MicrocycleSheet = {
@@ -179,6 +182,7 @@ export function buildMicrocycleSheet(
   const players: PlayerRow[] = input.players.map((player) => ({
     id: player.id,
     name: player.name,
+    rpe: dates.map((date) => player.rpeByDate[date] ?? null),
     loads: dates.map((date) => {
       const rpe = player.rpeByDate[date];
       const minutes = sessions.has(date) ? SHARED_DAY_MINUTES : 0;
