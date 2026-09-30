@@ -370,33 +370,29 @@ export function MicrocycleSheetView({
   const names = override ?? (compact ? "short" : "full");
   const marks = weekMarks(sheet.microcycles);
 
-  if (sheet.players.length === 0) {
-    return (
-      <p className="px-6 py-4 text-sm text-text-secondary">
-        Añade jugadores al equipo para ver la carga del microciclo.
-      </p>
-    );
-  }
-
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center gap-2 border-b border-border-secondary px-3 py-2">
-        <NameModeButton
-          label="Abreviar nombres"
-          onClick={() => setOverride(names === "short" ? "full" : "short")}
-          pressed={names === "short"}
-        >
-          <TextAaIcon className="size-3.5" weight="bold" />
-          Abreviar
-        </NameModeButton>
-        <NameModeButton
-          label="Ocultar nombres"
-          onClick={() => setOverride(names === "hidden" ? "full" : "hidden")}
-          pressed={names === "hidden"}
-        >
-          <UserMinusIcon className="size-3.5" weight="bold" />
-          Ocultar
-        </NameModeButton>
+        {sheet.players.length > 0 ? (
+          <>
+            <NameModeButton
+              label="Abreviar nombres"
+              onClick={() => setOverride(names === "short" ? "full" : "short")}
+              pressed={names === "short"}
+            >
+              <TextAaIcon className="size-3.5" weight="bold" />
+              Abreviar
+            </NameModeButton>
+            <NameModeButton
+              label="Ocultar nombres"
+              onClick={() => setOverride(names === "hidden" ? "full" : "hidden")}
+              pressed={names === "hidden"}
+            >
+              <UserMinusIcon className="size-3.5" weight="bold" />
+              Ocultar
+            </NameModeButton>
+          </>
+        ) : null}
         <button
           className="ml-auto inline-flex h-7 items-center gap-1 rounded-md border border-border-secondary bg-bg-primary px-2 text-xs text-text-secondary"
           onClick={() =>
@@ -408,6 +404,11 @@ export function MicrocycleSheetView({
           Exportar
         </button>
       </div>
+      {sheet.players.length === 0 ? (
+        <p className="px-6 py-4 text-sm text-text-secondary">
+          Añade jugadores al equipo para ver la carga del microciclo.
+        </p>
+      ) : (
       <CargaSheetScroll anchorDay={anchorDayKey(sheet.days, today)}>
         <table
           className={cn(
@@ -529,6 +530,7 @@ export function MicrocycleSheetView({
           </tbody>
         </table>
       </CargaSheetScroll>
+      )}
     </div>
   );
 }
