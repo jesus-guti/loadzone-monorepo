@@ -1,6 +1,6 @@
 "use client";
 
-import { TextAaIcon, UserMinusIcon } from "@phosphor-icons/react";
+import { DownloadSimpleIcon, TextAaIcon, UserMinusIcon } from "@phosphor-icons/react";
 import { cn } from "@repo/design-system/lib/utils";
 import { type ReactNode, useState, useSyncExternalStore } from "react";
 import { wellnessValueClass } from "@/features/wellness/components/team-wellness-workspace.utils";
@@ -14,6 +14,7 @@ import {
   type Microcycle,
   type MicrocycleSheet,
 } from "./microcycles";
+import { buildCargaCsvFilename, formatCargaMicrocycleCsv } from "./carga-csv";
 import { CargaSheetScroll } from "./sheet-scroll";
 
 type NameMode = "full" | "short" | "hidden";
@@ -317,6 +318,16 @@ function DayHistogram({
   );
 }
 
+function downloadCsvFile(filename: string, csv: string): void {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function NameModeButton({
   pressed,
   label,
@@ -386,6 +397,16 @@ export function MicrocycleSheetView({
           <UserMinusIcon className="size-3.5" weight="bold" />
           Ocultar
         </NameModeButton>
+        <button
+          className="ml-auto inline-flex h-7 items-center gap-1 rounded-md border border-border-secondary bg-bg-primary px-2 text-xs text-text-secondary"
+          onClick={() =>
+            downloadCsvFile(buildCargaCsvFilename(sheet), formatCargaMicrocycleCsv(sheet))
+          }
+          type="button"
+        >
+          <DownloadSimpleIcon className="size-3.5" weight="fill" />
+          Exportar
+        </button>
       </div>
       <CargaSheetScroll anchorDay={anchorDayKey(sheet.days, today)}>
         <table
