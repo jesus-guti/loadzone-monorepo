@@ -1,7 +1,10 @@
 import { addCivilDays } from "@repo/database/recoverable-streak";
 
-/** Session days on this sheet use 95 minutes until staff can edit duration. */
-export const SHARED_DAY_MINUTES = 95;
+/** Training and other non-match sessions until staff can edit duration. */
+export const SESSION_MINUTES = 80;
+
+/** Match sessions until staff can edit duration. */
+export const MATCH_MINUTES = 95;
 
 export type AcBand = "bajo" | "optimo" | "transicion" | "peligro";
 
@@ -40,6 +43,8 @@ export type DayColumn = {
 export type Microcycle = {
   readonly index: number;
   readonly days: readonly DayColumn[];
+  /** Sum of each day's mean team load across this Monday–Sunday week. */
+  readonly loadSum: number;
 };
 
 export type PlayerRow = {
@@ -103,6 +108,35 @@ function dateLabel(isoDate: string): string {
   return `${date.getUTCDate()} ${month}`;
 }
 
+/** Column to land on when the sheet opens: today, or the nearest later day. */
+export function anchorDayKey(
+  days: readonly { readonly key: string }[],
+  today: string
+): string | null {
+  if (days.length === 0) {
+    return null;
+  }
+  if (days.some((day) => day.key === today)) {
+    return today;
+  }
+  return days.find((day) => day.key > today)?.key ?? days.at(-1)?.key ?? null;
+}
+
+/** "A. Apellido": initial plus first surname. A single word is truncated. */
+export function abbreviatePlayerName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter((part) => part.length > 0);
+  const first = parts[0];
+  if (!first) {
+    return "";
+  }
+  if (parts.length === 1) {
+    return first.length > 10 ? `${first.slice(0, 9)}…` : first;
+  }
+  const surname = parts[1] ?? first;
+  const shortSurname = surname.length > 12 ? `${surname.slice(0, 11)}…` : surname;
+  return `${first[0]?.toUpperCase() ?? ""}. ${shortSurname}`;
+}
+
 export function acBand(ac: number): AcBand {
   if (ac < 0.8) {
     return "bajo";
@@ -157,6 +191,20 @@ export function matchDayLabel(
   return `MD+${daysBetween(previous, isoDate)}`;
 }
 
+function dayMinutes(
+  date: string,
+  sessions: ReadonlySet<string>,
+  matches: ReadonlySet<string>
+): number {
+  if (matches.has(date)) {
+    return MATCH_MINUTES;
+  }
+  if (sessions.has(date)) {
+    return SESSION_MINUTES;
+  }
+  return 0;
+}
+
 function mean(values: readonly number[]): number {
   if (values.length === 0) {
     return 0;
@@ -185,7 +233,7 @@ export function buildMicrocycleSheet(
     rpe: dates.map((date) => player.rpeByDate[date] ?? null),
     loads: dates.map((date) => {
       const rpe = player.rpeByDate[date];
-      const minutes = sessions.has(date) ? SHARED_DAY_MINUTES : 0;
+      const minutes = dayMinutes(date, sessions, matches);
       if (rpe === undefined || minutes === 0) {
         return 0;
       }
@@ -220,7 +268,7 @@ export function buildMicrocycleSheet(
       weekday: WEEKDAYS[weekdayIndex(date)] ?? "",
       dateLabel: dateLabel(date),
       matchDay: matchDayLabel(date, week, matches),
-      minutes: sessions.has(date) ? SHARED_DAY_MINUTES : 0,
+      minutes: dayMinutes(date, sessions, matches),
       teamLoad,
       jump:
         previous !== undefined &&
@@ -233,10 +281,14 @@ export function buildMicrocycleSheet(
   });
 
   return {
-    microcycles: weeks.map((week, index) => ({
-      index: index + 1,
-      days: days.slice(index * 7, index * 7 + week.length),
-    })),
+    microcycles: weeks.map((week, index) => {
+      const weekDays = days.slice(index * 7, index * 7 + week.length);
+      return {
+        index: index + 1,
+        days: weekDays,
+        loadSum: weekDays.reduce((sum, day) => sum + day.teamLoad, 0),
+      };
+    }),
     days,
     players,
   };

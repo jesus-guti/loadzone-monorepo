@@ -10,14 +10,7 @@ export async function loadClubRecommendedSetupFacts(
 ): Promise<RecommendedSetupClubFacts> {
   const teamInClub = { team: { clubId } } as const;
 
-  const [
-    club,
-    season,
-    player,
-    favorite,
-    sessionExercise,
-    session,
-  ] = await Promise.all([
+  const [club, season, player, session] = await Promise.all([
     database.club.findUnique({
       where: { id: clubId },
       select: { logoUrl: true },
@@ -30,14 +23,6 @@ export async function loadClubRecommendedSetupFacts(
       where: teamInClub,
       select: { id: true },
     }),
-    database.membershipExerciseFavorite.findFirst({
-      where: { membership: { clubId } },
-      select: { membershipId: true },
-    }),
-    database.sessionExercise.findFirst({
-      where: { teamSession: { clubId } },
-      select: { id: true },
-    }),
     database.teamSession.findFirst({
       where: { clubId },
       select: { id: true },
@@ -48,8 +33,6 @@ export async function loadClubRecommendedSetupFacts(
     hasClubLogo: Boolean(club?.logoUrl),
     hasAnySeason: season !== null,
     hasAnyPlayer: player !== null,
-    hasMembershipExerciseFavorite: favorite !== null,
-    hasExerciseOnSession: sessionExercise !== null,
     hasAnySession: session !== null,
   };
 }

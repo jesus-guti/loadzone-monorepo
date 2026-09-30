@@ -3,7 +3,6 @@ export const RECOMMENDED_SETUP_STEP_IDS = [
   "clubLogo",
   "season",
   "player",
-  "exercise",
   "session",
 ] as const;
 
@@ -27,8 +26,6 @@ export type RecommendedSetupClubFacts = {
   hasClubLogo: boolean;
   hasAnySeason: boolean;
   hasAnyPlayer: boolean;
-  hasMembershipExerciseFavorite: boolean;
-  hasExerciseOnSession: boolean;
   hasAnySession: boolean;
 };
 
@@ -36,8 +33,6 @@ export const EMPTY_RECOMMENDED_SETUP_FACTS: RecommendedSetupClubFacts = {
   hasClubLogo: false,
   hasAnySeason: false,
   hasAnyPlayer: false,
-  hasMembershipExerciseFavorite: false,
-  hasExerciseOnSession: false,
   hasAnySession: false,
 };
 
@@ -92,12 +87,6 @@ export function resolveRecommendedSetup(
     { id: "clubLogo", done: clubFacts.hasClubLogo },
     { id: "season", done: clubFacts.hasAnySeason },
     { id: "player", done: clubFacts.hasAnyPlayer },
-    {
-      id: "exercise",
-      done:
-        clubFacts.hasMembershipExerciseFavorite ||
-        clubFacts.hasExerciseOnSession,
-    },
     { id: "session", done: clubFacts.hasAnySession },
   ];
 

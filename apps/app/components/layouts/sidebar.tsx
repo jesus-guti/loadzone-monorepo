@@ -27,8 +27,6 @@ import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
 import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
-import { MobileSeasonFab } from "./mobile-season-fab";
-import { MobileSidebarFab } from "./mobile-sidebar-fab";
 import { OperationalRouteMemory } from "./operational-route-memory";
 import { SettingsVolverLink } from "./settings-volver-link";
 import { SidebarUserMenu } from "./sidebar-user-menu";
@@ -235,9 +233,7 @@ export const GlobalSidebar = ({
         >
           {children}
         </div>
-        {inSettings ? null : <MobileBottomNav />}
-        <MobileSidebarFab />
-        <MobileSeasonFab />
+        <MobileBottomNav />
       </SidebarInset>
     </AppShellProvider>
   );

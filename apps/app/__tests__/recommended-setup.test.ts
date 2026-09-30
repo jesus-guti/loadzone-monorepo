@@ -11,8 +11,6 @@ const allIncompleteFacts: RecommendedSetupClubFacts = {
   hasClubLogo: false,
   hasAnySeason: false,
   hasAnyPlayer: false,
-  hasMembershipExerciseFavorite: false,
-  hasExerciseOnSession: false,
   hasAnySession: false,
 };
 
@@ -20,8 +18,6 @@ const allCompleteFacts: RecommendedSetupClubFacts = {
   hasClubLogo: true,
   hasAnySeason: true,
   hasAnyPlayer: true,
-  hasMembershipExerciseFavorite: true,
-  hasExerciseOnSession: false,
   hasAnySession: true,
 };
 
@@ -43,14 +39,14 @@ function baseInput(
 }
 
 describe("resolveRecommendedSetup", () => {
-  it("returns five steps in fixed order with totalCount 5", () => {
+  it("returns four steps in fixed order with totalCount 4", () => {
     const result = resolveRecommendedSetup(baseInput());
     expect(result.steps.map((s) => s.id)).toEqual([...RECOMMENDED_SETUP_STEP_IDS]);
-    expect(result.totalCount).toBe(5);
+    expect(result.totalCount).toBe(4);
     expect(result.totalCount).toBe(RECOMMENDED_SETUP_STEP_COUNT);
   });
 
-  it("all incomplete + expanded → visibility expanded, counts 0/5, both needs* true", () => {
+  it("all incomplete + expanded → visibility expanded, counts 0/4, both needs* true", () => {
     const result = resolveRecommendedSetup(baseInput());
     expect(result.panelVisibility).toBe("expanded");
     expect(result.completedCount).toBe(0);
@@ -75,7 +71,7 @@ describe("resolveRecommendedSetup", () => {
     expect(result.steps.find((s) => s.id === "player")?.done).toBe(false);
   });
 
-  it("5/5 + dismissed → hidden", () => {
+  it("4/4 + dismissed → hidden", () => {
     const result = resolveRecommendedSetup(
       baseInput({
         clubFacts: allCompleteFacts,
@@ -83,11 +79,11 @@ describe("resolveRecommendedSetup", () => {
         activeTeam: { hasActiveSeason: true, hasPlayers: true },
       }),
     );
-    expect(result.completedCount).toBe(5);
+    expect(result.completedCount).toBe(4);
     expect(result.panelVisibility).toBe("hidden");
   });
 
-  it("5/5 + expanded → expanded (post-restore path; does not force-hide)", () => {
+  it("4/4 + expanded → expanded (post-restore path; does not force-hide)", () => {
     const result = resolveRecommendedSetup(
       baseInput({
         clubFacts: allCompleteFacts,
@@ -95,7 +91,7 @@ describe("resolveRecommendedSetup", () => {
         activeTeam: { hasActiveSeason: true, hasPlayers: true },
       }),
     );
-    expect(result.completedCount).toBe(5);
+    expect(result.completedCount).toBe(4);
     expect(result.panelVisibility).toBe("expanded");
   });
 
@@ -121,42 +117,6 @@ describe("resolveRecommendedSetup", () => {
     );
     expect(result.panelVisibility).toBe("minimized");
     expect(result.completedCount).toBe(1);
-  });
-
-  it("exercise false when both exercise flags false", () => {
-    const result = resolveRecommendedSetup(
-      baseInput({
-        clubFacts: {
-          hasMembershipExerciseFavorite: false,
-          hasExerciseOnSession: false,
-        },
-      }),
-    );
-    expect(result.steps.find((s) => s.id === "exercise")?.done).toBe(false);
-  });
-
-  it("exercise true on membership favorite alone", () => {
-    const result = resolveRecommendedSetup(
-      baseInput({
-        clubFacts: {
-          hasMembershipExerciseFavorite: true,
-          hasExerciseOnSession: false,
-        },
-      }),
-    );
-    expect(result.steps.find((s) => s.id === "exercise")?.done).toBe(true);
-  });
-
-  it("exercise true on session placement alone", () => {
-    const result = resolveRecommendedSetup(
-      baseInput({
-        clubFacts: {
-          hasMembershipExerciseFavorite: false,
-          hasExerciseOnSession: true,
-        },
-      }),
-    );
-    expect(result.steps.find((s) => s.id === "exercise")?.done).toBe(true);
   });
 
   it("Club season/player steps can be done while activeTeam baseline is still false", () => {
@@ -187,12 +147,12 @@ describe("resolveRecommendedSetup", () => {
     expect(result.needsPlayers).toBe(true);
   });
 
-  it("always returns all five steps even when panelVisibility is hidden", () => {
+  it("always returns all four steps even when panelVisibility is hidden", () => {
     const result = resolveRecommendedSetup(
       baseInput({ panelChrome: "dismissed" }),
     );
     expect(result.panelVisibility).toBe("hidden");
-    expect(result.steps).toHaveLength(5);
+    expect(result.steps).toHaveLength(4);
   });
 
   it("clears needs* when activeTeam baseline is met", () => {

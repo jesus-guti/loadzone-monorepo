@@ -24,11 +24,6 @@ export const PRIMEROS_PASOS_STEPS: readonly PrimerosPasosStepConfig[] = [
     href: "/players",
   },
   {
-    id: "exercise",
-    label: "Usar un ejercicio",
-    href: "/sessions",
-  },
-  {
     id: "session",
     label: "Crear una sesión",
     href: "/sessions/new",

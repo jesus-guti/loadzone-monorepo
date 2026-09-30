@@ -25,8 +25,8 @@ function matchesPath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Day-to-day destinations — shared by desktop sidebar and mobile bottom nav. */
-export const operationalNavigation: AdminNavItem[] = [
+/** Daily mobile footer. The rest lives in the “Más” sheet. */
+export const mobilePrimaryNavigation: AdminNavItem[] = [
   {
     href: "/wellness",
     icon: HeartIcon,
@@ -45,6 +45,11 @@ export const operationalNavigation: AdminNavItem[] = [
     label: "Carga",
     match: (pathname: string) => matchesPath(pathname, "/carga"),
   },
+];
+
+/** Sidebar list: daily destinations plus roster and injuries. */
+export const operationalNavigation: AdminNavItem[] = [
+  ...mobilePrimaryNavigation,
   {
     href: "/players",
     icon: UsersIcon,

@@ -28,8 +28,6 @@ const BASELINE_GATE_CLUB_FACTS = {
   hasClubLogo: false,
   hasAnySeason: false,
   hasAnyPlayer: false,
-  hasMembershipExerciseFavorite: false,
-  hasExerciseOnSession: false,
   hasAnySession: false,
 } as const;
 

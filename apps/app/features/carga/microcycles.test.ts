@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  SHARED_DAY_MINUTES,
+  MATCH_MINUTES,
+  SESSION_MINUTES,
+  abbreviatePlayerName,
   acBand,
+  anchorDayKey,
   buildMicrocycleSheet,
 } from "./microcycles";
 
@@ -75,7 +78,7 @@ describe("buildMicrocycleSheet", () => {
     expect(breakWeek.days.every((day) => day.matchDay === null)).toBe(true);
   });
 
-  it("uses 95 minutes on session days and averages only players who reported", () => {
+  it("uses 80 minutes on training days, 95 on matches, and averages only players who reported", () => {
     const sheet = buildMicrocycleSheet({
       seasonStart: "2026-08-03",
       seasonEnd: "2026-08-04",
@@ -90,20 +93,31 @@ describe("buildMicrocycleSheet", () => {
 
     const monday = sheet.days[0];
     const tuesday = sheet.days[1];
-    expect(monday?.minutes).toBe(SHARED_DAY_MINUTES);
-    expect(monday?.teamLoad).toBe(Math.round(((6 + 8) / 2) * 95));
+    expect(monday?.minutes).toBe(SESSION_MINUTES);
+    expect(monday?.teamLoad).toBe(Math.round(((6 + 8) / 2) * SESSION_MINUTES));
     expect(sheet.players.map((player) => player.rpe[0])).toEqual([6, 8, null]);
     expect(sheet.players.map((player) => player.loads[0])).toEqual([
-      6 * 95,
-      8 * 95,
+      6 * SESSION_MINUTES,
+      8 * SESSION_MINUTES,
       0,
     ]);
     expect(tuesday?.minutes).toBe(0);
     expect(tuesday?.teamLoad).toBe(0);
+    expect(sheet.microcycles[0]?.loadSum).toBe(monday?.teamLoad ?? 0);
 
     const acuteAfterRest =
       ((monday?.teamLoad ?? 0) + 0) / 2;
     expect(tuesday?.acute).toBe(Math.round(acuteAfterRest));
+
+    const matchDay = buildMicrocycleSheet({
+      seasonStart: "2026-08-03",
+      seasonEnd: "2026-08-03",
+      matchDates: ["2026-08-03"],
+      sessionDates: ["2026-08-03"],
+      players: [{ id: "a", name: "Aitor", rpeByDate: { "2026-08-03": 7 } }],
+    });
+    expect(matchDay.days[0]?.minutes).toBe(MATCH_MINUTES);
+    expect(matchDay.players[0]?.loads[0]).toBe(7 * MATCH_MINUTES);
   });
 
   it("flags a day-over-day team load rise of at least 15%", () => {
@@ -127,5 +141,28 @@ describe("buildMicrocycleSheet", () => {
     expect(acBand(1.3)).toBe("optimo");
     expect(acBand(1.4)).toBe("transicion");
     expect(acBand(1.6)).toBe("peligro");
+  });
+});
+
+describe("abbreviatePlayerName", () => {
+  it("uses the initial and the first surname", () => {
+    expect(abbreviatePlayerName("Aitor García López")).toBe("A. García");
+  });
+
+  it("truncates a long surname or a single word", () => {
+    expect(abbreviatePlayerName("Ana Villarrealdegómez")).toBe("A. Villarreald…");
+    expect(abbreviatePlayerName("Constantino")).toBe("Constanti…");
+  });
+});
+
+describe("anchorDayKey", () => {
+  const days = [{ key: "2026-09-01" }, { key: "2026-09-30" }];
+
+  it("lands on today when that column exists", () => {
+    expect(anchorDayKey(days, "2026-09-30")).toBe("2026-09-30");
+  });
+
+  it("lands on the next column when today is missing", () => {
+    expect(anchorDayKey(days, "2026-09-15")).toBe("2026-09-30");
   });
 });

@@ -166,6 +166,10 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const hydrated = useIsHydrated()
+  // First paint must match SSR (desktop markup, hidden below `md`).
+  // The mobile sheet portals out of this slot and would hydrate against the wrong node.
+  const showMobileSidebar = hydrated && isMobile
 
   if (collapsible === "none") {
     return (
@@ -182,7 +186,7 @@ function Sidebar({
     )
   }
 
-  if (isMobile) {
+  if (showMobileSidebar) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
