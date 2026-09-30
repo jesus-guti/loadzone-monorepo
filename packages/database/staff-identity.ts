@@ -60,7 +60,9 @@ export type StaffIdentityErrorCode =
   | "RESET_USED"
   | "RESET_EXPIRED"
   | "CURRENT_PASSWORD_INVALID"
-  | "USER_NOT_FOUND";
+  | "USER_NOT_FOUND"
+  | "SAME_CLUB"
+  | "CANNOT_DELETE_SUPER_ADMIN";
 
 export type StaffIdentityActor =
   | { readonly kind: "coordinator"; readonly userId: string }
@@ -189,6 +191,7 @@ export type StaffIdentityClient = {
         passwordHash?: string;
       };
     }) => Promise<UserRow>;
+    delete: (args: { where: { id: string } }) => Promise<UserRow>;
   };
   readonly membership: {
     findFirst: (args: {
@@ -327,7 +330,7 @@ async function requireCoordinatorOnClub(
   const membership = await db.membership.findFirst({
     where: { userId: actorUserId, clubId, role: "COORDINATOR" },
   });
-  if (!membership || !staffCanInvite(membership.role)) {
+  if (!(membership && staffCanInvite(membership.role))) {
     throw new StaffIdentityError(
       "FORBIDDEN",
       "No tienes permiso para invitar a este club."
@@ -355,7 +358,9 @@ function requirePlatformActor(actor: StaffIdentityActor): void {
   }
 }
 
-function resolveIssueActor(input: IssueStaffInvitationInput): StaffIdentityActor {
+function resolveIssueActor(
+  input: IssueStaffInvitationInput
+): StaffIdentityActor {
   return input.actor ?? { kind: "coordinator", userId: input.actorUserId };
 }
 
@@ -381,7 +386,7 @@ async function loadClubStaffMembership(
   const membership = await db.membership.findFirst({
     where: { id: membershipId, clubId },
   });
-  if (!membership || !isClubStaffRole(membership.role)) {
+  if (!(membership && isClubStaffRole(membership.role))) {
     throw new StaffIdentityError(
       "MEMBERSHIP_NOT_FOUND",
       "No se encontró esa membresía."
@@ -470,10 +475,7 @@ async function loadPendingByToken(
     );
   }
   if (invitation.status === "ACCEPTED") {
-    throw new StaffIdentityError(
-      "INVITE_USED",
-      "Esta invitación ya se usó."
-    );
+    throw new StaffIdentityError("INVITE_USED", "Esta invitación ya se usó.");
   }
   if (invitation.status === "EXPIRED" || isExpired(invitation, clock.now())) {
     await markExpired(db, invitation);
@@ -898,7 +900,9 @@ export async function peekPasswordReset(
   db: StaffIdentityClient,
   clock: StaffIdentityClock,
   rawToken: string
-): Promise<{ readonly ok: true } | { readonly ok: false; readonly message: string }> {
+): Promise<
+  { readonly ok: true } | { readonly ok: false; readonly message: string }
+> {
   try {
     await loadResetByToken(db, clock, rawToken);
     return { ok: true };
@@ -983,6 +987,7 @@ export type ClubAccessMember = {
   readonly email: string;
   readonly name: string | null;
   readonly role: StaffInviteRole;
+  readonly platformRole: PlatformRoleValue;
 };
 
 export type ClubAccess = {
@@ -1008,7 +1013,13 @@ export async function listClubAccess(
     }
     const user = await db.user.findUnique({
       where: { id: membership.userId },
-      select: { id: true, email: true, name: true, passwordHash: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+        platformRole: true,
+      },
     });
     if (!user) {
       continue;
@@ -1019,6 +1030,7 @@ export async function listClubAccess(
       email: user.email,
       name: user.name,
       role: membership.role,
+      platformRole: user.platformRole ?? "USER",
     });
   }
   const pendingInvites = await db.staffInvitation.findMany({
@@ -1134,10 +1146,7 @@ export async function createClub(
     select: { id: true, name: true, slug: true },
   });
   if (existing) {
-    throw new StaffIdentityError(
-      "SLUG_TAKEN",
-      "Ese slug ya está en uso."
-    );
+    throw new StaffIdentityError("SLUG_TAKEN", "Ese slug ya está en uso.");
   }
   const club = await db.club.create({
     data: { name: nameParsed.data, slug: slugParsed.data },
@@ -1211,4 +1220,269 @@ export async function grantSuperAdmin(
     data: { platformRole: "SUPER_ADMIN" },
   });
   return { userId: user.id, platformRole: "SUPER_ADMIN" };
+}
+
+/** Lowercase ASCII slug from a Club name. Accents drop; other characters become hyphens. */
+export function clubSlugFromName(name: string): string {
+  const ascii = name.normalize("NFD").replace(/\p{M}/gu, "");
+  let slug = ascii
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (slug.length > 48) {
+    slug = slug.slice(0, 48).replace(/-+$/g, "");
+  }
+  if (slug.length < 2) {
+    return "club";
+  }
+  return slug;
+}
+
+async function allocateClubSlug(
+  db: StaffIdentityClient,
+  name: string
+): Promise<string> {
+  const base = clubSlugFromName(name);
+  let candidate = base;
+  let suffix = 2;
+  while (
+    await db.club.findUnique({
+      where: { slug: candidate },
+      select: { id: true, name: true, slug: true },
+    })
+  ) {
+    const tail = `-${suffix}`;
+    const head = base.slice(0, 48 - tail.length).replace(/-+$/g, "");
+    candidate = `${head}${tail}`;
+    suffix += 1;
+  }
+  return candidate;
+}
+
+async function cancelPendingInvitationForEmail(
+  db: StaffIdentityClient,
+  clubId: string,
+  email: string
+): Promise<void> {
+  const pending = await db.staffInvitation.findFirst({
+    where: { clubId, email, status: "PENDING" },
+  });
+  if (!pending) {
+    return;
+  }
+  await db.staffInvitation.update({
+    where: { id: pending.id },
+    data: { status: "CANCELLED" },
+  });
+}
+
+export type CreateClubWithFirstCoordinatorResult = {
+  readonly club: OperableClub;
+  readonly invitation: IssueStaffInvitationResult | null;
+  readonly membershipId: string | null;
+};
+
+export async function createClubWithFirstCoordinator(
+  db: StaffIdentityClient,
+  clock: StaffIdentityClock,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly actorUserId: string;
+    readonly name: string;
+    readonly email: string;
+    readonly acceptUrlForToken: (rawToken: string) => string;
+    readonly createToken?: () => string;
+  }
+): Promise<CreateClubWithFirstCoordinatorResult> {
+  requirePlatformActor(input.actor);
+  const email = normalizeEmail(input.email);
+  const slug = await allocateClubSlug(db, input.name);
+  const club = await createClub(db, {
+    actor: input.actor,
+    name: input.name,
+    slug,
+  });
+  const existingUser = await db.user.findUnique({
+    where: { email },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!existingUser) {
+    const invitation = await issueStaffInvitation(db, clock, {
+      actor: input.actor,
+      actorUserId: input.actorUserId,
+      clubId: club.id,
+      email,
+      role: "COORDINATOR",
+      acceptUrlForToken: input.acceptUrlForToken,
+      createToken: input.createToken,
+    });
+    return { club, invitation, membershipId: null };
+  }
+  const attached = await attachOperatorMembership(db, {
+    actor: input.actor,
+    userId: existingUser.id,
+    clubId: club.id,
+    role: "COORDINATOR",
+  });
+  return { club, invitation: null, membershipId: attached.membershipId };
+}
+
+export async function attachOperatorMembership(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly userId: string;
+    readonly clubId: string;
+    readonly role: StaffInviteRole;
+  }
+): Promise<{ readonly membershipId: string; readonly role: StaffInviteRole }> {
+  requirePlatformActor(input.actor);
+  const roleParsed = inviteRoleSchema.safeParse(input.role);
+  if (!roleParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_ROLE",
+      "El rol debe ser Coordinador o Staff."
+    );
+  }
+  await requireClub(db, input.clubId);
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  const existing = await db.membership.findFirst({
+    where: { userId: user.id, clubId: input.clubId },
+  });
+  if (existing) {
+    throw new StaffIdentityError(
+      "MEMBERSHIP_EXISTS",
+      "Esta persona ya tiene acceso a este club."
+    );
+  }
+  const membership = await db.membership.create({
+    data: {
+      userId: user.id,
+      clubId: input.clubId,
+      role: roleParsed.data,
+      hasAllTeams: true,
+    },
+  });
+  await cancelPendingInvitationForEmail(db, input.clubId, user.email);
+  return { membershipId: membership.id, role: roleParsed.data };
+}
+
+export async function transferMembership(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly membershipId: string;
+    readonly destinationClubId: string;
+    readonly role: StaffInviteRole;
+  }
+): Promise<{ readonly membershipId: string; readonly role: StaffInviteRole }> {
+  requirePlatformActor(input.actor);
+  const roleParsed = inviteRoleSchema.safeParse(input.role);
+  if (!roleParsed.success) {
+    throw new StaffIdentityError(
+      "INVALID_ROLE",
+      "El rol debe ser Coordinador o Staff."
+    );
+  }
+  const origin = await db.membership.findFirst({
+    where: { id: input.membershipId },
+  });
+  if (!(origin && isClubStaffRole(origin.role))) {
+    throw new StaffIdentityError(
+      "MEMBERSHIP_NOT_FOUND",
+      "No se encontró esa membresía."
+    );
+  }
+  if (origin.clubId === input.destinationClubId) {
+    throw new StaffIdentityError(
+      "SAME_CLUB",
+      "El destino tiene que ser otro club."
+    );
+  }
+  if (await coordinatorCountWouldDropToZero(db, origin.clubId, origin)) {
+    lastCoordinatorError();
+  }
+  await requireClub(db, input.destinationClubId);
+  const duplicate = await db.membership.findFirst({
+    where: { userId: origin.userId, clubId: input.destinationClubId },
+  });
+  if (duplicate) {
+    throw new StaffIdentityError(
+      "MEMBERSHIP_EXISTS",
+      "Esta persona ya tiene acceso a este club."
+    );
+  }
+  const user = await db.user.findUnique({
+    where: { id: origin.userId },
+    select: { id: true, email: true, name: true, passwordHash: true },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  const created = await db.membership.create({
+    data: {
+      userId: origin.userId,
+      clubId: input.destinationClubId,
+      role: roleParsed.data,
+      hasAllTeams: true,
+    },
+  });
+  await db.membership.delete({ where: { id: origin.id } });
+  await cancelPendingInvitationForEmail(
+    db,
+    input.destinationClubId,
+    user.email
+  );
+  return { membershipId: created.id, role: roleParsed.data };
+}
+
+export async function deleteStaffUser(
+  db: StaffIdentityClient,
+  input: {
+    readonly actor: StaffIdentityActor;
+    readonly userId: string;
+  }
+): Promise<{ readonly userId: string }> {
+  requirePlatformActor(input.actor);
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      passwordHash: true,
+      platformRole: true,
+    },
+  });
+  if (!user) {
+    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
+  }
+  if (user.platformRole === "SUPER_ADMIN") {
+    throw new StaffIdentityError(
+      "CANNOT_DELETE_SUPER_ADMIN",
+      "No se puede borrar a un operador de plataforma."
+    );
+  }
+  const memberships = await db.membership.findMany({
+    where: { userId: user.id },
+  });
+  for (const membership of memberships) {
+    if (
+      await coordinatorCountWouldDropToZero(db, membership.clubId, membership)
+    ) {
+      lastCoordinatorError();
+    }
+  }
+  const clubIds = new Set(memberships.map((membership) => membership.clubId));
+  for (const clubId of clubIds) {
+    await cancelPendingInvitationForEmail(db, clubId, user.email);
+  }
+  await db.user.delete({ where: { id: user.id } });
+  return { userId: user.id };
 }

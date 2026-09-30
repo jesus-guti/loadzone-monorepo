@@ -13,10 +13,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  type AdminNavItem,
+  clubsNavItem,
   configurationNavItem,
   mobilePrimaryNavigation,
   operationalNavigation,
-  type AdminNavItem,
 } from "@/lib/admin-navigation";
 import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { ActiveSeasonSwitcher } from "./active-season-switcher";
@@ -24,8 +25,10 @@ import { useAppShell } from "./app-shell-context";
 
 const overflowNavigation: AdminNavItem[] = [
   ...operationalNavigation.filter(
-    (item) => !mobilePrimaryNavigation.some((primary) => primary.href === item.href)
+    (item) =>
+      !mobilePrimaryNavigation.some((primary) => primary.href === item.href)
   ),
+  clubsNavItem,
   configurationNavItem,
 ];
 
@@ -54,6 +57,9 @@ export function MobileBottomNav() {
     inSettings || overflowNavigation.some((item) => item.match(pathname));
 
   const settingsItems = settingsNavigation.filter(
+    (item) => !item.superAdminOnly || platformRole === "SUPER_ADMIN"
+  );
+  const overflowItems = overflowNavigation.filter(
     (item) => !item.superAdminOnly || platformRole === "SUPER_ADMIN"
   );
 
@@ -103,7 +109,10 @@ export function MobileBottomNav() {
       </ul>
 
       <Sheet onOpenChange={setMoreOpen} open={moreOpen}>
-        <SheetContent className="pb-[calc(env(safe-area-inset-bottom)+1rem)]" side="bottom">
+        <SheetContent
+          className="pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+          side="bottom"
+        >
           <SheetHeader>
             <SheetTitle>{inSettings ? "Ajustes" : "Más"}</SheetTitle>
           </SheetHeader>
@@ -126,7 +135,7 @@ export function MobileBottomNav() {
                     {item.label}
                   </Link>
                 ))
-              : overflowNavigation.map((item) => (
+              : overflowItems.map((item) => (
                   <Link
                     className={cn(
                       "flex items-center gap-3 rounded-md px-2 py-3 font-medium text-sm text-text-secondary",

@@ -1,5 +1,6 @@
 import type { Icon } from "@phosphor-icons/react/dist/lib/types";
 import {
+  BuildingsIcon,
   CalendarDotsIcon,
   ChartBarIcon,
   GearSixIcon,
@@ -15,6 +16,8 @@ export type AdminNavItem = {
   /** Shown in the sidebar; the destination stays unreachable. */
   disabled?: boolean;
   badge?: string;
+  /** Hidden unless the signed-in User is a Super Admin. */
+  superAdminOnly?: boolean;
 };
 
 function matchesPath(pathname: string, href: string): boolean {
@@ -63,6 +66,15 @@ export const operationalNavigation: AdminNavItem[] = [
     match: (pathname: string) => matchesPath(pathname, "/injuries"),
   },
 ];
+
+/** Operator console. Sidebar and “Más” only — never a mobile primary tab. */
+export const clubsNavItem: AdminNavItem = {
+  href: "/clubs",
+  icon: BuildingsIcon,
+  label: "Clubes",
+  match: (pathname: string) => matchesPath(pathname, "/clubs"),
+  superAdminOnly: true,
+};
 
 /** Alone at the bottom of the ops sidebar nav (above footer). */
 export const configurationNavItem: AdminNavItem = {

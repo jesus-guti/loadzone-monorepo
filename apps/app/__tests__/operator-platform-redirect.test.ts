@@ -10,10 +10,16 @@ describe("shouldRedirectOperatorToPlatform", () => {
     expect(shouldRedirectOperatorToPlatform("/settings/platform", false)).toBe(
       false
     );
+    expect(shouldRedirectOperatorToPlatform("/clubs", false)).toBe(false);
+    expect(shouldRedirectOperatorToPlatform("/clubs/club_1", false)).toBe(
+      false
+    );
   });
 
   it("sends product routes to Plataforma when there is no operating Club", () => {
     expect(shouldRedirectOperatorToPlatform("/players", false)).toBe(true);
-    expect(shouldRedirectOperatorToPlatform("/settings/club", false)).toBe(true);
+    expect(shouldRedirectOperatorToPlatform("/settings/club", false)).toBe(
+      true
+    );
   });
 });

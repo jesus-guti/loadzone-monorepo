@@ -375,12 +375,12 @@ model StaffInvitation {
   tokenHash   String                 @unique
   expiresAt   DateTime
   status      StaffInvitationStatus  @default(PENDING)
-  invitedById String
+  invitedById String?
   acceptedAt  DateTime?
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
   club        Club                   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  invitedBy   User                   @relation("StaffInvitationsIssued", fields: [invitedById], references: [id], onDelete: Restrict)
+  invitedBy   User?                  @relation("StaffInvitationsIssued", fields: [invitedById], references: [id], onDelete: SetNull)
 
   @@index([clubId, email])
   @@index([clubId, status])

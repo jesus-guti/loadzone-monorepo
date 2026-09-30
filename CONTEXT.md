@@ -41,24 +41,36 @@ Club-scoped Membership that uses the staff workspace (wellness, injuries, sessio
 _Avoid_: Using “staff” only as informal English for every logged-in User including Coordinators.
 
 **Super Admin**:
-Platform operator **User** (not a Club Membership). In the staff app they choose a **Club** and invite, revoke, or create Clubs without impersonating another User. Same person may also hold Memberships; the platform flag is a separate axis. A Super Admin is minted at bootstrap or granted by an existing Super Admin — never by a Coordinator.
-_Avoid_: Club “owner”; implying Super Admin is COORDINATOR of every Club; session impersonation as the support model.
+Platform operator **User** (not a Club Membership). In the staff app they choose which **Club** they operate, and separately manage Clubs: create them, invite, attach an existing User immediately, transfer a Membership, revoke, or delete a User who is not a Super Admin, without impersonating another User. Same person may also hold Memberships; the platform flag is a separate axis. A Super Admin is minted at bootstrap or granted by an existing Super Admin — never by a Coordinator.
+_Avoid_: Club “owner”; implying Super Admin is COORDINATOR of every Club; session impersonation as the support model; deleting a Super Admin.
 
 **Staff Invitation**:
-The only way a staff **User** joins a Club in the current product: a Coordinator of that Club, or a **Super Admin**, issues an email with a one-time link; the person sets a password and receives a **Membership** as Coordinator or Staff (always all Teams of that Club in this wave). If the email already belongs to a **User**, accepting attaches another Membership — one User, many Clubs. A pending invite expires; it may be resent (new token) or cancelled; at most one pending invite per email per Club. Public self-signup for staff is deferred.
-_Avoid_: Open registration; one email per Club; per-Team Membership as the v1 invite rule; temporary passwords as the normal invite path; never-expiring invite links.
+How a person who is not yet a **User** joins a **Club**, and how a **Coordinator** adds staff: a Coordinator of that Club, or a **Super Admin**, issues a one-time link; the person sets a password and receives a **Membership** as Coordinator or Staff (always all Teams of that Club in this wave). If the email already belongs to a User, accepting a Coordinator’s invitation attaches another Membership. A Super Admin may skip the invitation and attach that existing User immediately (**Operator Membership**). A pending invite expires; it may be resent (new token) or cancelled; at most one pending invite per email per Club. The issuer copies the link; sending mail is not part of this wave. Public self-signup for staff is deferred.
+_Avoid_: Open registration; one email per Club; per-Team Membership as the v1 invite rule; temporary passwords as the normal invite path; never-expiring invite links; treating a Super Admin’s immediate attach of an existing User as a Staff Invitation.
 
 **Password reset**:
 A **User** who forgot their password requests a one-time hashed email link (TTL 1 hour) from sign-in, then sets a new password. Signed-in Users change password in **Cuenta** with the current password. The email field there stays read-only. There is no `mustChangePassword` and no temporary password.
 _Avoid_: NextAuth VerificationToken for this flow; leaking whether an email exists; auto-login after reset.
 
 **Last Coordinator**:
-A **Club** must keep at least one Coordinator **Membership**. Revoking or demoting that last Coordinator is refused; a **Super Admin** invites or creates another Coordinator instead of leaving the Club unable to invite.
-_Avoid_: Auto-promoting Staff; Clubs with zero Coordinators as a normal state.
+A **Club** that already has a Coordinator **Membership** must keep at least one. Revoking, demoting, transferring away, or deleting that last Coordinator is refused. A new Club may have zero Coordinators while its first **Staff Invitation** is pending. A **Super Admin** invites or attaches another Coordinator instead of leaving a Club that already had one unable to invite.
+_Avoid_: Auto-promoting Staff; treating a brand-new Club with a pending first invite as already in breach; Clubs with zero Coordinators as a normal state after someone has joined.
 
 **Membership Revocation**:
-Removing a **Membership** so that **User** can no longer act in that **Club**. The User record remains (they may still have other Clubs or later invites). Not User deletion.
+Removing a **Membership** so that **User** can no longer act in that **Club**. The User record remains (they may still have other Clubs or later invites). Not **User deletion**.
 _Avoid_: “Delete user” when you only mean leave a Club.
+
+**Operator Membership**:
+A **Membership** a **Super Admin** creates at once on an existing **User**, as Coordinator or Staff, with no **Staff Invitation**. It is the first Coordinator when that email already has a User, another Club for a User who stays in the others, and the destination of a **Membership Transfer**.
+_Avoid_: Calling it an invitation; a temporary password; a Coordinator creating a Membership without the person accepting.
+
+**Membership Transfer**:
+A **Super Admin** gesture that removes a **User**’s **Membership** in one **Club** and creates an **Operator Membership** in another. Refused when the origin Club would lose its **Last Coordinator**.
+_Avoid_: “Move account”; leaving the User in both Clubs (that is another Operator Membership); an invitation the User must accept.
+
+**User deletion**:
+A **Super Admin** removes the **User** and every **Membership**. Refused when the User is a Super Admin, and refused when any Club would lose its **Last Coordinator**. A linked **Player** stays on the roster; only the login link is cleared.
+_Avoid_: **Membership Revocation**; deleting a Player; a Coordinator deleting a User.
 
 **Playing Position**:
 Optional specific role on a **Player**: POR, DFC, LD, LI, MCD, MC, MCO, ED, EI, or DC. Identity on the **Streak Cromo** only — not a rating, attribute, or selection rule.
@@ -250,8 +262,10 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 
 - A **User** may have many **Memberships** (each one Club + role). **Super Admin** is a User flag, not a Membership.
 - A **Club** has many **Memberships** (Coordinators and Staff) and many **Teams** (and club-scoped exercises and other shared entities).
-- A **Club** keeps at least one **Coordinator** (**Last Coordinator** rule).
-- A **Staff Invitation** belongs to a **Club** and, when accepted, yields a **Membership** (all Teams) on an existing or new **User**.
+- A **Club** keeps at least one **Coordinator** once it has one (**Last Coordinator**). A new Club may have none until the first **Staff Invitation** is accepted or an **Operator Membership** is created.
+- A **Staff Invitation** belongs to a **Club** and, when accepted, yields a **Membership** (all Teams) on an existing or new **User**. A **Super Admin** may instead create an **Operator Membership** on an existing User without an invitation.
+- A **Membership Transfer** replaces one Membership with an **Operator Membership** in a different Club.
+- **User deletion** removes that User and all of their Memberships. It never removes a Super Admin, and it never leaves a Club without a **Last Coordinator**.
 - A **Team** belongs to a **Club** and has many **Seasons**, many **Players**, and many **Sessions**, and owns one **Check-in Questionnaire** (a **Pre-session form** and a **Post-session form**; many **Questionnaire Versions**, one live).
 - A **Season** belongs to a **Team**; it groups that season’s **DailyEntry** and **PlayerDailyStats**.
 - A **Player** belongs to a **Team**; has an optional **Playing Position** and optional shirt number; has zero or more **PushSubscription** rows and many **DailyEntry** and **PlayerDailyStats** rows (per season); has many **Injuries**.
@@ -278,7 +292,7 @@ _Avoid_: Calling Recommended Setup “onboarding” if that means the hard Club+
 
 - **Shared session minutes** vs **Minutes played** vs **Team day minutes**: a non-match Session has one shared duration (default 80), edited on that Session with steppers and a typed value. A match derives **Minutes played** from the **Match lineup** (starters and bench; bench at 0 until they enter), each **Substitution** (a sending-off is an exit with no entry), per-half stoppage only for players still on at the whistle, and two extra-time halves when needed. **Team day minutes** is the shared duration on a training-only day and the **Full match length** on any day that has a match.
 - **User** vs **Player**: a **User** is staff login (this wave); **Player** is the roster entity and may exist without a linked **User**. Player/Guardian Users remain deferred.
-- Public staff signup (first Coordinator creates a Club) is deferred; until then Clubs receive staff only via **Staff Invitation** (plus operator bootstrap of **Super Admin**).
+- Public staff signup (first Coordinator creates a Club) is deferred. A person who is not yet a **User** joins only via **Staff Invitation**. A **Super Admin** may attach an existing User immediately (**Operator Membership**), including as the first Coordinator of a new Club. Operator bootstrap of Super Admin remains.
 - **Guardian** auth/linkage and **Excused Absence** request workflow remain deferred product decisions — do not invent them here. Care-slice field allow-list: graduated in JES-49 (`GuardianCareSlice` in `@repo/database/care-alerts`; resolution under `.scratch/jes-49-care-allow-list/`).
 - **Age Band** is postponed in product UI and `resolveAgeBandPolicy`; persistence fields remain for a later restore.
 - **Session** subset vs whole-Team: a Session may list a subset of Players; Recoverable Streak uses only Sessions that Player is on. Player week chrome may still show all Team Sessions that week.

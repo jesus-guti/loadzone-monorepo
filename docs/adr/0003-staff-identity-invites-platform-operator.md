@@ -1,6 +1,8 @@
 # Staff identity: invites, not self-signup; Super Admin is a platform operator
 
-Staff Users join a Club only via **Staff Invitation** (one-time email link, then they set a password). There is no public staff sign-up and no temporary-password / `mustChangePassword` path. A Coordinator of that Club (or a Super Admin) invites Coordinator or Staff; accepting an invite on an existing email attaches another Membership (one User, many Clubs). Super Admin is a platform flag on User, not a Membership: they create Clubs, invite the first Coordinator, revoke/repair, and may change a User’s email, all inside the staff app without impersonating another session. Forgot-password is self-service email; logged-in Users change password in settings. Public “first Coordinator creates the Club” signup is deferred until a sales motion.
+Narrowed by [ADR 0006](./0006-super-admin-operator-membership.md): a Super Admin may attach an existing User immediately. Coordinators still add people only by Staff Invitation. A person who is not yet a User still joins only by Staff Invitation.
+
+Staff Users join a Club only via **Staff Invitation** (one-time email link, then they set a password), except the Super Admin immediate-attach case in ADR 0006. There is no public staff sign-up and no temporary-password / `mustChangePassword` path. A Coordinator of that Club (or a Super Admin) invites Coordinator or Staff; accepting an invite on an existing email attaches another Membership (one User, many Clubs). Super Admin is a platform flag on User, not a Membership: they create Clubs, invite the first Coordinator, revoke/repair, and may change a User’s email, all inside the staff app without impersonating another session. Forgot-password is self-service email; logged-in Users change password in settings. Public “first Coordinator creates the Club” signup is deferred until a sales motion.
 
 ## Considered options
 

@@ -6,5 +6,14 @@ export function shouldRedirectOperatorToPlatform(
   if (hasOperatingClub) {
     return false;
   }
-  return pathname !== "/settings/platform" && !pathname.startsWith("/settings/platform/");
+  if (
+    pathname === "/settings/platform" ||
+    pathname.startsWith("/settings/platform/")
+  ) {
+    return false;
+  }
+  if (pathname === "/clubs" || pathname.startsWith("/clubs/")) {
+    return false;
+  }
+  return true;
 }

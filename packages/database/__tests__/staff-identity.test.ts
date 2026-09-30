@@ -1,28 +1,32 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
-  PASSWORD_RESET_TTL_MS,
-  STAFF_INVITATION_TTL_MS,
   acceptStaffInvitation,
+  attachOperatorMembership,
   cancelStaffInvitation,
   changeMembershipRole,
   changePassword,
   changeUserEmail,
   completePasswordReset,
   createClub,
+  createClubWithFirstCoordinator,
+  deleteStaffUser,
   grantSuperAdmin,
   issueStaffInvitation,
   listClubAccess,
   listOperableClubs,
+  PASSWORD_RESET_TTL_MS,
+  type PasswordResetTokenRow,
   peekStaffInvitation,
   requestPasswordReset,
   resendStaffInvitation,
   revokeMembership,
-  staffCanInvite,
-  StaffIdentityError,
-  type PasswordResetTokenRow,
+  STAFF_INVITATION_TTL_MS,
   type StaffIdentityClient,
+  StaffIdentityError,
   type StaffInvitationRow,
+  staffCanInvite,
+  transferMembership,
 } from "../staff-identity";
 
 type MembershipRole = "PLAYER" | "STAFF" | "COORDINATOR";
@@ -51,24 +55,29 @@ function sha256(raw: string): string {
 type ClubMem = { id: string; name: string; slug: string };
 type UserMem = UserRow & { platformRole: "USER" | "SUPER_ADMIN" };
 
+type PlayerMem = { id: string; userId: string | null; name: string };
+
 function createMemoryDb(seed?: {
   clubs?: ClubMem[];
   users?: UserMem[];
   memberships?: MemRow[];
   invitations?: InviteRow[];
   passwordResetTokens?: PasswordResetTokenRow[];
+  players?: PlayerMem[];
 }): StaffIdentityClient & {
   users: UserMem[];
   memberships: MemRow[];
   invitations: InviteRow[];
   clubs: ClubMem[];
   passwordResetTokens: PasswordResetTokenRow[];
+  players: PlayerMem[];
 } {
   const clubs = [...(seed?.clubs ?? [])];
   const users = [...(seed?.users ?? [])];
   const memberships = [...(seed?.memberships ?? [])];
   const invitations = [...(seed?.invitations ?? [])];
   const passwordResetTokens = [...(seed?.passwordResetTokens ?? [])];
+  const players = [...(seed?.players ?? [])];
   let seq = 1;
   const nextId = (prefix: string): string => `${prefix}_${seq++}`;
 
@@ -93,12 +102,14 @@ function createMemoryDb(seed?: {
     invitations: InviteRow[];
     clubs: ClubMem[];
     passwordResetTokens: PasswordResetTokenRow[];
+    players: PlayerMem[];
   } = {
     users,
     memberships,
     invitations,
     clubs,
     passwordResetTokens,
+    players,
     club: {
       findUnique: async ({ where }) => {
         if ("id" in where && where.id) {
@@ -154,6 +165,25 @@ function createMemoryDb(seed?: {
         }
         if (data.passwordHash !== undefined) {
           user.passwordHash = data.passwordHash;
+        }
+        return user;
+      },
+      delete: async ({ where }) => {
+        const index = users.findIndex((row) => row.id === where.id);
+        const user = users[index];
+        if (!user || index < 0) {
+          throw new Error("missing user");
+        }
+        users.splice(index, 1);
+        for (let i = memberships.length - 1; i >= 0; i -= 1) {
+          if (memberships[i]?.userId === user.id) {
+            memberships.splice(i, 1);
+          }
+        }
+        for (const player of players) {
+          if (player.userId === user.id) {
+            player.userId = null;
+          }
         }
         return user;
       },
@@ -351,9 +381,9 @@ describe("issueStaffInvitation", () => {
       clubName: "Atlético Norte",
       acceptUrl: "https://app.test/invite/raw-secret-1",
     });
-    expect(db.users.filter((user) => user.email === "nuevo@club.test")).toHaveLength(
-      0
-    );
+    expect(
+      db.users.filter((user) => user.email === "nuevo@club.test")
+    ).toHaveLength(0);
     expect(db.invitations).toHaveLength(1);
     expect(db.invitations[0]?.tokenHash).not.toBe("raw-secret-1");
     expect(db.invitations[0]?.tokenHash).toBe(sha256("raw-secret-1"));
@@ -458,7 +488,9 @@ describe("acceptStaffInvitation", () => {
     expect(user?.email).toBe("new@club.test");
     expect(user?.passwordHash).toBe("hashed:password1");
     expect(user?.name).toBe("Nueva");
-    const membership = db.memberships.find((row) => row.id === result.membershipId);
+    const membership = db.memberships.find(
+      (row) => row.id === result.membershipId
+    );
     expect(membership).toMatchObject({
       userId: result.userId,
       clubId: "club_a",
@@ -496,9 +528,9 @@ describe("acceptStaffInvitation", () => {
 
     expect(result.createdUser).toBe(false);
     expect(hashCalls).toBe(0);
-    expect(db.users.filter((user) => user.email === "physio@club.test")).toHaveLength(
-      1
-    );
+    expect(
+      db.users.filter((user) => user.email === "physio@club.test")
+    ).toHaveLength(1);
     expect(db.users.find((user) => user.id === "physio")?.passwordHash).toBe(
       "keep-me"
     );
@@ -557,9 +589,9 @@ describe("acceptStaffInvitation", () => {
       hashPassword: async (plain) => plain,
     });
 
-    expect(db.users.filter((user) => user.email === "shared@club.test")).toHaveLength(
-      1
-    );
+    expect(
+      db.users.filter((user) => user.email === "shared@club.test")
+    ).toHaveLength(1);
     expect(
       db.memberships.filter((row) => row.userId === "shared")
     ).toHaveLength(2);
@@ -639,9 +671,9 @@ describe("acceptStaffInvitation", () => {
       actorUserId: "coord_a",
       invitationId: toCancel.invitationId,
     });
-    expect(db.invitations.find((row) => row.id === toCancel.invitationId)?.status).toBe(
-      "CANCELLED"
-    );
+    expect(
+      db.invitations.find((row) => row.id === toCancel.invitationId)?.status
+    ).toBe("CANCELLED");
     await expect(
       acceptStaffInvitation(db, clockAt(FROZEN), {
         rawToken: "cancel-me",
@@ -942,7 +974,9 @@ describe("listClubAccess", () => {
       "m_coord_a",
       "m_staff_a",
     ]);
-    expect(access.members.find((row) => row.membershipId === "m_staff_a")).toMatchObject({
+    expect(
+      access.members.find((row) => row.membershipId === "m_staff_a")
+    ).toMatchObject({
       userId: "staff_a",
       email: "staff@a.test",
       name: "Staff A",
@@ -981,7 +1015,9 @@ describe("revokeMembership", () => {
       membershipId: "m_staff_a",
     });
     expect(result).toEqual({ membershipId: "m_staff_a" });
-    expect(db.memberships.find((row) => row.id === "m_staff_a")).toBeUndefined();
+    expect(
+      db.memberships.find((row) => row.id === "m_staff_a")
+    ).toBeUndefined();
     expect(db.users.find((row) => row.id === "staff_a")).toMatchObject({
       email: "staff@a.test",
     });
@@ -1020,7 +1056,9 @@ describe("revokeMembership", () => {
       clubId: "club_a",
       membershipId: "m_coord_a",
     });
-    expect(db.memberships.find((row) => row.id === "m_coord_a")).toBeUndefined();
+    expect(
+      db.memberships.find((row) => row.id === "m_coord_a")
+    ).toBeUndefined();
     expect(db.memberships.find((row) => row.id === "m_coord_2")).toBeDefined();
   });
 
@@ -1170,9 +1208,9 @@ describe("platform actor member operations", () => {
       createToken: () => "first-coord",
     });
     expect(issued.emailIntent.to).toBe("first@vacio.test");
-    expect(db.memberships.filter((row) => row.clubId === created.id)).toHaveLength(
-      0
-    );
+    expect(
+      db.memberships.filter((row) => row.clubId === created.id)
+    ).toHaveLength(0);
     const accepted = await acceptStaffInvitation(db, clockAt(FROZEN), {
       rawToken: "first-coord",
       password: "password1",
@@ -1199,7 +1237,9 @@ describe("platform actor member operations", () => {
       clubId: "club_a",
       membershipId: "m_staff_a",
     });
-    expect(db.memberships.find((row) => row.id === "m_staff_a")).toBeUndefined();
+    expect(
+      db.memberships.find((row) => row.id === "m_staff_a")
+    ).toBeUndefined();
   });
 
   it("still refuses Last Coordinator revoke for a platform actor", async () => {
@@ -1225,7 +1265,9 @@ describe("platform actor member operations", () => {
   it("refuses listing Clubs for a Coordinator", async () => {
     const db = seedClub();
     await expect(
-      listOperableClubs(db, { actor: { kind: "coordinator", userId: "coord_a" } })
+      listOperableClubs(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+      })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
@@ -1294,5 +1336,303 @@ describe("grantSuperAdmin", () => {
     expect(db.users.find((user) => user.id === "staff_a")?.platformRole).toBe(
       "USER"
     );
+  });
+});
+
+describe("createClubWithFirstCoordinator", () => {
+  it("issues a Coordinator invitation and does not create a User for a new email", async () => {
+    const db = createMemoryDb();
+    const result = await createClubWithFirstCoordinator(db, clockAt(FROZEN), {
+      actor: { kind: "platform" },
+      actorUserId: "operator",
+      name: "Atlético Norte",
+      email: "nuevo@club.test",
+      acceptUrlForToken,
+      createToken: () => "first-token",
+    });
+    expect(result.club.slug).toBe("atletico-norte");
+    expect(result.membershipId).toBeNull();
+    expect(result.invitation?.emailIntent.acceptUrl).toBe(
+      "https://app.test/invite/first-token"
+    );
+    expect(db.users).toHaveLength(0);
+    expect(db.invitations).toHaveLength(1);
+    expect(db.invitations[0]).toMatchObject({
+      role: "COORDINATOR",
+      email: "nuevo@club.test",
+      status: "PENDING",
+    });
+  });
+
+  it("creates a Coordinator Membership and no invitation when the email already has a User", async () => {
+    const db = createMemoryDb({
+      users: [
+        {
+          id: "existing",
+          email: "ya@club.test",
+          name: "Ya",
+          passwordHash: "hash",
+          platformRole: "USER",
+        },
+      ],
+      invitations: [
+        {
+          id: "old",
+          clubId: "will-not-match",
+          email: "ya@club.test",
+          role: "STAFF",
+          tokenHash: "hash",
+          expiresAt: new Date("2026-09-07T12:00:00.000Z"),
+          status: "PENDING",
+          invitedById: "existing",
+          acceptedAt: null,
+          createdAt: FROZEN,
+        },
+      ],
+    });
+    const result = await createClubWithFirstCoordinator(db, clockAt(FROZEN), {
+      actor: { kind: "platform" },
+      actorUserId: "operator",
+      name: "Club Sur",
+      email: "YA@club.test",
+      acceptUrlForToken,
+    });
+    expect(result.invitation).toBeNull();
+    expect(db.users).toHaveLength(1);
+    expect(db.memberships).toEqual([
+      expect.objectContaining({
+        userId: "existing",
+        clubId: result.club.id,
+        role: "COORDINATOR",
+        hasAllTeams: true,
+      }),
+    ]);
+    expect(
+      db.invitations.filter((row) => row.status === "PENDING")
+    ).toHaveLength(1);
+  });
+
+  it("appends -2 when the slug is taken", async () => {
+    const db = createMemoryDb({
+      clubs: [{ id: "taken", name: "Norte", slug: "norte" }],
+    });
+    const result = await createClubWithFirstCoordinator(db, clockAt(FROZEN), {
+      actor: { kind: "platform" },
+      actorUserId: "operator",
+      name: "Norte",
+      email: "nuevo@club.test",
+      acceptUrlForToken,
+      createToken: () => "tok",
+    });
+    expect(result.club.slug).toBe("norte-2");
+  });
+
+  it("refuses a Coordinator actor", async () => {
+    const db = createMemoryDb();
+    await expect(
+      createClubWithFirstCoordinator(db, clockAt(FROZEN), {
+        actor: { kind: "coordinator", userId: "coord" },
+        actorUserId: "coord",
+        name: "Norte",
+        email: "nuevo@club.test",
+        acceptUrlForToken,
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("attachOperatorMembership", () => {
+  it("creates a second Membership and refuses a duplicate Club", async () => {
+    const db = seedClub();
+    db.invitations.push({
+      id: "pending_b",
+      clubId: "club_b",
+      email: "staff@a.test",
+      role: "STAFF",
+      tokenHash: sha256("pending-b"),
+      expiresAt: new Date("2026-09-07T12:00:00.000Z"),
+      status: "PENDING",
+      invitedById: "coord_a",
+      acceptedAt: null,
+      createdAt: FROZEN,
+    });
+    const added = await attachOperatorMembership(db, {
+      actor: { kind: "platform" },
+      userId: "staff_a",
+      clubId: "club_b",
+      role: "COORDINATOR",
+    });
+    expect(
+      db.memberships.find((row) => row.id === added.membershipId)
+    ).toMatchObject({
+      userId: "staff_a",
+      clubId: "club_b",
+      role: "COORDINATOR",
+      hasAllTeams: true,
+    });
+    expect(
+      db.memberships.filter((row) => row.userId === "staff_a")
+    ).toHaveLength(2);
+    expect(db.invitations[0]?.status).toBe("CANCELLED");
+    await expect(
+      attachOperatorMembership(db, {
+        actor: { kind: "platform" },
+        userId: "staff_a",
+        clubId: "club_b",
+        role: "STAFF",
+      })
+    ).rejects.toMatchObject({ code: "MEMBERSHIP_EXISTS" });
+  });
+});
+
+describe("transferMembership", () => {
+  it("moves one Membership and keeps the chosen destination role", async () => {
+    const db = seedClub();
+    const moved = await transferMembership(db, {
+      actor: { kind: "platform" },
+      membershipId: "m_staff_a",
+      destinationClubId: "club_b",
+      role: "COORDINATOR",
+    });
+    expect(
+      db.memberships.find((row) => row.id === "m_staff_a")
+    ).toBeUndefined();
+    expect(
+      db.memberships.find((row) => row.id === moved.membershipId)
+    ).toMatchObject({
+      userId: "staff_a",
+      clubId: "club_b",
+      role: "COORDINATOR",
+      hasAllTeams: true,
+    });
+  });
+
+  it("refuses when the origin would lose its Last Coordinator", async () => {
+    const db = seedClub();
+    await expect(
+      transferMembership(db, {
+        actor: { kind: "platform" },
+        membershipId: "m_coord_a",
+        destinationClubId: "club_b",
+        role: "STAFF",
+      })
+    ).rejects.toMatchObject({ code: "LAST_COORDINATOR" });
+    expect(db.memberships.find((row) => row.id === "m_coord_a")?.clubId).toBe(
+      "club_a"
+    );
+  });
+
+  it("refuses the same Club as destination", async () => {
+    const db = seedClub();
+    await expect(
+      transferMembership(db, {
+        actor: { kind: "platform" },
+        membershipId: "m_staff_a",
+        destinationClubId: "club_a",
+        role: "STAFF",
+      })
+    ).rejects.toMatchObject({ code: "SAME_CLUB" });
+  });
+});
+
+describe("deleteStaffUser", () => {
+  it("removes the User and Memberships and unlinks a Player", async () => {
+    const db = createMemoryDb({
+      clubs: [
+        { id: "club_a", name: "Atlético Norte", slug: "atletico-norte" },
+        { id: "club_b", name: "Club Sur", slug: "club-sur" },
+      ],
+      users: [
+        {
+          id: "coord_a",
+          email: "coord@a.test",
+          name: "Coord A",
+          passwordHash: "hash",
+          platformRole: "USER",
+        },
+        {
+          id: "staff_a",
+          email: "staff@a.test",
+          name: "Staff A",
+          passwordHash: "hash",
+          platformRole: "USER",
+        },
+      ],
+      memberships: [
+        {
+          id: "m_coord_a",
+          userId: "coord_a",
+          clubId: "club_a",
+          role: "COORDINATOR",
+          hasAllTeams: true,
+        },
+        {
+          id: "m_staff_a",
+          userId: "staff_a",
+          clubId: "club_a",
+          role: "STAFF",
+          hasAllTeams: true,
+        },
+      ],
+      invitations: [
+        {
+          id: "pending_staff",
+          clubId: "club_a",
+          email: "staff@a.test",
+          role: "STAFF",
+          tokenHash: sha256("pending"),
+          expiresAt: new Date("2026-09-07T12:00:00.000Z"),
+          status: "PENDING",
+          invitedById: "coord_a",
+          acceptedAt: null,
+          createdAt: FROZEN,
+        },
+      ],
+      players: [{ id: "player_1", userId: "staff_a", name: "Jugador" }],
+    });
+    await deleteStaffUser(db, {
+      actor: { kind: "platform" },
+      userId: "staff_a",
+    });
+    expect(db.users.find((user) => user.id === "staff_a")).toBeUndefined();
+    expect(
+      db.memberships.find((row) => row.userId === "staff_a")
+    ).toBeUndefined();
+    expect(db.players).toEqual([
+      { id: "player_1", userId: null, name: "Jugador" },
+    ]);
+    expect(db.invitations[0]?.status).toBe("CANCELLED");
+  });
+
+  it("refuses a Super Admin", async () => {
+    const db = seedClub();
+    const operator = db.users.find((user) => user.id === "coord_a");
+    if (!operator) {
+      throw new Error("missing user");
+    }
+    operator.platformRole = "SUPER_ADMIN";
+    await expect(
+      deleteStaffUser(db, { actor: { kind: "platform" }, userId: "coord_a" })
+    ).rejects.toMatchObject({ code: "CANNOT_DELETE_SUPER_ADMIN" });
+    expect(db.users.find((user) => user.id === "coord_a")).toBeDefined();
+  });
+
+  it("refuses when any Club would lose its Last Coordinator", async () => {
+    const db = seedClub();
+    await expect(
+      deleteStaffUser(db, { actor: { kind: "platform" }, userId: "coord_a" })
+    ).rejects.toMatchObject({ code: "LAST_COORDINATOR" });
+    expect(db.users.find((user) => user.id === "coord_a")).toBeDefined();
+    expect(db.memberships.find((row) => row.id === "m_coord_a")).toBeDefined();
+  });
+
+  it("refuses a Coordinator actor", async () => {
+    const db = seedClub();
+    await expect(
+      deleteStaffUser(db, {
+        actor: { kind: "coordinator", userId: "coord_a" },
+        userId: "staff_a",
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });

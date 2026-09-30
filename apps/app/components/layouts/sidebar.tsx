@@ -13,12 +13,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/design-system/components/sidebar";
+import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, type ReactNode, useEffect } from "react";
-import { cn } from "@repo/design-system/lib/utils";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import {
+  clubsNavItem,
   configurationNavItem,
   operationalNavigation,
 } from "@/lib/admin-navigation";
@@ -27,11 +28,11 @@ import type { RecommendedSetupClubFacts } from "@/lib/recommended-setup";
 import { isSettingsPath, settingsNavigation } from "@/lib/settings-navigation";
 import { AppShellProvider } from "./app-shell-context";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import { MOBILE_SHELL_SCROLL_PB_CLASS } from "./mobile-shell-chrome";
 import { OperationalRouteMemory } from "./operational-route-memory";
 import { SettingsVolverLink } from "./settings-volver-link";
 import { SidebarUserMenu } from "./sidebar-user-menu";
 import { TeamBranding } from "./team-branding";
-import { MOBILE_SHELL_SCROLL_PB_CLASS } from "./mobile-shell-chrome";
 
 type GlobalSidebarProperties = {
   readonly children: ReactNode;
@@ -52,11 +53,7 @@ type GlobalSidebarProperties = {
 
 const sidebarPrefetchHrefs = Array.from(
   new Set(
-    [
-      ...operationalNavigation,
-      configurationNavItem,
-      ...settingsNavigation,
-    ]
+    [...operationalNavigation, configurationNavItem, ...settingsNavigation]
       .filter((item) => !("disabled" in item && item.disabled))
       .map((item) => item.href)
   )
@@ -128,19 +125,19 @@ export const GlobalSidebar = ({
                           staffContext.platformRole === "SUPER_ADMIN"
                       )
                       .map((item) => (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          isActive={item.match(pathname)}
-                          render={
-                            <Link href={item.href} prefetch>
-                              <item.icon weight="fill" />
-                              <span>{item.label}</span>
-                            </Link>
-                          }
-                          tooltip={item.label}
-                        />
-                      </SidebarMenuItem>
-                    ))}
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            isActive={item.match(pathname)}
+                            render={
+                              <Link href={item.href} prefetch>
+                                <item.icon weight="fill" />
+                                <span>{item.label}</span>
+                              </Link>
+                            }
+                            tooltip={item.label}
+                          />
+                        </SidebarMenuItem>
+                      ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
@@ -188,20 +185,26 @@ export const GlobalSidebar = ({
               <SidebarGroup className="mt-auto pt-2">
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {[configurationNavItem].map((item) => (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          isActive={item.match(pathname)}
-                          render={
-                            <Link href={item.href} prefetch>
-                              <item.icon weight="fill" />
-                              <span>{item.label}</span>
-                            </Link>
-                          }
-                          tooltip={item.label}
-                        />
-                      </SidebarMenuItem>
-                    ))}
+                    {[clubsNavItem, configurationNavItem]
+                      .filter(
+                        (item) =>
+                          !item.superAdminOnly ||
+                          staffContext.platformRole === "SUPER_ADMIN"
+                      )
+                      .map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                          <SidebarMenuButton
+                            isActive={item.match(pathname)}
+                            render={
+                              <Link href={item.href} prefetch>
+                                <item.icon weight="fill" />
+                                <span>{item.label}</span>
+                              </Link>
+                            }
+                            tooltip={item.label}
+                          />
+                        </SidebarMenuItem>
+                      ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
