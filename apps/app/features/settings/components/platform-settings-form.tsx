@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   changeStaffUserEmail,
+  catchUpOperatingDemoTeam,
   createOperatingClub,
-  grantUserSuperAdmin,
   setActiveOperatingClub,
 } from "../actions/platform-actions";
 import { SettingsRow } from "./settings-row";
@@ -20,22 +20,14 @@ export type OperableClubView = {
   readonly slug: string;
 };
 
-export type PlatformMemberOption = {
-  readonly userId: string;
-  readonly email: string;
-  readonly name: string | null;
-};
-
 type PlatformSettingsFormProperties = {
   readonly activeClubId: string;
   readonly clubs: readonly OperableClubView[];
-  readonly members: readonly PlatformMemberOption[];
 };
 
 export function PlatformSettingsForm({
   activeClubId,
   clubs,
-  members,
 }: PlatformSettingsFormProperties) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -43,7 +35,6 @@ export function PlatformSettingsForm({
   const [clubSlug, setClubSlug] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
   const [email, setEmail] = useState("");
-  const [grantEmail, setGrantEmail] = useState("");
 
   return (
     <>
@@ -200,59 +191,33 @@ export function PlatformSettingsForm({
       </SettingsSection>
 
       <SettingsSection
-        description="Un coordinador no puede conceder este rol. No hay impersonación. Elige un miembro o escribe su email."
-        title="Conceder Super Admin"
+        description="Rellena Primer Equipo Vimenor en el club en operación hasta hoy: sesiones, partidos y check-ins que falten."
+        title="Equipo de demo"
       >
-        {members.length > 0 ? (
-          <SettingsRow htmlFor="grant-member" label="Miembro">
-            <select
-              className="h-8 w-full rounded-lg border border-border-secondary bg-bg-tertiary px-2.5 text-sm text-text-primary"
-              disabled={isPending}
-              id="grant-member"
-              onChange={(event) => {
-                setGrantEmail(event.target.value);
-              }}
-              value={
-                members.some((member) => member.email === grantEmail)
-                  ? grantEmail
-                  : ""
-              }
-            >
-              <option value="">Buscar por email…</option>
-              {members.map((member) => (
-                <option key={member.userId} value={member.email}>
-                  {member.name ? `${member.name} (${member.email})` : member.email}
-                </option>
-              ))}
-            </select>
-          </SettingsRow>
-        ) : null}
-        <SettingsRow htmlFor="grant-user-email" label="Email">
-          <Input
-            autoComplete="off"
-            id="grant-user-email"
-            onChange={(event) => setGrantEmail(event.target.value)}
-            type="email"
-            value={grantEmail}
-          />
-        </SettingsRow>
         <div className="flex justify-end border-border-secondary border-t py-3">
           <Button
-            disabled={isPending || grantEmail.trim().length === 0}
+            disabled={isPending || activeClubId.length === 0}
             onClick={() => {
               startTransition(async () => {
-                const result = await grantUserSuperAdmin(grantEmail);
+                const result = await catchUpOperatingDemoTeam();
                 if (!result.success) {
-                  toast.error(result.error ?? "No se pudo conceder el rol.");
+                  toast.error(result.error ?? "No se pudo actualizar la demo.");
                   return;
                 }
-                toast.success("Super Admin concedido.");
+                const sessions = result.createdSessions ?? 0;
+                const entries = result.createdEntries ?? 0;
+                toast.success(
+                  sessions === 0 && entries === 0
+                    ? "La demo ya estaba al día."
+                    : `Demo al día. ${sessions} sesiones y ${entries} check-ins nuevos.`
+                );
+                router.refresh();
               });
             }}
             size="sm"
             type="button"
           >
-            Conceder Super Admin
+            Actualizar demo hasta hoy
           </Button>
         </div>
       </SettingsSection>

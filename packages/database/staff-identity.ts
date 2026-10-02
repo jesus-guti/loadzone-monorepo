@@ -1194,34 +1194,6 @@ export async function changeUserEmail(
   return { userId: user.id, email };
 }
 
-export async function grantSuperAdmin(
-  db: StaffIdentityClient,
-  input: {
-    readonly actor: StaffIdentityActor;
-    readonly userId: string;
-  }
-): Promise<{ readonly userId: string; readonly platformRole: "SUPER_ADMIN" }> {
-  requirePlatformActor(input.actor);
-  const user = await db.user.findUnique({
-    where: { id: input.userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      passwordHash: true,
-      platformRole: true,
-    },
-  });
-  if (!user) {
-    throw new StaffIdentityError("USER_NOT_FOUND", "Usuario no encontrado.");
-  }
-  await db.user.update({
-    where: { id: user.id },
-    data: { platformRole: "SUPER_ADMIN" },
-  });
-  return { userId: user.id, platformRole: "SUPER_ADMIN" };
-}
-
 /** Lowercase ASCII slug from a Club name. Accents drop; other characters become hyphens. */
 export function clubSlugFromName(name: string): string {
   const ascii = name.normalize("NFD").replace(/\p{M}/gu, "");

@@ -2,10 +2,13 @@
 
 import { database } from "@repo/database";
 import {
+  catchUpDemoTeam,
+  DemoTeamCatchUpError,
+} from "@repo/database/demo-team-catchup";
+import {
   StaffIdentityError,
   changeUserEmail,
   createClub,
-  grantSuperAdmin,
   listOperableClubs,
   type StaffIdentityClient,
 } from "@repo/database/staff-identity";
@@ -20,6 +23,8 @@ export type PlatformActionResult = {
   success: boolean;
   error?: string;
   clubId?: string;
+  createdSessions?: number;
+  createdEntries?: number;
 };
 
 const staffIdentityDb = database as unknown as StaffIdentityClient;
@@ -158,25 +163,33 @@ export async function changeStaffUserEmail(
   }
 }
 
-export async function grantUserSuperAdmin(
-  email: string
-): Promise<PlatformActionResult> {
-  const gate = await requirePlatformUser();
-  if ("success" in gate) {
-    return gate;
+export async function catchUpOperatingDemoTeam(): Promise<PlatformActionResult> {
+  const staffContext = await getCurrentStaffContext();
+  if (!staffContext || staffContext.platformRole !== "SUPER_ADMIN") {
+    return {
+      success: false,
+      error: "Solo un operador de plataforma puede hacer esto.",
+    };
   }
-  const lookup = await resolveUserIdByEmail(email);
-  if ("success" in lookup) {
-    return lookup;
+  const clubId = staffContext.club?.id;
+  if (!clubId) {
+    return { success: false, error: "Elige un club en operación." };
   }
   try {
-    await grantSuperAdmin(staffIdentityDb, {
-      actor: { kind: "platform" },
-      userId: lookup.userId,
+    const result = await catchUpDemoTeam(database, {
+      clubId,
+      now: new Date(),
     });
-    revalidatePath("/settings/platform");
-    return { success: true };
+    revalidatePath("/", "layout");
+    return {
+      success: true,
+      createdSessions: result.createdSessions,
+      createdEntries: result.createdEntries,
+    };
   } catch (error) {
+    if (error instanceof DemoTeamCatchUpError) {
+      return { success: false, error: error.message };
+    }
     return asActionError(error);
   }
 }

@@ -7,7 +7,6 @@ const stubs = vi.hoisted(() => ({
   cookiesSet: vi.fn(),
   createClub: vi.fn(),
   changeUserEmail: vi.fn(),
-  grantSuperAdmin: vi.fn(),
   listOperableClubs: vi.fn(),
   findUserByEmail: vi.fn(),
 }));
@@ -45,7 +44,6 @@ vi.mock("@repo/database/staff-identity", async () => {
     ...actual,
     createClub: stubs.createClub,
     changeUserEmail: stubs.changeUserEmail,
-    grantSuperAdmin: stubs.grantSuperAdmin,
     listOperableClubs: stubs.listOperableClubs,
   };
 });
@@ -53,7 +51,6 @@ vi.mock("@repo/database/staff-identity", async () => {
 import {
   changeStaffUserEmail,
   createOperatingClub,
-  grantUserSuperAdmin,
 } from "@/features/settings/actions/platform-actions";
 
 describe("createOperatingClub", () => {
@@ -157,44 +154,6 @@ describe("changeStaffUserEmail", () => {
         actor: { kind: "platform" },
         userId: "u2",
         email: "nuevo@a.test",
-      })
-    );
-  });
-});
-
-describe("grantUserSuperAdmin", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("refuses Coordinators", async () => {
-    stubs.getCurrentStaffContext.mockResolvedValue({
-      user: { id: "u1" },
-      platformRole: "USER",
-      role: "COORDINATOR",
-    });
-    const result = await grantUserSuperAdmin("a@b.test");
-    expect(result.success).toBe(false);
-    expect(stubs.grantSuperAdmin).not.toHaveBeenCalled();
-  });
-
-  it("grants Super Admin by email, not User UUID", async () => {
-    stubs.getCurrentStaffContext.mockResolvedValue({
-      user: { id: "op" },
-      platformRole: "SUPER_ADMIN",
-    });
-    stubs.findUserByEmail.mockResolvedValue({ id: "u2" });
-    stubs.grantSuperAdmin.mockResolvedValue({
-      userId: "u2",
-      platformRole: "SUPER_ADMIN",
-    });
-    const result = await grantUserSuperAdmin("coach@a.test");
-    expect(result).toEqual({ success: true });
-    expect(stubs.grantSuperAdmin).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        actor: { kind: "platform" },
-        userId: "u2",
       })
     );
   });

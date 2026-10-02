@@ -11,7 +11,6 @@ import {
   createClub,
   createClubWithFirstCoordinator,
   deleteStaffUser,
-  grantSuperAdmin,
   issueStaffInvitation,
   listClubAccess,
   listOperableClubs,
@@ -1309,33 +1308,6 @@ describe("changeUserEmail", () => {
         email: "x@a.test",
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-  });
-});
-
-describe("grantSuperAdmin", () => {
-  it("grants Super Admin on an existing User", async () => {
-    const db = seedClub();
-    const result = await grantSuperAdmin(db, {
-      actor: { kind: "platform" },
-      userId: "coord_a",
-    });
-    expect(result).toEqual({ userId: "coord_a", platformRole: "SUPER_ADMIN" });
-    expect(db.users.find((user) => user.id === "coord_a")?.platformRole).toBe(
-      "SUPER_ADMIN"
-    );
-  });
-
-  it("refuses a Coordinator actor", async () => {
-    const db = seedClub();
-    await expect(
-      grantSuperAdmin(db, {
-        actor: { kind: "coordinator", userId: "coord_a" },
-        userId: "staff_a",
-      })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    expect(db.users.find((user) => user.id === "staff_a")?.platformRole).toBe(
-      "USER"
-    );
   });
 });
 
