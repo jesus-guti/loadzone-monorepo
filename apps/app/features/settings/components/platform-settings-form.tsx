@@ -20,14 +20,22 @@ export type OperableClubView = {
   readonly slug: string;
 };
 
+type OperatingMemberView = {
+  readonly userId: string;
+  readonly email: string;
+  readonly name: string | null;
+};
+
 type PlatformSettingsFormProperties = {
   readonly activeClubId: string;
   readonly clubs: readonly OperableClubView[];
+  readonly members?: readonly OperatingMemberView[];
 };
 
 export function PlatformSettingsForm({
   activeClubId,
   clubs,
+  members = [],
 }: PlatformSettingsFormProperties) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
