@@ -245,32 +245,114 @@ function isInjuredOrIll(status: PlayerStatus): boolean {
 }
 
 /**
- * Tarjetas grid only: more wellness alerts first, then injured/ill, then name.
- * Does not use riskLevel. Lista views keep roster order.
+ * Within a bucket, worse readings first.
+ * Lower is worse for TQR, sleep, and energy. Higher is worse for soreness.
+ * Missing values sort after a real reading.
  */
-export function sortPlayersByTarjetaSeverity(
+function compareMetricSeverity(
+  left: number | null | undefined,
+  right: number | null | undefined,
+  higherIsWorse: boolean
+): number {
+  const leftPresent = typeof left === "number" && Number.isFinite(left);
+  const rightPresent = typeof right === "number" && Number.isFinite(right);
+  if (!leftPresent && !rightPresent) {
+    return 0;
+  }
+  if (!leftPresent) {
+    return 1;
+  }
+  if (!rightPresent) {
+    return -1;
+  }
+  return higherIsWorse ? right - left : left - right;
+}
+
+function compareEntrySeverity(
+  left: TeamWellnessPlayer["entries"][number] | undefined,
+  right: TeamWellnessPlayer["entries"][number] | undefined
+): number {
+  const checks: readonly [
+    number | null | undefined,
+    number | null | undefined,
+    boolean,
+  ][] = [
+    [left?.recovery, right?.recovery, false],
+    [left?.soreness, right?.soreness, true],
+    [left?.sleepHours, right?.sleepHours, false],
+    [left?.sleepQuality, right?.sleepQuality, false],
+    [left?.energy, right?.energy, false],
+  ];
+  for (const [leftValue, rightValue, higherIsWorse] of checks) {
+    const compared = compareMetricSeverity(
+      leftValue,
+      rightValue,
+      higherIsWorse
+    );
+    if (compared !== 0) {
+      return compared;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Cards and list: wellness alerts first, then the rest, then injured/ill,
+ * then pending. Inside a group, worse TQR, soreness, sleep, and energy
+ * come before the name. An alert outranks injury and pending.
+ * Does not use riskLevel.
+ */
+function wellnessSortBucket(
+  player: TeamWellnessPlayer,
+  wellnessLimits?: WellnessLimits | null
+): number {
+  const alertCount = getWellnessAlerts(
+    getLatestEntry(player),
+    wellnessLimits
+  ).length;
+  if (alertCount > 0) {
+    return 0;
+  }
+  if (isInjuredOrIll(player.status)) {
+    return 2;
+  }
+  if (listPendingPlayers([player]).length > 0) {
+    return 3;
+  }
+  return 1;
+}
+
+export function sortPlayersByWellnessPriority(
   players: TeamWellnessPlayer[],
   wellnessLimits?: WellnessLimits | null
 ): TeamWellnessPlayer[] {
   return [...players].sort((left, right) => {
-    const leftAlerts = getWellnessAlerts(
-      getLatestEntry(left),
-      wellnessLimits
-    ).length;
-    const rightAlerts = getWellnessAlerts(
-      getLatestEntry(right),
-      wellnessLimits
-    ).length;
-
-    if (leftAlerts !== rightAlerts) {
-      return rightAlerts - leftAlerts;
+    const leftBucket = wellnessSortBucket(left, wellnessLimits);
+    const rightBucket = wellnessSortBucket(right, wellnessLimits);
+    if (leftBucket !== rightBucket) {
+      return leftBucket - rightBucket;
     }
 
-    const leftInjury = isInjuredOrIll(left.status) ? 1 : 0;
-    const rightInjury = isInjuredOrIll(right.status) ? 1 : 0;
+    if (leftBucket === 0) {
+      const leftAlerts = getWellnessAlerts(
+        getLatestEntry(left),
+        wellnessLimits
+      ).length;
+      const rightAlerts = getWellnessAlerts(
+        getLatestEntry(right),
+        wellnessLimits
+      ).length;
+      if (leftAlerts !== rightAlerts) {
+        return rightAlerts - leftAlerts;
+      }
+    }
 
-    if (leftInjury !== rightInjury) {
-      return rightInjury - leftInjury;
+    const byReading = compareEntrySeverity(
+      getLatestEntry(left),
+      getLatestEntry(right)
+    );
+    if (byReading !== 0) {
+      return byReading;
     }
 
     return left.name.localeCompare(right.name, "es", { sensitivity: "base" });

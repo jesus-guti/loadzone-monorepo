@@ -21,6 +21,7 @@ export async function subscribePush(
       auth: payload.auth,
     },
     update: {
+      playerId: payload.playerId,
       p256dh: payload.p256dh,
       auth: payload.auth,
     },

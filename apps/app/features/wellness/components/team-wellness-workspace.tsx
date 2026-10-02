@@ -16,7 +16,7 @@ import { TeamWellnessOverview } from "./team-wellness-overview";
 import { TeamWellnessPlayerCard } from "./team-wellness-player-card";
 import {
   buildWellnessSummary,
-  sortPlayersByTarjetaSeverity,
+  sortPlayersByWellnessPriority,
 } from "./team-wellness-workspace.utils";
 
 type TeamWellnessWorkspaceProperties = {
@@ -41,8 +41,8 @@ export function TeamWellnessWorkspace({
     [players, wellnessLimits]
   );
 
-  const tarjetaPlayers = useMemo(
-    () => sortPlayersByTarjetaSeverity(players, wellnessLimits),
+  const orderedPlayers = useMemo(
+    () => sortPlayersByWellnessPriority(players, wellnessLimits),
     [players, wellnessLimits]
   );
 
@@ -81,7 +81,7 @@ export function TeamWellnessWorkspace({
 
         <TabsContent className="mt-0 outline-none" value="cards">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {tarjetaPlayers.map((player) => (
+            {orderedPlayers.map((player) => (
               <TeamWellnessPlayerCard
                 key={player.id}
                 player={player}
@@ -94,13 +94,13 @@ export function TeamWellnessWorkspace({
         <TabsContent className="mt-0 outline-none" value="list">
           <div className="md:hidden">
             <TeamWellnessComparisonList
-              players={players}
+              players={orderedPlayers}
               wellnessLimits={wellnessLimits}
             />
           </div>
           <div className="hidden md:block">
             <TeamWellnessComparisonTable
-              players={players}
+              players={orderedPlayers}
               wellnessLimits={wellnessLimits}
             />
           </div>

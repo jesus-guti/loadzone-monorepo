@@ -8,7 +8,7 @@ import {
   getDailyStateLabel,
   getWellnessAlerts,
   listPendingPlayers,
-  sortPlayersByTarjetaSeverity,
+  sortPlayersByWellnessPriority,
 } from "@/features/wellness/components/team-wellness-workspace.utils";
 
 function createPlayer(
@@ -379,7 +379,7 @@ describe("team wellness workspace utils", () => {
     });
   });
 
-  it("orders tarjetas by alert count, then injury or illness, then name", () => {
+  it("orders alerts first, then worse readings, then injured, then pending", () => {
     const twoAlertEntry = {
       date: "2026-05-03T00:00:00.000Z",
       ...emptyEntryFields,
@@ -403,7 +403,7 @@ describe("team wellness workspace utils", () => {
       postFilledAt: "2026-05-03T21:00:00.000Z",
     };
 
-    const sorted = sortPlayersByTarjetaSeverity(
+    const sorted = sortPlayersByWellnessPriority(
       [
         createPlayer({
           id: "none_zeta",
@@ -443,6 +443,42 @@ describe("team wellness workspace utils", () => {
           stats: [{ riskLevel: "CRITICAL", acwr: 2 }],
         }),
         createPlayer({
+          id: "worse_soreness",
+          name: "Zoe Agujetas",
+          status: "AVAILABLE",
+          entries: [
+            {
+              date: "2026-05-03T00:00:00.000Z",
+              ...emptyEntryFields,
+              recovery: 7,
+              energy: 4,
+              soreness: 3,
+              sleepHours: 8,
+              sleepQuality: 4,
+              preFilledAt: "2026-05-03T07:00:00.000Z",
+              postFilledAt: "2026-05-03T21:00:00.000Z",
+            },
+          ],
+        }),
+        createPlayer({
+          id: "worse_sleep",
+          name: "Nora Sueño",
+          status: "AVAILABLE",
+          entries: [
+            {
+              date: "2026-05-03T00:00:00.000Z",
+              ...emptyEntryFields,
+              recovery: 7,
+              energy: 4,
+              soreness: 1,
+              sleepHours: 6.5,
+              sleepQuality: 4,
+              preFilledAt: "2026-05-03T07:00:00.000Z",
+              postFilledAt: "2026-05-03T21:00:00.000Z",
+            },
+          ],
+        }),
+        createPlayer({
           id: "healthy_alpha",
           name: "Alba Sana",
           status: "AVAILABLE",
@@ -468,9 +504,11 @@ describe("team wellness workspace utils", () => {
       "two_alerts",
       "one_alert_ill",
       "one_alert_healthy",
+      "worse_soreness",
+      "worse_sleep",
+      "healthy_alpha",
       "injured_no_alerts",
       "high_risk",
-      "healthy_alpha",
       "none_zeta",
     ]);
   });

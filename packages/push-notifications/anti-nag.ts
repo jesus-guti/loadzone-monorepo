@@ -26,6 +26,8 @@ export const QUIET_HOURS_END_HOUR = 8;
 /**
  * After quiet ends, deferred autos stay eligible longer than the normal cron
  * lookback so a missed 08:00 tick can still deliver the single reminder once.
+ * Daytime targets use the same idea: eligible until local quiet start, because
+ * a 15-minute cron slot is easy to miss and PushDispatch already caps one send.
  */
 export const DEFERRED_AUTOMATED_CATCHUP_MS = 2 * 60 * 60 * 1000;
 
@@ -171,24 +173,33 @@ export function isAutomatedReminderDue(input: {
   timeZone: string;
   lookbackMs?: number;
 }): boolean {
-  const lookbackMs = input.lookbackMs ?? DEFAULT_REMINDER_LOOKBACK_MS;
   if (isInQuietHours(input.now, input.timeZone)) {
     return false;
   }
 
-  const configuredInQuiet = isInQuietHours(
-    input.configuredTarget,
-    input.timeZone
-  );
   const effective = resolveDeferredInstant(
     input.configuredTarget,
     input.timeZone
   );
-  const windowMs = configuredInQuiet
-    ? Math.max(lookbackMs, DEFERRED_AUTOMATED_CATCHUP_MS)
-    : lookbackMs;
+  const local = readLocalParts(effective, input.timeZone);
+  const quietStart = utcInstantForLocalDateTime(
+    input.timeZone,
+    local.year,
+    local.month,
+    local.day,
+    QUIET_HOURS_START_HOUR,
+    0
+  );
+  if (
+    input.now.getTime() < effective.getTime() ||
+    input.now.getTime() >= quietStart.getTime()
+  ) {
+    return false;
+  }
 
-  return isWithinDispatchWindow(effective, input.now, windowMs);
+  // Eligible until local 22:00. One PushDispatch still caps the send, so a
+  // missed 15-minute cron slot can deliver later the same day.
+  return true;
 }
 
 export function isObligationComplete(input: {

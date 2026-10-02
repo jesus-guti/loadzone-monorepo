@@ -202,7 +202,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const now = new Date();
-  const horizon = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+  const horizon = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   const sessions = await database.teamSession.findMany({
     where: {

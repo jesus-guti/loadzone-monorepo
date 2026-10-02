@@ -72,6 +72,22 @@ describe("isAutomatedReminderDue", () => {
     ).toBe(true);
   });
 
+  it("still fires later the same day when the 15-minute cron slot was missed", () => {
+    const target = utcInstantForLocalDateTime(TZ, 2026, 8, 4, 16, 0);
+    const now = utcInstantForLocalDateTime(TZ, 2026, 8, 4, 20, 0);
+    expect(
+      isAutomatedReminderDue({ configuredTarget: target, now, timeZone: TZ })
+    ).toBe(true);
+  });
+
+  it("does not fire the next day after a daytime target", () => {
+    const target = utcInstantForLocalDateTime(TZ, 2026, 8, 4, 16, 0);
+    const now = utcInstantForLocalDateTime(TZ, 2026, 8, 5, 10, 0);
+    expect(
+      isAutomatedReminderDue({ configuredTarget: target, now, timeZone: TZ })
+    ).toBe(false);
+  });
+
   it("does not fire deferred autos days later", () => {
     const target = utcInstantForLocalDateTime(TZ, 2026, 8, 4, 23, 0);
     const now = utcInstantForLocalDateTime(TZ, 2026, 8, 6, 9, 0);
