@@ -12,6 +12,8 @@ import { setSessionDuration } from "../actions/set-session-duration";
 import {
   clampDurationMinutes,
   displayedDurationMinutes,
+  SESSION_DURATION_MAX,
+  SESSION_DURATION_MIN,
   stepDurationMinutes,
   type SessionDurationType,
 } from "../session-duration";
@@ -44,7 +46,9 @@ export function SessionDurationBanner({
     });
     setPending(false);
     if (!result.success) {
-      setError(result.error ?? "No se pudieron guardar los minutos.");
+      setError(
+        result.error ?? "No se pudieron guardar los minutos. Vuelve a intentarlo."
+      );
       return;
     }
     setOpen(false);
@@ -54,7 +58,7 @@ export function SessionDurationBanner({
     <>
       <div className="fixed inset-x-0 bottom-16 z-40 px-4 pb-2 md:bottom-0 md:pb-4">
         <button
-          className="flex w-full items-center justify-between rounded-lg border border-border-secondary bg-bg-primary px-4 py-3 text-left shadow-lg"
+          className="flex w-full items-center justify-between rounded-lg border border-border-secondary bg-bg-primary px-4 py-3 text-left"
           onClick={() => {
             setMinutes(displayedDurationMinutes(sessionType, savedMinutes));
             setError(null);
@@ -89,7 +93,7 @@ export function SessionDurationBanner({
               type="button"
               variant="outline"
             >
-              <MinusIcon className="size-7" weight="bold" />
+              <MinusIcon className="size-7" weight="fill" />
             </Button>
             <label className="sr-only" htmlFor="session-duration-minutes">
               Minutos
@@ -99,8 +103,8 @@ export function SessionDurationBanner({
               disabled={pending}
               id="session-duration-minutes"
               inputMode="numeric"
-              max={240}
-              min={1}
+              max={SESSION_DURATION_MAX}
+              min={SESSION_DURATION_MIN}
               onChange={(event) => {
                 const next = Number.parseInt(event.target.value, 10);
                 if (Number.isNaN(next)) {
@@ -120,7 +124,7 @@ export function SessionDurationBanner({
               type="button"
               variant="outline"
             >
-              <PlusIcon className="size-7" weight="bold" />
+              <PlusIcon className="size-7" weight="fill" />
             </Button>
           </div>
           {error ? (

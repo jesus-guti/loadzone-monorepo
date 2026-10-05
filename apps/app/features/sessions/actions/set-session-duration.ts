@@ -25,7 +25,10 @@ export async function setSessionDuration(input: {
   try {
     const parsed = setSessionDurationSchema.safeParse(input);
     if (!parsed.success) {
-      return { success: false, error: "Los minutos no son válidos." };
+      return {
+        success: false,
+        error: "Los minutos tienen que estar entre 1 y 240. Corrige el valor.",
+      };
     }
 
     const staffContext = await getCurrentStaffContext();
@@ -53,6 +56,9 @@ export async function setSessionDuration(input: {
     revalidatePath(`/sessions/${session.id}`);
     return { success: true };
   } catch {
-    return { success: false, error: "No se pudieron guardar los minutos." };
+    return {
+      success: false,
+      error: "No se pudieron guardar los minutos. Vuelve a intentarlo.",
+    };
   }
 }
