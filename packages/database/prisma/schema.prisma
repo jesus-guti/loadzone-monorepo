@@ -887,6 +887,8 @@ model Injury {
   staffNotes         String?
   expectedReturnDate DateTime?           @db.Date
   createdByUserId    String?
+  /// Staff soft-delete; row kept for audit/recovery. Excluded from all product reads when set.
+  deletedAt          DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   player             Player              @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -899,6 +901,8 @@ model Injury {
   @@index([teamId, startDate])
   @@index([playerId, endDate])
   @@index([createdByUserId])
+  @@index([teamId, deletedAt])
+  @@index([playerId, deletedAt])
 }
 
 model InjuryBodyRegion {
