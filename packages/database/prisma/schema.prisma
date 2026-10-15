@@ -667,6 +667,7 @@ model TeamSession {
   status                TeamSessionStatus     @default(SCHEDULED)
   startsAt              DateTime
   endsAt                DateTime
+  durationMinutes       Int?
   timezone              String
   appliesToAllPlayers   Boolean               @default(true)
   preReminderMinutes    Int?

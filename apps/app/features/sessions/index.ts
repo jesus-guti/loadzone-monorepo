@@ -1,4 +1,5 @@
 export { AttendanceForm } from "./components/attendance-form";
+export { SessionDurationBanner } from "./components/session-duration-banner";
 export { CancelSessionButton } from "./components/cancel-session-button";
 export { EditSessionForm } from "./components/edit-session-form";
 export { FieldLabel, FormSection } from "./components/form-section";
