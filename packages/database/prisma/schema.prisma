@@ -687,6 +687,7 @@ model TeamSession {
   endsAt                DateTime
   /// Shared session minutes for a non-match session. Null until staff log them.
   sharedMinutes         Int?
+  durationMinutes       Int?
   lineup                MatchLineup?
   timezone              String
   appliesToAllPlayers   Boolean               @default(true)

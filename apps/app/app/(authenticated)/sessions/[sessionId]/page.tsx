@@ -18,7 +18,9 @@ import {
   AttendanceForm,
   CancelSessionButton,
   PrintButton,
+  SessionDurationBanner,
 } from "@/features/sessions";
+import { shouldShowDurationBanner } from "@/features/sessions/session-duration";
 
 export const metadata: Metadata = {
   title: "Sesión | LoadZone",
@@ -102,6 +104,7 @@ const SessionDetailPage = async ({
       status: true,
       startsAt: true,
       endsAt: true,
+      durationMinutes: true,
       seriesId: true,
       preReminderMinutes: true,
       postReminderMinutes: true,
@@ -159,6 +162,10 @@ const SessionDetailPage = async ({
   });
 
   const isMatch = session.type === "MATCH";
+  const showDurationBanner = shouldShowDurationBanner(
+    session.endsAt,
+    new Date()
+  );
 
   return (
     <>
@@ -314,6 +321,13 @@ const SessionDetailPage = async ({
           </Card>
         </aside>
       </div>
+      {showDurationBanner ? (
+        <SessionDurationBanner
+          savedMinutes={session.durationMinutes}
+          sessionId={session.id}
+          sessionType={session.type}
+        />
+      ) : null}
     </>
   );
 };
