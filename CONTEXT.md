@@ -101,16 +101,48 @@ An immutable published snapshot of **both** forms of a **Check-in Questionnaire*
 _Avoid_: Mutating a published Version; rewriting history; parallel live Versions; versioning the two forms independently.
 
 **Preset**:
-Product-defined starting configuration of a **Check-in Questionnaire** (short may omit some **WellnessMetric**s; long is the full opinionated set). Customizing and publishing yields a **Questionnaire Version**, not a third schema.
-_Avoid_: Treating Preset as a runtime mode the Player picks each day.
+Product-defined starting configuration of a **Check-in Questionnaire**. Short and long seed the **Wellness** type (short may omit some of that type’s **Metric**s; long is its full set). **Wellness Simple** is a different type, not the short Preset. Customizing and publishing yields a **Questionnaire Version**, not a third schema.
+_Avoid_: Treating Preset as a runtime mode the Player picks each day; treating Wellness Simple as the short Wellness Preset.
 
 **Custom Question**:
-A staff-authored item on a **Check-in Questionnaire** that is not a **WellnessMetric**. It may sit on the **Pre-session form**, the **Post-session form**, or both (same identity, two answers that day). Answers accumulate and export (CSV per Version). They do not feed **PlayerDailyStats** / load calculations.
-_Avoid_: Calling a **WellnessMetric** “custom”; binding Custom Questions into ACWR / care-alert math; treating a duplicate placement as a second question id.
+A staff-authored item on a **Check-in Questionnaire** that is not a **Metric**. It may sit on the **Pre-session form**, the **Post-session form**, or both (same identity, two answers that day). Answers accumulate and export (CSV per Version). They do not feed **PlayerDailyStats** / load calculations.
+_Avoid_: Calling a **Metric** “custom”; binding Custom Questions into ACWR / care-alert math; treating a duplicate placement as a second question id.
 
-**WellnessMetric**:
-A product-opinionated check-in measure used for load, care alerts, limits, and future charts (recovery, energy, soreness, sleep hours, sleep quality, RPE, and optional duration). Default forms: first five on the **Pre-session form**; RPE and duration on the **Post-session form**. Staff may move, omit, or place the same metric on both forms. Both answers are stored. Load/care use the default-form value if present; otherwise the only placement; a second placement is CSV-only. If omitted from both, that day’s dependent calculations are skipped (gap, not invented).
-_Avoid_: Treating every form field as a WellnessMetric; filling omitted metrics from a previous day; mixing the extra duplicate into load.
+**Metric**:
+A product-opinionated check-in measure used for load, care alerts, limits, charts, or a type’s total. The **Wellness** set is recovery, energy, soreness, sleep hours, sleep quality, RPE, and optional duration. The **Wellness Simple** set adds **Simple sleep**, **Simple soreness**, **Simple fatigue**, **Simple stress**, and **Simple mood** — each distinct from sleep quality, soreness, and energy. Default Wellness forms: first five on the **Pre-session form**; RPE and duration on the **Post-session form**. Staff may move, omit, or place the same metric on both forms, except where a type locks one. Both answers are stored. Load/care use the default-form value if present; otherwise the only placement; a second placement is CSV-only. If omitted from both, that day’s dependent calculations are skipped (gap, not invented).
+_Avoid_: WellnessMetric; treating every form field as a Metric; filling omitted metrics from a previous day; mixing the extra duplicate into load; aliasing Simple soreness to soreness, Simple fatigue to energy, or Simple sleep to sleep quality.
+
+**Wellness**:
+The default opinionated check-in type: the **Metric** set recovery, energy, soreness, sleep hours, sleep quality, RPE, and optional duration. Not the name of every **Metric**, and not the staff Wellness surface (the day-to-day wellness workspace).
+_Avoid_: Calling **Wellness Simple** “Wellness”; using Wellness as a synonym for **Metric**.
+
+**Wellness Simple**:
+The opt-in opinionated check-in type. Seeds **Simple sleep**, **Simple soreness**, **Simple fatigue**, **Simple stress**, and **Simple mood** (each 1–5; the morning total is their sum only) plus RPE on the **Post-session form**. RPE on this type cannot be removed or moved. No check-in duration. Not the short **Wellness** Preset.
+_Avoid_: Hooper; Readiness; Morning; folding RPE into the morning total.
+
+**Wellness Simple baseline**:
+That player’s mean morning total over their previous Wellness Simple answers, up to the last 7, excluding today. At least 3 prior answers are required; fewer is a gap, not a made-up mean. Today is notable only when the total is 3 or more points below that mean. A higher total is not notable. Each Simple metric is not compared with its own mean. This is not a **Carga** window and does not use RPE.
+_Avoid_: Acute team load; chronic team load; a team mean; flagging scores above the baseline; inventing a baseline from fewer than 3 answers.
+
+**Simple sleep**:
+A **Wellness Simple** **Metric** for sleep quality on a 1–5 scale. Not sleep quality and not sleep hours.
+_Avoid_: Reusing the Wellness sleep-quality Metric.
+
+**Simple soreness**:
+A **Wellness Simple** **Metric** for muscle soreness (DOMS) on a 1–5 scale. Not soreness.
+_Avoid_: DOMS as a second name for the Wellness soreness Metric.
+
+**Simple fatigue**:
+A **Wellness Simple** **Metric** for fatigue on a 1–5 scale. Not energy.
+_Avoid_: Treating a high energy score as low Simple fatigue.
+
+**Simple stress**:
+A **Wellness Simple** **Metric** for stress on a 1–5 scale.
+_Avoid_: Inferring it from mood or from a Custom Question.
+
+**Simple mood**:
+A **Wellness Simple** **Metric** for mood on a 1–5 scale.
+_Avoid_: Inferring it from Simple stress.
 
 **PlayerDailyStats**:
 Daily aggregated load and risk metrics for a player within a season (e.g. acute/chronic loads, ratios). Feeds player-level views on the staff **Carga** surface.
@@ -224,8 +256,12 @@ A day that freezes the **Recoverable Streak** (neither increments nor breaks). E
 Care path for injury / care-relevant wellness signals, distinct from miss reminders and adherence nagging.
 
 **Care Alert**:
-Guardian-facing care-slice signal (injury / care-relevant). Never includes load ratios or ACWR-style staff metrics.
-_Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendance GPS as care framing.
+Guardian-facing care-slice signal (injury / care-relevant). Never includes load ratios or ACWR-style staff metrics. A 1 or 2 on **Simple soreness** or **Simple fatigue** is not a Care Alert.
+_Avoid_: Using Care Alerts as adherence spam; “FUT health score” or attendance GPS as care framing; sending a **Prep flag** to a Guardian.
+
+**Prep flag**:
+Staff-only signal that **Simple soreness** or **Simple fatigue** scored 1 or 2, so the preparador reviews that session’s load before training. Not a **Care Alert**. The other Wellness Simple scales do not raise it.
+_Avoid_: Notifying a Guardian; treating a low **Wellness Simple baseline** as a Prep flag; raising it from Simple sleep, Simple stress, or Simple mood.
 
 **BodyRegion**:
 A named anatomical zone from LoadZone’s fixed injury catalog (with anatomical left/right in the id where needed), used to locate injuries on the staff body map. Optional free-text detail may refine a region; it does not create a new catalog entry.
