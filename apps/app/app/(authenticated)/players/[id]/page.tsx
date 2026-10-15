@@ -1,19 +1,23 @@
 import { database } from "@repo/database";
 import {
   BODY_REGION_IDS,
-  bodyRegionById,
   type BodyRegionCatalogId,
+  bodyRegionById,
 } from "@repo/database/body-region-catalog";
 import {
   effectiveCurrentStreak,
   toCivilDateString,
 } from "@repo/database/recoverable-streak";
+import { resolveLoadMinutes } from "@repo/database/session-minutes";
 import { resolveStorageUrl } from "@repo/storage/shared";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Header } from "@/components/layouts/header";
-import { toCivilYmd, toIsoTimestamp } from "@/features/injuries/lib/team-injuries-list";
+import {
+  toCivilYmd,
+  toIsoTimestamp,
+} from "@/features/injuries/lib/team-injuries-list";
 import type { InjuryListItem } from "@/features/injuries/types";
 import { CopyTokenButton } from "@/features/players/components/copy-token-button";
 import { PlayerDetailShell } from "@/features/players/components/player-detail-shell";
@@ -136,6 +140,16 @@ const PlayerDetailPage = async ({
       sleepQuality: true,
       rpe: true,
       duration: true,
+      teamSession: {
+        select: {
+          type: true,
+          sharedMinutes: true,
+          attendance: {
+            where: { playerId: player.id },
+            select: { minutesPlayed: true },
+          },
+        },
+      },
       preFilledAt: true,
       postFilledAt: true,
       physioAlert: true,
@@ -166,7 +180,15 @@ const PlayerDetailPage = async ({
     sleepQuality: entry.sleepQuality,
     rpe: entry.rpe,
     duration: entry.duration,
-    srpe: entry.rpe && entry.duration ? entry.rpe * entry.duration : null,
+    srpe: (() => {
+      const minutes = resolveLoadMinutes({
+        sessionType: entry.teamSession?.type ?? null,
+        minutesPlayed: entry.teamSession?.attendance[0]?.minutesPlayed ?? null,
+        sharedMinutes: entry.teamSession?.sharedMinutes ?? null,
+        checkInDuration: entry.duration,
+      });
+      return entry.rpe !== null && minutes !== null ? entry.rpe * minutes : null;
+    })(),
   }));
 
   const chartStats = stats.map((stat) => ({

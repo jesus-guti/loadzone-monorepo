@@ -209,6 +209,16 @@ const SessionDetailPage = async ({
                   </Badge>
                 ) : null}
               </div>
+              <p className="mt-3">
+                <Link
+                  className="text-sm text-brand underline"
+                  href={`/sessions/${session.id}/minutos`}
+                >
+                  {session.type === "MATCH"
+                    ? "Alineación y minutos"
+                    : "Minutos de la sesión"}
+                </Link>
+              </p>
               {session.notes ? (
                 <blockquote className="mt-3 border-l-2 border-brand/40 pl-4 text-sm text-text-secondary">
                   {session.notes}
