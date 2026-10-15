@@ -218,6 +218,7 @@ export async function getTeamWellnessWorkspaceData(
     database.injury.findMany({
       where: {
         teamId: team.id,
+        deletedAt: null,
         startDate: { lte: today },
         OR: [{ endDate: null }, { endDate: { gte: today } }],
       },

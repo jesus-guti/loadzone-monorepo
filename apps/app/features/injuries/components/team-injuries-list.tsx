@@ -70,10 +70,13 @@ function EmptySectionHint({ children }: { readonly children: string }) {
 function InjuryRow({
   injury,
   todayCivil,
+  variant = "active",
 }: {
   readonly injury: TeamInjuryListItem;
   readonly todayCivil: string;
+  readonly variant?: "active" | "closed";
 }) {
+  const isOpen = injury.endDate === null;
   const regionText =
     injury.regionLabels.length > 0
       ? injury.regionLabels.join(", ")
@@ -90,11 +93,15 @@ function InjuryRow({
             <span className="truncate font-medium text-text-primary">
               {injury.playerName}
             </span>
-            <Badge variant="destructive">Lesionado</Badge>
+            <Badge variant={isOpen ? "destructive" : "outline"}>
+              {isOpen ? "Lesionado" : "Alta"}
+            </Badge>
           </div>
           <p className="truncate text-sm text-text-secondary">
-            {regionText} · {formatDaysOut(injury.startDate, todayCivil)} ·{" "}
-            {formatCivilDateEs(injury.startDate)}
+            {regionText}
+            {variant === "active"
+              ? ` · ${formatDaysOut(injury.startDate, todayCivil)} · ${formatCivilDateEs(injury.startDate)}`
+              : ` · ${formatCivilDateEs(injury.startDate)}${injury.endDate ? ` → ${formatCivilDateEs(injury.endDate)}` : ""}`}
           </p>
           <p className="truncate text-sm text-text-primary">
             {truncateText(injury.cause, 100)}
@@ -163,7 +170,9 @@ export function TeamInjuriesList({
     useState<RegisterInjuryDialogTarget | null>(null);
 
   const isFullyEmpty =
-    data.painAlerts.length === 0 && data.activeInjuries.length === 0;
+    data.painAlerts.length === 0 &&
+    data.activeInjuries.length === 0 &&
+    data.closedInjuries.length === 0;
 
   const handleRegister = (alert: TeamPainAlertListItem): void => {
     setRegisterTarget({
@@ -226,6 +235,24 @@ export function TeamInjuriesList({
                 injury={injury}
                 key={injury.id}
                 todayCivil={todayCivil}
+                variant="active"
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="space-y-2">
+        <SectionHeading>Histórico</SectionHeading>
+        {data.closedInjuries.length === 0 ? (
+          <EmptySectionHint>No hay lesiones dadas de alta.</EmptySectionHint>
+        ) : (
+          <ul className="list-none">
+            {data.closedInjuries.map((injury) => (
+              <InjuryRow
+                injury={injury}
+                key={injury.id}
+                todayCivil={todayCivil}
+                variant="closed"
               />
             ))}
           </ul>

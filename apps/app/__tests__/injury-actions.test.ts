@@ -284,12 +284,12 @@ describe("injury actions (JES-51)", () => {
     expect(stubs.injuryCreate).not.toHaveBeenCalled();
   });
 
-  it("deleteInjury removes open or closed injury and syncs", async () => {
+  it("deleteInjury soft-deletes open or closed injury and syncs", async () => {
     stubs.injuryFindFirst.mockResolvedValue({
       id: "inj-1",
       playerId: "player-1",
     });
-    stubs.injuryDelete.mockResolvedValue({});
+    stubs.injuryUpdate.mockResolvedValue({});
     stubs.syncPlayerStatusFromInjuries.mockResolvedValue("AVAILABLE");
 
     const fd = new FormData();
@@ -298,8 +298,10 @@ describe("injury actions (JES-51)", () => {
     const result = await deleteInjury(noopPrev, fd);
 
     expect(result.success).toBe(true);
-    expect(stubs.injuryDelete).toHaveBeenCalledWith({
+    expect(stubs.injuryDelete).not.toHaveBeenCalled();
+    expect(stubs.injuryUpdate).toHaveBeenCalledWith({
       where: { id: "inj-1" },
+      data: { deletedAt: expect.any(Date) },
     });
     expect(stubs.syncPlayerStatusFromInjuries).toHaveBeenCalledWith(
       expect.anything(),

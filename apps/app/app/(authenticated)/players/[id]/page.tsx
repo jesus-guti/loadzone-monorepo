@@ -100,7 +100,11 @@ const PlayerDetailPage = async ({
   const todayCivil = toCivilDateString(new Date(), teamTimezone);
 
   const injuryRows = await database.injury.findMany({
-    where: { playerId: player.id, teamId: staffContext.activeTeam.id },
+    where: {
+      playerId: player.id,
+      teamId: staffContext.activeTeam.id,
+      deletedAt: null,
+    },
     orderBy: { startDate: "desc" },
     select: {
       id: true,

@@ -18,6 +18,7 @@
     "./reminder-consent": "./reminder-consent.ts",
     "./care-alerts": "./care-alerts.ts",
     "./injury-status": "./injury-status.ts",
+    "./injury-visibility": "./injury-visibility.ts",
     "./body-region-catalog": "./body-region-catalog.ts",
     "./pain-alert": "./pain-alert.ts",
     "./create-injury": "./create-injury.ts",
