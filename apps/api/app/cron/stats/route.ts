@@ -1,4 +1,5 @@
-import { database, determineRiskLevel, type RiskLevel } from "@repo/database";
+import { database, determineRiskLevel } from "@repo/database";
+import { resolveLoadMinutes } from "@repo/database/session-minutes";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -44,12 +45,29 @@ export async function GET(request: Request): Promise<NextResponse> {
           select: {
             rpe: true,
             duration: true,
+            teamSession: {
+              select: {
+                type: true,
+                sharedMinutes: true,
+                attendance: {
+                  where: { playerId: player.id },
+                  select: { minutesPlayed: true },
+                },
+              },
+            },
           },
         });
 
+        const session = todayEntry?.teamSession ?? null;
+        const minutes = resolveLoadMinutes({
+          sessionType: session?.type ?? null,
+          minutesPlayed: session?.attendance[0]?.minutesPlayed ?? null,
+          sharedMinutes: session?.sharedMinutes ?? null,
+          checkInDuration: todayEntry?.duration ?? null,
+        });
         const srpe =
-          todayEntry?.rpe != null && todayEntry?.duration != null
-            ? todayEntry.rpe * todayEntry.duration
+          todayEntry !== null && todayEntry.rpe !== null && minutes !== null
+            ? todayEntry.rpe * minutes
             : null;
 
         const sevenDaysAgo = new Date(today);
@@ -63,9 +81,21 @@ export async function GET(request: Request): Promise<NextResponse> {
             playerId: player.id,
             date: { gte: sevenDaysAgo, lte: today },
             rpe: { not: null },
-            duration: { not: null },
           },
-          select: { rpe: true, duration: true },
+          select: {
+            rpe: true,
+            duration: true,
+            teamSession: {
+              select: {
+                type: true,
+                sharedMinutes: true,
+                attendance: {
+                  where: { playerId: player.id },
+                  select: { minutesPlayed: true },
+                },
+              },
+            },
+          },
         });
 
         const chronicEntries = await database.dailyEntry.findMany({
@@ -73,22 +103,45 @@ export async function GET(request: Request): Promise<NextResponse> {
             playerId: player.id,
             date: { gte: twentyEightDaysAgo, lte: today },
             rpe: { not: null },
-            duration: { not: null },
           },
-          select: { rpe: true, duration: true },
+          select: {
+            rpe: true,
+            duration: true,
+            teamSession: {
+              select: {
+                type: true,
+                sharedMinutes: true,
+                attendance: {
+                  where: { playerId: player.id },
+                  select: { minutesPlayed: true },
+                },
+              },
+            },
+          },
         });
 
+        const loadOf = (entry: (typeof acuteEntries)[number]): number => {
+          const resolved = resolveLoadMinutes({
+            sessionType: entry.teamSession?.type ?? null,
+            minutesPlayed:
+              entry.teamSession?.attendance[0]?.minutesPlayed ?? null,
+            sharedMinutes: entry.teamSession?.sharedMinutes ?? null,
+            checkInDuration: entry.duration,
+          });
+          if (entry.rpe === null || resolved === null) {
+            return 0;
+          }
+          return entry.rpe * resolved;
+        };
+
         const acuteLoad = acuteEntries.reduce(
-          (sum, e) => sum + (e.rpe ?? 0) * (e.duration ?? 0),
+          (sum, entry) => sum + loadOf(entry),
           0
         );
 
         const chronicLoad =
           chronicEntries.length > 0
-            ? chronicEntries.reduce(
-                (sum, e) => sum + (e.rpe ?? 0) * (e.duration ?? 0),
-                0
-              ) / 4
+            ? chronicEntries.reduce((sum, entry) => sum + loadOf(entry), 0) / 4
             : null;
 
         const acwr =

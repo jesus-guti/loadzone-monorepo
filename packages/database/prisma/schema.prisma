@@ -39,6 +39,19 @@ enum TeamSessionVisibility {
   CLUB_SHARED
 }
 
+enum Formation {
+  F_4_3_3
+  F_4_4_2
+  F_4_2_3_1
+  F_3_5_2
+  F_5_3_2
+}
+
+enum LineupRole {
+  STARTER
+  BENCH
+}
+
 enum TeamSessionStatus {
   SCHEDULED
   COMPLETED
@@ -459,6 +472,8 @@ model Team {
   ageBandPolicy              Json?
   /// Nullable Team Reminder Consent defaults × band; null → SPEC §5 package defaults (JES-45).
   reminderConsentPolicy      Json?
+  /// Local hour (0–23) when the staff minutes banner may appear.
+  minutesPromptHour          Int              @default(20)
   createdAt                  DateTime         @default(now())
   updatedAt                  DateTime         @updatedAt
   club                       Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -519,6 +534,9 @@ model Player {
   sessionLinks        TeamSessionPlayer[]
   suggestions         AiSuggestion[]
   attendance          SessionAttendance[]
+  lineupSlots         MatchLineupPlayer[]
+  subsOut             MatchSubstitution[] @relation("SubOut")
+  subsIn              MatchSubstitution[] @relation("SubIn")
   excusedAbsences     ExcusedAbsence[]
   status              PlayerStatus        @default(AVAILABLE)
   isArchived          Boolean             @default(false)
@@ -667,7 +685,10 @@ model TeamSession {
   status                TeamSessionStatus     @default(SCHEDULED)
   startsAt              DateTime
   endsAt                DateTime
+  /// Shared session minutes for a non-match session. Null until staff log them.
+  sharedMinutes         Int?
   durationMinutes       Int?
+  lineup                MatchLineup?
   timezone              String
   appliesToAllPlayers   Boolean               @default(true)
   preReminderMinutes    Int?
@@ -779,6 +800,48 @@ model SessionAttendance {
 
   @@unique([teamSessionId, playerId])
   @@index([playerId, status])
+}
+
+model MatchLineup {
+  id                   String              @id @default(cuid())
+  teamSessionId        String              @unique
+  formation            Formation
+  extraTime            Boolean             @default(false)
+  stoppageFirst        Int                 @default(0)
+  stoppageSecond       Int                 @default(0)
+  stoppageExtraFirst   Int                 @default(0)
+  stoppageExtraSecond  Int                 @default(0)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  teamSession          TeamSession         @relation(fields: [teamSessionId], references: [id], onDelete: Cascade)
+  players              MatchLineupPlayer[]
+  substitutions        MatchSubstitution[]
+}
+
+model MatchLineupPlayer {
+  id        String      @id @default(cuid())
+  lineupId  String
+  playerId  String
+  role      LineupRole
+  sortOrder Int
+  lineup    MatchLineup @relation(fields: [lineupId], references: [id], onDelete: Cascade)
+  player    Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([lineupId, playerId])
+  @@index([playerId])
+}
+
+model MatchSubstitution {
+  id          String      @id @default(cuid())
+  lineupId    String
+  minute      Int
+  playerOutId String
+  playerInId  String?
+  lineup      MatchLineup @relation(fields: [lineupId], references: [id], onDelete: Cascade)
+  playerOut   Player      @relation("SubOut", fields: [playerOutId], references: [id], onDelete: Cascade)
+  playerIn    Player?     @relation("SubIn", fields: [playerInId], references: [id], onDelete: SetNull)
+
+  @@index([lineupId])
 }
 
 model FormTemplate {

@@ -77,6 +77,11 @@ export type MicrocycleSheetInput = {
   /** Civil dates with at least one non-cancelled session, including matches. */
   readonly sessionDates: readonly string[];
   readonly players: readonly MicrocyclePlayerInput[];
+  /**
+   * Team day minutes keyed by civil date. When a date is omitted, training
+   * days use 80 and match days use 95.
+   */
+  readonly minutesByDate?: Readonly<Record<string, number>>;
 };
 
 function utcNoon(isoDate: string): Date {
@@ -124,7 +129,10 @@ export function anchorDayKey(
 
 /** "A. Apellido": initial plus first surname. A single word is truncated. */
 export function abbreviatePlayerName(name: string): string {
-  const parts = name.trim().split(/\s+/).filter((part) => part.length > 0);
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((part) => part.length > 0);
   const first = parts[0];
   if (!first) {
     return "";
@@ -133,7 +141,8 @@ export function abbreviatePlayerName(name: string): string {
     return first.length > 10 ? `${first.slice(0, 9)}…` : first;
   }
   const surname = parts[1] ?? first;
-  const shortSurname = surname.length > 12 ? `${surname.slice(0, 11)}…` : surname;
+  const shortSurname =
+    surname.length > 12 ? `${surname.slice(0, 11)}…` : surname;
   return `${first[0]?.toUpperCase() ?? ""}. ${shortSurname}`;
 }
 
@@ -194,8 +203,13 @@ export function matchDayLabel(
 function dayMinutes(
   date: string,
   sessions: ReadonlySet<string>,
-  matches: ReadonlySet<string>
+  matches: ReadonlySet<string>,
+  minutesByDate: Readonly<Record<string, number>> | undefined
 ): number {
+  const logged = minutesByDate?.[date];
+  if (logged !== undefined) {
+    return logged;
+  }
   if (matches.has(date)) {
     return MATCH_MINUTES;
   }
@@ -219,7 +233,10 @@ export function buildMicrocycleSheet(
     return { microcycles: [], days: [], players: [] };
   }
 
-  const dates = listDays(mondayOf(input.seasonStart), sundayOf(input.seasonEnd));
+  const dates = listDays(
+    mondayOf(input.seasonStart),
+    sundayOf(input.seasonEnd)
+  );
   const matches = new Set(input.matchDates);
   const sessions = new Set(input.sessionDates);
   const weeks: string[][] = [];
@@ -233,7 +250,7 @@ export function buildMicrocycleSheet(
     rpe: dates.map((date) => player.rpeByDate[date] ?? null),
     loads: dates.map((date) => {
       const rpe = player.rpeByDate[date];
-      const minutes = dayMinutes(date, sessions, matches);
+      const minutes = dayMinutes(date, sessions, matches, input.minutesByDate);
       if (rpe === undefined || minutes === 0) {
         return 0;
       }
@@ -268,7 +285,7 @@ export function buildMicrocycleSheet(
       weekday: WEEKDAYS[weekdayIndex(date)] ?? "",
       dateLabel: dateLabel(date),
       matchDay: matchDayLabel(date, week, matches),
-      minutes: dayMinutes(date, sessions, matches),
+      minutes: dayMinutes(date, sessions, matches, input.minutesByDate),
       teamLoad,
       jump:
         previous !== undefined &&

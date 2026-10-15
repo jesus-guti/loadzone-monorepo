@@ -26,7 +26,8 @@
     "./legacy-body-part-map": "./legacy-body-part-map.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts",
-    "./demo-team-catchup": "./demo-team-catchup.ts"
+    "./demo-team-catchup": "./demo-team-catchup.ts",
+    "./session-minutes": "./session-minutes.ts"
   },
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
