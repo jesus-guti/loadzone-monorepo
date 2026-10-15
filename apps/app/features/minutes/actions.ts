@@ -140,6 +140,17 @@ export async function saveMatchLineup(
     if (session.type !== "MATCH") {
       return { success: false, error: "Esta sesión no es un partido" };
     }
+    const roster = await database.player.findMany({
+      where: {
+        teamId: session.teamId,
+        isArchived: false,
+        id: { in: [...ids] },
+      },
+      select: { id: true },
+    });
+    if (roster.length !== ids.size) {
+      return { success: false, error: "Hay jugadores que no son del equipo" };
+    }
     const played = minutesPlayedByPlayer({
       starterIds: data.starterIds,
       benchIds: data.benchIds,
