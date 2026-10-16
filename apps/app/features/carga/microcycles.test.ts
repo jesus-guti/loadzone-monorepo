@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  MATCH_MINUTES,
-  SESSION_MINUTES,
   abbreviatePlayerName,
   acBand,
   anchorDayKey,
   buildMicrocycleSheet,
+  MATCH_MINUTES,
+  SESSION_MINUTES,
 } from "./microcycles";
 
 describe("buildMicrocycleSheet", () => {
@@ -105,8 +105,7 @@ describe("buildMicrocycleSheet", () => {
     expect(tuesday?.teamLoad).toBe(0);
     expect(sheet.microcycles[0]?.loadSum).toBe(monday?.teamLoad ?? 0);
 
-    const acuteAfterRest =
-      ((monday?.teamLoad ?? 0) + 0) / 2;
+    const acuteAfterRest = ((monday?.teamLoad ?? 0) + 0) / 2;
     expect(tuesday?.acute).toBe(Math.round(acuteAfterRest));
 
     const matchDay = buildMicrocycleSheet({
@@ -118,6 +117,19 @@ describe("buildMicrocycleSheet", () => {
     });
     expect(matchDay.days[0]?.minutes).toBe(MATCH_MINUTES);
     expect(matchDay.players[0]?.loads[0]).toBe(7 * MATCH_MINUTES);
+  });
+
+  it("uses logged team day minutes, including the sum of two matches", () => {
+    const sheet = buildMicrocycleSheet({
+      seasonStart: "2026-08-03",
+      seasonEnd: "2026-08-03",
+      matchDates: ["2026-08-03"],
+      sessionDates: ["2026-08-03"],
+      minutesByDate: { "2026-08-03": 96 + 90 },
+      players: [{ id: "a", name: "Aitor", rpeByDate: { "2026-08-03": 5 } }],
+    });
+    expect(sheet.days[0]?.minutes).toBe(186);
+    expect(sheet.players[0]?.loads[0]).toBe(5 * 186);
   });
 
   it("flags a day-over-day team load rise of at least 15%", () => {
@@ -150,7 +162,9 @@ describe("abbreviatePlayerName", () => {
   });
 
   it("truncates a long surname or a single word", () => {
-    expect(abbreviatePlayerName("Ana Villarrealdegómez")).toBe("A. Villarreald…");
+    expect(abbreviatePlayerName("Ana Villarrealdegómez")).toBe(
+      "A. Villarreald…"
+    );
     expect(abbreviatePlayerName("Constantino")).toBe("Constanti…");
   });
 });

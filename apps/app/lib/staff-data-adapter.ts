@@ -29,6 +29,7 @@ export type StaffTeamRow = {
   wellnessLimits: unknown;
   ageBandPolicy: unknown;
   reminderConsentPolicy: unknown;
+  minutesPromptHour: number;
 };
 
 export type StaffSeasonRow = {
@@ -62,6 +63,7 @@ const teamListSelect = {
   wellnessLimits: true,
   ageBandPolicy: true,
   reminderConsentPolicy: true,
+  minutesPromptHour: true,
 } as const;
 
 async function loadClubAndTeams(input: {

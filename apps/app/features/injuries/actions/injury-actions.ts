@@ -7,6 +7,10 @@ import {
 } from "@repo/database/body-region-catalog";
 import { syncPlayerStatusFromInjuries } from "@repo/database/injury-status";
 import {
+  injuryNotDeletedWhere,
+  softDeleteInjuryRecord,
+} from "@repo/database/injury-visibility";
+import {
   civilDateToUtcMidnight,
   compareCivilDates,
 } from "@repo/database/recoverable-streak";
@@ -256,7 +260,7 @@ export async function updateInjury(
     const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
 
     const existing = await database.injury.findFirst({
-      where: { id: parsed.data.injuryId, teamId },
+      where: { id: parsed.data.injuryId, teamId, ...injuryNotDeletedWhere },
       select: { id: true, playerId: true, endDate: true },
     });
 
@@ -341,7 +345,7 @@ export async function closeInjury(
     const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
 
     const existing = await database.injury.findFirst({
-      where: { id: parsed.data.injuryId, teamId },
+      where: { id: parsed.data.injuryId, teamId, ...injuryNotDeletedWhere },
       select: { id: true, playerId: true, startDate: true },
     });
 
@@ -407,7 +411,7 @@ export async function reopenInjury(
     const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
 
     const existing = await database.injury.findFirst({
-      where: { id: parsed.data.injuryId, teamId },
+      where: { id: parsed.data.injuryId, teamId, ...injuryNotDeletedWhere },
       select: { id: true, playerId: true },
     });
 
@@ -466,7 +470,7 @@ export async function deleteInjury(
     const timeZone = staffContext.activeTeam.timezone || "Europe/Madrid";
 
     const existing = await database.injury.findFirst({
-      where: { id: parsed.data.injuryId, teamId },
+      where: { id: parsed.data.injuryId, teamId, ...injuryNotDeletedWhere },
       select: { id: true, playerId: true },
     });
 
@@ -474,9 +478,7 @@ export async function deleteInjury(
       return { success: false, error: "No tienes acceso a esta lesión." };
     }
 
-    await database.injury.delete({
-      where: { id: existing.id },
-    });
+    await softDeleteInjuryRecord(database, existing.id);
 
     await syncPlayerStatusFromInjuries(database, existing.playerId, {
       timeZone,
@@ -518,6 +520,7 @@ export async function updateInjuryTriage(formData: FormData): Promise<void> {
     where: {
       id: parsed.data.injuryId,
       teamId: staffContext.activeTeam.id,
+      ...injuryNotDeletedWhere,
     },
     select: { id: true, playerId: true },
   });

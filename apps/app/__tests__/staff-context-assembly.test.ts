@@ -57,6 +57,7 @@ function makeTeam(id: string, overrides?: Partial<StaffTeamRow>): StaffTeamRow {
     wellnessLimits: null,
     ageBandPolicy: null,
     reminderConsentPolicy: null,
+    minutesPromptHour: 20,
     ...overrides,
   };
 }

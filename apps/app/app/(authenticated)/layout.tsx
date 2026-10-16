@@ -1,15 +1,15 @@
 import { SidebarProvider } from "@repo/design-system/components/sidebar";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
-import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
-import { getCurrentStaffContext } from "@/lib/auth-context";
+import { type ReactNode, Suspense } from "react";
 import { GlobalSidebar } from "@/components/layouts/sidebar";
 import { StaffShellInitialLoader } from "@/components/layouts/staff-shell-initial-loader";
-import { loadClubRecommendedSetupFacts } from "@/lib/recommended-setup-facts";
-import { EMPTY_RECOMMENDED_SETUP_FACTS } from "@/lib/recommended-setup";
+import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
 import { loadMinutesPromptState } from "@/features/minutes/load-minutes-prompt";
+import { getCurrentStaffContext } from "@/lib/auth-context";
 import { shouldRedirectOperatorToPlatform } from "@/lib/operator-platform-redirect";
+import { EMPTY_RECOMMENDED_SETUP_FACTS } from "@/lib/recommended-setup";
+import { loadClubRecommendedSetupFacts } from "@/lib/recommended-setup-facts";
 
 type AppLayoutProperties = {
   readonly children: ReactNode;
@@ -69,14 +69,12 @@ async function AuthenticatedShell({
   );
 }
 
-const AppLayout = ({ children }: AppLayoutProperties): ReactNode => {
-  return (
-    <SidebarProvider className="h-svh min-h-0 overflow-hidden" open>
-      <Suspense fallback={<StaffShellInitialLoader />}>
-        <AuthenticatedShell>{children}</AuthenticatedShell>
-      </Suspense>
-    </SidebarProvider>
-  );
-};
+const AppLayout = ({ children }: AppLayoutProperties): ReactNode => (
+  <SidebarProvider className="h-svh min-h-0 overflow-hidden" open>
+    <Suspense fallback={<StaffShellInitialLoader />}>
+      <AuthenticatedShell>{children}</AuthenticatedShell>
+    </Suspense>
+  </SidebarProvider>
+);
 
 export default AppLayout;
