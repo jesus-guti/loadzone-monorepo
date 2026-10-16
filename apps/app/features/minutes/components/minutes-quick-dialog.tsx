@@ -12,11 +12,119 @@ import {
 import { toast } from "@repo/design-system/components/sonner";
 import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
-import { DEFAULT_SHARED_MINUTES } from "@/features/minutes/derive";
+import { type ReactElement, useEffect, useMemo, useState } from "react";
 import { saveSharedMinutes } from "@/features/minutes/actions";
-import { MinutesRowStepper } from "@/features/minutes/components/minutes-row-stepper";
 import { useMinutesPrompt } from "@/features/minutes/components/minutes-prompt-context";
+import { MinutesRowStepper } from "@/features/minutes/components/minutes-row-stepper";
+import { MinutesTabataStepper } from "@/features/minutes/components/minutes-tabata-stepper";
+import { DEFAULT_SHARED_MINUTES } from "@/features/minutes/derive";
+import type {
+  MinutesPromptPlayer,
+  MinutesPromptSession,
+} from "@/features/minutes/minutes-prompt-types";
+
+function cheerForPlayerIndex(index: number): string {
+  if (index === 0) {
+    return "Último sprint del día.";
+  }
+  if (index === 1) {
+    return "El cronómetro no miente.";
+  }
+  return "Minutos que cuentan en Carga.";
+}
+
+function SessionMinutesBody({
+  activeSession,
+  players,
+  minutes,
+  pending,
+  onMinutesChange,
+  onSave,
+}: {
+  readonly activeSession: MinutesPromptSession;
+  readonly players: readonly MinutesPromptPlayer[];
+  readonly minutes: number;
+  readonly pending: boolean;
+  readonly onMinutesChange: (next: number) => void;
+  readonly onSave: () => void;
+}): ReactElement {
+  if (activeSession.type === "MATCH") {
+    return (
+      <div className="mt-8 flex flex-col items-center gap-4 text-center">
+        <SoccerBallIcon className="size-12 text-brand" weight="fill" />
+        <p className="text-sm text-text-secondary">
+          {activeSession.title} necesita alineación y cambios. Usa el editor
+          completo para calcular minutos por jugador.
+        </p>
+        <Button
+          nativeButton={false}
+          render={
+            <Link href={`/sessions/${activeSession.id}/minutos`}>
+              Abrir alineación
+            </Link>
+          }
+          type="button"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 flex flex-col items-center gap-6">
+      <div className="space-y-1 text-center">
+        <p className="text-sm font-medium text-text-primary">
+          {activeSession.title}
+        </p>
+        <p className="text-xs text-text-tertiary">
+          Misma duración para todo el grupo — el reloj se mueve para todos a la
+          vez.
+        </p>
+      </div>
+
+      <MinutesTabataStepper
+        disabled={pending || players.length === 0}
+        onChange={onMinutesChange}
+        value={minutes}
+      />
+
+      {players.length === 0 ? (
+        <p className="text-sm text-text-secondary">
+          No hay jugadores en el equipo.
+        </p>
+      ) : (
+        <ul className="flex w-full flex-col gap-4">
+          {players.map((player, index) => (
+            <li
+              className="flex flex-col items-center gap-3 rounded-2xl bg-bg-secondary px-4 py-4"
+              key={player.id}
+            >
+              <p className="text-center text-base font-semibold tracking-tight text-text-primary">
+                {player.name}
+              </p>
+              <p className="text-center text-[11px] text-text-tertiary">
+                {cheerForPlayerIndex(index)}
+              </p>
+              <MinutesRowStepper
+                disabled={pending}
+                onChange={onMinutesChange}
+                value={minutes}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Button
+        className="w-full"
+        disabled={pending || players.length === 0}
+        onClick={onSave}
+        type="button"
+      >
+        {pending ? "Guardando…" : "Guardar minutos"}
+      </Button>
+    </div>
+  );
+}
 
 export function MinutesQuickDialog(): ReactElement {
   const { state, dialogOpen, closeDialog, initialSessionId } =
@@ -32,24 +140,23 @@ export function MinutesQuickDialog(): ReactElement {
       return;
     }
     const preferred =
-      initialSessionId &&
-      sessions.some((session) => session.id === initialSessionId)
+      initialSessionId && sessions.some((item) => item.id === initialSessionId)
         ? initialSessionId
-        : sessions[0]?.id ?? null;
+        : (sessions[0]?.id ?? null);
     setActiveSessionId(preferred);
-    const session = sessions.find((item) => item.id === preferred);
-    setMinutes(session?.sharedMinutes ?? DEFAULT_SHARED_MINUTES);
+    const selected = sessions.find((item) => item.id === preferred);
+    setMinutes(selected?.sharedMinutes ?? DEFAULT_SHARED_MINUTES);
   }, [dialogOpen, initialSessionId, sessions]);
 
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeSessionId) ?? null,
-    [sessions, activeSessionId],
+    [sessions, activeSessionId]
   );
 
   const players = state.players;
 
   async function handleSaveTraining(): Promise<void> {
-    if (!activeSession) {
+    if (!activeSession || activeSession.type === "MATCH") {
       return;
     }
     setPending(true);
@@ -77,8 +184,8 @@ export function MinutesQuickDialog(): ReactElement {
     >
       <DialogContent
         className={cn(
-          "gap-0 overflow-hidden p-0 sm:max-w-md",
-          "max-sm:top-auto max-sm:left-0 max-sm:max-h-[min(92dvh,720px)] max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-t-3xl max-sm:bottom-0",
+          "gap-0 overflow-hidden bg-bg-primary p-0 text-text-primary sm:max-w-md",
+          "max-sm:top-auto max-sm:left-0 max-sm:max-h-[min(92dvh,720px)] max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-t-3xl max-sm:bottom-0"
         )}
         showCloseButton
       >
@@ -99,9 +206,7 @@ export function MinutesQuickDialog(): ReactElement {
                   key={session.id}
                   onClick={() => {
                     setActiveSessionId(session.id);
-                    setMinutes(
-                      session.sharedMinutes ?? DEFAULT_SHARED_MINUTES,
-                    );
+                    setMinutes(session.sharedMinutes ?? DEFAULT_SHARED_MINUTES);
                   }}
                   size="sm"
                   type="button"
@@ -116,82 +221,19 @@ export function MinutesQuickDialog(): ReactElement {
             </div>
           ) : null}
 
-          {activeSession && activeSession.type === "MATCH" ? (
-            <div className="mt-8 flex flex-col items-center gap-4 text-center">
-              <SoccerBallIcon
-                className="size-12 text-brand"
-                weight="fill"
-              />
-              <p className="text-sm text-text-secondary">
-                {activeSession.title} necesita alineación y cambios. Usa el
-                editor completo para calcular minutos por jugador.
-              </p>
-              <Button
-                nativeButton={false}
-                render={
-                  <Link href={`/sessions/${activeSession.id}/minutos`}>
-                    Abrir alineación
-                  </Link>
-                }
-                type="button"
-              />
-            </div>
-          ) : activeSession ? (
-            <div className="mt-6 flex flex-col items-center gap-6">
-              <div className="space-y-1 text-center">
-                <p className="text-sm font-medium text-text-primary">
-                  {activeSession.title}
-                </p>
-                <p className="text-xs text-text-tertiary">
-                  Misma duración para todo el grupo — el reloj se mueve para
-                  todos a la vez.
-                </p>
-              </div>
-
-              {players.length === 0 ? (
-                <p className="text-sm text-text-secondary">
-                  No hay jugadores en el equipo.
-                </p>
-              ) : (
-                <ul className="flex w-full flex-col gap-6">
-                  {players.map((player, index) => (
-                    <li
-                      className="flex flex-col items-center gap-3 rounded-2xl bg-bg-secondary px-4 py-5"
-                      key={player.id}
-                    >
-                      <p className="text-center text-lg font-semibold tracking-tight text-text-primary">
-                        {player.name}
-                      </p>
-                      <p className="text-center text-[11px] text-text-tertiary">
-                        {index === 0
-                          ? "Último sprint del día."
-                          : index === 1
-                            ? "El cronómetro no miente."
-                            : "Minutos que cuentan en Carga."}
-                      </p>
-                      <MinutesRowStepper
-                        disabled={pending}
-                        onChange={setMinutes}
-                        value={minutes}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <Button
-                className="w-full"
-                disabled={pending || players.length === 0}
-                onClick={() => {
-                  handleSaveTraining().catch(() => {
-                    toast.error("No se pudieron guardar los minutos");
-                  });
-                }}
-                type="button"
-              >
-                {pending ? "Guardando…" : "Guardar minutos"}
-              </Button>
-            </div>
+          {activeSession !== null ? (
+            <SessionMinutesBody
+              activeSession={activeSession}
+              minutes={minutes}
+              onMinutesChange={setMinutes}
+              onSave={() => {
+                handleSaveTraining().catch(() => {
+                  toast.error("No se pudieron guardar los minutos");
+                });
+              }}
+              pending={pending}
+              players={players}
+            />
           ) : null}
         </div>
       </DialogContent>

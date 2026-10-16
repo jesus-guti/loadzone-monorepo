@@ -244,7 +244,7 @@ export const GlobalSidebar = ({
         <div
           className={cn(
             "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain",
-            MOBILE_SHELL_SCROLL_PB_CLASS,
+            MOBILE_SHELL_SCROLL_PB_CLASS
           )}
         >
           {children}
@@ -258,7 +258,9 @@ export const GlobalSidebar = ({
     <AppShellProvider value={staffContext}>
       <OperationalRouteMemory />
       {minutesPrompt ? (
-        <MinutesPromptProvider state={minutesPrompt}>{shell}</MinutesPromptProvider>
+        <MinutesPromptProvider state={minutesPrompt}>
+          {shell}
+        </MinutesPromptProvider>
       ) : (
         shell
       )}

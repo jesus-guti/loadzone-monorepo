@@ -27,7 +27,7 @@ function StepButton({
     <Button
       className={cn(
         "tabular-nums font-semibold",
-        variant === "outer" ? "size-12 text-sm" : "size-14 text-base",
+        variant === "outer" ? "size-12 text-sm" : "size-14 text-base"
       )}
       disabled={disabled}
       onClick={onClick}
@@ -49,7 +49,7 @@ export function MinutesTabataStepper({
     <div
       className={cn(
         "grid grid-cols-3 grid-rows-3 items-center justify-items-center gap-2",
-        className,
+        className
       )}
     >
       <span />

@@ -1,6 +1,6 @@
 "use client";
 
-import { TimerIcon } from "@phosphor-icons/react";
+import { TimerIcon } from "@phosphor-icons/react/ssr";
 import { cn } from "@repo/design-system/lib/utils";
 import type { ReactElement } from "react";
 import { useMinutesPrompt } from "@/features/minutes/components/minutes-prompt-context";
@@ -17,7 +17,7 @@ export function MinutesMobilePill(): ReactElement | null {
       <button
         className={cn(
           "pointer-events-auto flex max-w-md items-center gap-2 rounded-full border border-brand bg-bg-primary px-4 py-2.5 text-sm font-semibold text-text-primary shadow-lg transition-transform active:scale-[0.98]",
-          "ring-2 ring-brand/20",
+          "ring-2 ring-brand/20"
         )}
         onClick={() => {
           openDialog();

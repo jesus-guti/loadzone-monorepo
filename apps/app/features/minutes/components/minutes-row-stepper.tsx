@@ -19,9 +19,7 @@ export function MinutesRowStepper({
   className,
 }: MinutesRowStepperProperties): ReactElement {
   return (
-    <div
-      className={cn("flex items-center justify-center gap-1", className)}
-    >
+    <div className={cn("flex items-center justify-center gap-1", className)}>
       <Button
         className="h-9 min-w-9 px-2 tabular-nums text-xs"
         disabled={disabled}
@@ -44,9 +42,7 @@ export function MinutesRowStepper({
       >
         −1
       </Button>
-      <span
-        className="flex h-11 min-w-14 items-center justify-center rounded-full border border-brand bg-bg-primary px-2 tabular-nums text-lg font-bold text-text-primary"
-      >
+      <span className="flex h-11 min-w-14 items-center justify-center rounded-full border border-brand bg-bg-primary px-2 tabular-nums text-lg font-bold text-text-primary">
         {value}
       </span>
       <Button

@@ -2,12 +2,12 @@
 
 import {
   createContext,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
   useState,
-  type ReactElement,
-  type ReactNode,
 } from "react";
 import type { MinutesPromptState } from "@/features/minutes/minutes-prompt-types";
 
@@ -20,7 +20,7 @@ type MinutesPromptContextValue = {
 };
 
 const MinutesPromptContext = createContext<MinutesPromptContextValue | null>(
-  null,
+  null
 );
 
 export function MinutesPromptProvider({
@@ -51,7 +51,7 @@ export function MinutesPromptProvider({
       closeDialog,
       initialSessionId,
     }),
-    [state, dialogOpen, openDialog, closeDialog, initialSessionId],
+    [state, dialogOpen, openDialog, closeDialog, initialSessionId]
   );
 
   return (

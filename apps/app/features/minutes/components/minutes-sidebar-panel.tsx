@@ -13,7 +13,7 @@ export function MinutesSidebarPanel(): ReactElement | null {
   }
 
   return (
-    <div className="rounded-sm border border-brand/40 bg-bg-primary p-2.5">
+    <div className="hidden rounded-sm border border-brand/40 bg-bg-primary p-2.5 md:block">
       <div className="mb-2 flex items-start gap-2">
         <TimerIcon
           aria-hidden
@@ -37,8 +37,7 @@ export function MinutesSidebarPanel(): ReactElement | null {
             className="truncate px-1 text-[11px] text-text-secondary"
             key={session.id}
           >
-            {session.type === "MATCH" ? "Alinear" : "Minutos"} ·{" "}
-            {session.title}
+            {session.type === "MATCH" ? "Alinear" : "Minutos"} · {session.title}
           </li>
         ))}
       </ul>

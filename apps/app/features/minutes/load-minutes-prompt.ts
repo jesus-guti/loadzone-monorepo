@@ -48,7 +48,7 @@ export async function loadMinutesPromptState(): Promise<MinutesPromptState | nul
   });
 
   const todayRows = rows.filter(
-    (row) => toCivilDateString(row.startsAt, team.timezone) === today,
+    (row) => toCivilDateString(row.startsAt, team.timezone) === today
   );
 
   const promptHour = team.minutesPromptHour ?? 20;
