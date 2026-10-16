@@ -17,6 +17,11 @@ import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, type ReactNode, useEffect } from "react";
+import { MinutesMobilePill } from "@/features/minutes/components/minutes-mobile-pill";
+import { MinutesPromptProvider } from "@/features/minutes/components/minutes-prompt-context";
+import { MinutesQuickDialog } from "@/features/minutes/components/minutes-quick-dialog";
+import { MinutesSidebarPanel } from "@/features/minutes/components/minutes-sidebar-panel";
+import type { MinutesPromptState } from "@/features/minutes/minutes-prompt-types";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import {
   clubsNavItem,
@@ -49,6 +54,7 @@ type GlobalSidebarProperties = {
   >;
   readonly userId: string;
   readonly recommendedSetupFacts: RecommendedSetupClubFacts;
+  readonly minutesPrompt?: MinutesPromptState | null;
 };
 
 const sidebarPrefetchHrefs = Array.from(
@@ -87,6 +93,7 @@ export const GlobalSidebar = ({
   staffContext,
   userId,
   recommendedSetupFacts,
+  minutesPrompt,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -98,9 +105,8 @@ export const GlobalSidebar = ({
     }
   }, [router]);
 
-  return (
-    <AppShellProvider value={staffContext}>
-      <OperationalRouteMemory />
+  const shell = (
+    <>
       <Sidebar collapsible="offcanvas" variant="inset">
         {inSettings ? (
           <Fragment />
@@ -214,6 +220,7 @@ export const GlobalSidebar = ({
 
         {inSettings ? null : (
           <SidebarFooter className="gap-2">
+            {minutesPrompt ? <MinutesSidebarPanel /> : null}
             <PrimerosPasosPanel
               activeTeam={{
                 hasActiveSeason: staffContext.activeSeason !== null,
@@ -228,6 +235,12 @@ export const GlobalSidebar = ({
         )}
       </Sidebar>
       <SidebarInset className="min-h-0 flex-1 overflow-hidden pb-0 md:pb-0">
+        {minutesPrompt ? (
+          <>
+            <MinutesMobilePill />
+            <MinutesQuickDialog />
+          </>
+        ) : null}
         <div
           className={cn(
             "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain",
@@ -238,6 +251,19 @@ export const GlobalSidebar = ({
         </div>
         <MobileBottomNav />
       </SidebarInset>
+    </>
+  );
+
+  return (
+    <AppShellProvider value={staffContext}>
+      <OperationalRouteMemory />
+      {minutesPrompt ? (
+        <MinutesPromptProvider state={minutesPrompt}>
+          {shell}
+        </MinutesPromptProvider>
+      ) : (
+        shell
+      )}
     </AppShellProvider>
   );
 };

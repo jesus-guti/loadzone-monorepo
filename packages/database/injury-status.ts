@@ -4,6 +4,7 @@
  */
 
 import type { PlayerStatus } from "./generated/client";
+import { injuryNotDeletedWhere } from "./injury-visibility";
 import {
   civilDateToUtcMidnight,
   compareCivilDates,
@@ -76,6 +77,7 @@ export type InjuryStatusDbClient = {
         playerId: string;
         startDate: { lte: Date };
         endDate: null;
+        deletedAt: null;
       };
     }) => Promise<number>;
   };
@@ -107,6 +109,7 @@ export async function playerHasActiveInjury(
       playerId,
       startDate: { lte: civilDate },
       endDate: null,
+      ...injuryNotDeletedWhere,
     },
   });
   return count > 0;

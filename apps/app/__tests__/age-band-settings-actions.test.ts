@@ -87,6 +87,7 @@ function staffFixture(overrides?: Partial<StaffContext>): StaffContext {
       ageBandPolicySource: "defaults",
       reminderConsentPolicy: DEFAULT_REMINDER_CONSENT_POLICY,
       reminderConsentPolicySource: "defaults",
+      minutesPromptHour: 20,
     },
     ...overrides,
   } as StaffContext;

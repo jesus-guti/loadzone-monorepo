@@ -18,6 +18,7 @@
     "./reminder-consent": "./reminder-consent.ts",
     "./care-alerts": "./care-alerts.ts",
     "./injury-status": "./injury-status.ts",
+    "./injury-visibility": "./injury-visibility.ts",
     "./body-region-catalog": "./body-region-catalog.ts",
     "./pain-alert": "./pain-alert.ts",
     "./create-injury": "./create-injury.ts",
@@ -26,7 +27,8 @@
     "./legacy-body-part-map": "./legacy-body-part-map.ts",
     "./keys": "./keys.ts",
     "./e2e-client": "./e2e-client.ts",
-    "./demo-team-catchup": "./demo-team-catchup.ts"
+    "./demo-team-catchup": "./demo-team-catchup.ts",
+    "./session-minutes": "./session-minutes.ts"
   },
   "scripts": {
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",

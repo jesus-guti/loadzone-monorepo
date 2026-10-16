@@ -37,7 +37,7 @@ async function loadInjuryIntervalsByPlayerId(
   }
 
   const injuries = await database.injury.findMany({
-    where: { playerId: { in: playerIds } },
+    where: { playerId: { in: playerIds }, deletedAt: null },
     select: {
       playerId: true,
       startDate: true,
