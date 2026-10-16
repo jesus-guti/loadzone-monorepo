@@ -3,10 +3,21 @@ import {
   civilDateToUtcMidnight,
   toCivilDateString,
 } from "@repo/database/recoverable-streak";
-import Link from "next/link";
-import type { ReactElement } from "react";
 import { shouldPromptMinutes } from "@/features/minutes/derive";
 import { getCurrentStaffContext } from "@/lib/auth-context";
+
+export type PendingMinutesSession = {
+  readonly id: string;
+  readonly title: string;
+  readonly type: "MATCH" | "TRAINING" | "RECOVERY" | "OTHER";
+  readonly sharedMinutes: number | null;
+};
+
+export type MinutesPromptState = {
+  readonly visible: boolean;
+  readonly pendingSessions: readonly PendingMinutesSession[];
+  readonly players: readonly { id: string; name: string }[];
+};
 
 function teamHour(timeZone: string, now: Date): number {
   const formatted = new Intl.DateTimeFormat("en-GB", {
@@ -17,18 +28,20 @@ function teamHour(timeZone: string, now: Date): number {
   return Number(formatted);
 }
 
-export async function MinutesBanner(): Promise<ReactElement | null> {
+export async function loadMinutesPromptState(): Promise<MinutesPromptState | null> {
   const staff = await getCurrentStaffContext();
   const team = staff?.activeTeam;
   if (!team) {
     return null;
   }
+
   const now = new Date();
   const today = toCivilDateString(now, team.timezone);
   const windowStart = civilDateToUtcMidnight(today);
   windowStart.setUTCDate(windowStart.getUTCDate() - 1);
   const windowEnd = civilDateToUtcMidnight(today);
   windowEnd.setUTCDate(windowEnd.getUTCDate() + 2);
+
   const rows = await database.teamSession.findMany({
     where: {
       teamId: team.id,
@@ -41,13 +54,14 @@ export async function MinutesBanner(): Promise<ReactElement | null> {
       status: true,
       startsAt: true,
       sharedMinutes: true,
-      lineup: { select: { id: true } },
     },
     orderBy: { startsAt: "asc" },
   });
+
   const todayRows = rows.filter(
     (row) => toCivilDateString(row.startsAt, team.timezone) === today
   );
+
   const promptHour = team.minutesPromptHour ?? 20;
   const visible = shouldPromptMinutes({
     hour: teamHour(team.timezone, now),
@@ -56,36 +70,28 @@ export async function MinutesBanner(): Promise<ReactElement | null> {
       cancelled: row.status === "CANCELLED",
       type: row.type,
       sharedMinutes: row.sharedMinutes,
-      hasLineup: row.lineup !== null,
+      hasLineup: false,
     })),
   });
-  if (!visible) {
-    return null;
-  }
-  const pending = todayRows.filter((row) => {
-    if (row.status === "CANCELLED") {
-      return false;
-    }
-    if (row.type === "MATCH") {
-      return row.lineup === null;
-    }
-    return row.sharedMinutes === null;
+
+  const pendingSessions = todayRows
+    .filter((row) => row.status !== "CANCELLED" && row.sharedMinutes === null)
+    .map((row) => ({
+      id: row.id,
+      title: row.title,
+      type: row.type,
+      sharedMinutes: row.sharedMinutes,
+    }));
+
+  const players = await database.player.findMany({
+    where: { teamId: team.id, isArchived: false },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
   });
-  return (
-    <div className="border-b border-border-secondary bg-bg-secondary px-4 py-3">
-      <p className="text-sm font-medium">Faltan los minutos de hoy</p>
-      <ul className="mt-2 flex flex-col gap-1">
-        {pending.map((row) => (
-          <li key={row.id}>
-            <Link
-              className="text-sm text-brand underline"
-              href={`/sessions/${row.id}/minutos`}
-            >
-              {row.type === "MATCH" ? "Alinear" : "Minutos"} · {row.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+
+  return {
+    visible,
+    pendingSessions,
+    players,
+  };
 }

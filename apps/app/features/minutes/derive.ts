@@ -159,9 +159,6 @@ export function shouldPromptMinutes(input: {
     if (session.cancelled) {
       return false;
     }
-    if (session.type === "MATCH") {
-      return !session.hasLineup;
-    }
     return session.sharedMinutes === null;
   });
 }

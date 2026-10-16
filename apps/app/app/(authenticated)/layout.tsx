@@ -5,7 +5,7 @@ import { type ReactNode, Suspense } from "react";
 import { GlobalSidebar } from "@/components/layouts/sidebar";
 import { StaffShellInitialLoader } from "@/components/layouts/staff-shell-initial-loader";
 import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
-import { MinutesBanner } from "@/features/minutes/minutes-banner";
+import { loadMinutesPromptState } from "@/features/minutes/load-minutes-prompt";
 import { getCurrentStaffContext } from "@/lib/auth-context";
 import { shouldRedirectOperatorToPlatform } from "@/lib/operator-platform-redirect";
 import { EMPTY_RECOMMENDED_SETUP_FACTS } from "@/lib/recommended-setup";
@@ -46,8 +46,11 @@ async function AuthenticatedShell({
       ? EMPTY_RECOMMENDED_SETUP_FACTS
       : await loadClubRecommendedSetupFacts(staffContext.club.id);
 
+  const minutesPrompt = await loadMinutesPromptState();
+
   return (
     <GlobalSidebar
+      minutesPrompt={minutesPrompt}
       recommendedSetupFacts={recommendedSetupFacts}
       staffContext={staffContext}
       userId={staffContext.user.id}
@@ -59,7 +62,6 @@ async function AuthenticatedShell({
             <p className="px-10 pt-8 text-sm text-text-secondary">Cargando…</p>
           }
         >
-          <MinutesBanner />
           {children}
         </Suspense>
       </QueryClientProviderWrapper>

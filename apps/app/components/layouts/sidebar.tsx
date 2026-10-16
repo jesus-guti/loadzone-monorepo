@@ -17,6 +17,11 @@ import { cn } from "@repo/design-system/lib/utils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment, type ReactNode, useEffect } from "react";
+import { MinutesPromptBubble } from "@/features/minutes/components/minutes-prompt-bubble";
+import { MinutesPromptProvider } from "@/features/minutes/components/minutes-prompt-context";
+import { MinutesPromptPanel } from "@/features/minutes/components/minutes-prompt-panel";
+import { MinutesQuickDialog } from "@/features/minutes/components/minutes-quick-dialog";
+import type { MinutesPromptState } from "@/features/minutes/load-minutes-prompt";
 import { PrimerosPasosPanel } from "@/features/primeros-pasos";
 import {
   clubsNavItem,
@@ -49,6 +54,7 @@ type GlobalSidebarProperties = {
   >;
   readonly userId: string;
   readonly recommendedSetupFacts: RecommendedSetupClubFacts;
+  readonly minutesPrompt: MinutesPromptState | null;
 };
 
 const sidebarPrefetchHrefs = Array.from(
@@ -82,11 +88,21 @@ function SidebarBrandingHeader({
   );
 }
 
+function hasActiveMinutesPrompt(
+  minutesPrompt: MinutesPromptState | null
+): minutesPrompt is MinutesPromptState {
+  if (minutesPrompt === null) {
+    return false;
+  }
+  return minutesPrompt.visible && minutesPrompt.pendingSessions.length > 0;
+}
+
 export const GlobalSidebar = ({
   children,
   staffContext,
   userId,
   recommendedSetupFacts,
+  minutesPrompt,
 }: GlobalSidebarProperties) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -98,8 +114,8 @@ export const GlobalSidebar = ({
     }
   }, [router]);
 
-  return (
-    <AppShellProvider value={staffContext}>
+  const shell = (
+    <>
       <OperationalRouteMemory />
       <Sidebar collapsible="offcanvas" variant="inset">
         {inSettings ? (
@@ -214,6 +230,7 @@ export const GlobalSidebar = ({
 
         {inSettings ? null : (
           <SidebarFooter className="gap-2">
+            <MinutesPromptPanel />
             <PrimerosPasosPanel
               activeTeam={{
                 hasActiveSeason: staffContext.activeSeason !== null,
@@ -236,8 +253,22 @@ export const GlobalSidebar = ({
         >
           {children}
         </div>
+        <MinutesPromptBubble />
         <MobileBottomNav />
       </SidebarInset>
+    </>
+  );
+
+  return (
+    <AppShellProvider value={staffContext}>
+      {hasActiveMinutesPrompt(minutesPrompt) ? (
+        <MinutesPromptProvider state={minutesPrompt}>
+          {shell}
+          <MinutesQuickDialog />
+        </MinutesPromptProvider>
+      ) : (
+        shell
+      )}
     </AppShellProvider>
   );
 };

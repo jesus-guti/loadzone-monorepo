@@ -78,9 +78,6 @@ export async function saveSharedMinutes(input: {
     if (error || !session) {
       return { success: false, error: error ?? "Sesión no encontrada" };
     }
-    if (session.type === "MATCH") {
-      return { success: false, error: "Un partido no usa minutos compartidos" };
-    }
     await database.teamSession.update({
       where: { id: session.id },
       data: { sharedMinutes: parsed.data.sharedMinutes },
