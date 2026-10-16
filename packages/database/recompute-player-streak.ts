@@ -237,7 +237,7 @@ export async function recomputeAndPersistPlayerStreak(
 
   // Official Injury intervals only — never PainAlert (JES-32 / JES-53).
   const injuries = await database.injury.findMany({
-    where: { playerId: player.id },
+    where: { playerId: player.id, deletedAt: null },
     select: {
       startDate: true,
       endDate: true,

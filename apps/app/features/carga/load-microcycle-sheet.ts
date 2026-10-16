@@ -5,10 +5,8 @@ import {
   civilDateToUtcMidnight,
   toCivilDateString,
 } from "@repo/database/recoverable-streak";
-import {
-  buildMicrocycleSheet,
-  type MicrocycleSheet,
-} from "./microcycles";
+import { fullMatchLength, teamDayMinutes } from "@/features/minutes/derive";
+import { buildMicrocycleSheet, type MicrocycleSheet } from "./microcycles";
 
 export async function loadMicrocycleSheet(
   teamId: string,
@@ -42,7 +40,20 @@ export async function loadMicrocycleSheet(
         status: { not: "CANCELLED" },
         startsAt: { gte: queryStart, lt: queryEnd },
       },
-      select: { type: true, startsAt: true },
+      select: {
+        type: true,
+        startsAt: true,
+        sharedMinutes: true,
+        lineup: {
+          select: {
+            extraTime: true,
+            stoppageFirst: true,
+            stoppageSecond: true,
+            stoppageExtraFirst: true,
+            stoppageExtraSecond: true,
+          },
+        },
+      },
     }),
     database.dailyEntry.findMany({
       where: {
@@ -70,12 +81,43 @@ export async function loadMicrocycleSheet(
 
   const matchDates: string[] = [];
   const sessionDates: string[] = [];
+  const sessionsByDate = new Map<
+    string,
+    {
+      type: "MATCH" | "TRAINING" | "RECOVERY" | "OTHER";
+      sharedMinutes: number | null;
+      fullMatchLength: number | null;
+    }[]
+  >();
   for (const session of sessions) {
     const date = toCivilDateString(session.startsAt, timeZone);
     sessionDates.push(date);
     if (session.type === "MATCH") {
       matchDates.push(date);
     }
+    const bucket = sessionsByDate.get(date) ?? [];
+    bucket.push({
+      type: session.type,
+      sharedMinutes: session.sharedMinutes,
+      fullMatchLength: session.lineup
+        ? fullMatchLength({
+            starterIds: [],
+            benchIds: [],
+            substitutions: [],
+            stoppageFirst: session.lineup.stoppageFirst,
+            stoppageSecond: session.lineup.stoppageSecond,
+            extraTime: session.lineup.extraTime,
+            stoppageExtraFirst: session.lineup.stoppageExtraFirst,
+            stoppageExtraSecond: session.lineup.stoppageExtraSecond,
+          })
+        : null,
+    });
+    sessionsByDate.set(date, bucket);
+  }
+
+  const minutesByDate: Record<string, number> = {};
+  for (const [date, daySessions] of sessionsByDate) {
+    minutesByDate[date] = teamDayMinutes(daySessions);
   }
 
   return buildMicrocycleSheet({
@@ -83,6 +125,7 @@ export async function loadMicrocycleSheet(
     seasonEnd,
     matchDates,
     sessionDates,
+    minutesByDate,
     players: players.map((player) => ({
       id: player.id,
       name: player.name,

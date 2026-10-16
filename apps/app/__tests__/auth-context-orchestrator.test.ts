@@ -66,6 +66,7 @@ function fakeTeam(id: string) {
     wellnessLimits: null,
     ageBandPolicy: null,
     reminderConsentPolicy: null,
+    minutesPromptHour: 20,
   };
 }
 

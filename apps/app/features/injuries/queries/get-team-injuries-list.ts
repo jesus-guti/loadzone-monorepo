@@ -1,7 +1,10 @@
 import { database } from "@repo/database";
+import { injuryNotDeletedWhere } from "@repo/database/injury-visibility";
 import {
   filterOpenPainAlerts,
   formatInjuryRegionLabels,
+  partitionInjuriesByOpenClosed,
+  sortClosedInjuriesNewestFirst,
   sortOpenInjuriesNewestFirst,
   sortPainAlertsNewestFirst,
   takeSectionCap,
@@ -69,14 +72,14 @@ function mapPainAlertRow(row: PainAlertDbRow): TeamPainAlertListItem {
 }
 
 /**
- * Team `/injuries`: open Pain Alerts (triage) + open Injuries (roster).
+ * Team `/injuries`: open Pain Alerts (triage) + open/closed Injuries (not soft-deleted).
  */
 export async function getTeamInjuriesList(
   teamId: string
 ): Promise<TeamInjuriesListPayload> {
   const [injuryRows, painAlertRows] = await Promise.all([
     database.injury.findMany({
-      where: { teamId, endDate: null },
+      where: { teamId, ...injuryNotDeletedWhere },
       orderBy: { startDate: "desc" },
       take: 200,
       select: {
@@ -109,10 +112,12 @@ export async function getTeamInjuriesList(
   ]);
 
   const mappedInjuries = injuryRows.map(mapInjuryRow);
+  const { open, closed } = partitionInjuriesByOpenClosed(mappedInjuries);
   const openAlerts = filterOpenPainAlerts(painAlertRows).map(mapPainAlertRow);
 
   return {
     painAlerts: takeSectionCap(sortPainAlertsNewestFirst(openAlerts)),
-    activeInjuries: takeSectionCap(sortOpenInjuriesNewestFirst(mappedInjuries)),
+    activeInjuries: takeSectionCap(sortOpenInjuriesNewestFirst(open)),
+    closedInjuries: takeSectionCap(sortClosedInjuriesNewestFirst(closed)),
   };
 }

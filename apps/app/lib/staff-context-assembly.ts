@@ -1,5 +1,14 @@
 import type { CurrentUser } from "@repo/auth/server";
 import type { MembershipRole, PlatformRole } from "@repo/database";
+import {
+  type AgeBandPolicy,
+  parseAgeBandPolicy,
+  resolveEffectiveAgeBandPolicy,
+} from "@repo/database/age-band-policy";
+import {
+  type ReminderConsentPolicy,
+  resolveEffectiveReminderConsentPolicy,
+} from "@repo/database/reminder-consent";
 import type {
   StaffClubRow,
   StaffMembershipInfo,
@@ -13,15 +22,6 @@ import {
   resolveSeasonFromCookie,
   staffCanCreateTeam,
 } from "./staff-workspace-rules";
-import {
-  parseAgeBandPolicy,
-  resolveEffectiveAgeBandPolicy,
-  type AgeBandPolicy,
-} from "@repo/database/age-band-policy";
-import {
-  resolveEffectiveReminderConsentPolicy,
-  type ReminderConsentPolicy,
-} from "@repo/database/reminder-consent";
 import { parseWellnessLimits, type WellnessLimits } from "./wellness-limits";
 
 export type SeasonSummary = {
@@ -49,6 +49,7 @@ export type TeamSummary = {
   /** Effective Reminder Consent policy (Team JSON or package defaults). */
   reminderConsentPolicy: ReminderConsentPolicy;
   reminderConsentPolicySource: "team" | "defaults";
+  minutesPromptHour: number;
 };
 
 export type StaffClubSummary = {
@@ -124,6 +125,7 @@ export function assembleStaffContext(input: AssembleInput): StaffContext {
       ageBandPolicySource: effective.source,
       reminderConsentPolicy: reminderConsent.policy,
       reminderConsentPolicySource: reminderConsent.source,
+      minutesPromptHour: team.minutesPromptHour,
     };
   });
 

@@ -82,6 +82,7 @@ describe("syncPlayerStatusFromInjuries after alta", () => {
         playerId: "player-1",
         startDate: { lte: new Date("2026-08-22T00:00:00.000Z") },
         endDate: null,
+        deletedAt: null,
       },
     });
     expect(next).toBe("AVAILABLE");

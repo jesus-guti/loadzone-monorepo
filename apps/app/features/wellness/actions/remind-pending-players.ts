@@ -237,6 +237,7 @@ export async function remindPendingWellnessPlayers(
   const injuryRows = await database.injury.findMany({
     where: {
       teamId: staffContext.activeTeam.id,
+      deletedAt: null,
       startDate: { lte: evaluatedCivilDate },
       OR: [{ endDate: null }, { endDate: { gte: evaluatedCivilDate } }],
     },
